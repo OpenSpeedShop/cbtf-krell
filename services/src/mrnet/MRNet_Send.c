@@ -26,16 +26,12 @@
 #include "config.h"
 #endif
 
-//#include "RuntimeAPI.h"
-//#include "Protocol.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 
 #include <rpc/rpc.h>
 #include "mrnet_lightweight/MRNet.h"
 
-enum { PROT_EXIT=FirstApplicationTag,
-       PROT_INT };
 
 Network_t* CBTF_MRNet_netPtr;
 Stream_t* CBTF_MRNet_upstream;
@@ -58,19 +54,17 @@ int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* ppor
                 break;
             }
 
-            fprintf(stderr,"GOT LINE: %s\n",line);
-
             char pname[64];
             int tpport, tprank, trank;
             int matches = sscanf( line, "%s %d %d %d",
                                   pname, &tpport, &tprank, &trank );
             if( matches != 4 ) {
-                fprintf(stderr, "Error while scanning %s\n", file);
+                fprintf(stderr, "CBTF_MRNet_getParentInfo: Error while scanning %s\n", file);
                 fclose(cfile);;
                 return 1;
             }
 
-            fprintf(stderr,"MATCHES: %s, %d, %d, %d\n",pname, tpport, tprank, trank);
+            fprintf(stderr,"CBTF_MRNet_getParentInfo found match: %s, %d, %d, %d\n",pname, tpport, tprank, trank);
 
             if( trank == rank ) {
                 sprintf(phost, "%s", pname);
@@ -108,7 +102,6 @@ int CBTF_MRNet_LW_connect (int con_rank)
     }
 
     Rank mRank = 10000 + wRank;
-    //sprintf(myRank, "%d", 10000);
     sprintf(myRank, "%d", mRank);
 
     fprintf(stderr, "CBTF_MRNet_LW_connect: myRank = %s, mRank = %d\n",myRank,mRank);
@@ -151,7 +144,7 @@ int CBTF_MRNet_LW_connect (int con_rank)
 
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
-        tag = PROT_EXIT;
+	abort();
     }
 
     fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET network\n");
@@ -172,7 +165,7 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
     fflush(stderr);
 }
 
-void CBTF_MRNet_SendAny(const int tag,
+void CBTF_MRNet_Send(const int tag,
                  const xdrproc_t xdrproc, const void* data)
 {
     unsigned size,dm_size;
@@ -192,7 +185,7 @@ void CBTF_MRNet_SendAny(const int tag,
             free(buffer);
     }
 
-    fprintf(stderr,"MRNet_SendAny calls CBTF_MRNet_LW_sendToFrontend: with tag %d\n",tag);
+    fprintf(stderr,"CBTF_MRNet_Send calls CBTF_MRNet_LW_sendToFrontend: with tag %d\n",tag);
     CBTF_MRNet_LW_sendToFrontend(tag ,dm_size , (void *) dm_contents);
 }
 
@@ -217,6 +210,6 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
     size = xdr_getpos(&xdrs);
     xdr_destroy(&xdrs);
 
-    fprintf(stderr,"MRNet_send calls CBTF_MRNet_LW_sendToFrontend:\n");
+    fprintf(stderr,"CBTF_MRNet_Send_PerfData calls CBTF_MRNet_LW_sendToFrontend\n");
     CBTF_MRNet_LW_sendToFrontend(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA ,size , (void *) buffer);
 }

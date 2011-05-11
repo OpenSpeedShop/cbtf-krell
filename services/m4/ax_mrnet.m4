@@ -18,6 +18,7 @@
 
 AC_DEFUN([AX_MRNET], [
 
+    foundMRNET=0
     AC_ARG_WITH(mrnet,
                 AC_HELP_STRING([--with-mrnet=DIR],
                                [MRNet installation @<:@/usr@:>@]),
@@ -47,9 +48,15 @@ AC_DEFUN([AX_MRNET], [
         MRN::set_OutputLevel(0);
         ]]), [ 
             AC_MSG_RESULT(yes)
+
+	    foundMRNET=1
+
         ], [
             AC_MSG_RESULT(no)
             AC_MSG_ERROR([MRNet could not be found.])
+
+	    foundMRNET=0
+
         ])
 
     CPPFLAGS=$mrnet_saved_CPPFLAGS
@@ -61,5 +68,12 @@ AC_DEFUN([AX_MRNET], [
     AC_SUBST(MRNET_LDFLAGS)
     AC_SUBST(MRNET_LIBS)
     AC_SUBST(MRNET_LW_LIBS)
+
+    if test $foundMRNET == 1; then
+        AM_CONDITIONAL(HAVE_MRNET, true)
+        AC_DEFINE(HAVE_MRNET, 1, [Define to 1 if you have MRNet.])
+    else
+        AM_CONDITIONAL(HAVE_MRNET, false)
+    fi
 
 ])

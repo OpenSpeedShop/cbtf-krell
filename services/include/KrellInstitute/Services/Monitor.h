@@ -45,6 +45,21 @@ typedef enum {
     CBTF_Monitor_Resumed
 } CBTF_Monitor_Status;
 
+typedef enum {
+    CBTF_Monitor_MPI_pre_init_event,
+    CBTF_Monitor_MPI_init_event,
+    CBTF_Monitor_MPI_post_fini_event,
+    CBTF_Monitor_MPI_fini_event,
+    CBTF_Monitor_MPI_post_comm_rank_event,
+    CBTF_Monitor_pre_dlopen_event,
+    CBTF_Monitor_dlopen_event,
+    CBTF_Monitor_dlclose_event,
+    CBTF_Monitor_post_dlclose_event,
+    CBTF_Monitor_Default_event
+} CBTF_Monitor_Event_Type;
+
+
+
 #ifdef  __cplusplus
 }
 #endif

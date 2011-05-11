@@ -204,6 +204,7 @@ AX_CBTF_MRNET()
 
 AC_CONFIG_FILES([
     Makefile
+    include/Makefile
     src/Makefile
     src/base/Makefile
     src/collector/Makefile

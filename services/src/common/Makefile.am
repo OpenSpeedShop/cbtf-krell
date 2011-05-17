@@ -20,12 +20,15 @@ lib_LTLIBRARIES = libcbtf-services-common.la
 
 libcbtf_services_common_la_CFLAGS = \
 	-I$(top_srcdir)/include \
+	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_services_common_la_LDFLAGS = \
+	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
 
 libcbtf_services_common_la_LIBADD = \
+	@MESSAGES_EVENTS_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_services_common_la_SOURCES = \
@@ -33,5 +36,6 @@ libcbtf_services_common_la_SOURCES = \
 	GetExecutablePath.c \
 	GetPCFromContext.c \
 	GetTime.c \
+	InitializeEventHeader.c \
 	SetPCInContext.c \
 	TLS.c

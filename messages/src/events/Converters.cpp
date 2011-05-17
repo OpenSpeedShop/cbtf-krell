@@ -20,6 +20,7 @@
 
 #include <KrellInstitute/CBTF/XDR.hpp>
 
+#include "EventHeader.h"
 #include "LinkedObjectEvents.h"
 #include "ThreadEvents.h"
 

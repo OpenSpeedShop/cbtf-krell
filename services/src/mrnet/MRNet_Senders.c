@@ -25,15 +25,13 @@
 #include "config.h"
 #endif
 
-#include "KrellInstitute/Services/Common.h"
-#include "KrellInstitute/Messages/EventHeader.h"
-#include "KrellInstitute/Messages/File.h"
-#include "KrellInstitute/Messages/ToolMessageTags.h"
-
 #include <rpc/rpc.h>
 #include "mrnet_lightweight/MRNet.h"
 
-
+#include "KrellInstitute/Messages/EventHeader.h"
+#include "KrellInstitute/Messages/File.h"
+#include "KrellInstitute/Messages/OfflineEvents.h"
+#include "KrellInstitute/Messages/LinkedObjectEvents.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -44,10 +42,6 @@
 
 typedef struct {
     CBTF_Protocol_ThreadNameGroup tgrp;
-    CBTF_Protocol_ThreadName tname;
-    CBTF_Protocol_CreatedProcess created_process_message;
-    CBTF_Protocol_AttachedToThreads attached_to_threads_message;
-    CBTF_Protocol_ThreadsStateChanged thread_state_changed_message;
     struct {
         CBTF_Protocol_ThreadName tnames[4096];
     } tgrpbuf;
@@ -96,7 +90,7 @@ void CBTF_create_ThreadNameGroup(CBTF_Protocol_ThreadNameGroup *tgrp,
     tgrp->names.names_val = tls->tgrpbuf.tnames;
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
 
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
+    memcpy(&(tls->tgrpbuf.tnames[tgrp->names.names_len]),
            &tname, sizeof(tname));
     tgrp->names.names_len++;
 }
@@ -184,7 +178,7 @@ void CBTF_send_ThreadStateChanged_message(CBTF_EventHeader header,
 
 void CBTF_send_LoadedLinkedObject_message(CBTF_EventHeader header,
 					  bool is_executable,
-					  cbtf_objects objects)
+					  CBTF_Protocol_Offline_LinkedObject objects)
 {
     CBTF_Protocol_ThreadName tname;
     CBTF_create_ThreadName(&tname, header);
@@ -210,7 +204,7 @@ void CBTF_send_LoadedLinkedObject_message(CBTF_EventHeader header,
 }
 
 void CBTF_send_UnloadedLinkedObject_message(CBTF_EventHeader header,
-					    cbtf_objects objects)
+					    CBTF_Protocol_Offline_LinkedObject objects)
 {
     CBTF_Protocol_ThreadName tname;
     CBTF_create_ThreadName(&tname, header);
@@ -221,7 +215,7 @@ void CBTF_send_UnloadedLinkedObject_message(CBTF_EventHeader header,
     CBTF_Protocol_FileName dsoFilename;
     dsoFilename.path = strdup(objects.objname);
 
-    CBTF_Protocol_UnLoadedLinkedObject message;
+    CBTF_Protocol_UnloadedLinkedObject message;
     memset(&message, 0, sizeof(message));
 
     message.threads = tgrp;
@@ -229,5 +223,5 @@ void CBTF_send_UnloadedLinkedObject_message(CBTF_EventHeader header,
     message.time = objects.time_begin;
 
     CBTF_MRNet_Send(CBTF_PROTOCOL_TAG_UNLOADED_LINKED_OBJECT,
-                   (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
+                   (xdrproc_t) xdr_CBTF_Protocol_UnloadedLinkedObject, &message);
 }

@@ -22,26 +22,51 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "KrellInstitute/Messages/EventHeader.h"
+#include "KrellInstitute/Messages/LinkedObjectEvents.h"
+#include "KrellInstitute/Messages/OfflineEvents.h"
+#include "KrellInstitute/Messages/PCSamp.h"
+#include "KrellInstitute/Messages/ToolMessageTags.h"
+#include "KrellInstitute/Messages/Thread.h"
+#include "KrellInstitute/Messages/ThreadEvents.h"
 #include "KrellInstitute/Services/Common.h"
-#include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Services/Monitor.h"
 #include "KrellInstitute/Services/Offline.h"
 #include "KrellInstitute/Services/Path.h"
 #include "KrellInstitute/Services/TLS.h"
-#include "KrellInstitute/Messages/PCSamp.h"
+
+#define true 1
+#define false 0
+
+#if !defined (TRUE)
+#define TRUE true
+#endif
+
+#if !defined (FALSE)
+#define FALSE false
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     uint64_t time_started;
 
-    CBTF_DataHeader dso_header;   /**< Header for following dso blob. */
-    CBTF_DataHeader info_header;  /**< Header for following info blob. */
-    cbtf_offline_data data;              /**< Actual dso data blob. */
+    CBTF_EventHeader dso_header;   /**< Header for following dso blob. */
+    CBTF_EventHeader info_header;  /**< Header for following info blob. */
+    CBTF_Protocol_Offline_LinkedObjectGroup data; /**< Actual dso data blob. */
 
     struct {
-	cbtf_objects objs[CBTF_OBJBufferSize];
+	CBTF_Protocol_Offline_LinkedObject objs[CBTF_OBJBufferSize];
     } buffer;
+
+    CBTF_Protocol_ThreadNameGroup tgrp;
+    struct {
+        CBTF_Protocol_ThreadName tnames[4096];
+    } tgrpbuf;
 
     int  dsoname_len;
     int  started;
@@ -70,16 +95,48 @@ static __thread TLS the_tls;
 
 extern void cbtf_offline_service_start_timer();
 extern void cbtf_offline_service_stop_timer();
+extern void set_mpi_flag(int);
+extern void connect_to_mrnet();
+extern void send_thread_state_changed_message();
 
 void cbtf_offline_finish();
 
-void cbtf_offline_pause_sampling()
+void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 {
+    switch( event ) {
+	case CBTF_Monitor_MPI_pre_init_event:
+	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	    set_mpi_flag(1);
+	    break;
+	case CBTF_Monitor_MPI_init_event:
+	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    set_mpi_flag(1);
+	    break;
+	case CBTF_Monitor_MPI_post_comm_rank_event:
+	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    set_mpi_flag(1);
+	    break;
+	default:
+	    break;
+    }
     cbtf_offline_service_stop_timer();
 }
 
-void cbtf_offline_resume_sampling()
+void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 {
+    switch( event ) {
+	case CBTF_Monitor_MPI_pre_init_event:
+	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	    break;
+	case CBTF_Monitor_MPI_init_event:
+	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    break;
+	case CBTF_Monitor_MPI_post_comm_rank_event:
+	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    break;
+	default:
+	    break;
+    }
     cbtf_offline_service_start_timer();
 }
 
@@ -94,13 +151,16 @@ void cbtf_offline_sent_data(int sent_data)
     Assert(tls != NULL);
 
     tls->sent_data = sent_data;
-fprintf(stderr,"EXIT cbtf_offline_sent_data sent_data = %d\n",tls->sent_data);
+    fprintf(stderr,"exit cbtf_offline_sent_data sent_data = %d\n",
+		tls->sent_data);
 }
 
 void cbtf_offline_send_dsos(TLS *tls)
 {
     CBTF_SetSendToFile(&(tls->dso_header), "pcsamp", "openss-dsos");
-    CBTF_Send(&(tls->dso_header), (xdrproc_t)xdr_cbtf_offline_data, &(tls->data));
+    CBTF_Send(&(tls->dso_header),
+		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
+		&(tls->data));
     
     /* Send the offline "info" blob */
 #ifndef NDEBUG
@@ -109,7 +169,7 @@ void cbtf_offline_send_dsos(TLS *tls)
         tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
     }
 #endif
-    tls->data.objs.objs_len = 0;
+    tls->data.linkedobjects.linkedobjects_len = 0;
     tls->dsoname_len = 0;
     memset(tls->buffer.objs, 0, sizeof(tls->buffer.objs));
 }
@@ -151,8 +211,8 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     tls->time_started = CBTF_GetTime();
 
     tls->dsoname_len = 0;
-    tls->data.objs.objs_len = 0;
-    tls->data.objs.objs_val = tls->buffer.objs;
+    tls->data.linkedobjects.linkedobjects_len = 0;
+    tls->data.linkedobjects.linkedobjects_val = tls->buffer.objs;
     memset(tls->buffer.objs, 0, sizeof(tls->buffer.objs));
 
     /* Start sampling */
@@ -208,6 +268,29 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 		tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
+	    fprintf(stderr,"offline_stop_sampling FINISHED for %d, %lu calling send_thread_state_changed_message\n",
+		tls->dso_header.pid, tls->dso_header.posix_tid);
+	send_thread_state_changed_message();
+	CBTF_Waitfor_MRNet_Shutdown();
+    }
+}
+
+void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+    switch( event ) {
+	case CBTF_Monitor_MPI_post_comm_rank_event:
+	    fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n", monitor_mpi_comm_rank());
+	    connect_to_mrnet();
+	    break;
+	default:
+	    break;
     }
 }
 
@@ -225,20 +308,18 @@ void cbtf_offline_finish()
 	return;
     }
 
-    CBTF_DataHeader header;
-    cbtf_expinfo info;
+    CBTF_EventHeader header;
+    CBTF_Protocol_Offline_Parameters info;
 
     /* Initialize the offline "info" blob's header */
-    CBTF_InitializeDataHeader(0, /* Experiment */
-				1, /* Collector */
-				&header);
+    CBTF_InitializeEventHeader(&header);
     
     /* Initialize the offline "info" blob */
     CBTF_InitializeParameters(&info);
     info.collector = strdup("pcsamp");
     const char* myexe = (const char*) CBTF_GetExecutablePath();
     info.exename = strdup(myexe);
-    info.rank = monitor_mpi_comm_rank();
+    //info.rank = monitor_mpi_comm_rank();
 
     /* Access the environment-specified arguments */
     const char* sampling_rate = getenv("CBTF_PCSAMP_RATE");
@@ -253,11 +334,11 @@ void cbtf_offline_finish()
 #endif
 
     CBTF_SetSendToFile(&header, "pcsamp", "openss-info");
-    CBTF_Send(&header, (xdrproc_t)xdr_cbtf_expinfo, &info);
+    CBTF_Send(&header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
 
     /* Write the thread's initial address space to the appropriate file */
     CBTF_GetDLInfo(getpid(), NULL);
-    if(tls->data.objs.objs_len > 0) {
+    if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
            fprintf(stderr,"cbtf_offline_stop_sampling SENDS OBJS for HOST %s, PID %d, POSIX_TID %lu\n",
@@ -301,20 +382,18 @@ void cbtf_offline_record_dso(const char* dsoname,
     //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
 
     /* Initialize the offline "dso" blob's header */
-    CBTF_DataHeader local_header;
-    CBTF_InitializeDataHeader(0, /* Experiment */
-				1, /* Collector */
-				&local_header);
-    memcpy(&tls->dso_header, &local_header, sizeof(CBTF_DataHeader));
+    CBTF_EventHeader local_header;
+    CBTF_InitializeEventHeader(&local_header);
+    memcpy(&tls->dso_header, &local_header, sizeof(CBTF_EventHeader));
 
-    cbtf_objects objects;
+    CBTF_Protocol_Offline_LinkedObject objects;
 
     if (is_dlopen) {
-	objects.time_begin = tls->dso_header.time_begin = CBTF_GetTime();
+	objects.time_begin = CBTF_GetTime();
     } else {
-	objects.time_begin = tls->dso_header.time_begin = tls->time_started;
+	objects.time_begin = tls->time_started;
     }
-    objects.time_end = tls->dso_header.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
+    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
     
 
     /* Initialize the offline "dso" blob */
@@ -323,9 +402,49 @@ void cbtf_offline_record_dso(const char* dsoname,
     objects.addr_end = end;
     objects.is_open = is_dlopen;
 
+    CBTF_Protocol_ThreadName tname;
+    tname.experiment = 0;
+    tname.host = strdup(local_header.host);
+    tname.pid = local_header.pid;
+    tname.has_posix_tid = true;
+    tname.posix_tid = local_header.posix_tid;
+
+    tls->tgrp.names.names_len = 0;
+    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
+    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
+
+    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
+           &tname, sizeof(tname));
+    tls->tgrp.names.names_len++;
+
+
+// CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT
+// xdr_CBTF_Protocol_LoadedLinkedObject
+    CBTF_Protocol_LoadedLinkedObject message;
+    memset(&message, 0, sizeof(message));
+
+    message.threads = tls->tgrp;
+    message.time = objects.time_begin;
+    message.range.begin =  begin;
+    message.range.end = end;
+
+    CBTF_Protocol_FileName dsoFilename;
+    dsoFilename.path = strdup(dsoname);
+
+    message.linked_object = dsoFilename;
+
+    if (strcmp(CBTF_GetExecutablePath(),dsoname)) {
+	message.is_executable = false;
+    } else {
+	message.is_executable = true;
+    }
+
+    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
+                  (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
+
     int dsoname_len = strlen(dsoname);
-    int newsize = (tls->data.objs.objs_len * sizeof(objects)) +
-		  (tls->dsoname_len + dsoname_len);
+    int newsize = (tls->data.linkedobjects.linkedobjects_len *
+		   sizeof(objects)) + (tls->dsoname_len + dsoname_len);
 
 
     if(newsize > CBTF_OBJBufferSize) {
@@ -338,9 +457,9 @@ void cbtf_offline_record_dso(const char* dsoname,
 	cbtf_offline_send_dsos(tls);
     }
 
-    memcpy(&(tls->buffer.objs[tls->data.objs.objs_len]),
+    memcpy(&(tls->buffer.objs[tls->data.linkedobjects.linkedobjects_len]),
            &objects, sizeof(objects));
-    tls->data.objs.objs_len++;
+    tls->data.linkedobjects.linkedobjects_len++;
     tls->dsoname_len += dsoname_len;
 
     if (is_dlopen) {

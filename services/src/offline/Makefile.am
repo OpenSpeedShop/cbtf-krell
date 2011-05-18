@@ -18,30 +18,21 @@
 
 lib_LTLIBRARIES = libcbtf-services-offline.la
 
-BUILT_SOURCES = \
-	offline.h offline.c
-
 libcbtf_services_offline_la_CFLAGS = \
 	-I$(top_srcdir)/include \
+	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_services_offline_la_LDFLAGS = \
+	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
 
 libcbtf_services_offline_la_LIBADD = \
+	@MESSAGES_EVENTS_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_services_offline_la_SOURCES = \
-	offline.x $(BUILT_SOURCES) \
 	DecodeParameters.c \
 	EncodeParameters.c \
 	GetDLInfo.c \
 	InitializeParameters.c
-
-SUFFIXES = .x
-CLEANFILES = $(BUILT_SOURCES)
-
-offline.h offline.c : offline.x
-	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
-	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
-	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<

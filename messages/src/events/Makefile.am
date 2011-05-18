@@ -21,6 +21,7 @@ lib_LTLIBRARIES = libcbtf-messages-events.la \
 
 BUILT_SOURCES = \
 	EventHeader.h EventHeader.c \
+	OfflineEvents.h OfflineEvents.c \
 	LinkedObjectEvents.h LinkedObjectEvents.c \
 	ThreadEvents.h ThreadEvents.c
 
@@ -52,13 +53,15 @@ libcbtf_messages_converters_events_la_LIBADD = \
 
 libcbtf_messages_events_la_SOURCES = \
 	EventHeader.x \
-	LinkedObjectEvents.x ThreadEvents.x \
+	LinkedObjectEvents.x 
+	OfflineEvents.x 
+	ThreadEvents.x \
 	$(BUILT_SOURCES)
 
 libcbtf_messages_converters_events_la_SOURCES = \
 	Converters.cpp
 
-xdr_headers = EventHeader.h LinkedObjectEvents.h ThreadEvents.h
+xdr_headers = EventHeader.h LinkedObjectEvents.h OfflineEvents.h ThreadEvents.h
 
 SUFFIXES = .x
 CLEANFILES = $(BUILT_SOURCES)
@@ -69,6 +72,11 @@ EventHeader.h EventHeader.c : EventHeader.x
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
 
 LinkedObjectEvents.h LinkedObjectEvents.c : LinkedObjectEvents.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+OfflineEvents.h OfflineEvents.c : OfflineEvents.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
 	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<

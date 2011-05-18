@@ -28,6 +28,7 @@
 
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/ToolMessageTags.h"
 
 #include <rpc/rpc.h>
 #include "mrnet_lightweight/MRNet.h"

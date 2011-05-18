@@ -25,7 +25,8 @@
 #ifndef _CBTF_Runtime_Offline_
 #define _CBTF_Runtime_Offline_
 
-#include "offline.h"
+//#include "offline.h"
+#include "KrellInstitute/Messages/OfflineEvents.h"
 
 /* Size of buffer (dso blob) to hold the dsos loaded into victim addressspace.
  * Computed in collector offline code as:
@@ -44,6 +45,6 @@ extern void cbtf_offline_pause_sampling();
 extern void cbtf_offline_resume_sampling();
 
 int CBTF_GetDLInfo(pid_t pid, char *path);
-void CBTF_InitializeParameters (cbtf_expinfo *info);
+void CBTF_InitializeParameters (CBTF_Protocol_Offline_Parameters *info);
 
 #endif /*_CBTF_Runtime_Offline_*/

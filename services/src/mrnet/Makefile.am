@@ -36,4 +36,5 @@ libcbtf_services_mrnet_la_LIBADD = \
 	@LIBLTDL@
 
 libcbtf_services_mrnet_la_SOURCES = \
-	MRNet_Send.c
+	MRNet_Send.c \
+	MRNet_Senders.c

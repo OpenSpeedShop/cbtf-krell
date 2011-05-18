@@ -18,40 +18,30 @@
 
 /** @file
  *
- * Definition of the CBTF_InitializeDataHeader() function.
+ * Definition of the CBTF_InitializeParameters() function.
  *
  */
 
+#include "KrellInstitute/Messages/OfflineEvents.h"
 #include "KrellInstitute/Services/Assert.h"
-#include "offline.h"
 
 
 /**
- * Initialize performance data header.
+ * Initialize offline parameters and info.
  *
- * Zeroes a performance data header and fills in the experiment and collector
- * identifiers as well as identifying information for the calling thread.
- *
- * @param experiment    Identifier of experiment to contain the data.
- * @param collector     Identifier of collector gathering data.
- * @param header        Performance data header to be initialized.
  */
-void CBTF_InitializeParameters (cbtf_expinfo *info)
+void CBTF_InitializeParameters (CBTF_Protocol_Offline_Parameters *info)
 {
     /* Check assertions */
     Assert(info != NULL);
 
     /* Zero the header */
-    memset(info, 0, sizeof(cbtf_expinfo));
+    memset(info, 0, sizeof(CBTF_Protocol_Offline_Parameters));
 
     /* Fill in the specified experiment and collector identifiers */
-#if 1
     info->collector = "";
     info->exename = "";
     info->traced = "";
     info->event = "";
-    info->rank = 0;
-    info->omptid = 0;
     info->rate = 0;
-#endif
 }

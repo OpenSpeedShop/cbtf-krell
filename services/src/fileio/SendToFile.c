@@ -25,6 +25,7 @@
 
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Services/Path.h"
 
 #include <dlfcn.h>
@@ -81,7 +82,8 @@ static __thread TLS the_tls;
  *
  * @ingroup RuntimeAPI
  */
-void CBTF_SetSendToFile(CBTF_DataHeader* header,
+
+void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
 			  const char* unique_id, const char* suffix)
 {
     const char* executable_path = NULL;
@@ -115,7 +117,7 @@ void CBTF_SetSendToFile(CBTF_DataHeader* header,
      */
 
     if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
-	fprintf(stderr,"CBTF_SetSendToFile creating directory for raw data files, using header->host=%s, and header->pid=%lld\n", header->host, header->pid);
+	fprintf(stderr,"CBTF_SetSendToFile creating directory for raw data files, using host=%s, and %d\n", host, pid);
     }
 
     struct passwd *pw;
@@ -124,22 +126,23 @@ void CBTF_SetSendToFile(CBTF_DataHeader* header,
 
     cbtf_rawdata_dir = getenv("CBTF_RAWDATA_DIR");
     if ((cbtf_rawdata_dir == NULL) && (pw && pw->pw_name) ) {
-        sprintf(dir_path, "%s%s%s/cbtf-rawdata-%s-%lld",
+        sprintf(dir_path, "%s%s%s/cbtf-rawdata-%s-%d",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp/",
-	     pw->pw_name, "/offline-cbtf", header->host,header->pid);
-fprintf(stderr,"DIR_PATH=%s\n",dir_path);
+	     pw->pw_name, "/offline-cbtf", host,pid);
+fprintf(stderr,"DEFAULT DIR_PATH=%s\n",dir_path);
     } else {
-        sprintf(dir_path, "%s/cbtf-rawdata-%s-%lld",
+        sprintf(dir_path, "%s/cbtf-rawdata-%s-%d",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp",
-	     header->host,header->pid);
+	     host,pid);
+fprintf(stderr,"ENV DIR_PATH=%s\n",dir_path);
     }
 
-    if(header->posix_tid == 0) {
-	sprintf(tls->path, "%s/%s-%lld", dir_path, basename(executable_path), header->pid);
+    if(posix_tid == 0) {
+	sprintf(tls->path, "%s/%s-%lld", dir_path, basename(executable_path), pid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     } else {
 	sprintf(tls->path, "%s/%s-%lld-%llu", dir_path, basename(executable_path),
-		header->pid,(uint64_t)header->posix_tid);
+		pid,(uint64_t)posix_tid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     }
 
@@ -183,6 +186,22 @@ fprintf(stderr,"DIR_PATH=%s\n",dir_path);
 	close(fd);
 }
 
+
+void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
+			const char* suffix)
+{
+fprintf(stderr,"CBTF_EventSetSendToFile host %s, pid %d , posix_tid %#ld\n",
+	header->host, header->pid, header->posix_tid);
+   __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
+			unique_id,suffix);
+}
+
+void CBTF_SetSendToFile(CBTF_DataHeader* header, const char* unique_id,
+			const char* suffix)
+{
+   __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
+			unique_id,suffix);
+}
 
 
 /**

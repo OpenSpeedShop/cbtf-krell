@@ -53,8 +53,8 @@ libcbtf_messages_converters_events_la_LIBADD = \
 
 libcbtf_messages_events_la_SOURCES = \
 	EventHeader.x \
-	LinkedObjectEvents.x 
-	OfflineEvents.x 
+	LinkedObjectEvents.x \
+	OfflineEvents.x \
 	ThreadEvents.x \
 	$(BUILT_SOURCES)
 

@@ -52,8 +52,7 @@
  * @param collector     Identifier of collector gathering data.
  * @param header        Performance data header to be initialized.
  */
-void CBTF_InitializeEventHeader(int experiment, int collector,
-			       CBTF_EventHeader* header)
+void CBTF_InitializeEventHeader( CBTF_EventHeader* header)
 {
     /* Check assertions */
     Assert(header != NULL);

@@ -96,8 +96,10 @@ static __thread TLS the_tls;
 extern void cbtf_offline_service_start_timer();
 extern void cbtf_offline_service_stop_timer();
 extern void set_mpi_flag(int);
+#if defined(CBTF_SERVICE_USE_MRNET)
 extern void connect_to_mrnet();
 extern void send_thread_state_changed_message();
+#endif
 
 void cbtf_offline_finish();
 
@@ -157,7 +159,7 @@ void cbtf_offline_sent_data(int sent_data)
 
 void cbtf_offline_send_dsos(TLS *tls)
 {
-    CBTF_SetSendToFile(&(tls->dso_header), "pcsamp", "openss-dsos");
+    CBTF_EventSetSendToFile(&(tls->dso_header), "pcsamp", "openss-dsos");
     CBTF_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
@@ -268,10 +270,13 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 		tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
+
+#if defined(CBTF_SERVICE_USE_MRNET)
 	    fprintf(stderr,"offline_stop_sampling FINISHED for %d, %lu calling send_thread_state_changed_message\n",
 		tls->dso_header.pid, tls->dso_header.posix_tid);
 	send_thread_state_changed_message();
 	CBTF_Waitfor_MRNet_Shutdown();
+#endif
     }
 }
 
@@ -308,13 +313,12 @@ void cbtf_offline_finish()
 	return;
     }
 
-    CBTF_EventHeader header;
-    CBTF_Protocol_Offline_Parameters info;
-
     /* Initialize the offline "info" blob's header */
-    CBTF_InitializeEventHeader(&header);
+    CBTF_EventHeader local_header;
+    CBTF_InitializeEventHeader(&local_header);
     
     /* Initialize the offline "info" blob */
+    CBTF_Protocol_Offline_Parameters info;
     CBTF_InitializeParameters(&info);
     info.collector = strdup("pcsamp");
     const char* myexe = (const char*) CBTF_GetExecutablePath();
@@ -329,12 +333,12 @@ void cbtf_offline_finish()
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
         fprintf(stderr,"cbtf_offline_stop_sampling SENDS INFO for HOST %s, PID %d, POSIX_TID %lu\n",
-        header.host, header.pid, header.posix_tid);
+        local_header.host, local_header.pid, local_header.posix_tid);
     }
 #endif
 
-    CBTF_SetSendToFile(&header, "pcsamp", "openss-info");
-    CBTF_Send(&header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
+    CBTF_EventSetSendToFile(&local_header, "pcsamp", "openss-info");
+    CBTF_Send(&local_header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
 
     /* Write the thread's initial address space to the appropriate file */
     CBTF_GetDLInfo(getpid(), NULL);
@@ -342,7 +346,7 @@ void cbtf_offline_finish()
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
            fprintf(stderr,"cbtf_offline_stop_sampling SENDS OBJS for HOST %s, PID %d, POSIX_TID %lu\n",
-        	   header.host, header.pid, header.posix_tid);
+        	   local_header.host, local_header.pid, local_header.posix_tid);
 	}
 #endif
 	cbtf_offline_send_dsos(tls);
@@ -402,6 +406,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     objects.addr_end = end;
     objects.is_open = is_dlopen;
 
+#if defined(CBTF_SERVICE_USE_MRNET)
     CBTF_Protocol_ThreadName tname;
     tname.experiment = 0;
     tname.host = strdup(local_header.host);
@@ -441,6 +446,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
     CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
                   (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
+#endif
 
     int dsoname_len = strlen(dsoname);
     int newsize = (tls->data.linkedobjects.linkedobjects_len *

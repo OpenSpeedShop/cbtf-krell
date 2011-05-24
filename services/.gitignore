@@ -8,9 +8,8 @@ autom4te.cache/*
 config.*
 configure
 depcomp
-examples/*/.deps/*
-examples/*/.libs/*
-examples/example1/test
+collectors/*/.deps/*
+collectors/*/.libs/*
 install-sh
 libltdl/*
 libtool

@@ -16,7 +16,9 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-pkglib_LTLIBRARIES =
+plugindir = $(libdir)/KrellInstitute/Collectors
+
+plugin_LTLIBRARIES =
 
 
 if HAVE_LIBMONITOR
@@ -25,20 +27,20 @@ OFFLINE_SOURCES = \
 
 endif
 
-pkglib_LTLIBRARIES += pcsamp-service.la
-pcsamp_service_la_CFLAGS = \
+plugin_LTLIBRARIES += pcsamp-collector.la
+pcsamp_collector_la_CFLAGS = \
 	@MESSAGES_CPPFLAGS@ \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/data
 
-pcsamp_service_la_LDFLAGS = \
+pcsamp_collector_la_LDFLAGS = \
 	@MESSAGES_LDFLAGS@ \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/timer \
 	-L$(top_srcdir)/src/data \
 	-no-undefined -module -avoid-version
 
-pcsamp_service_la_LIBADD = \
+pcsamp_collector_la_LIBADD = \
 	@MESSAGES_BASE_LIBS@ \
 	@MESSAGES_EVENTS_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
@@ -46,12 +48,12 @@ pcsamp_service_la_LIBADD = \
 	-lcbtf-services-timer \
 	-lpthread -lrt
 
-pcsamp_service_la_SOURCES = \
+pcsamp_collector_la_SOURCES = \
 	service.c
 
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += pcsamp-service-monitor.la libpcsamp-monitor.la
-pcsamp_service_monitor_la_CFLAGS = \
+plugin_LTLIBRARIES += pcsamp-collector-monitor.la libpcsamp-monitor.la
+pcsamp_collector_monitor_la_CFLAGS = \
 	$(LIBMONITOR_CPPFLAGS) \
 	@MESSAGES_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -59,7 +61,7 @@ pcsamp_service_monitor_la_CFLAGS = \
 	-I$(top_srcdir)/src/offline \
 	-I$(top_srcdir)/src/data
 
-pcsamp_service_monitor_la_LDFLAGS = \
+pcsamp_collector_monitor_la_LDFLAGS = \
 	$(LIBMONITOR_LDFLAGS) \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/monitor \
@@ -68,7 +70,7 @@ pcsamp_service_monitor_la_LDFLAGS = \
 	-L$(top_srcdir)/src/data \
 	-no-undefined -module -avoid-version
 
-pcsamp_service_monitor_la_LIBADD = \
+pcsamp_collector_monitor_la_LIBADD = \
 	$(LIBMONITOR_LIBS) \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -76,7 +78,7 @@ pcsamp_service_monitor_la_LIBADD = \
 	-lcbtf-services-timer \
 	-lpthread -lrt
 
-pcsamp_service_monitor_la_SOURCES = \
+pcsamp_collector_monitor_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	service.c
 
@@ -109,5 +111,5 @@ libpcsamp_monitor_la_LIBADD = \
 
 libpcsamp_monitor_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	service.c
+	collector.c
 endif

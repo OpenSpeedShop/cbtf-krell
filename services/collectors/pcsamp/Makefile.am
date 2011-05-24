@@ -49,7 +49,7 @@ pcsamp_collector_la_LIBADD = \
 	-lpthread -lrt
 
 pcsamp_collector_la_SOURCES = \
-	service.c
+	collector.c
 
 if HAVE_LIBMONITOR
 plugin_LTLIBRARIES += pcsamp-collector-monitor.la libpcsamp-monitor.la
@@ -80,7 +80,7 @@ pcsamp_collector_monitor_la_LIBADD = \
 
 pcsamp_collector_monitor_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	service.c
+	collector.c
 
 libpcsamp_monitor_la_CFLAGS = \
 	-static \

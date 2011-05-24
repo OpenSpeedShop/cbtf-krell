@@ -159,7 +159,7 @@ void cbtf_offline_sent_data(int sent_data)
 
 void cbtf_offline_send_dsos(TLS *tls)
 {
-    CBTF_EventSetSendToFile(&(tls->dso_header), "pcsamp", "openss-dsos");
+    CBTF_EventSetSendToFile(&(tls->dso_header), "pcsamp", "cbtf-dsos");
     CBTF_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
@@ -337,7 +337,7 @@ void cbtf_offline_finish()
     }
 #endif
 
-    CBTF_EventSetSendToFile(&local_header, "pcsamp", "openss-info");
+    CBTF_EventSetSendToFile(&local_header, "pcsamp", "cbtf-info");
     CBTF_Send(&local_header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
 
     /* Write the thread's initial address space to the appropriate file */

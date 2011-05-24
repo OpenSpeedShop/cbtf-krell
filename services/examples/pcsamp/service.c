@@ -354,7 +354,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     CBTF_InitializeDataHeader(0, args.collector,
 				&local_data_header);
     memcpy(&tls->header, &local_data_header, sizeof(CBTF_DataHeader));
-    CBTF_SetSendToFile(&(tls->header), "pcsamp", "openss-data");
+    CBTF_SetSendToFile(&(tls->header), "pcsamp", "cbtf-data");
     
     /* Initialize the actual data blob */
     tls->data.interval = 

@@ -17,4 +17,4 @@
 ################################################################################
 
 #SUBDIRS = common binutils data fileio fpe monitor mrnet offline papi timer unwind xdr
-SUBDIRS = common binutils data fileio fpe monitor offline papi timer unwind xdr
+SUBDIRS = common binutils data fileio fpe mrnet monitor offline papi timer unwind xdr

@@ -96,6 +96,7 @@ static __thread TLS the_tls;
 extern void cbtf_offline_service_start_timer();
 extern void cbtf_offline_service_stop_timer();
 extern void set_mpi_flag(int);
+
 #if defined(CBTF_SERVICE_USE_MRNET)
 extern void connect_to_mrnet();
 extern void send_thread_state_changed_message();
@@ -160,9 +161,12 @@ void cbtf_offline_sent_data(int sent_data)
 void cbtf_offline_send_dsos(TLS *tls)
 {
     CBTF_EventSetSendToFile(&(tls->dso_header), "pcsamp", "cbtf-dsos");
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
+#endif
     
     /* Send the offline "info" blob */
 #ifndef NDEBUG
@@ -338,7 +342,10 @@ void cbtf_offline_finish()
 #endif
 
     CBTF_EventSetSendToFile(&local_header, "pcsamp", "cbtf-info");
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_Send(&local_header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
+#endif
 
     /* Write the thread's initial address space to the appropriate file */
     CBTF_GetDLInfo(getpid(), NULL);

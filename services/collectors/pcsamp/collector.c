@@ -111,6 +111,29 @@ void set_mpi_flag(int flag) {
     tls->is_mpi_job = flag;
 }
 
+void send_process_thread_message()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    if (!tls->process_created) {
+	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
+                           (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
+			   &tls->created_process_message);
+	tls->process_created = true;
+    }
+
+    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
+			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
+			&tls->attached_to_threads_message);
+}
+
 void connect_to_mrnet()
 {
     /* Access our thread-local storage */
@@ -167,29 +190,6 @@ void started_process_thread()
     //CBTF_Protocol_AttachedToThreads tmessage;
     tls->attached_to_threads_message.threads = tls->tgrp;
     tls->process_created = 0;
-}
-
-void send_process_thread_message()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    if (!tls->process_created) {
-	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
-                           (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
-			   &tls->created_process_message);
-	tls->process_created = true;
-    }
-
-    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
-			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
-			&tls->attached_to_threads_message);
 }
 
 void send_thread_state_changed_message()
@@ -282,7 +282,9 @@ static void serviceTimerHandler(const ucontext_t* context)
         }
 #endif
 
+#if defined(CBTF_SERVICE_USE_FILEIO)
 	CBTF_Send(&tls->header, (xdrproc_t)xdr_CBTF_pcsamp_data, &tls->data);
+#endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (!tls->sent_process_thread_info) {
@@ -456,7 +458,10 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 	}
 #endif
 
+#if defined(CBTF_SERVICE_USE_FILEIO)
 	CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_pcsamp_data, &(tls->data));
+#endif
+
 #if defined(CBTF_SERVICE_USE_MRNET)
 	CBTF_MRNet_Send_PerfData(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,
 				 &tls->header,

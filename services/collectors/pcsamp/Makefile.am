@@ -57,6 +57,7 @@ pcsamp_collector_monitor_la_CFLAGS = \
 	$(LIBMONITOR_CPPFLAGS) \
 	@MESSAGES_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/offline \
 	-I$(top_srcdir)/src/data
@@ -87,6 +88,7 @@ libpcsamp_monitor_la_CFLAGS = \
 	$(LIBMONITOR_CPPFLAGS) \
 	@MESSAGES_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/offline \
 	-I$(top_srcdir)/src/data
@@ -112,4 +114,75 @@ libpcsamp_monitor_la_LIBADD = \
 libpcsamp_monitor_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
+
+if HAVE_MRNET
+plugin_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la libpcsamp-monitor-mrnet.la
+pcsamp_collector_monitor_mrnet_la_CFLAGS = \
+	$(LIBMONITOR_CPPFLAGS) \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@ \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/offline \
+	-I$(top_srcdir)/src/data
+
+pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
+	$(LIBMONITOR_LDFLAGS) \
+	@MRNET_LDFLAGS@ \
+	-L$(top_srcdir)/src/common \
+	-L$(top_srcdir)/src/monitor \
+	-L$(top_srcdir)/src/offline \
+	-L$(top_srcdir)/src/timer \
+	-L$(top_srcdir)/src/data \
+	-no-undefined -module -avoid-version
+
+pcsamp_collector_monitor_mrnet_la_LIBADD = \
+	$(LIBMONITOR_LIBS) \
+	@MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+pcsamp_collector_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+
+libpcsamp_monitor_mrnet_la_CFLAGS = \
+	-static \
+	$(LIBMONITOR_CPPFLAGS) \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@ \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/offline \
+	-I$(top_srcdir)/src/data
+
+libpcsamp_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	$(LIBMONITOR_LDFLAGS) \
+	@MRNET_LDFLAGS@ \
+	-L$(top_srcdir)/src/common \
+	-L$(top_srcdir)/src/monitor \
+	-L$(top_srcdir)/src/offline \
+	-L$(top_srcdir)/src/timer \
+	-L$(top_srcdir)/src/data \
+	-no-undefined
+
+libpcsamp_monitor_mrnet_la_LIBADD = \
+	$(LIBMONITOR_LIBS) \
+	@MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
 endif

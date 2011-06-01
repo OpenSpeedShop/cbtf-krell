@@ -20,7 +20,8 @@ AC_INIT([messages], [1.0])
 AC_COPYRIGHT([[Copyright (c) 2010 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE ([foreign])
+
 AM_CONFIG_HEADER([config.h])
 
 AH_TOP([
@@ -198,12 +199,14 @@ AC_SUBST(TARGET_OS)
 
 AX_BOOST_BASE([1.35.0])
 AX_BOOST_SYSTEM()
+AX_BOOST_THREAD()
 AX_CBTF()
 AX_MRNET()
 AX_CBTF_MRNET()
 
 AC_CONFIG_FILES([
     Makefile
+    libltdl/Makefile
     include/Makefile
     src/Makefile
     src/base/Makefile

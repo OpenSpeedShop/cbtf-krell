@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2011 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+    
+  <Type>TestNetwork</Type>
+  <Version>1.0.0</Version>
+
+  <Input>
+    <Name>in</Name>
+    <To><Input>in1</Input></To>
+  </Input>
+  
+  <Output>
+    <Name>out</Name>
+    <From><Output>out2</Output></From>
+  </Output>
+
+  <Stream>
+    <Name>UpwardStream</Name>
+    <Tag>4242</Tag>
+  </Stream>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+    <Tag>1101</Tag>
+  </Stream>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+    <Tag>1104</Tag>
+  </Stream>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+    <Tag>1116</Tag>
+  </Stream>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+    <Tag>1124</Tag>
+  </Stream>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+    <Tag>10000</Tag>
+  </Stream>
+  
+  <Frontend>
+    
+    <Network>
+      
+      <Type>FrontendNetwork</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>.</SearchPath>
+      <Plugin>plugin</Plugin>
+
+      <SearchPath>.</SearchPath>
+      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-perfdata.la</Plugin>
+
+      <Component>
+        <Name>1A</Name>
+        <Type>Incrementer</Type>
+      </Component>
+      
+      <Component>
+        <Name>1B</Name>
+        <Type>ConvertIntToPacket</Type>
+      </Component>
+
+      <Component>
+        <Name>2A</Name>
+        <Type>ConvertPacketToInt</Type>
+      </Component>
+                  
+      <Component>
+        <Name>2B</Name>
+        <Type>Incrementer</Type>
+      </Component>
+
+      <Input>
+        <Name>in1</Name>
+        <To>
+          <Name>1A</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+      
+      <Input>
+        <Name>in2</Name>
+        <To>
+          <Name>2A</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+      
+      <Connection>
+        <From>
+          <Name>1A</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>1B</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      
+      <Connection>
+        <From>
+          <Name>2A</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>2B</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      
+      <Output>
+        <Name>out1</Name>
+        <From>
+          <Name>1B</Name>
+          <Output>out</Output>
+        </From>
+      </Output>
+      
+      <Output>
+        <Name>out2</Name>
+        <From>
+          <Name>2B</Name>
+          <Output>out</Output>
+        </From>
+      </Output>
+      
+    </Network>
+    
+    <IncomingUpstream>
+      <Name>UpwardStream</Name>
+      <To><Input>in2</Input></To>
+    </IncomingUpstream>
+    
+    <OutgoingDownstream>
+      <Name>DownwardStream</Name>
+      <From><Output>out1</Output></From>
+    </OutgoingDownstream>
+    
+  </Frontend>
+  
+</MRNet>

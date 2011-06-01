@@ -65,7 +65,7 @@ typedef struct {
     CBTF_Protocol_AttachedToThreads attached_to_threads_message;
     CBTF_Protocol_ThreadsStateChanged thread_state_changed_message;
 
-    int mrnet_started;
+    int connected_to_mrnet;
     int is_mpi_job;
     int sent_process_thread_info;
     int process_created;
@@ -123,15 +123,19 @@ void send_process_thread_message()
 	return;
 
     if (!tls->process_created) {
-	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
+	if (tls->connected_to_mrnet) {
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
                            (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
 			   &tls->created_process_message);
+	}
 	tls->process_created = true;
     }
 
-    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
+    if (tls->connected_to_mrnet) {
+	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
 			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
 			&tls->attached_to_threads_message);
+    }
 }
 
 void connect_to_mrnet()
@@ -145,7 +149,9 @@ void connect_to_mrnet()
     if (tls == NULL)
 	return;
 
-    if (tls->mrnet_started) {
+    fprintf(stderr,"entered connect_to_mrnet \n");
+    if (tls->connected_to_mrnet) {
+        fprintf(stderr,"ALREADY connected  connect_to_mrnet \n");
 	return;
     }
 
@@ -153,8 +159,8 @@ void connect_to_mrnet()
 	monitor_mpi_comm_rank());
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
     sleep(1);
-    tls->mrnet_started = 1;
-    send_process_thread_message();
+    tls->connected_to_mrnet = 1;
+    //send_process_thread_message();
     tls->sent_process_thread_info = 1;
 }
 
@@ -226,8 +232,11 @@ void send_thread_state_changed_message()
     tls->thread_state_changed_message.threads = tls->tgrp;
     tls->thread_state_changed_message.state = Terminated;
 
-    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
-                  (xdrproc_t) xdr_CBTF_Protocol_ThreadsStateChanged, &tls->thread_state_changed_message);
+    if (tls->connected_to_mrnet) {
+	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
+                  (xdrproc_t) xdr_CBTF_Protocol_ThreadsStateChanged,
+		  &tls->thread_state_changed_message);
+    }
 }
 #endif
 
@@ -291,10 +300,11 @@ static void serviceTimerHandler(const ucontext_t* context)
 	    send_process_thread_message();
 	}
 
-	CBTF_MRNet_Send_PerfData(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,
-				 &tls->header,
+	if (tls->connected_to_mrnet) {
+	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,
 				 &tls->data);
+	}
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)
@@ -356,7 +366,10 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     CBTF_InitializeDataHeader(0, args.collector,
 				&local_data_header);
     memcpy(&tls->header, &local_data_header, sizeof(CBTF_DataHeader));
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile(&(tls->header), "pcsamp", "cbtf-data");
+#endif
     
     /* Initialize the actual data blob */
     tls->data.interval = 
@@ -398,7 +411,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     CBTF_Protocol_AttachedToThreads tmessage;
     tmessage.threads = tls->tgrp;
 
-    tls->mrnet_started = 0;
+    tls->connected_to_mrnet = 0;
     tls->sent_process_thread_info = 0;
 
     tls->tgrp.names.names_len = 0;
@@ -406,6 +419,8 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
 
     started_process_thread();
+fprintf(stderr,"CALLING connect to MRNET\n");
+    connect_to_mrnet();
 #endif
 
     /* Begin sampling */
@@ -463,10 +478,11 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
-	CBTF_MRNet_Send_PerfData(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,
-				 &tls->header,
+	if (tls->connected_to_mrnet) {
+	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,
 				 &tls->data);
+	}
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)

@@ -93,7 +93,10 @@ int CBTF_MRNet_LW_connect (int con_rank)
 
     const char* connfile = getenv("CBTF_MRNETBE_CONNECTIONS");
     if (connfile == NULL) {
-        connfile = "/home/dpm/.openspeedshop/attachBE_connections";
+	const char* homedir = getenv("HOME");
+	char buf[4096];
+	sprintf(buf,"%s%s",homedir,"/.cbtf/attachBE_connections");
+	connfile = strdup(buf);
     }
 
     char parHostname[64], myHostname[64], parPort[10], parRank[10], myRank[10];
@@ -143,12 +146,17 @@ int CBTF_MRNet_LW_connect (int con_rank)
 
     CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
 
+    sleep(3);
+
+        fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_upstream\n");
+
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
 	abort();
     }
 
     fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET network\n");
+    fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET STREAM %p\n",CBTF_MRNet_upstream);
     mrnet_connected = 1;
 }
 
@@ -161,6 +169,7 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
           Stream_flush(CBTF_MRNet_upstream) == -1 ) {
         fprintf(stderr, "BE: stream::send() failure\n");
     }
+
 
     fflush(stdout);
     fflush(stderr);

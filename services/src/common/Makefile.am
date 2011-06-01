@@ -20,14 +20,17 @@ lib_LTLIBRARIES = libcbtf-services-common.la
 
 libcbtf_services_common_la_CFLAGS = \
 	-I$(top_srcdir)/include \
+	@BINUTILS_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_services_common_la_LDFLAGS = \
+	@BINUTILS_LDFLAGS@ \
 	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
 
 libcbtf_services_common_la_LIBADD = \
+	@BINUTILS_LIBS@ \
 	@MESSAGES_EVENTS_LIBS@ \
 	@LIBLTDL@
 

@@ -27,12 +27,17 @@
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XDR.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
+#include <KrellInstitute/Core/AddressBuffer.hpp>
+#include <KrellInstitute/Core/Blob.hpp>
+#include "KrellInstitute/Messages/PCSamp_data.h"
+#include "KrellInstitute/Messages/Blob.h"
 #include <map>
 #include <set>
 #include <stdexcept>
 #include <string>
 
 using namespace KrellInstitute::CBTF;
+using namespace KrellInstitute::Core;
 
 
 
@@ -104,6 +109,18 @@ int main (int argc, char **argv)
     boost::shared_ptr<ValueSink<int> > output_value = 
         ValueSink<int>::instantiate();
 
+    boost::shared_ptr<ValueSource<AddressBuffer> > AB_input_value = 
+        ValueSource<AddressBuffer>::instantiate();
+    boost::shared_ptr<ValueSink<AddressBuffer> > AB_output_value = 
+        ValueSink<AddressBuffer>::instantiate();
+
+    boost::shared_ptr<ValueSource<Blob> > Blob_input_value = 
+        ValueSource<Blob>::instantiate();
+    boost::shared_ptr<ValueSource<CBTF_Protocol_Blob> > CBTF_Protocol_Blob_input_value = 
+        ValueSource<CBTF_Protocol_Blob>::instantiate();
+    boost::shared_ptr<ValueSource<CBTF_pcsamp_data> > PCData_input_value = 
+        ValueSource<CBTF_pcsamp_data>::instantiate();
+
     Component::Instance topology_value_component = 
         boost::reinterpret_pointer_cast<Component>(topology_value);
     Component::Instance input_value_component = 
@@ -111,13 +128,30 @@ int main (int argc, char **argv)
     Component::Instance output_value_component = 
         boost::reinterpret_pointer_cast<Component>(output_value);
 
+    Component::Instance AB_input_value_component = 
+        boost::reinterpret_pointer_cast<Component>(AB_input_value);
+    Component::Instance Blob_input_value_component = 
+        boost::reinterpret_pointer_cast<Component>(Blob_input_value);
+    Component::Instance CBTF_Protocol_Blob_input_value_component = 
+        boost::reinterpret_pointer_cast<Component>(CBTF_Protocol_Blob_input_value);
+    Component::Instance PCData_input_value_component = 
+        boost::reinterpret_pointer_cast<Component>(PCData_input_value);
+    Component::Instance AB_output_value_component = 
+        boost::reinterpret_pointer_cast<Component>(AB_output_value);
+
     Component::connect(
         topology_value_component, "value", launcher, "TopologyFile"
         );
 
     Component::connect(launcher, "Network", network, "Network");
+#if 0
     Component::connect(input_value_component, "value", network, "in");
     Component::connect(network, "out", output_value_component, "value");
+#else
+    Component::connect(CBTF_Protocol_Blob_input_value_component, "value", network, "AggregatorIn3");
+    Component::connect(network, "AgggregatorOut", AB_output_value_component, "value");
+#endif
+
 
     *topology_value = boost::filesystem::path(BUILDDIR) / "pcsampDemo.topology";
 

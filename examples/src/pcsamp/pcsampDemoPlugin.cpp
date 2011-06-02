@@ -76,30 +76,51 @@ private:
         declareInput<Blob>(
             "in3", boost::bind(&AddressAggregator::blobHandler, this, _1)
             );
-        declareOutput<AddressBuffer>("out");
+        declareInput<CBTF_Protocol_Blob>(
+            "in4", boost::bind(&AddressAggregator::cbtf_protocol_blob_Handler, this, _1)
+            );
+        declareOutput<AddressBuffer>("Aggregatorout");
     }
 
     /** Handler for the "in1" input.*/
     void pcsampHandler(const CBTF_pcsamp_data& in)
     {
-	AddressBuffer abuffer;
 	PCData pcdata;
-
 	pcdata.aggregateAddressCounts(in,abuffer);
-        emitOutput<AddressBuffer>("out",  abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "in4" input.*/
+    void cbtf_protocol_blob_Handler(const CBTF_Protocol_Blob& in)
+    {
+	Blob myblob(in.data.data_len, in.data.data_val);
+
+        CBTF_DataHeader header;
+        memset(&header, 0, sizeof(header));
+        unsigned header_size = myblob.getXDRDecoding(
+            reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
+            );
+
+        CBTF_pcsamp_data data;
+        memset(&data, 0, sizeof(data));
+        myblob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
+
+	PCData pcdata;
+	pcdata.aggregateAddressCounts(data,abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     /** Handler for the "in2" input.*/
     void addressBufferHandler(const AddressBuffer& in)
     {
-	AddressBuffer abuffer;
-        emitOutput<AddressBuffer>("out",  abuffer);
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     /** Handler for the "in3" input.*/
     void blobHandler(const Blob& in)
     {
-	AddressBuffer abuffer;
 
 // this currently is hard coded to pcsamp data.
 // the data header has an int for experiment type which in OSS
@@ -117,6 +138,7 @@ private:
         memset(&data, 0, sizeof(data));
         in.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
 
+#if 0
         if (data.pc.pc_len != data.count.count_len) {
             std::cerr << "ASSERT blobHandler pc_len "
             << data.pc.pc_len
@@ -131,9 +153,14 @@ private:
 	for(unsigned i = 0; i < data.pc.pc_len; ++i) {
 	    abuffer.updateAddressCounts(data.pc.pc_val[i], data.count.count_val[i]);
 	}
-
-        emitOutput<AddressBuffer>("out",  abuffer);
+#else
+	PCData pcdata;
+	pcdata.aggregateAddressCounts(data,abuffer);
+#endif
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
+
+    AddressBuffer abuffer;
     
 }; // class AddressAggregator
 

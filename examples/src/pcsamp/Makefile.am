@@ -38,6 +38,7 @@ pcsampDemo_LDFLAGS = \
 
 pcsampDemo_LDADD = \
 	-lcbtf-mrnet \
+	-lcbtf-core \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \
@@ -81,6 +82,7 @@ pcsampDemoPlugin_la_LDFLAGS = \
 	@MRNET_LDFLAGS@
 
 pcsampDemoPlugin_la_LIBADD = \
+	-lcbtf-core \
 	@CBTF_LIBS@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \

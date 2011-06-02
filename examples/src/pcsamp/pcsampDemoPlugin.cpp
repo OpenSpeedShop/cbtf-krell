@@ -100,6 +100,38 @@ private:
     void blobHandler(const Blob& in)
     {
 	AddressBuffer abuffer;
+
+// this currently is hard coded to pcsamp data.
+// the data header has an int for experiment type which in OSS
+// is used to match the expId.  Maybe in cbtf this can be an
+// enum to define each type of data type and then used to
+// choose the appropro data xdrproc....
+//
+        CBTF_DataHeader header;
+        memset(&header, 0, sizeof(header));
+        unsigned header_size = in.getXDRDecoding(
+            reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
+            );
+
+        CBTF_pcsamp_data data;
+        memset(&data, 0, sizeof(data));
+        in.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
+
+        if (data.pc.pc_len != data.count.count_len) {
+            std::cerr << "ASSERT blobHandler pc_len "
+            << data.pc.pc_len
+            << " != count_len "
+            << data.count.count_len << std::endl;
+        }
+
+// this is available in the PCData class.
+// void PCData::aggregateAddressCounts( const CBTF_pcsamp_data& data,
+//                                 AddressBuffer& buffer)
+//
+	for(unsigned i = 0; i < data.pc.pc_len; ++i) {
+	    abuffer.updateAddressCounts(data.pc.pc_val[i], data.count.count_val[i]);
+	}
+
         emitOutput<AddressBuffer>("out",  abuffer);
     }
     

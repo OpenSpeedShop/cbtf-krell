@@ -32,18 +32,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "KrellInstitute/Messages/Address.h"
-#include "KrellInstitute/Messages/DataHeader.h"
-#include "KrellInstitute/Messages/EventHeader.h"
-#include "KrellInstitute/Messages/File.h"
-#include "KrellInstitute/Messages/LinkedObjectEvents.h"
-#include "KrellInstitute/Messages/PCSamp_data.h"
-#include "KrellInstitute/Messages/Thread.h"
-#include "KrellInstitute/Messages/ThreadEvents.h"
-
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_pcsamp_data)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_AttachedToThreads)
-
 using namespace KrellInstitute::CBTF;
 
 

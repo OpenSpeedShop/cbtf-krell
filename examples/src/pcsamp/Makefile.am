@@ -50,7 +50,7 @@ pcsampDemo_SOURCES = \
 	pcsampDemo.cpp
 
 
-noinst_LTLIBRARIES = plugin.la
+noinst_LTLIBRARIES = plugin.la pcsampDemoPlugin.la
 
 plugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
@@ -67,3 +67,24 @@ plugin_la_LIBADD = \
 	@MRNET_LIBS@
 
 plugin_la_SOURCES = plugin.cpp
+
+pcsampDemoPlugin_la_CXXFLAGS = \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+pcsampDemoPlugin_la_LDFLAGS = \
+	-module -avoid-version -rpath /ForceShared \
+        @MESSAGES_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+pcsampDemoPlugin_la_LIBADD = \
+	@CBTF_LIBS@ \
+        @MESSAGES_BASE_LIBS@ \
+        @MESSAGES_EVENTS_LIBS@ \
+        @MESSAGES_PERFDATA_LIBS@ \
+	@MRNET_LIBS@
+
+pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp

@@ -86,17 +86,16 @@ int main (int argc, char **argv)
 {
     // Test registration of distributed component network types from XML
     std::set<Type> available_types = Component::getAvailableTypes();
-    registerXML(boost::filesystem::path(BUILDDIR) / "pcsampDemo.xml");
+    registerXML(boost::filesystem::path(BUILDDIR) / "wdh.xml");
     
     // Test distributed component network instantiation and metadata
     Component::Instance network;
-    network = Component::instantiate(Type("TestNetwork"));
+    network = Component::instantiate(Type("PC_Sampling_Demo"));
     std::map<std::string, Type> inputs = network->getInputs();
     std::map<std::string, Type> outputs = network->getOutputs();
 
     // Test instantiation of the basic launcher component
 
-    //Component::registerPlugin(boost::filesystem::path(TOPDIR) / "launchers" / "BasicMRNetLaunchers");
     Component::registerPlugin(boost::filesystem::path("/opt/cbtf-dev/lib64/") / "KrellInstitute/CBTF/BasicMRNetLaunchers");
     Component::Instance launcher;
     launcher = Component::instantiate(Type("BasicMRNetLauncherUsingBackendAttach"));
@@ -104,59 +103,17 @@ int main (int argc, char **argv)
     // Test distributed component network intercommunication
     boost::shared_ptr<ValueSource<boost::filesystem::path> > topology_value =
         ValueSource<boost::filesystem::path>::instantiate();
-    boost::shared_ptr<ValueSource<int> > input_value = 
-        ValueSource<int>::instantiate();
-    boost::shared_ptr<ValueSink<int> > output_value = 
-        ValueSink<int>::instantiate();
-
-    boost::shared_ptr<ValueSource<AddressBuffer> > AB_input_value = 
-        ValueSource<AddressBuffer>::instantiate();
-    boost::shared_ptr<ValueSink<AddressBuffer> > AB_output_value = 
-        ValueSink<AddressBuffer>::instantiate();
-
-    boost::shared_ptr<ValueSource<Blob> > Blob_input_value = 
-        ValueSource<Blob>::instantiate();
-    boost::shared_ptr<ValueSource<CBTF_Protocol_Blob> > CBTF_Protocol_Blob_input_value = 
-        ValueSource<CBTF_Protocol_Blob>::instantiate();
-    boost::shared_ptr<ValueSource<CBTF_pcsamp_data> > PCData_input_value = 
-        ValueSource<CBTF_pcsamp_data>::instantiate();
 
     Component::Instance topology_value_component = 
         boost::reinterpret_pointer_cast<Component>(topology_value);
-    Component::Instance input_value_component = 
-        boost::reinterpret_pointer_cast<Component>(input_value);
-    Component::Instance output_value_component = 
-        boost::reinterpret_pointer_cast<Component>(output_value);
-
-    Component::Instance AB_input_value_component = 
-        boost::reinterpret_pointer_cast<Component>(AB_input_value);
-    Component::Instance Blob_input_value_component = 
-        boost::reinterpret_pointer_cast<Component>(Blob_input_value);
-    Component::Instance CBTF_Protocol_Blob_input_value_component = 
-        boost::reinterpret_pointer_cast<Component>(CBTF_Protocol_Blob_input_value);
-    Component::Instance PCData_input_value_component = 
-        boost::reinterpret_pointer_cast<Component>(PCData_input_value);
-    Component::Instance AB_output_value_component = 
-        boost::reinterpret_pointer_cast<Component>(AB_output_value);
 
     Component::connect(
         topology_value_component, "value", launcher, "TopologyFile"
         );
 
     Component::connect(launcher, "Network", network, "Network");
-#if 0
-    Component::connect(input_value_component, "value", network, "in");
-    Component::connect(network, "out", output_value_component, "value");
-#else
-    Component::connect(CBTF_Protocol_Blob_input_value_component, "value", network, "AggregatorIn3");
-    Component::connect(network, "AgggregatorOut", AB_output_value_component, "value");
-#endif
-
 
     *topology_value = boost::filesystem::path(BUILDDIR) / "pcsampDemo.topology";
 
     for(;;);
 }
-
-
-

@@ -86,13 +86,11 @@ int main (int argc, char **argv)
 {
     // Test registration of distributed component network types from XML
     std::set<Type> available_types = Component::getAvailableTypes();
-    registerXML(boost::filesystem::path(BUILDDIR) / "wdh.xml");
+    registerXML(boost::filesystem::path(BUILDDIR) / "pcsampDemo.xml");
     
     // Test distributed component network instantiation and metadata
     Component::Instance network;
     network = Component::instantiate(Type("PC_Sampling_Demo"));
-    std::map<std::string, Type> inputs = network->getInputs();
-    std::map<std::string, Type> outputs = network->getOutputs();
 
     // Test instantiation of the basic launcher component
 

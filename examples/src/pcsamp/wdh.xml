@@ -21,7 +21,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
 
   <Type>PC_Sampling_Demo</Type>
-  <Version>0.0.0</Version>
+  <Version>1.0.0</Version>
 
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
@@ -32,21 +32,30 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
     <Network>
       <Type>PC_Sampling_Demo_Frontend</Type>
-      <Version>0.0.0</Version>
+      <Version>1.0.0</Version>
       <SearchPath>.</SearchPath>
+      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
       <Plugin>pcsampDemoPlugin</Plugin>
+      <Plugin>libcbtf-messages-base.so</Plugin>
+      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-base.la</Plugin>
 
       <Component>
         <Name>PacketToAddressBuffer</Name>
-        <!-- You need to create the following component type! -->
-        <Type>ConvertPacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
       </Component>
-      
+ 
       <Component>
         <Name>Display</Name>
-        <!-- You need to create the following component type! -->
         <Type>DisplayAddressBuffer</Type>
       </Component>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
 
       <Connection>
         <From>
@@ -58,14 +67,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>in</Input>
         </To>
       </Connection>
-      
-      <Input>
-        <Name>IncomingBuffers</Name>
-        <To>
-          <Name>PacketToAddressBuffer</Name>
-          <Input>in</Input>
-        </To>
-      </Input>
 
     </Network>
 
@@ -73,43 +74,58 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Name>Buffers</Name>
       <To><Input>IncomingBuffers</Input></To>
     </IncomingUpstream>
-    
+ 
   </Frontend>
 
   <Filter>
-    
+ 
     <Depth><AllOther/></Depth>
-    
+
     <Network>
       <Type>PC_Sampling_Demo_Filter</Type>
-      <Version>0.0.0</Version>
+      <Version>1.0.0</Version>
       <SearchPath>.</SearchPath>
       <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
       <Plugin>pcsampDemoPlugin</Plugin>
-      <Plugin>libcbtf-messages-converters.base.so</Plugin>
-      
+      <Plugin>libcbtf-messages-base.so</Plugin>
+      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-base.la</Plugin>
+ 
       <Component>
         <Name>PacketToBlob</Name>
         <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_Blob&gt;</Type>
       </Component>
-      
+ 
       <Component>
         <Name>PacketToAddressBuffer</Name>
-        <!-- You need to create the following component type! -->
-        <Type>ConvertPacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
       </Component>
-      
+ 
       <Component>
         <Name>Aggregator</Name>
         <Type>AddressAggregator</Type>
       </Component>
-      
+ 
       <Component>
         <Name>AddressBufferToPacket</Name>
-        <!-- You need to create the following component type! -->
         <Type>ConvertAddressBufferToPacket</Type>
       </Component>
-      
+ 
+      <Input>
+        <Name>IncomingBlobs</Name>
+        <To>
+          <Name>PacketToBlob</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
       <Connection>
         <From>
           <Name>PacketToBlob</Name>
@@ -120,7 +136,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>in4</Input>
         </To>
       </Connection>
-      
+ 
       <Connection>
         <From>
           <Name>PacketToAddressBuffer</Name>
@@ -131,34 +147,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>in2</Input>
         </To>
       </Connection>
-      
+ 
       <Connection>
         <From>
           <Name>Aggregator</Name>
           <Output>Aggregatorout</Output>
         </From>
         <To>
-          <Name>AddressBuffertoPacket</Name>
+          <Name>AddressBufferToPacket</Name>
           <Input>in</Input>
         </To>
       </Connection>
-      
-      <Input>
-        <Name>IncomingBlobs</Name>
-        <To>
-          <Name>PacketToBlob</Name>
-          <Input>in</Input>
-        </To>
-      </Input>
-      
-      <Input>
-        <Name>IncomingBuffers</Name>
-        <To>
-          <Name>PacketToAddressBuffer</Name>
-          <Input>in</Input>
-        </To>
-      </Input>
-      
+ 
       <Output>
         <Name>OutgoingBuffers</Name>
         <From>
@@ -166,24 +166,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
       </Output>
-      
+ 
     </Network>    
-    
+
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
       <To><Input>IncomingBlobs</Input></To>
     </IncomingUpstream>
-    
+
     <IncomingUpstream>
       <Name>Buffers</Name>
       <To><Input>IncomingBuffers</Input></To>
     </IncomingUpstream>
-    
+
     <OutgoingUpstream>
       <Name>Buffers</Name>
       <From><Output>OutgoingBuffers</Output></From>
     </OutgoingUpstream>
-    
+
   </Filter>
-  
+
 </MRNet>

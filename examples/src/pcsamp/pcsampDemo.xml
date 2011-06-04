@@ -19,188 +19,171 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 -->
 
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
-    
-  <Type>TestNetwork</Type>
+
+  <Type>PC_Sampling_Demo</Type>
   <Version>1.0.0</Version>
-
-  <Input>
-    <Name>in</Name>
-    <To><Input>in1</Input></To>
-  </Input>
-
-  <Input>
-    <Name>AggregatorIn3</Name>
-    <To><Input>Ain3</Input></To>
-  </Input>
-  
-  <Output>
-    <Name>out</Name>
-    <From><Output>out2</Output></From>
-  </Output>
-  
-  <Output>
-    <Name>AgggregatorOut</Name>
-    <From><Output>Aout</Output></From>
-  </Output>
-
-  <Stream>
-    <Name>UpwardStream</Name>
-    <Tag>4242</Tag>
-  </Stream>
-
-  <Stream>
-    <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
-    <Tag>1101</Tag>
-  </Stream>
-
-  <Stream>
-    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
-    <Tag>1104</Tag>
-  </Stream>
-
-  <Stream>
-    <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
-    <Tag>1116</Tag>
-  </Stream>
-
-  <Stream>
-    <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
-    <Tag>1124</Tag>
-  </Stream>
 
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
     <Tag>10000</Tag>
   </Stream>
-  
+
   <Frontend>
-    
+
     <Network>
-      
-      <Type>FrontendNetwork</Type>
+      <Type>PC_Sampling_Demo_Frontend</Type>
       <Version>1.0.0</Version>
-
       <SearchPath>.</SearchPath>
-      <Plugin>plugin</Plugin>
-
-      <SearchPath>.</SearchPath>
+      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
       <Plugin>pcsampDemoPlugin</Plugin>
+      <Plugin>libcbtf-messages-base.so</Plugin>
+      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-base.la</Plugin>
 
+      <Component>
+        <Name>PacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
+      </Component>
+ 
+      <Component>
+        <Name>Display</Name>
+        <Type>DisplayAddressBuffer</Type>
+      </Component>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+          <Name>PacketToAddressBuffer</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Display</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+ 
+  </Frontend>
+
+  <Filter>
+ 
+    <Depth><AllOther/></Depth>
+
+    <Network>
+      <Type>PC_Sampling_Demo_Filter</Type>
+      <Version>1.0.0</Version>
       <SearchPath>.</SearchPath>
-      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-base.so</Plugin>
-
+      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
+      <Plugin>pcsampDemoPlugin</Plugin>
+      <Plugin>libcbtf-messages-base.so</Plugin>
+      <Plugin>/opt/cbtf-dev/lib64/libcbtf-messages-converters-base.la</Plugin>
+ 
+      <Component>
+        <Name>PacketToBlob</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_Blob&gt;</Type>
+      </Component>
+ 
+      <Component>
+        <Name>PacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
+      </Component>
+ 
       <Component>
         <Name>Aggregator</Name>
         <Type>AddressAggregator</Type>
       </Component>
-
+ 
       <Component>
-        <Name>1A</Name>
-        <Type>Incrementer</Type>
+        <Name>AddressBufferToPacket</Name>
+        <Type>ConvertAddressBufferToPacket</Type>
       </Component>
-      
-      <Component>
-        <Name>1B</Name>
-        <Type>ConvertIntToPacket</Type>
-      </Component>
-
-      <Component>
-        <Name>2A</Name>
-        <Type>ConvertPacketToInt</Type>
-      </Component>
-      
-      <Component>
-        <Name>2B</Name>
-        <Type>Incrementer</Type>
-      </Component>
-
+ 
       <Input>
-        <Name>Ain3</Name>
+        <Name>IncomingBlobs</Name>
+        <To>
+          <Name>PacketToBlob</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
+      <Connection>
+        <From>
+          <Name>PacketToBlob</Name>
+          <Output>out</Output>
+        </From>
         <To>
           <Name>Aggregator</Name>
           <Input>in4</Input>
         </To>
-      </Input>
-
-      <Input>
-        <Name>in1</Name>
-        <To>
-          <Name>1A</Name>
-          <Input>in</Input>
-        </To>
-      </Input>
-      
-      <Input>
-        <Name>in2</Name>
-        <To>
-          <Name>2A</Name>
-          <Input>in</Input>
-        </To>
-      </Input>
-      
+      </Connection>
+ 
       <Connection>
         <From>
-          <Name>1A</Name>
+          <Name>PacketToAddressBuffer</Name>
           <Output>out</Output>
         </From>
         <To>
-          <Name>1B</Name>
-          <Input>in</Input>
+          <Name>Aggregator</Name>
+          <Input>in2</Input>
         </To>
       </Connection>
-      
+ 
       <Connection>
-        <From>
-          <Name>2A</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>2B</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-      
-      <Output>
-        <Name>out1</Name>
-        <From>
-          <Name>1B</Name>
-          <Output>out</Output>
-        </From>
-      </Output>
-      
-      <Output>
-        <Name>out2</Name>
-        <From>
-          <Name>2B</Name>
-          <Output>out</Output>
-        </From>
-      </Output>
-      
-      <Output>
-        <Name>Aout</Name>
         <From>
           <Name>Aggregator</Name>
           <Output>Aggregatorout</Output>
         </From>
+        <To>
+          <Name>AddressBufferToPacket</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+ 
+      <Output>
+        <Name>OutgoingBuffers</Name>
+        <From>
+          <Name>AddressBufferToPacket</Name>
+          <Output>out</Output>
+        </From>
       </Output>
-      
-    </Network>
-    
-    <IncomingUpstream>
-      <Name>UpwardStream</Name>
-      <To><Input>in2</Input></To>
-    </IncomingUpstream>
-    
+ 
+    </Network>    
+
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
-      <To><Input>Ain3</Input></To>
+      <To><Input>IncomingBlobs</Input></To>
     </IncomingUpstream>
-    
-    <OutgoingDownstream>
-      <Name>DownwardStream</Name>
-      <From><Output>out1</Output></From>
-    </OutgoingDownstream>
-    
-  </Frontend>
-  
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingUpstream>
+      <Name>Buffers</Name>
+      <From><Output>OutgoingBuffers</Output></From>
+    </OutgoingUpstream>
+
+  </Filter>
+
 </MRNet>

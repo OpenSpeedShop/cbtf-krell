@@ -224,7 +224,6 @@ std::cerr << "ENTERED AddressAggregator  cbtf_protocol_blob_Handler" << std::end
 
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data,abuffer);
-
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 

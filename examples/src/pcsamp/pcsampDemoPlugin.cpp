@@ -80,11 +80,11 @@ std::cerr << "ENTERED ConvertAddressBufferToPacket  constructor" << std::endl;
     {
 std::cerr << "ENTERED ConvertAddressBufferToPacket  inHandler" << std::endl;
 
-	int bufsize = in.addresscounts.size();
+    int bufsize = in.getAddressCounts().size();
 	Address addr[bufsize];
 	uint64_t counts[bufsize];
 
-	AddressCounts ac = in.addresscounts;
+	AddressCounts ac = in.getAddressCounts();
 	AddressCounts::iterator i;
 	int j = 0;
 	for (i = ac.begin(); i != ac.end(); ++i) {
@@ -191,8 +191,11 @@ std::cerr << "ENTERED AddressAggregator  constructor" << std::endl;
         declareInput<Blob>(
             "in3", boost::bind(&AddressAggregator::blobHandler, this, _1)
             );
-        declareInput<CBTF_Protocol_Blob>(
-            "in4", boost::bind(&AddressAggregator::cbtf_protocol_blob_Handler, this, _1)
+        declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
+            "in4",
+            boost::bind(
+                &AddressAggregator::cbtf_protocol_blob_Handler, this, _1
+                )
             );
         declareOutput<AddressBuffer>("Aggregatorout");
     }
@@ -207,10 +210,10 @@ std::cerr << "ENTERED AddressAggregator  constructor" << std::endl;
     }
 
     /** Handler for the "in4" input.*/
-    void cbtf_protocol_blob_Handler(const CBTF_Protocol_Blob& in)
+    void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
 std::cerr << "ENTERED AddressAggregator  cbtf_protocol_blob_Handler" << std::endl;
-	Blob myblob(in.data.data_len, in.data.data_val);
+	Blob myblob(in->data.data_len, in->data.data_val);
 
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));

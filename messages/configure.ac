@@ -216,7 +216,6 @@ AC_CONFIG_FILES([
     src/perfdata/Makefile
     src/symtab/Makefile
     src/thread/Makefile
-    test/Makefile
     examples/Makefile
 ])
 

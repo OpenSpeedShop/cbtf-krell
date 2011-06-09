@@ -37,8 +37,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "messages.h"
-
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/Blob.hpp"

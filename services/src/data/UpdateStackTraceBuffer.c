@@ -145,7 +145,7 @@ void CBTF_UpdateStackTraceBuffer(int framecount,
     } else {
         /* sample buffer has no room for these stack frames.*/
         /* send the current sample buffer. (will init a new buffer) */
-        send_samples();
+        //send_samples();
 
         update_samplebuffer(framecount,
 			    databuflen,

@@ -282,7 +282,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 
 
 #ifndef NDEBUG
-        if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+        if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
             fprintf(stderr,"serviceTimerHandler sends data:\n");
             fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] pc_len(%d) count_len(%d)\n",
                 tls->header.time_end,tls->header.addr_begin,
@@ -301,9 +301,15 @@ static void serviceTimerHandler(const ucontext_t* context)
 	}
 
 	if (tls->connected_to_mrnet) {
+#if 0
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,
 				 &tls->data);
+#else
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_PCSAMP_DATA,
+                           (xdrproc_t) xdr_CBTF_pcsamp_data,
+			   &tls->data);
+#endif
 	}
 #endif
 
@@ -464,7 +470,7 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 	tls->data.count.count_len = tls->buffer.length;
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "cbtf_timer_service_stop_sampling:\n");
 	    fprintf(stderr, "time_end(%#lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
 		tls->header.time_end,tls->header.addr_begin,
@@ -479,9 +485,15 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
+#if 0
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,
 				 &tls->data);
+#else
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_PCSAMP_DATA,
+                           (xdrproc_t) xdr_CBTF_pcsamp_data,
+			   &tls->data);
+#endif
 	}
 #endif
 

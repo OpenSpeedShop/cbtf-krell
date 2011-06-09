@@ -31,11 +31,18 @@ using namespace KrellInstitute::Core;
 bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
 {
     Address thePC(pc);
+
     AddressCounts::iterator lb = addresscounts.lower_bound(thePC);
 
     if(lb != addresscounts.end() && !(addresscounts.key_comp()(thePC, lb->first))) {
 	lb->second += count;
+        std::cerr << "AddressBuffer::updateAddressCounts updates existing address  "
+	<< thePC
+	<< " with count " << count << " new count is " << lb->second << std::endl;
     } else {
+        std::cerr << "AddressBuffer::updateAddressCounts insert address "
+	<< thePC
+	<< " with count " << count << std::endl;
 	addresscounts.insert(lb, AddressCounts::value_type(thePC, count));
     }
 

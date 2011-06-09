@@ -68,7 +68,6 @@ private:
     ConvertAddressBufferToPacket() :
         Component(Type(typeid(ConvertAddressBufferToPacket)), Version(0, 0, 1))
     {
-std::cerr << "ENTERED ConvertAddressBufferToPacket  constructor" << std::endl;
         declareInput<AddressBuffer>(
             "in", boost::bind(&ConvertAddressBufferToPacket::inHandler, this, _1)
             );
@@ -78,13 +77,12 @@ std::cerr << "ENTERED ConvertAddressBufferToPacket  constructor" << std::endl;
     /** Handler for the "in" input.*/
     void inHandler(const AddressBuffer& in)
     {
-std::cerr << "ENTERED ConvertAddressBufferToPacket  inHandler" << std::endl;
 
-    int bufsize = in.getAddressCounts().size();
+	AddressCounts ac = in.addresscounts;
+	int bufsize = ac.size();
 	Address addr[bufsize];
 	uint64_t counts[bufsize];
 
-	AddressCounts ac = in.getAddressCounts();
 	AddressCounts::iterator i;
 	int j = 0;
 	for (i = ac.begin(); i != ac.end(); ++i) {
@@ -126,7 +124,6 @@ private:
     ConvertPacketToAddressBuffer() :
         Component(Type(typeid(ConvertPacketToAddressBuffer)), Version(0, 0, 1))
     {
-std::cerr << "ENTERED ConvertPacketToAddressBuffer  Constructor" << std::endl;
         declareInput<MRN::PacketPtr>(
             "in", boost::bind(&ConvertPacketToAddressBuffer::inHandler, this, _1)
             );
@@ -136,19 +133,16 @@ std::cerr << "ENTERED ConvertPacketToAddressBuffer  Constructor" << std::endl;
     /** Handler for the "in" input.*/
     void inHandler(const MRN::PacketPtr& in)
     {
-std::cerr << "ENTERED ConvertPacketToAddressBuffer  inHandler" << std::endl;
         AddressBuffer out;
 	void * addr = NULL;
 	void * counts = NULL;
 	int size = 0;
 	int datasize = sizeof(uint64_t);
 
-	//addr = malloc ( size * data_size );
         in->unpack("%auld,%auld, %d", &addr, &counts, &size);
 
 	for (int i= 0; i < size; ++i) {
 	    out.updateAddressCounts(((uint64_t*)addr)[i],((uint64_t*)counts)[i]);
-//	    out.updateAddressCounts(((reinterpret_cast<uint64_t*>)addr)[i],((reinterpret_cast<uint64_t*>))counts[i]);
 	}
 
         emitOutput<AddressBuffer>("out", out);
@@ -181,8 +175,7 @@ private:
     AddressAggregator() :
         Component(Type(typeid(AddressAggregator)), Version(0, 0, 1))
     {
-std::cerr << "ENTERED AddressAggregator  constructor" << std::endl;
-        declareInput<CBTF_pcsamp_data>(
+        declareInput<boost::shared_ptr<CBTF_pcsamp_data> >(
             "in1", boost::bind(&AddressAggregator::pcsampHandler, this, _1)
             );
         declareInput<AddressBuffer>(
@@ -201,10 +194,12 @@ std::cerr << "ENTERED AddressAggregator  constructor" << std::endl;
     }
 
     /** Handler for the "in1" input.*/
-    void pcsampHandler(const CBTF_pcsamp_data& in)
+    void pcsampHandler(const boost::shared_ptr<CBTF_pcsamp_data>& in)
     {
+        CBTF_pcsamp_data * B = in.get();
+
 	PCData pcdata;
-	pcdata.aggregateAddressCounts(in,abuffer);
+	pcdata.aggregateAddressCounts(*B,abuffer);
 
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
@@ -212,8 +207,13 @@ std::cerr << "ENTERED AddressAggregator  constructor" << std::endl;
     /** Handler for the "in4" input.*/
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
-std::cerr << "ENTERED AddressAggregator  cbtf_protocol_blob_Handler" << std::endl;
-	Blob myblob(in->data.data_len, in->data.data_val);
+        CBTF_Protocol_Blob * B = in.get();
+	Blob myblob(B->data.data_len, B->data.data_val);
+
+	if (in->data.data_len == 0 ) {
+	    std::cerr << "EXIT AddressAggregator::cbtf_protocol_blob_Handler: data length 0" << std::endl;
+	    abort();
+	}
 
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
@@ -257,25 +257,8 @@ std::cerr << "ENTERED AddressAggregator  cbtf_protocol_blob_Handler" << std::end
         memset(&data, 0, sizeof(data));
         in.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
 
-#if 0
-        if (data.pc.pc_len != data.count.count_len) {
-            std::cerr << "ASSERT blobHandler pc_len "
-            << data.pc.pc_len
-            << " != count_len "
-            << data.count.count_len << std::endl;
-        }
-
-// this is available in the PCData class.
-// void PCData::aggregateAddressCounts( const CBTF_pcsamp_data& data,
-//                                 AddressBuffer& buffer)
-//
-	for(unsigned i = 0; i < data.pc.pc_len; ++i) {
-	    abuffer.updateAddressCounts(data.pc.pc_val[i], data.count.count_val[i]);
-	}
-#else
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data,abuffer);
-#endif
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
@@ -308,7 +291,6 @@ private:
     DisplayAddressBuffer() :
         Component(Type(typeid(DisplayAddressBuffer)), Version(0, 0, 1))
     {
-std::cerr << "ENTERED DisplayAddressBuffer constructor" << std::endl;
         declareInput<AddressBuffer>(
             "in", boost::bind(&DisplayAddressBuffer::displayHandler, this, _1)
             );
@@ -317,7 +299,7 @@ std::cerr << "ENTERED DisplayAddressBuffer constructor" << std::endl;
     /** Handler for the "in" input.*/
     void displayHandler(const AddressBuffer& in)
     {
-std::cerr << "ENTERED DisplayAddressBuffer displayHandler" << std::endl;
+	std::cerr << "ENTERED DisplayAddressBuffer displayHandler" << std::endl;
     }
 
 }; // class DisplayAddressBuffer

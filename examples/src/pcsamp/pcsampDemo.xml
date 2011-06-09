@@ -27,6 +27,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
     <Tag>10000</Tag>
   </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_PCSAMP_DATA</Name>
+    <Tag>10012</Tag>
+  </Stream>
 
   <Frontend>
 
@@ -34,12 +38,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>/home/wdh/cbtf/tools/examples/src/pcsamp</SearchPath>
-      <SearchPath>/home/wdh/INSTALL/lib64</SearchPath>
+      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath>
+      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
 
       <Plugin>pcsampDemoPlugin</Plugin>
-      <Plugin>libcbtf-messages-base</Plugin>
-      <Plugin>libcbtf-messages-converters-base</Plugin>
 
       <Component>
         <Name>PacketToAddressBuffer</Name>
@@ -87,16 +89,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Filter</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>/home/wdh/cbtf/tools/examples/src/pcsamp</SearchPath>
-      <SearchPath>/home/wdh/INSTALL/lib64</SearchPath>
+      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath>
+      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
 
       <Plugin>pcsampDemoPlugin</Plugin>
       <Plugin>libcbtf-messages-base</Plugin>
       <Plugin>libcbtf-messages-converters-base</Plugin>
+      <Plugin>libcbtf-messages-converters-perfdata</Plugin>
  
       <Component>
         <Name>PacketToBlob</Name>
         <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_Blob&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToPCSampData</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_pcsamp_data&gt;</Type>
       </Component>
  
       <Component>
@@ -121,6 +129,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>in</Input>
         </To>
       </Input>
+
+      <Input>
+        <Name>IncomingPCSampData</Name>
+        <To>
+          <Name>PacketToPCSampData</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
  
       <Input>
         <Name>IncomingBuffers</Name>
@@ -138,6 +154,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <To>
           <Name>Aggregator</Name>
           <Input>in4</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToPCSampData</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>in1</Input>
         </To>
       </Connection>
  
@@ -176,6 +203,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
       <To><Input>IncomingBlobs</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_PCSAMP_DATA</Name>
+      <To><Input>IncomingPCSampData</Input></To>
     </IncomingUpstream>
 
     <IncomingUpstream>

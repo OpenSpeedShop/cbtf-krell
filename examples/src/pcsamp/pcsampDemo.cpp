@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
 
     Component::registerPlugin(
-        filesystem::path("/home/wdh/INSTALL/lib64/KrellInstitute/CBTF") /
+        filesystem::path("/opt/cbtf-dev/lib64/KrellInstitute/CBTF") /
         "BasicMRNetLaunchers"
         );
     

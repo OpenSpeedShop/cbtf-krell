@@ -60,7 +60,7 @@ pcsampDemoPlugin_la_CXXFLAGS = \
 	@MRNET_CPPFLAGS@
 
 pcsampDemoPlugin_la_LDFLAGS = \
-	-module -avoid-version -rpath /ForceShared \
+	-shared -module -avoid-version -rpath /ForceShared \
         @MESSAGES_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@MRNET_LDFLAGS@

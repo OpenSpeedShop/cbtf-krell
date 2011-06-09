@@ -21,6 +21,7 @@ noinst_PROGRAMS = testXDR
 testXDR_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/../../tools/messages/include \
+	-I$(top_srcdir)/../../tools/messages/src/perfdata \
 	-I$(top_srcdir)/../../tools/services/include \
 	-I$(top_srcdir)/../../tools/core/include \
 	-I$(top_srcdir)/../../framework/libcbtf-xml/include \

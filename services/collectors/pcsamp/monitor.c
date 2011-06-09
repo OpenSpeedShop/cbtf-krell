@@ -154,8 +154,6 @@ void cbtf_offline_sent_data(int sent_data)
     Assert(tls != NULL);
 
     tls->sent_data = sent_data;
-    fprintf(stderr,"exit cbtf_offline_sent_data sent_data = %d\n",
-		tls->sent_data);
 }
 
 void cbtf_offline_send_dsos(TLS *tls)
@@ -170,7 +168,7 @@ void cbtf_offline_send_dsos(TLS *tls)
     
     /* Send the offline "info" blob */
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
         fprintf(stderr,"cbtf_offline_send_dsos SENDS DSOS for HOST %s, PID %d, POSIX_TID %lu\n",
         tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
     }
@@ -250,7 +248,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 
     if (!tls) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
 	    fprintf(stderr,"warn: cbtf_offline_stop_sampling has no TLS for %d\n",getpid());
 	}
 #endif
@@ -269,15 +267,19 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
     if (finished && tls->sent_data) {
 	cbtf_offline_finish();
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
 	    fprintf(stderr,"cbtf_offline_stop_sampling FINISHED for %d, %lu\n",
 		tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
-	    fprintf(stderr,"offline_stop_sampling FINISHED for %d, %lu calling send_thread_state_changed_message\n",
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+	     fprintf(stderr,"cbtf_offline_stop_sampling %d, %lu calls send_thread_state_changed_message\n",
 		tls->dso_header.pid, tls->dso_header.posix_tid);
+	}
+#endif
 	send_thread_state_changed_message();
 	CBTF_Waitfor_MRNet_Shutdown();
 #endif
@@ -335,7 +337,7 @@ void cbtf_offline_finish()
     
     /* Send the offline "info" blob */
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
         fprintf(stderr,"cbtf_offline_stop_sampling SENDS INFO for HOST %s, PID %d, POSIX_TID %lu\n",
         local_header.host, local_header.pid, local_header.posix_tid);
     }
@@ -351,7 +353,7 @@ void cbtf_offline_finish()
     CBTF_GetDLInfo(getpid(), NULL);
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
            fprintf(stderr,"cbtf_offline_stop_sampling SENDS OBJS for HOST %s, PID %d, POSIX_TID %lu\n",
         	   local_header.host, local_header.pid, local_header.posix_tid);
 	}
@@ -462,7 +464,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
     if(newsize > CBTF_OBJBufferSize) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_SERVICE") != NULL) {
+	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
             fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for HOST %s, PID %d, POSIX_TID %lu\n",
         	   tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
 	}

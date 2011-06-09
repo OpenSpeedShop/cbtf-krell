@@ -149,17 +149,27 @@ void connect_to_mrnet()
     if (tls == NULL)
 	return;
 
-    fprintf(stderr,"entered connect_to_mrnet \n");
     if (tls->connected_to_mrnet) {
         fprintf(stderr,"ALREADY connected  connect_to_mrnet \n");
 	return;
     }
 
-    fprintf(stderr,"CALLING CBTF_MRNet_LW_connect for rank %d\n",
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	 fprintf(stderr,"connect_to_mrnet() calling CBTF_MRNet_LW_connect for rank %d\n",
 	monitor_mpi_comm_rank());
+    }
+#endif
+
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
     sleep(1);
     tls->connected_to_mrnet = 1;
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	 fprintf(stderr,"connect_to_mrnet reports connection successful!\n");
+    }
+#endif
+
     //send_process_thread_message();
     tls->sent_process_thread_info = 1;
 }
@@ -206,11 +216,18 @@ void send_thread_state_changed_message()
 #else
     TLS* tls = &the_tls;
 #endif
-    fprintf(stderr,"ENTERED send_thread_state_changed_message for rank %d\n", monitor_mpi_comm_rank());
+
     if (tls == NULL) {
-    fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n", monitor_mpi_comm_rank());
+	fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
+		monitor_mpi_comm_rank());
 	return;
     }
+
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+        fprintf(stderr,"ENTERED send_thread_state_changed_message for rank %d\n", monitor_mpi_comm_rank());
+    }
+#endif
 
     CBTF_Protocol_ThreadName tname;
     tname.experiment = 0;
@@ -227,7 +244,6 @@ void send_thread_state_changed_message()
            &tname, sizeof(tname));
     tls->tgrp.names.names_len++;
 
-    fprintf(stderr,"CREATING thread_state_changed_message for rank %d\n", monitor_mpi_comm_rank());
     //CBTF_Protocol_ThreadsStateChanged message;
     tls->thread_state_changed_message.threads = tls->tgrp;
     tls->thread_state_changed_message.state = Terminated;
@@ -425,7 +441,6 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
 
     started_process_thread();
-fprintf(stderr,"CALLING connect to MRNET\n");
     connect_to_mrnet();
 #endif
 

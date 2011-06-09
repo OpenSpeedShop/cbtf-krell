@@ -42,7 +42,11 @@ static int mrnet_connected = 0;
 
 int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
-    fprintf(stderr,"ENTER CBTF_MRNet_getParentInfo with rank %d\n",rank);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr,"ENTER CBTF_MRNet_getParentInfo with rank %d\n",rank);
+    }
+#endif
 
     FILE *cfile;
 
@@ -65,16 +69,24 @@ int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* ppor
                 return 1;
             }
 
-            fprintf(stderr,"CBTF_MRNet_getParentInfo found match: %s, %d, %d, %d\n",pname, tpport, tprank, trank);
-
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+                fprintf(stderr,"CBTF_MRNet_getParentInfo found match: %s, %d, %d, %d\n",
+			pname, tpport, tprank, trank);
+	    }
+#endif
             if( trank == rank ) {
                 sprintf(phost, "%s", pname);
                 sprintf(pport, "%d", tpport);
                 sprintf(prank, "%d", tprank);
                 fclose(cfile);;
 
-                fprintf(stderr,"EXIT CBTF_MRNet_getParentInfo with rank %d, phost %s, pport %s, prank %s\n",
+#ifndef NDEBUG
+		if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+                    fprintf(stderr,"EXIT CBTF_MRNet_getParentInfo with rank %d, phost %s, pport %s, prank %s\n",
                         rank,phost,pport,prank);
+		}
+#endif
                 return 0;
             }
 
@@ -108,7 +120,6 @@ int CBTF_MRNet_LW_connect (int con_rank)
     Rank mRank = 10000 + wRank;
     sprintf(myRank, "%d", mRank);
 
-    fprintf(stderr, "CBTF_MRNet_LW_connect: myRank = %s, mRank = %d\n",myRank,mRank);
 
     if( CBTF_MRNet_getParentInfo(connfile, wRank, parHostname, parPort, parRank) != 0 ) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file\n");
@@ -118,7 +129,12 @@ int CBTF_MRNet_LW_connect (int con_rank)
     while( gethostname(myHostname, 64) == -1 ) {}
     myHostname[63] = '\0';
 
-    fprintf(stderr, "CBTF_MRNet_LW_connect: WE ARE ON HOSTNAME %s\n",myHostname);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr, "CBTF_MRNet_LW_connect: myRank %s, mRank %d, host %s\n",myRank,mRank,myHostname);
+    }
+#endif
+
     int BE_argc = 6;
     char* BE_argv[6];
 
@@ -130,12 +146,16 @@ int CBTF_MRNet_LW_connect (int con_rank)
     BE_argv[4] = myHostname;
     BE_argv[5] = myRank;
 
-    fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%d, 3=%d, 4=%s, 5=%d\n",
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%d, 3=%d, 4=%s, 5=%d\n",
         BE_argv[0], BE_argv[1], strtoul( BE_argv[2], NULL, 10 ),
         strtoul( BE_argv[3], NULL, 10 ), BE_argv[4], strtoul( BE_argv[5], NULL, 10 ));
 
-    fprintf( stderr, "CBTF_MRNet_LW_connect: Backend %s[%s] connecting to %s:%s[%s]\n",
+	fprintf( stderr, "CBTF_MRNet_LW_connect: Backend %s[%s] connecting to %s:%s[%s]\n",
         myHostname,myRank,parHostname,parPort,myRank);
+    }
+#endif
 
     CBTF_MRNet_netPtr = Network_CreateNetworkBE(BE_argc, BE_argv);
     Assert(CBTF_MRNet_netPtr);
@@ -148,15 +168,23 @@ int CBTF_MRNet_LW_connect (int con_rank)
 
     sleep(3);
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
         fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_upstream\n");
+    }
+#endif
 
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
 	abort();
     }
 
-    fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET network\n");
-    fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET STREAM %p\n",CBTF_MRNet_upstream);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+        fprintf(stderr,"CBTF_MRNet_LW_connect: CONNECTED TO MRNET STREAM %p\n",
+		CBTF_MRNet_upstream);
+    }
+#endif
     mrnet_connected = 1;
 }
 
@@ -164,7 +192,12 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
 {
     const char* fmt_str = "%auc";
 
-    fprintf(stderr, "CBTF_MRNet_LW_sendToFrontend BE: tag is %d\n", tag);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr,"CBTF_MRNet_LW_sendToFrontend: sends message with tag %d\n",tag);
+    }
+#endif
+
     if ( (Stream_send(CBTF_MRNet_upstream, tag, fmt_str, data, size) == -1) ||
           Stream_flush(CBTF_MRNet_upstream) == -1 ) {
         fprintf(stderr, "BE: stream::send() failure\n");
@@ -195,7 +228,6 @@ void CBTF_MRNet_Send(const int tag,
             free(buffer);
     }
 
-    fprintf(stderr,"CBTF_MRNet_Send calls CBTF_MRNet_LW_sendToFrontend: with tag %d\n",tag);
     CBTF_MRNet_LW_sendToFrontend(tag ,dm_size , (void *) dm_contents);
 }
 
@@ -220,6 +252,5 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
     size = xdr_getpos(&xdrs);
     xdr_destroy(&xdrs);
 
-    fprintf(stderr,"CBTF_MRNet_Send_PerfData calls CBTF_MRNet_LW_sendToFrontend\n");
     CBTF_MRNet_LW_sendToFrontend(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA ,size , (void *) buffer);
 }

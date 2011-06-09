@@ -210,8 +210,8 @@ BOOST_AUTO_TEST_CASE(TestBlobXDRConverters)
     std::cerr << "TLS header time begin = " << tls.header.time_begin << std::endl;
     std::cerr << "TLS header time end = " << tls.header.time_end << std::endl;
     std::cerr << "TLS header host = " << tls.header.host << std::endl;
-    std::cerr << "TLS header addr_begin = " << tls.header.addr_begin << std::endl;
-    std::cerr << "TLS header addr_end = " << tls.header.addr_end << std::endl;
+    std::cerr << "TLS header addr_begin = " << Address(tls.header.addr_begin) << std::endl;
+    std::cerr << "TLS header addr_end = " << Address(tls.header.addr_end) << std::endl;
 
     tls.data.pc.pc_len = tls.buffer.length;
     tls.data.count.count_len = tls.buffer.length;
@@ -258,9 +258,11 @@ BOOST_AUTO_TEST_CASE(TestBlobXDRConverters)
     memset(&blobdata, 0, sizeof(blobdata));
     unsigned datasize = myblob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &blobdata);
 
+#if 0
     std::cerr << "datasize = " << datasize << std::endl;
     std::cerr << "pc length = " << blobdata.pc.pc_len << std::endl;
     std::cerr << "count length = " << blobdata.count.count_len << std::endl;
+#endif
 
     AddressBuffer abuffer;
 

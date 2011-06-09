@@ -40,15 +40,15 @@ namespace KrellInstitute { namespace Core {
 
 	public:
 
+	AddressCounts addresscounts;
+
 	bool updateAddressCounts(uint64_t, uint64_t);
 
-	AddressCounts getAddressCounts() const {
+	AddressCounts  getAddressCounts() {
 	    return addresscounts;
 	};
 
 	private:
-
-	AddressCounts addresscounts;
 
     };
 

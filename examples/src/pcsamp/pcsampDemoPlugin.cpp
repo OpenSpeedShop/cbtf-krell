@@ -80,18 +80,31 @@ private:
 
 	AddressCounts ac = in.addresscounts;
 	int bufsize = ac.size();
-	Address addr[bufsize];
-	uint64_t counts[bufsize];
+	uint64_t * addr = NULL;
+	uint64_t * counts = NULL;
 
+	addr = reinterpret_cast<uint64_t*>(
+            malloc(bufsize * sizeof(uint64_t*))
+            );
+	counts = reinterpret_cast<uint64_t*>(
+            malloc(bufsize * sizeof(uint64_t*))
+            );
+	
 	AddressCounts::iterator i;
 	int j = 0;
 	for (i = ac.begin(); i != ac.end(); ++i) {
-	    addr[j] = (*i).first;
-	    counts[j] = (*i).second;
+	    addr[j] = i->first.getValue();
+	    counts[j] = i->second;
+#if 0
+	    std::cerr << "ConvertAddressBufferToPacket inHandler addr[" << j <<"] "
+		<< Address(addr[j]) << " counts[" << j << "] " << counts[j]
+		 << std::endl;
+#endif
+	    j++;
 	}
 
         emitOutput<MRN::PacketPtr>(
-            "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%auld,%auld,%d", addr,counts,bufsize))
+            "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%auld %auld", addr,bufsize,counts,bufsize))
             );
     }
     
@@ -134,15 +147,24 @@ private:
     void inHandler(const MRN::PacketPtr& in)
     {
         AddressBuffer out;
-	void * addr = NULL;
-	void * counts = NULL;
-	int size = 0;
-	int datasize = sizeof(uint64_t);
+	uint64_t *addr = NULL;
+	uint64_t *counts = NULL;
+	int addrsize = 0;
+	int countssize = 0;
 
-        in->unpack("%auld,%auld, %d", &addr, &counts, &size);
 
-	for (int i= 0; i < size; ++i) {
-	    out.updateAddressCounts(((uint64_t*)addr)[i],((uint64_t*)counts)[i]);
+        in->unpack("%auld %auld", &addr, &addrsize, &counts, &countssize);
+
+	// TODO: error handling
+
+	for (int i= 0; i < addrsize; ++i) {
+#if 0
+	    std::cerr << "ConvertPacketToAddressBuffer inHandler "
+		<< " addr[" << i << "] " << Address(addr[i])
+		<< " counts[" << i << "] " << counts[i]
+		<< std::endl;
+#endif
+	    out.updateAddressCounts(addr[i],counts[i]);
 	}
 
         emitOutput<AddressBuffer>("out", out);
@@ -299,7 +321,13 @@ private:
     /** Handler for the "in" input.*/
     void displayHandler(const AddressBuffer& in)
     {
-	std::cerr << "ENTERED DisplayAddressBuffer displayHandler" << std::endl;
+	AddressCounts ac = in.addresscounts;
+	AddressCounts::iterator aci;
+
+	for (aci = ac.begin(); aci != ac.end(); ++aci) {
+            std::cout << "PC Address " << aci->first
+        	<< " was sampled " << aci->second  << " times." << std::endl;
+	}
     }
 
 }; // class DisplayAddressBuffer

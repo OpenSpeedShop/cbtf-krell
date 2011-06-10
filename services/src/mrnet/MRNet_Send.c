@@ -254,3 +254,11 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 
     CBTF_MRNet_LW_sendToFrontend(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA ,size , (void *) buffer);
 }
+
+void CBTF_Waitfor_MRNet_Shutdown() {
+    Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
+    if (CBTF_MRNet_netPtr != NULL) {
+        delete_Network_t(CBTF_MRNet_netPtr);
+    }
+}
+

@@ -36,13 +36,17 @@ bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
 
     if(lb != addresscounts.end() && !(addresscounts.key_comp()(thePC, lb->first))) {
 	lb->second += count;
+#if 0
         std::cerr << "AddressBuffer::updateAddressCounts updates existing address  "
 	<< thePC
 	<< " with count " << count << " new count is " << lb->second << std::endl;
+#endif
     } else {
+#if 0
         std::cerr << "AddressBuffer::updateAddressCounts insert address "
 	<< thePC
 	<< " with count " << count << std::endl;
+#endif
 	addresscounts.insert(lb, AddressCounts::value_type(thePC, count));
     }
 

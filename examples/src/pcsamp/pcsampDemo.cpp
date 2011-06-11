@@ -19,6 +19,7 @@
 /** @file Example PC sampling tool. */
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 #include <KrellInstitute/CBTF/BoostExts.hpp>
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
@@ -33,10 +34,32 @@ using namespace KrellInstitute::CBTF;
 /**
  * Main function for the example PC sampling tool.
  */
-int main(int argc, char** argv)
-{
-    registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
 
+class PCSampDemo
+{
+  public:
+
+  PCSampDemo()
+  {
+  }
+
+  void start(const std::string& topology, const unsigned int& numBE)
+  {
+    dm_thread = boost::thread(&PCSampDemo::run, this, topology, numBE);
+  }
+
+  void join()
+  {
+    dm_thread.join();
+  }
+
+  void run(const std::string& topology, const unsigned int& numBE)
+  {
+    // FIXME: hardcoded path
+    registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
+    
+
+    // FIXME: hardcoded path
     Component::registerPlugin(
         filesystem::path("/opt/cbtf-dev/lib64/KrellInstitute/CBTF") /
         "BasicMRNetLaunchers"
@@ -58,6 +81,19 @@ int main(int argc, char** argv)
         backend_attach_count_component, "value", launcher, "BackendAttachCount"
         );
 
+
+// Offline/libmonitor Lightweight MRNet instrumentation:
+// The issue with specifying a connections file here is the we
+// need the lightweight mrnet instrumentation to be in sync
+// with any file specified here.  Currently both default to
+// users $HOME/.cbtf/attachBEconnection.  It is likely easier
+// to just leave it alone and standardize this aspect.
+// For a future dyninst mode of instrumenting lightweight mrnet
+// into a mutatee using a connections type file, we can
+// possibly specify a connections file.  But that may not
+// be needed since the dyninst backend daemon could like
+// just pass the needed connection onformaion directly.
+#if 0
     shared_ptr<ValueSource<filesystem::path> > backend_attach_file =
         ValueSource<filesystem::path>::instantiate();
     Component::Instance backend_attach_file_component = 
@@ -65,6 +101,10 @@ int main(int argc, char** argv)
     Component::connect(
         backend_attach_file_component, "value", launcher, "BackendAttachFile"
         );    
+
+    // FIXME: hardcoded path. this does not seem to work anywys. :(
+    *backend_attach_file = filesystem::path(BUILDDIR) / connection;
+#endif
 
     shared_ptr<ValueSource<filesystem::path> > topology_file =
         ValueSource<filesystem::path>::instantiate();
@@ -76,8 +116,26 @@ int main(int argc, char** argv)
 
     Component::connect(launcher, "Network", network, "Network");
 
-    //*backend_attach_count = 0;
-    *topology_file = filesystem::path(BUILDDIR) / "pcsampDemo.topology";
+    *backend_attach_count = numBE;
+    // FIXME: hardcoded path
+    *topology_file = filesystem::path(BUILDDIR) / topology;
 
+    // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
     while (true);
+  }
+
+  private:
+	boost::thread dm_thread;
+};
+
+int main(int argc, char** argv)
+{
+    //TODO: handle arguments to pass these values.
+    std::string topology = "./pcsampDemo.topology";
+    unsigned int numBE = 1;
+
+    // TODO: need to cleanly terminate mrnet.
+    PCSampDemo p;
+    p.start(topology,numBE);
+    p.join();
 }

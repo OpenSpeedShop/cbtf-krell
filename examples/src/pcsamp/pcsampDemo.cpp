@@ -61,11 +61,8 @@ class PCSampDemo
     registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
     
 
-    // FIXME: hardcoded path
     Component::registerPlugin(
-        filesystem::path("/opt/cbtf-dev/lib64/KrellInstitute/CBTF") /
-        "BasicMRNetLaunchers"
-        );
+        filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers");
     
     Component::Instance network = Component::instantiate(
         Type("PC_Sampling_Demo")

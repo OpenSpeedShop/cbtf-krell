@@ -21,6 +21,7 @@ noinst_PROGRAMS = pcsampDemo
 pcsampDemo_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
+	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
         @MESSAGES_CPPFLAGS@ \
 	@BOOST_CPPFLAGS@ \

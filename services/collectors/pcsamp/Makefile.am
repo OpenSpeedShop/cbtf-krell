@@ -16,6 +16,9 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+dist_bin_SCRIPTS = cbtfrun
+BUILT_FILES = cbtfrun
+
 plugindir = $(libdir)/KrellInstitute/Collectors
 
 plugin_LTLIBRARIES =
@@ -54,7 +57,7 @@ pcsamp_collector_la_SOURCES = \
 if HAVE_LIBMONITOR
 plugin_LTLIBRARIES += pcsamp-collector-monitor.la libpcsamp-monitor.la
 pcsamp_collector_monitor_la_CFLAGS = \
-	$(LIBMONITOR_CPPFLAGS) \
+	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -63,7 +66,7 @@ pcsamp_collector_monitor_la_CFLAGS = \
 	-I$(top_srcdir)/src/data
 
 pcsamp_collector_monitor_la_LDFLAGS = \
-	$(LIBMONITOR_LDFLAGS) \
+	@LIBMONITOR_LDFLAGS@ \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/monitor \
 	-L$(top_srcdir)/src/offline \
@@ -72,7 +75,7 @@ pcsamp_collector_monitor_la_LDFLAGS = \
 	-no-undefined -module -avoid-version
 
 pcsamp_collector_monitor_la_LIBADD = \
-	$(LIBMONITOR_LIBS) \
+	@LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -85,7 +88,7 @@ pcsamp_collector_monitor_la_SOURCES = \
 
 libpcsamp_monitor_la_CFLAGS = \
 	-static \
-	$(LIBMONITOR_CPPFLAGS) \
+	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -95,7 +98,7 @@ libpcsamp_monitor_la_CFLAGS = \
 
 libpcsamp_monitor_la_LDFLAGS = \
 	-static \
-	$(LIBMONITOR_LDFLAGS) \
+	@LIBMONITOR_LDFLAGS@ \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/monitor \
 	-L$(top_srcdir)/src/offline \
@@ -104,7 +107,7 @@ libpcsamp_monitor_la_LDFLAGS = \
 	-no-undefined
 
 libpcsamp_monitor_la_LIBADD = \
-	$(LIBMONITOR_LIBS) \
+	@LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -118,7 +121,7 @@ libpcsamp_monitor_la_SOURCES = \
 if HAVE_MRNET
 plugin_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la libpcsamp-monitor-mrnet.la
 pcsamp_collector_monitor_mrnet_la_CFLAGS = \
-	$(LIBMONITOR_CPPFLAGS) \
+	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -128,7 +131,7 @@ pcsamp_collector_monitor_mrnet_la_CFLAGS = \
 	-I$(top_srcdir)/src/data
 
 pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
-	$(LIBMONITOR_LDFLAGS) \
+	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/monitor \
@@ -138,7 +141,7 @@ pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
 	-no-undefined -module -avoid-version
 
 pcsamp_collector_monitor_mrnet_la_LIBADD = \
-	$(LIBMONITOR_LIBS) \
+	@LIBMONITOR_LIBS@ \
 	@MRNET_LW_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -152,7 +155,7 @@ pcsamp_collector_monitor_mrnet_la_SOURCES = \
 
 libpcsamp_monitor_mrnet_la_CFLAGS = \
 	-static \
-	$(LIBMONITOR_CPPFLAGS) \
+	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -163,7 +166,7 @@ libpcsamp_monitor_mrnet_la_CFLAGS = \
 
 libpcsamp_monitor_mrnet_la_LDFLAGS = \
 	-static \
-	$(LIBMONITOR_LDFLAGS) \
+	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-L$(top_srcdir)/src/common \
 	-L$(top_srcdir)/src/monitor \
@@ -173,7 +176,7 @@ libpcsamp_monitor_mrnet_la_LDFLAGS = \
 	-no-undefined
 
 libpcsamp_monitor_mrnet_la_LIBADD = \
-	$(LIBMONITOR_LIBS) \
+	@LIBMONITOR_LIBS@ \
 	@MRNET_LW_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -186,3 +189,35 @@ libpcsamp_monitor_mrnet_la_SOURCES = \
 	collector.c
 endif
 endif
+
+CLEANFILES = $(BUILT_FILES)
+
+
+monitor_dir=$(LIBMONITOR_DIR)
+unwind_dir=$(LIBUNWIND_DIR)
+papi_dir=$(PAPI_DIR)
+mrnet_dir=$(MRNET_DIR)
+
+cbtfrun: cbtfrun.in
+
+	@rm -f cbtfrun
+	@sed \
+		-e 's,@@machine_dependent_libdir@@,$(abi_libdir_name),' \
+		-e 's,@@alt_machine_dependent_libdir@@,$(alt_abi_libdir_name),' \
+		-e 's,@@cbtfinstalldir@@,$(prefix),' \
+		-e 's,@@libmonitordir@@,$(monitor_dir),' \
+		-e 's,@@libunwinddir@@,$(unwind_dir),' \
+		-e 's,@@libmrnetdir@@,$(mrnet_dir),' \
+		-e 's,@@libpapidir@@,$(papi_dir),' \
+		-e 's,@@lamdir@@,$(LAM_DIR),' \
+		-e 's,@@lampidir@@,$(LAMPI_DIR),' \
+		-e 's,@@mpichdir@@,$(MPICH_DIR),' \
+		-e 's,@@mpich2dir@@,$(mpich2_dir),' \
+		-e 's,@@mvapichdir@@,$(MVAPICH_DIR),' \
+		-e 's,@@mvapich2dir@@,$(MVAPICH2_DIR),' \
+		-e 's,@@mptdir@@,$(MPT_DIR),' \
+		-e 's,@@openmpidir@@,$(OPENMPI_DIR),' \
+		-e 's,@@cbtfdefaultmpi@@,$(DEFAULT_MPI_IMPL),' \
+			$(srcdir)/cbtfrun.in > cbtfrun
+	@chmod 755 cbtfrun
+EXTRA_DIST = cbtfrun.in

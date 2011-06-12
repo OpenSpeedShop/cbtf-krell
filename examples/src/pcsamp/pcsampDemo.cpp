@@ -119,8 +119,6 @@ class PCSampDemo
     Component::connect(launcher, "Network", network, "Network");
 
     *backend_attach_count = numBE;
-    // FIXME: hardcoded path
-    //*topology_file = filesystem::path(BUILDDIR) / topology;
     *topology_file = topology;
 
     // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
@@ -135,18 +133,25 @@ int main(int argc, char** argv)
 {
     unsigned int numBE;
     std::string topology;
+    std::string collector;
+    std::string program;
 
     // create a default for topology file.
     char const* home = getenv("HOME");
     std::string default_topology(home);
     default_topology += "/.cbtf/cbtf_topology";
+    std::string default_collector("pcsamp");
 
     boost::program_options::options_description desc("pcsampDemo options");
     desc.add_options()
         ("help,h", "produce help message")
-        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1), "set numBE")
+        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1), "number of lightweight mrnet backends")
         ("topology",
-	    boost::program_options::value<std::string>(&topology)->default_value(default_topology), "set topology")
+	    boost::program_options::value<std::string>(&topology)->default_value(default_topology), "path name to mrnet topology file")
+        ("collector",
+	    boost::program_options::value<std::string>(&collector)->default_value(default_collector), "name of collector")
+        ("program",
+	    boost::program_options::value<std::string>(&program)->default_value(""), "name of program to collect data from")
         ;
 
     boost::program_options::variables_map vm;
@@ -166,22 +171,39 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // TODO: handle topology input...
-    
+    if (program == "") {
+        std::cout << desc << std::endl;
+        return 1;
+    }
+
     // verify valid numBE.
     if (numBE == 0) {
         std::cout << desc << std::endl;
         return 1;
     } else if (numBE == 1) {
-        std::cout << "Running demo with "  << numBE << " backend"
+        std::cout << "Running " << collector << " demo on " << program
+	  << " with "  << numBE << " backend"
           << " using topology file " << topology << std::endl;
     } else {
-        std::cout << "Running demo with "  << numBE << " backends"
+        std::cout << "Running " << collector << " demo on " << program
+	  << " with "  << numBE << " backends"
           << " using topology file " << topology << std::endl;
     }
 
     // TODO: need to cleanly terminate mrnet.
     PCSampDemo pcsamp;
     pcsamp.start(topology,numBE);
-    pcsamp.join();
+    sleep(3);
+
+    const char * command = "cbtfrun";
+    pid_t child;
+    child = fork();
+    if(child < 0){
+        std::cout << "fork failed";
+    } else if(child == 0){
+        execlp(command,"-m", program.c_str(), "pcsamp", NULL);
+    } else {
+        pcsamp.join();
+    }
+
 }

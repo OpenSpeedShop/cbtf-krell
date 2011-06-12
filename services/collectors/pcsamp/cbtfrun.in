@@ -239,11 +239,9 @@ case "$collector" in
     pcsamp)
     if [ $use_mrnet == "true" ]
     then
-echo "USING MRNET"
       export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
     elif [ $use_fileio == "true" ]
     then
-echo "USING FILEIO"
       export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor.so:${libmonitor}
     fi
     ;;
@@ -257,5 +255,4 @@ echo "USING FILEIO"
     ;;
 esac
 
-echo "LD_PRELOAD " $LD_PRELOAD
 exec $1

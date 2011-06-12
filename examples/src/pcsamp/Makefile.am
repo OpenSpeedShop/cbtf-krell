@@ -39,10 +39,10 @@ pcsampDemo_LDFLAGS = \
 pcsampDemo_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
+	-lboost_program_options \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \
-	@BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
 	@LIBXERCES_C@ \
 	@MRNET_LIBS@

@@ -18,6 +18,8 @@
 
 /** @file Example PC sampling tool. */
 
+#include <iostream>
+#include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <KrellInstitute/CBTF/BoostExts.hpp>
@@ -118,7 +120,8 @@ class PCSampDemo
 
     *backend_attach_count = numBE;
     // FIXME: hardcoded path
-    *topology_file = filesystem::path(BUILDDIR) / topology;
+    //*topology_file = filesystem::path(BUILDDIR) / topology;
+    *topology_file = topology;
 
     // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
     while (true);
@@ -130,12 +133,55 @@ class PCSampDemo
 
 int main(int argc, char** argv)
 {
-    //TODO: handle arguments to pass these values.
-    std::string topology = "./pcsampDemo.topology";
-    unsigned int numBE = 1;
+    unsigned int numBE;
+    std::string topology;
+
+    // create a default for topology file.
+    char const* home = getenv("HOME");
+    std::string default_topology(home);
+    default_topology += "/.cbtf/cbtf_topology";
+
+    boost::program_options::options_description desc("pcsampDemo options");
+    desc.add_options()
+        ("help,h", "produce help message")
+        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1), "set numBE")
+        ("topology",
+	    boost::program_options::value<std::string>(&topology)->default_value(default_topology), "set topology")
+        ;
+
+    boost::program_options::variables_map vm;
+
+    // handle any regular options
+    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+    boost::program_options::notify(vm);    
+
+    // handle any positional options
+    boost::program_options::positional_options_description p;
+    boost::program_options::store(boost::program_options::command_line_parser(argc, argv).
+				  options(desc).positional(p).run(), vm);
+    boost::program_options::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << desc << std::endl;
+        return 1;
+    }
+
+    // TODO: handle topology input...
+    
+    // verify valid numBE.
+    if (numBE == 0) {
+        std::cout << desc << std::endl;
+        return 1;
+    } else if (numBE == 1) {
+        std::cout << "Running demo with "  << numBE << " backend"
+          << " using topology file " << topology << std::endl;
+    } else {
+        std::cout << "Running demo with "  << numBE << " backends"
+          << " using topology file " << topology << std::endl;
+    }
 
     // TODO: need to cleanly terminate mrnet.
-    PCSampDemo p;
-    p.start(topology,numBE);
-    p.join();
+    PCSampDemo pcsamp;
+    pcsamp.start(topology,numBE);
+    pcsamp.join();
 }

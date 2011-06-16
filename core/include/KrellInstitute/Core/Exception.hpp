@@ -68,6 +68,26 @@ namespace KrellInstitute { namespace Core {
 	 * of the tools.
 	 */
 	enum Code {
+           CommandNotFound,        /**< Command couldn't be found. */
+            CollectorUnavailable,   /**< Collector's plugin not available. */
+            DatabaseBusy,           /**< Database is busy. */
+            DatabaseCannotCreate,   /**< Database cannot be created. */
+            DatabaseCannotRemove,   /**< Database cannot be removed. */
+            DatabaseDoesNotExist,   /**< Database doesn't exist. */
+            DatabaseExists,         /**< Database already exists. */
+            DatabaseInvalid,        /**< Database isn't valid. */
+            DatabaseReadOnly,       /**< Database has read-only permissions. */
+            EntryNotFound,          /**< Database table entry not found. */
+            EntryNotUnique,         /**< Database table entry not unique. */
+            EntryOverlapping,       /**< Database table entries overlap. */
+            LibraryFuncNotFound,    /**< Library function could not be found. */
+            LibraryNotFound,        /**< Library could not be found. */
+            MPIImplChoiceInvalid,   /**< User-specified MPI Implementation is not one of the available choices. */
+            ParameterValueInvalid,  /**< Passed parameter value isn't valid. */
+            ProcessUnavailable,     /**< Process not available. */
+            StateAlreadyChanging,   /**< Thread state change in progress. */
+            StateChangeInvalid,     /**< Thread state change is invalid. */
+            ThreadUnavailable,      /**< Thread not available. */
 	    Unknown                 /**< Catch-all for generic exceptions. */
 	};
 

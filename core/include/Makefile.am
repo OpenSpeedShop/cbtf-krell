@@ -30,5 +30,6 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/PCData.hpp \
 	KrellInstitute/Core/Time.hpp \
 	KrellInstitute/Core/TimeInterval.hpp \
+	KrellInstitute/Core/ThreadName.hpp \
 	KrellInstitute/Core/TotallyOrdered.hpp
 

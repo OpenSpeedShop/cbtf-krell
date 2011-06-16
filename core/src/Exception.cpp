@@ -45,6 +45,71 @@ namespace {
 	std::string dm_description;  /**< Description of that exception code. */
     } DescriptionTable[] = {
 	
+	{ Exception::CommandNotFound,
+	  "Command \"%2\" could not be executed under control of Open|SpeedShop on host \"%1\"." },
+	
+	{ Exception::CollectorUnavailable,
+	  "Collector \"%1\" is unavailable because its corresponding collector "
+	  "plugin cannot be found, has been moved, no longer has a factory "
+	  "method, or has changed metadata." },
+	
+	{ Exception::DatabaseBusy,
+	  "Database \"%1\" is busy." },
+	
+	{ Exception::DatabaseCannotCreate,
+	  "Database \"%1\" cannot be created." },
+
+	{ Exception::DatabaseCannotRemove,
+	  "Database \"%1\" cannot be removed (%2)." },
+	
+	{ Exception::DatabaseDoesNotExist,
+	  "Database \"%1\" does not exist." },
+		
+	{ Exception::DatabaseExists,
+	  "Database \"%1\" already exists." },
+
+	{ Exception::DatabaseInvalid,
+	  "Database \"%1\" is invalid. %2" },
+
+	{ Exception::DatabaseReadOnly,
+	  "Database \"%1\" has read-only permissions." },
+	
+	{ Exception::EntryNotFound,
+	  "Entry %2 in table \"%1\" no longer exists." },
+
+	{ Exception::EntryNotUnique,
+	  "Entry %2 in table \"%1\" is not unique." },
+
+	{ Exception::EntryOverlapping,
+	  "Entries in table \"%1\" have overlapping address ranges." },
+
+	{ Exception::LibraryFuncNotFound,
+	  "Function \"%2\" could not be found within library \"%1\"." },
+
+	{ Exception::LibraryNotFound,
+	  "Library \"%1\" could not be found (%2)." },
+
+	{ Exception::MPIImplChoiceInvalid,
+	  "Invalid choice of MPI implementation: \"%1\"\n"
+	  "Possible choices are:  %2" },
+
+	{ Exception::ParameterValueInvalid,
+	  "Specified parameter value is invalid. %1" },
+
+	{ Exception::ProcessUnavailable,
+	  "Process %2 on host \"%1\" is unavailable because it either doesn't "
+	  "exist or could not be attached." },
+
+	{ Exception::StateAlreadyChanging,
+	  "State change for this process already in-progress but incomplete." },
+
+	{ Exception::StateChangeInvalid,
+	  "State change from %1 to %2 for this process is not allowed." },
+
+	{ Exception::ThreadUnavailable,
+	  "Thread %3 inside process %2 on host \"%1\" is unavailable because "
+	  "it either doesn't exist or could not be attached." },
+	
 	{ Exception::Unknown,
 	  "A generic, unknown, exception has occured. " },
 	

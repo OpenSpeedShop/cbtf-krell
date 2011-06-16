@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2010,2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -19,6 +19,7 @@
 /** @file Example PC sampling tool. */
 
 #include <iostream>
+#include <sstream>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -30,7 +31,6 @@
 
 using namespace boost;
 using namespace KrellInstitute::CBTF;
-
 
 
 /**
@@ -119,6 +119,7 @@ class PCSampDemo
     *topology_file = topology;
 
     // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
+    // Do proper shutown of mrnet here?
     while (true);
   }
 
@@ -129,9 +130,11 @@ class PCSampDemo
 int main(int argc, char** argv)
 {
     unsigned int numBE;
+    bool isMPI;
     std::string topology;
     std::string collector;
     std::string program;
+    std::string mpiexecutable;
 
     // create a default for topology file.
     char const* home = getenv("HOME");
@@ -141,14 +144,21 @@ int main(int argc, char** argv)
 
     boost::program_options::options_description desc("pcsampDemo options");
     desc.add_options()
-        ("help,h", "produce help message")
-        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1), "number of lightweight mrnet backends")
+        ("help,h", "Produce this help message.")
+        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1),
+	    "Number of lightweight mrnet backends. Default is 1, For an mpi job this must match the number of mpi ranks specififed in the mpi launcher arguments.")
         ("topology",
-	    boost::program_options::value<std::string>(&topology)->default_value(default_topology), "path name to mrnet topology file")
+	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
+	    "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen),")
         ("collector",
-	    boost::program_options::value<std::string>(&collector)->default_value(default_collector), "name of collector")
+	    boost::program_options::value<std::string>(&collector)->default_value(default_collector),
+	    "Name of collector to use. Default is pcsamp.")
         ("program",
-	    boost::program_options::value<std::string>(&program)->default_value(""), "name of program to collect data from")
+	    boost::program_options::value<std::string>(&program)->default_value(""),
+	    "Program to collect data from, Program with arguments needs double quotes.")
+        ("mpiexecutable",
+	    boost::program_options::value<std::string>(&mpiexecutable)->default_value(""),
+	    "Name of the mpi executable. This must match the name of the mpi exectuable used in the program argument and implies the collection is being done on an mpi job if it is set.")
         ;
 
     boost::program_options::variables_map vm;
@@ -177,30 +187,42 @@ int main(int argc, char** argv)
     if (numBE == 0) {
         std::cout << desc << std::endl;
         return 1;
-    } else if (numBE == 1) {
-        std::cout << "Running " << collector << " demo on " << program
-	  << " with "  << numBE << " backend"
-          << " using topology file " << topology << std::endl;
     } else {
-        std::cout << "Running " << collector << " demo on " << program
-	  << " with "  << numBE << " backends"
-          << " using topology file " << topology << std::endl;
+        std::cout << "Running " << collector << " collector."
+	  << "\nProgram: " << program
+	  << "\nNumber of mrnet backends: "  << numBE
+          << "\nTopology file used: " << topology << std::endl;
     }
 
     // TODO: need to cleanly terminate mrnet.
-    PCSampDemo pcsamp;
-    pcsamp.start(topology,numBE);
+    PCSampDemo cbtfdemo;
+    cbtfdemo.start(topology,numBE);
     sleep(3);
 
-    const char * command = "cbtfrun";
+    // simple fork of process to run the program with collector.
     pid_t child;
     child = fork();
     if(child < 0){
         std::cout << "fork failed";
     } else if(child == 0){
-        execlp(command,"-m", program.c_str(), "pcsamp", NULL);
+        if (!mpiexecutable.empty()) {
+	    size_t pos = program.find(mpiexecutable);
+	    program.insert(pos, " cbtfrun --mrnet --mpi -c pcsamp \"");
+	    program.append("\"");
+	    std::cerr << "execucuting mpi program: " << program << std::endl;
+	    
+	    // FIXME: non-optimal.
+            ::system(program.c_str());
+	} else {
+    	    const char * command = "cbtfrun";
+            std::cerr << "executing sequential program: "
+		<< command << " -m -c " << collector << " " << program << std::endl;
+            execlp(command,"-m", "-c", collector.c_str(), program.c_str(), NULL);
+	}
     } else {
-        pcsamp.join();
+        // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
+        // Do proper shutown of mrnet here?
+        cbtfdemo.join();
     }
 
 }

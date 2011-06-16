@@ -164,6 +164,7 @@ void connect_to_mrnet()
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
     sleep(1);
     tls->connected_to_mrnet = 1;
+
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
 	 fprintf(stderr,"connect_to_mrnet reports connection successful!\n");
@@ -441,7 +442,10 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
 
     started_process_thread();
+#if !defined (CBTF_SERVICE_USE_MRNET_MPI)
     connect_to_mrnet();
+#endif
+
 #endif
 
     /* Begin sampling */

@@ -24,12 +24,32 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
   <Version>1.0.0</Version>
 
   <Stream>
+    <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+    <Tag>1101</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+    <Tag>1104</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+    <Tag>1116</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_UNLOADED_LINKED_OBJECT</Name>
+    <Tag>1126</Tag>
+  </Stream>
+  <Stream>
     <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
     <Tag>10000</Tag>
   </Stream>
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_PCSAMP_DATA</Name>
     <Tag>10012</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+    <Tag>1124</Tag>
   </Stream>
 
   <Frontend>
@@ -38,10 +58,25 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath>
+<!--      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath> -->
+      <SearchPath>./</SearchPath>
       <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
 
       <Plugin>pcsampDemoPlugin</Plugin>
+      <Plugin>libcbtf-messages-base</Plugin>
+      <Plugin>libcbtf-messages-events</Plugin>
+      <Plugin>libcbtf-messages-converters-base</Plugin>
+      <Plugin>libcbtf-messages-converters-events</Plugin>
+
+      <Component>
+        <Name>PacketToLoadedLinkedObject</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_LoadedLinkedObject&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToThreadsStateChanged</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_ThreadsStateChanged&gt;</Type>
+      </Component>
 
       <Component>
         <Name>PacketToAddressBuffer</Name>
@@ -52,11 +87,37 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <Name>Display</Name>
         <Type>DisplayAddressBuffer</Type>
       </Component>
+
+      <Component>
+        <Name>LinkedObject</Name>
+        <Type>LinkedObject</Type>
+      </Component>
+
+      <Component>
+        <Name>ThreadsStateChanged</Name>
+        <Type>ThreadsStateChanged</Type>
+      </Component>
  
       <Input>
         <Name>IncomingBuffers</Name>
         <To>
           <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingLoadedLinkedObject</Name>
+        <To>
+          <Name>PacketToLoadedLinkedObject</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingThreadsStateChanged</Name>
+        <To>
+          <Name>PacketToThreadsStateChanged</Name>
           <Input>in</Input>
         </To>
       </Input>
@@ -72,11 +133,41 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Connection>
 
+      <Connection>
+        <From>
+          <Name>PacketToLoadedLinkedObject</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>LinkedObject</Name>
+          <Input>loaded</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToThreadsStateChanged</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>ThreadsStateChanged</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
     </Network>
 
     <IncomingUpstream>
       <Name>Buffers</Name>
       <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+      <To><Input>IncomingLoadedLinkedObject</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+      <To><Input>IncomingThreadsStateChanged</Input></To>
     </IncomingUpstream>
  
   </Frontend>

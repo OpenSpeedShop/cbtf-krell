@@ -135,7 +135,10 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
 	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
-	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    //fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
+	    connect_to_mrnet();
+#endif
 	    break;
 	default:
 	    break;

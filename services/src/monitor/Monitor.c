@@ -317,7 +317,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
 		tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
-	cbtf_offline_resume_sampling();
+	offline_resume_sampling(CBTF_Monitor_dlopen_event);
     }
 }
 
@@ -353,7 +353,7 @@ monitor_pre_dlopen(const char *path, int flags)
 		tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
-	cbtf_offline_pause_sampling();
+	offline_pause_sampling(CBTF_Monitor_pre_dlopen_event);
     }
 }
 
@@ -379,7 +379,7 @@ monitor_dlclose(void *handle)
 		    tls->pid,tls->tid);
             }
 	    tls->sampling_status = CBTF_Monitor_Paused;
-	    cbtf_offline_pause_sampling();
+	    offline_pause_sampling(CBTF_Monitor_dlclose_event);
 	}
     }
 }
@@ -405,7 +405,7 @@ monitor_post_dlclose(void *handle, int ret)
 		    tls->pid,tls->tid);
             }
 	    tls->sampling_status = CBTF_Monitor_Resumed;
-	    cbtf_offline_resume_sampling();
+	    offline_resume_sampling(CBTF_Monitor_post_dlclose_event);
 	}
     }
 }
@@ -495,7 +495,7 @@ void monitor_mpi_pre_init(void)
 		    tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
-	cbtf_offline_pause_sampling();
+	cbtf_offline_pause_sampling(CBTF_Monitor_MPI_pre_init_event);
     }
 }
 
@@ -517,7 +517,7 @@ monitor_init_mpi(int *argc, char ***argv)
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
 	tls->CBTF_monitor_type = CBTF_Monitor_Proc;
-	cbtf_offline_resume_sampling();
+	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_init_event);
     }
 
     tls->in_mpi_pre_init = 0;
@@ -545,7 +545,7 @@ void monitor_fini_mpi(void)
 		    tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
-	cbtf_offline_pause_sampling();
+	cbtf_offline_pause_sampling(CBTF_Monitor_MPI_fini_event);
     }
 }
 
@@ -570,6 +570,43 @@ void monitor_mpi_post_fini(void)
 		    tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
-	cbtf_offline_resume_sampling();
+	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_post_fini_event);
+    }
+}
+
+void monitor_mpi_post_comm_rank(void)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+
+    if (tls->debug) {
+	fprintf(stderr,"monitor_mpi_post_comm_rank CALLED %d,%lu at %lu\n",
+		tls->pid,tls->tid, CBTF_GetTime());
+    }
+
+    if (tls->sampling_status == CBTF_Monitor_Started ||
+	tls->sampling_status == CBTF_Monitor_Resumed) {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_mpi_post_comm_rank PAUSE SAMPLING %d,%lu\n",
+		    tls->pid,tls->tid);
+        }
+	tls->sampling_status = CBTF_Monitor_Paused;
+	cbtf_offline_pause_sampling(CBTF_Monitor_MPI_post_comm_rank_event);
+    }
+
+    cbtf_offline_notify_event(CBTF_Monitor_MPI_post_comm_rank_event);
+
+    if (tls->sampling_status == CBTF_Monitor_Paused) {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_mpi_post_comm_rank RESUME SAMPLING %d,%lu\n",
+		    tls->pid,tls->tid);
+        }
+	tls->sampling_status = CBTF_Monitor_Resumed;
+	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_post_comm_rank_event);
     }
 }

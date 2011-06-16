@@ -33,6 +33,7 @@
 #include <string>
 #include <utility>
 
+#include "KrellInstitute/Messages/Thread.h"
 
 
 namespace KrellInstitute { namespace Core {
@@ -55,6 +56,9 @@ namespace KrellInstitute { namespace Core {
 
     public:
 
+	ThreadName();
+	ThreadName(const CBTF_Protocol_ThreadName&);
+
 	ThreadName(const std::string&, const std::string&,
 		   const int&, const int&, const int&,
 		   const int&, const Path&);
@@ -74,13 +78,13 @@ namespace KrellInstitute { namespace Core {
 	}
 
 	/** Read-only data member accessor function. */
-	const std::pair<bool, int>& getPid() const
+	const std::pair<bool, pid_t>& getPid() const
 	{
 	    return dm_pid;
 	}
 
 	/** Read-only data member accessor function. */
-	const std::pair<bool, int>& getPosixThreadId() const
+	const std::pair<bool, pthread_t>& getPosixThreadId() const
 	{
 	    return dm_posixtid;
 	}
@@ -112,10 +116,10 @@ namespace KrellInstitute { namespace Core {
 	std::string dm_host;
 
 	/** Process Id identifier of this thread. */
-	std::pair<bool, int> dm_pid;
+	std::pair<bool, pid_t> dm_pid;
 
 	/** Posix thread Id identifier of this thread. */
-	std::pair<bool, int> dm_posixtid;
+	std::pair<bool, pthread_t> dm_posixtid;
 
 	/** OpenMP identifier of this thread. */
 	std::pair<bool, int> dm_tid;

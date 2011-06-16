@@ -108,19 +108,26 @@ die()
 usage()
 {
     cat <<EOF
-Usage: $0 [options] command arg collector...
+Usage: $0 [options] command arg ...
 
 If command uses arguments then command and arg
 must be quoted. example:
-$0 "mpirun -np 2 foo" collector
+$0 "mpirun -np 2 foo"
 
    -h, --help
+
+   -c, --collector
+Where collector name is an available collector: (pcsamp)
 
    -d, --debug
 enable debugging
 
    -m, --mrnet
 Use mrnet to send data.
+
+   --mpi
+Use mpi version of collector. This lightweight mrnet backends
+need this to properly connect to the mrnet tree for mpi programs.
 
    -i, --fileio
 Save data to files.
@@ -143,6 +150,7 @@ EOF
 
 use_mrnet="true"
 use_fileo="false"
+use_mpi="false"
 
 while test "x$1" != x
 do
@@ -151,6 +159,12 @@ do
         -h | --help )
             usage
             ;;
+
+	-c | --collector)
+	    test "x$2" != x || die "missing argument: $*"
+	    collector=$2
+	    shift ; shift;
+	    ;;
 
         -d | --debug )
             export MONITOR_DEBUG=1
@@ -168,6 +182,11 @@ do
         -m | --mrnet )
             use_mrnet="true";
             use_fileio="false";
+	    shift
+            ;;
+
+        --mpi )
+            use_mpi="true";
 	    shift
             ;;
 
@@ -222,7 +241,7 @@ case "$mpitouse" in
 esac
 
 # 
-collector=$2
+
 case "$collector" in
     # The mpi tracing plugins already collect mpi rank information so
     # we do not add the preload_file...
@@ -239,7 +258,12 @@ case "$collector" in
     pcsamp)
     if [ $use_mrnet == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+        if [ $use_mpi == "true" ]
+	then
+          export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	else
+          export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	fi 
     elif [ $use_fileio == "true" ]
     then
       export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor.so:${libmonitor}

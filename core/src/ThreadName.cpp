@@ -25,10 +25,14 @@
 
 #include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
+#include "KrellInstitute/Messages/Thread.h"
 
 using namespace KrellInstitute::Core;
 
 
+ThreadName::ThreadName()
+{
+}
 
 /**
  * Constructor from thread.
@@ -52,6 +56,17 @@ ThreadName::ThreadName(const std::string& command,
     dm_tid(true, tid),
     dm_rank(true, rank),
     dm_executable(true, executable)
+{
+}
+
+ThreadName::ThreadName(const CBTF_Protocol_ThreadName& object) :
+    dm_command(false,"empty command"),
+    dm_host(object.host),
+    dm_pid(true,object.pid),
+    dm_posixtid(std::make_pair(object.has_posix_tid, object.posix_tid)),
+    dm_tid(false,-1),
+    dm_rank(false,-1),
+    dm_executable(false,"no executable provided")
 {
 }
 

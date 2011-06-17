@@ -16,7 +16,16 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-noinst_PROGRAMS = pcsampDemo
+demoxmldir = $(datadir)/KrellInstitute/demos/xml
+demobindir = $(datadir)/KrellInstitute/demos/bin
+demolibdir = $(datadir)/KrellInstitute/demos/lib
+
+BUILT_FILES = pcsampDemo.0.xml
+
+nobase_dist_demoxml_DATA = \
+	pcsampDemo.xml
+
+demobin_PROGRAMS = pcsampDemo
 
 pcsampDemo_CXXFLAGS = \
 	-I$(top_srcdir)/include \
@@ -52,7 +61,7 @@ pcsampDemo_SOURCES = \
 	pcsampDemo.cpp
 
 
-noinst_LTLIBRARIES = pcsampDemoPlugin.la
+demolib_LTLIBRARIES = pcsampDemoPlugin.la
 
 pcsampDemoPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
@@ -75,3 +84,16 @@ pcsampDemoPlugin_la_LIBADD = \
 	@MRNET_LIBS@
 
 pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
+
+CLEANFILES = $(BUILT_FILES)
+
+pcsampDemo.xml: pcsampDemo.xml.in
+
+	@rm -f pcsampDemo.xml \
+	@sed \
+		-e 's,@@demolib_location@@,$(demolibdir),' \
+		-e 's,@@cbtflib_location@@,$(libdir),' \
+		$(srcdir)/pcsampDemo.xml.in > pcsampDemo..xml
+
+EXTRA_DIST = pcsampDemo.xml.in
+	

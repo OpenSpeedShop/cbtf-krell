@@ -58,9 +58,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Frontend</Type>
       <Version>1.0.0</Version>
 
-<!--      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath> -->
-      <SearchPath>./</SearchPath>
-      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
+      <SearchPath>@@demolib_location@@</SearchPath>
+      <SearchPath>@@cbtflib_location@@</SearchPath>
 
       <Plugin>pcsampDemoPlugin</Plugin>
       <Plugin>libcbtf-messages-base</Plugin>
@@ -180,8 +179,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Filter</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>/home/dpm/CBTF-dev/cbtf/tools/examples/src/pcsamp</SearchPath>
-      <SearchPath>/opt/cbtf-dev/lib64</SearchPath>
+      <SearchPath>@@demolib_location@@</SearchPath>
+      <SearchPath>@@cbtflib_location@@</SearchPath>
 
       <Plugin>pcsampDemoPlugin</Plugin>
       <Plugin>libcbtf-messages-base</Plugin>

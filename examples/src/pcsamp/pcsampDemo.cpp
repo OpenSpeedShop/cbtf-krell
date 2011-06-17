@@ -58,8 +58,9 @@ class PCSampDemo
   void run(const std::string& topology, const unsigned int& numBE)
   {
     // FIXME: hardcoded path
-    registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
-    
+    //registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
+    registerXML(filesystem::path(XMLDIR) / "pcsampDemo.xml");
+
 
     Component::registerPlugin(
         filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers");

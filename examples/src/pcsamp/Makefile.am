@@ -32,6 +32,7 @@ pcsampDemo_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(demoxmldir)\"" \
         @MESSAGES_CPPFLAGS@ \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
@@ -89,11 +90,10 @@ CLEANFILES = $(BUILT_FILES)
 
 pcsampDemo.xml: pcsampDemo.xml.in
 
-	@rm -f pcsampDemo.xml \
+	@rm -f pcsampDemo.xml
 	@sed \
 		-e 's,@@demolib_location@@,$(demolibdir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/pcsampDemo.xml.in > pcsampDemo..xml
+		$(srcdir)/pcsampDemo.xml.in > pcsampDemo.xml
 
 EXTRA_DIST = pcsampDemo.xml.in
-	

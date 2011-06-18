@@ -73,6 +73,10 @@ typedef struct {
     int  finished;
     int  sent_data;
 
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
+    int  mpi_init_done;
+#endif
+
 } TLS;
 
 #ifdef USE_EXPLICIT_TLS
@@ -127,22 +131,31 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 
 void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
     switch( event ) {
 	case CBTF_Monitor_MPI_pre_init_event:
 	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    tls->mpi_init_done = 1;
 	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
-	    //fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
-#if defined(CBTF_SERVICE_USE_MRNET_MPI)
-	    connect_to_mrnet();
-#endif
+	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    //connect_to_mrnet();
 	    break;
 	default:
 	    break;
     }
+#endif
     cbtf_offline_service_start_timer();
 }
 
@@ -201,6 +214,10 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
+    tls->mpi_init_done = 0;
+#endif
 
     CBTF_pcsamp_start_sampling_args args;
     char arguments[3 * sizeof(CBTF_pcsamp_start_sampling_args)];
@@ -299,10 +316,19 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #endif
     Assert(tls != NULL);
     switch( event ) {
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 	    fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n", monitor_mpi_comm_rank());
-	    connect_to_mrnet();
+	    if (tls->mpi_init_done == 1) {
+	        fprintf(stderr,"offline_notify_event calls connect_to_mrnet for rank %d\n",
+			monitor_mpi_comm_rank());
+	        connect_to_mrnet();
+	    } else {
+	        fprintf(stderr,"offline_notify_event has not yet called mpi_init for rank %d\n",
+			monitor_mpi_comm_rank());
+	    }
 	    break;
+#endif
 	default:
 	    break;
     }

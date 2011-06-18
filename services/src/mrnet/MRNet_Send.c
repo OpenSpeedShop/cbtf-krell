@@ -224,8 +224,6 @@ void CBTF_MRNet_Send(const int tag,
             dm_contents = buffer;
         }
         xdr_destroy(&xdrs);
-        if(dm_contents == NULL)
-            free(buffer);
     }
 
     CBTF_MRNet_LW_sendToFrontend(tag ,dm_size , (void *) dm_contents);

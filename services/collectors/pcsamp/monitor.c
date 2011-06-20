@@ -74,7 +74,8 @@ typedef struct {
     int  sent_data;
 
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
-    int  mpi_init_done;
+    bool_t  mpi_init_done;
+    bool_t  connected_to_mrnet;
 #endif
 
 } TLS;
@@ -110,22 +111,36 @@ void cbtf_offline_finish();
 
 void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 {
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
     switch( event ) {
 	case CBTF_Monitor_MPI_pre_init_event:
-	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	    }
+#endif
 	    set_mpi_flag(1);
 	    break;
 	case CBTF_Monitor_MPI_init_event:
-	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    }
+#endif
 	    set_mpi_flag(1);
 	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
-	    fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    }
+#endif
 	    set_mpi_flag(1);
 	    break;
 	default:
 	    break;
     }
+#endif
     cbtf_offline_service_stop_timer();
 }
 
@@ -142,15 +157,35 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
     switch( event ) {
 	case CBTF_Monitor_MPI_pre_init_event:
-	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	    }
+#endif
 	    break;
 	case CBTF_Monitor_MPI_init_event:
-	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
-	    tls->mpi_init_done = 1;
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    }
+#endif
+	    tls->mpi_init_done = TRUE;
 	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
-	    fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
-	    //connect_to_mrnet();
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	    }
+#endif
+	    if (!tls->connected_to_mrnet && ( monitor_mpi_comm_rank() > 0 || tls->mpi_init_done)) {
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_resume_sampling CBTF_Monitor_MPI_post_com_rank_event connecting to mrnet!\n");
+	    }
+#endif
+	        connect_to_mrnet();
+		tls->connected_to_mrnet = TRUE;
+	    }
 	    break;
 	default:
 	    break;
@@ -216,7 +251,8 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     Assert(tls != NULL);
 
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
-    tls->mpi_init_done = 0;
+    tls->mpi_init_done = FALSE;
+    tls->connected_to_mrnet = FALSE;
 #endif
 
     CBTF_pcsamp_start_sampling_args args;
@@ -317,16 +353,29 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
     Assert(tls != NULL);
     switch( event ) {
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
+	case CBTF_Monitor_MPI_pre_init_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	    }
+#endif
+	    set_mpi_flag(1);
+	    break;
+	case CBTF_Monitor_MPI_init_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	         fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	    }
+#endif
+	    set_mpi_flag(1);
+	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
-	    fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n", monitor_mpi_comm_rank());
-	    if (tls->mpi_init_done == 1) {
-	        fprintf(stderr,"offline_notify_event calls connect_to_mrnet for rank %d\n",
-			monitor_mpi_comm_rank());
-	        connect_to_mrnet();
-	    } else {
-	        fprintf(stderr,"offline_notify_event has not yet called mpi_init for rank %d\n",
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
 			monitor_mpi_comm_rank());
 	    }
+#endif
 	    break;
 #endif
 	default:

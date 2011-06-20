@@ -58,6 +58,8 @@ typedef struct {
 
     CBTF_PCData buffer;      /**< PC sampling data buffer. */
 
+    bool_t defer_sampling;
+
 #if defined(CBTF_SERVICE_USE_MRNET)
     CBTF_Protocol_ThreadNameGroup tgrp;
     CBTF_Protocol_ThreadName tname;
@@ -283,6 +285,10 @@ static void serviceTimerHandler(const ucontext_t* context)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
+    if(tls->defer_sampling == TRUE) {
+        return;
+    }
     
     /* Obtain the program counter (PC) address from the thread context */
     uint64_t pc = CBTF_GetPCFromContext(context);
@@ -370,6 +376,8 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
+    tls->defer_sampling=FALSE;
 
     /* Decode the passed function arguments */
     memset(&args, 0, sizeof(args));
@@ -541,12 +549,22 @@ void cbtf_offline_service_start_timer()
 #endif
     if (tls == NULL)
 	return;
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+
+    tls->defer_sampling=FALSE;
 }
 
 void cbtf_offline_service_stop_timer()
 {
-    CBTF_Timer(0, NULL);
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=TRUE;
 }
 #endif
 

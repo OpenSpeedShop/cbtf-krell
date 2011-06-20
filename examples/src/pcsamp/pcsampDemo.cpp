@@ -210,7 +210,7 @@ int main(int argc, char** argv)
 	    size_t pos = program.find(mpiexecutable);
 	    program.insert(pos, " cbtfrun --mrnet --mpi -c pcsamp \"");
 	    program.append("\"");
-	    std::cerr << "execucuting mpi program: " << program << std::endl;
+	    std::cerr << "executing mpi program: " << program << std::endl;
 	    
 	    // FIXME: non-optimal.
             ::system(program.c_str());

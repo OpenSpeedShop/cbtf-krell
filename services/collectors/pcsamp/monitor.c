@@ -177,7 +177,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	        fprintf(stderr,"offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
 	    }
 #endif
-	    if (!tls->connected_to_mrnet && ( monitor_mpi_comm_rank() > 0 || tls->mpi_init_done)) {
+	    if (!tls->connected_to_mrnet && ( monitor_mpi_comm_rank() >= 0 || tls->mpi_init_done)) {
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
 	        fprintf(stderr,"offline_resume_sampling CBTF_Monitor_MPI_post_com_rank_event connecting to mrnet!\n");

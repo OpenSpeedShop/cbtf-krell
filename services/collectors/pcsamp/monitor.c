@@ -436,7 +436,9 @@ void cbtf_offline_finish()
         	   local_header.host, local_header.pid, local_header.posix_tid);
 	}
 #endif
+#if !defined(CBTF_SERVICE_USE_MRNET)
 	cbtf_offline_send_dsos(tls);
+#endif
     }
 }
 
@@ -465,6 +467,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
 
     if (is_dlopen) {
 	cbtf_offline_service_stop_timer();
@@ -531,8 +534,15 @@ void cbtf_offline_record_dso(const char* dsoname,
 	message.is_executable = true;
     }
 
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
+    if (tls->connected_to_mrnet) {
+        CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
+                  (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
+    }
+#else
     CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
                   (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
+#endif
 #endif
 
     int dsoname_len = strlen(dsoname);
@@ -547,7 +557,9 @@ void cbtf_offline_record_dso(const char* dsoname,
         	   tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
+#if !defined(CBTF_SERVICE_USE_MRNET)
 	cbtf_offline_send_dsos(tls);
+#endif
     }
 
     memcpy(&(tls->buffer.objs[tls->data.linkedobjects.linkedobjects_len]),

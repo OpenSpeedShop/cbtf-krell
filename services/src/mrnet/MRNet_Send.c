@@ -68,12 +68,6 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
                 return 1;
             }
 
-#ifndef NDEBUG
-	    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-                fprintf(stderr,"CBTF_MRNet_getParentInfo found match: %s, %d, %d, %d\n",
-			pname, tpport, tprank, trank);
-	    }
-#endif
             if( trank == rank ) {
                 sprintf(phost, "%s", pname);
                 sprintf(pport, "%d", tpport);

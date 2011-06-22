@@ -169,7 +169,8 @@ void connect_to_mrnet()
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	 fprintf(stderr,"connect_to_mrnet reports connection successful!\n");
+	 fprintf(stderr,"connect_to_mrnet reports connection successful for %s:%d rank %d\n",
+		tls->header.host, tls->header.pid, tls->header.rank);
     }
 #endif
 

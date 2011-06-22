@@ -36,6 +36,7 @@
 
 static Network_t* CBTF_MRNet_netPtr;
 static Stream_t* CBTF_MRNet_upstream;
+static Packet_t * CBTF_MRNet_packet;
 static int mrnet_connected = 0;
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
@@ -158,19 +159,18 @@ int CBTF_MRNet_LW_connect (int con_rank)
     CBTF_MRNet_netPtr = Network_CreateNetworkBE(BE_argc, BE_argv);
     Assert(CBTF_MRNet_netPtr);
 
-    uint64_t recv_int=0;
     int tag;
     const char* fmt_str = "%d";
 
-    Packet_t * CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
-
-    sleep(3);
+    CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
         fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_upstream\n");
     }
 #endif
+
+    sleep(5);
 
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");

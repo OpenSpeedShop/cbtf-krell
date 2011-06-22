@@ -170,7 +170,7 @@ int CBTF_MRNet_LW_connect (int con_rank)
     }
 #endif
 
-    sleep(5);
+    //sleep(5);
 
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");

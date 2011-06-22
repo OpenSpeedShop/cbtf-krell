@@ -463,12 +463,8 @@ private:
 	for(int i = 0; i < message->threads.names.names_len; ++i) {
 	    const CBTF_Protocol_ThreadName& msg_thread =
 				message->threads.names.names_val[i];
-// FIXME.  need to match what we do in OSS.
-#if 1
-	    ThreadName tname("",msg_thread.host,msg_thread.pid,msg_thread.posix_tid,-1,-1,"");
-#else
+
 	    ThreadName tname(msg_thread);
-#endif
 	    entry.tname = tname;
 	    entry.path = message->linked_object.path;
 	    entry.addr_begin = message->range.begin;
@@ -531,15 +527,12 @@ private:
 	for(int i = 0; i < message->threads.names.names_len; ++i) {
 	    const CBTF_Protocol_ThreadName& msg_thread =
 				message->threads.names.names_val[i];
-// FIXME.  need to match what we do in OSS.
-#if 1
-	    ThreadName tname("",msg_thread.host,msg_thread.pid,msg_thread.posix_tid,-1,-1,"");
-#else
-	    ThreadName tname(msg_thread);
-#endif
+
+	ThreadName tname(msg_thread);
 	std::cerr << "thread " << tname.getHost()
 	<< ":" << tname.getPid().second
-	<< ":" <<  tname.getPosixThreadId().second
+	<< ":" <<  (uint64_t) tname.getPosixThreadId().second
+	<< ":" <<  tname.getMPIRank().second
 	<< " ThreadState: " << message->state
 	<< std::endl;
 	}

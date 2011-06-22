@@ -43,17 +43,15 @@ ThreadName::ThreadName()
  */
 ThreadName::ThreadName(const std::string& command,
 		       const std::string& host,
-		       const int& pid,
-		       const int& posixtid,
-		       const int& tid,
-		       const int& rank,
+		       const int64_t& pid,
+		       const int64_t& posixtid,
+		       const int32_t& rank,
 		       const Path& executable
 		       ) :
     dm_command(true, command),
     dm_host(host),
     dm_pid(true, pid),
     dm_posixtid(true, posixtid),
-    dm_tid(true, tid),
     dm_rank(true, rank),
     dm_executable(true, executable)
 {
@@ -64,8 +62,7 @@ ThreadName::ThreadName(const CBTF_Protocol_ThreadName& object) :
     dm_host(object.host),
     dm_pid(true,object.pid),
     dm_posixtid(std::make_pair(object.has_posix_tid, object.posix_tid)),
-    dm_tid(false,-1),
-    dm_rank(false,-1),
+    dm_rank(true,object.rank),
     dm_executable(false,"no executable provided")
 {
 }

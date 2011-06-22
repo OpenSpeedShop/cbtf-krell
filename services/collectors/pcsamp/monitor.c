@@ -215,7 +215,6 @@ void cbtf_offline_send_dsos(TLS *tls)
     CBTF_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
-#endif
     
     /* Send the offline "info" blob */
 #ifndef NDEBUG
@@ -224,6 +223,9 @@ void cbtf_offline_send_dsos(TLS *tls)
         tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
     }
 #endif
+
+#endif
+
     tls->data.linkedobjects.linkedobjects_len = 0;
     tls->dsoname_len = 0;
     memset(tls->buffer.objs, 0, sizeof(tls->buffer.objs));
@@ -534,6 +536,16 @@ void cbtf_offline_record_dso(const char* dsoname,
 	message.is_executable = true;
     }
 
+#if defined(CBTF_SERVICE_USE_MRNET)
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+            fprintf(stderr,
+		"cbtf_offline_record_dso SENDS CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT for dso %s from %s %d %lu\n",
+        	dsoFilename.path, tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
+    }
+#endif
+#endif
+
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
     if (tls->connected_to_mrnet) {
         CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
@@ -551,13 +563,13 @@ void cbtf_offline_record_dso(const char* dsoname,
 
 
     if(newsize > CBTF_OBJBufferSize) {
+#if !defined(CBTF_SERVICE_USE_MRNET)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
             fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for HOST %s, PID %d, POSIX_TID %lu\n",
         	   tls->dso_header.host, tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
-#if !defined(CBTF_SERVICE_USE_MRNET)
 	cbtf_offline_send_dsos(tls);
 #endif
     }

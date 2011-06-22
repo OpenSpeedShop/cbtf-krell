@@ -60,8 +60,8 @@ namespace KrellInstitute { namespace Core {
 	ThreadName(const CBTF_Protocol_ThreadName&);
 
 	ThreadName(const std::string&, const std::string&,
-		   const int&, const int&, const int&,
-		   const int&, const Path&);
+		   const int64_t&, const int64_t&,
+		   const int32_t&, const Path&);
 
 	bool operator==(const ThreadName&) const;
 
@@ -78,25 +78,19 @@ namespace KrellInstitute { namespace Core {
 	}
 
 	/** Read-only data member accessor function. */
-	const std::pair<bool, pid_t>& getPid() const
+	const std::pair<bool, int64_t>& getPid() const
 	{
 	    return dm_pid;
 	}
 
 	/** Read-only data member accessor function. */
-	const std::pair<bool, pthread_t>& getPosixThreadId() const
+	const std::pair<bool, int64_t>& getPosixThreadId() const
 	{
 	    return dm_posixtid;
 	}
 
 	/** Read-only data member accessor function. */
-	const std::pair<bool, int>& getOpenMPThreadId() const
-	{
-	    return dm_tid;
-	}
-
-	/** Read-only data member accessor function. */
-	const std::pair<bool, int>& getMPIRank() const
+	const std::pair<bool, int32_t>& getMPIRank() const
 	{
 	    return dm_rank;
 	}
@@ -116,16 +110,13 @@ namespace KrellInstitute { namespace Core {
 	std::string dm_host;
 
 	/** Process Id identifier of this thread. */
-	std::pair<bool, pid_t> dm_pid;
+	std::pair<bool, int64_t> dm_pid;
 
 	/** Posix thread Id identifier of this thread. */
-	std::pair<bool, pthread_t> dm_posixtid;
-
-	/** OpenMP identifier of this thread. */
-	std::pair<bool, int> dm_tid;
+	std::pair<bool, int64_t> dm_posixtid;
 
 	/** MPI rank of this thread. */
-	std::pair<bool, int> dm_rank;
+	std::pair<bool, int32_t> dm_rank;
 
 	/** Path of this thread's executable. */
 	std::pair<bool, Path> dm_executable;

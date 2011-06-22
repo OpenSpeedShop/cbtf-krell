@@ -164,7 +164,7 @@ void connect_to_mrnet()
 #endif
 
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
-    sleep(1);
+    tls->header.rank = monitor_mpi_comm_rank();
     tls->connected_to_mrnet = 1;
 
 #ifndef NDEBUG
@@ -193,6 +193,7 @@ void started_process_thread()
     origtname.pid = -1;
     origtname.has_posix_tid = false;
     origtname.posix_tid = 0;
+    origtname.rank = -1;
 
     //CBTF_Protocol_CreatedProcess message;
     tls->created_process_message.original_thread = origtname;
@@ -238,6 +239,7 @@ void send_thread_state_changed_message()
     tname.pid = tls->header.pid;
     tname.has_posix_tid = true;
     tname.posix_tid = tls->header.posix_tid;
+    tname.rank = tls->header.rank;
 
     tls->tgrp.names.names_len = 0;
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
@@ -420,12 +422,14 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->tname.pid = local_data_header.pid;
     tls->tname.has_posix_tid = true;
     tls->tname.posix_tid = local_data_header.posix_tid;
+    tls->tname.rank = local_data_header.rank;
 
     CBTF_Protocol_ThreadName origtname;
     origtname.host = strdup(tls->tname.host);
     origtname.pid = -1;
     origtname.has_posix_tid = false;
     origtname.posix_tid = 0;
+    origtname.rank = -1;
 
     CBTF_Protocol_CreatedProcess message;
     message.original_thread = origtname;

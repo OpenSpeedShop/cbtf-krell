@@ -34,13 +34,11 @@
 #include "mrnet_lightweight/MRNet.h"
 
 
-Network_t* CBTF_MRNet_netPtr;
-Stream_t* CBTF_MRNet_upstream;
-Packet_t *CBTF_MRNet_packet;
-
+static Network_t* CBTF_MRNet_netPtr;
+static Stream_t* CBTF_MRNet_upstream;
 static int mrnet_connected = 0;
 
-int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
+static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
@@ -164,7 +162,7 @@ int CBTF_MRNet_LW_connect (int con_rank)
     int tag;
     const char* fmt_str = "%d";
 
-    CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
+    Packet_t * CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
 
     sleep(3);
 
@@ -188,7 +186,7 @@ int CBTF_MRNet_LW_connect (int con_rank)
     mrnet_connected = 1;
 }
 
-void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
+static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
 {
     const char* fmt_str = "%auc";
 

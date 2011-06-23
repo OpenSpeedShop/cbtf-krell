@@ -106,12 +106,25 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
     char parHostname[64], myHostname[64], parPort[10], parRank[10], myRank[10];
 
-    Rank mRank = 10000 + con_rank;
+    /* sequential jobs pass con_rank of -1. In that case we need to
+     * use a rank of 0 and mRank of 10000 for the connection.
+     */
+    Rank mRank;
+    int rank_to_use = con_rank;
+
+    if (con_rank < 0 ) {
+	mRank = 10000;
+	rank_to_use = 0;
+    } else {
+	mRank = 10000 + con_rank;
+    }
+
     sprintf(myRank, "%d", mRank);
 
 
-    if( CBTF_MRNet_getParentInfo(connfile, con_rank, parHostname, parPort, parRank) != 0 ) {
-        fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file\n");
+    if( CBTF_MRNet_getParentInfo(connfile, rank_to_use, parHostname, parPort, parRank) != 0 ) {
+	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file\n");
+	fprintf(stderr, "CBTF_MRNet_LW_connect: myRank %s, mrank %d, con_rank %d\n",myRank,mRank,rank_to_use);
         return -1;
     }
 
@@ -129,7 +142,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
 
     char be_name[24];
-    sprintf(be_name,"%s%d","cbtfBE",myRank);
+    sprintf(be_name,"%s%s","cbtfBE",myRank);
 
     BE_argv[0] = be_name;
     BE_argv[1] = parHostname;

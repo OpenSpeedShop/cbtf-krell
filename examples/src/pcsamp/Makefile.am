@@ -92,7 +92,7 @@ pcsampDemo.xml: pcsampDemo.xml.in
 
 	@rm -f pcsampDemo.xml
 	@sed \
-		-e 's,@@demolib_location@@,$(demolibdir),' \
+		-e 's,@@demolib_location@@,$(demoplugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
 		$(srcdir)/pcsampDemo.xml.in > pcsampDemo.xml
 

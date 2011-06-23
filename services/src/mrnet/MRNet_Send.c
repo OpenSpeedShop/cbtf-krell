@@ -90,7 +90,7 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
     return 1;
 }
 
-int CBTF_MRNet_LW_connect (int con_rank)
+int CBTF_MRNet_LW_connect (const int con_rank)
 {
     if (mrnet_connected) {
         return;
@@ -105,16 +105,12 @@ int CBTF_MRNet_LW_connect (int con_rank)
     }
 
     char parHostname[64], myHostname[64], parPort[10], parRank[10], myRank[10];
-    int wRank = 0;
-    if (con_rank > 0) {
-	wRank = con_rank;
-    }
 
-    Rank mRank = 10000 + wRank;
+    Rank mRank = 10000 + con_rank;
     sprintf(myRank, "%d", mRank);
 
 
-    if( CBTF_MRNet_getParentInfo(connfile, wRank, parHostname, parPort, parRank) != 0 ) {
+    if( CBTF_MRNet_getParentInfo(connfile, con_rank, parHostname, parPort, parRank) != 0 ) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file\n");
         return -1;
     }
@@ -131,8 +127,11 @@ int CBTF_MRNet_LW_connect (int con_rank)
     int BE_argc = 6;
     char* BE_argv[6];
 
-    BE_argv[0] = (char *)malloc(strlen("")*sizeof(char));
-    BE_argv[0] = strcpy(BE_argv[0],"");
+
+    char be_name[24];
+    sprintf(be_name,"%s%d","cbtfBE",myRank);
+
+    BE_argv[0] = be_name;
     BE_argv[1] = parHostname;
     BE_argv[2] = parPort;
     BE_argv[3] = parRank;

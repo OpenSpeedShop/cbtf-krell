@@ -175,7 +175,7 @@ void connect_to_mrnet()
 #endif
 
     //send_process_thread_message();
-    tls->sent_process_thread_info = 1;
+    //tls->sent_process_thread_info = 1;
 }
 
 void started_process_thread()
@@ -322,9 +322,6 @@ static void serviceTimerHandler(const ucontext_t* context)
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
-	if (!tls->sent_process_thread_info) {
-	    send_process_thread_message();
-	}
 
 	if (tls->connected_to_mrnet) {
 #if 0
@@ -517,6 +514,10 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
+	    if (!tls->sent_process_thread_info) {
+	        send_process_thread_message();
+	    }
+	    tls->sent_process_thread_info = 1;
 #if 0
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,

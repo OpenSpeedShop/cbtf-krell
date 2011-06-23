@@ -18,7 +18,7 @@
 
 demoxmldir = $(datadir)/KrellInstitute/demos/xml
 demobindir = $(datadir)/KrellInstitute/demos/bin
-demolibdir = $(datadir)/KrellInstitute/demos/lib
+demoplugindir = $(datadir)/KrellInstitute/demos/lib
 
 BUILT_FILES = pcsampDemo.0.xml
 
@@ -62,7 +62,7 @@ pcsampDemo_SOURCES = \
 	pcsampDemo.cpp
 
 
-demolib_LTLIBRARIES = pcsampDemoPlugin.la
+demoplugin_LTLIBRARIES = pcsampDemoPlugin.la
 
 pcsampDemoPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
@@ -71,7 +71,7 @@ pcsampDemoPlugin_la_CXXFLAGS = \
 	@MRNET_CPPFLAGS@
 
 pcsampDemoPlugin_la_LDFLAGS = \
-	-shared -module -avoid-version -rpath /ForceShared \
+	-module -avoid-version \
         @MESSAGES_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@MRNET_LDFLAGS@

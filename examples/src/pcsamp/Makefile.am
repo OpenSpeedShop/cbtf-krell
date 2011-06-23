@@ -20,7 +20,7 @@ demoxmldir = $(datadir)/KrellInstitute/demos/xml
 demobindir = $(datadir)/KrellInstitute/demos/bin
 demoplugindir = $(datadir)/KrellInstitute/demos/lib
 
-BUILT_FILES = pcsampDemo.0.xml
+BUILT_FILES = pcsampDemo.xml
 
 nobase_dist_demoxml_DATA = \
 	pcsampDemo.xml

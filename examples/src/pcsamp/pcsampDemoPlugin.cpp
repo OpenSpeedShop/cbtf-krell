@@ -19,6 +19,7 @@
 /** @file Plugin used by unit tests for the CBTF MRNet library. */
 
 #include <boost/bind.hpp>
+#include <boost/operators.hpp>
 #include <mrnet/MRNet.h>
 #include <typeinfo>
 #include <algorithm>
@@ -66,7 +67,6 @@ namespace {
     typedef std::vector<AddressEntry > AddressEntryVec;
 
     class LinkedObjectEntry {
-	//class ThreadName;
 	public:
 	    ThreadName tname;
 	    Time time_loaded;
@@ -81,6 +81,70 @@ namespace {
     // Sampling interval in nanoseconds.
     uint64_t interval;    
     AddressBuffer abuffer;
+
+    enum ThreadState {
+            Disconnected,  /**< Thread isn't connected (may not even exist). */
+            Connecting,    /**< Thread is being connected. */
+            Nonexistent,   /**< Thread doesn't exist. */
+            Running,       /**< Thread is active and running. */
+            Suspended,     /**< Thread has been temporarily suspended. */
+            Terminated     /**< Thread has terminated. */
+    };
+
+    typedef std::vector<ThreadName> ThreadNameVec;
+    ThreadNameVec tvec;
+
+    typedef std::vector< std::pair<ThreadName,ThreadState> > ThreadNameStateVec;
+    ThreadNameStateVec tstatevec;
+
+
+    void printResults( const AddressCounts& ac) {
+
+	    AddressCounts::const_iterator aci;
+	    uint64_t total_counts = 0;
+	    double percent_total = 0.0;
+	    double total_time = 0.0;
+
+	    AddressEntryVec m;
+
+	    // compute total samples over all addresses.
+	    for (aci = ac.begin(); aci != ac.end(); ++aci) {
+	        total_counts += aci->second;
+	    }
+
+	    // compute percent of total for each address.
+	    for (aci = ac.begin(); aci != ac.end(); ++aci) {
+	        double percent = (double) 100 * ((double)aci->second/(double)total_counts);
+	        percent_total += percent;
+
+	        AddressEntry entry;
+	        entry.addr = aci->first;
+	        entry.sample_count = aci->second;
+	        entry.line = -1;
+	        entry.file = "no file found";
+	        entry.function_name = "no funcion name found";
+	        entry.total_time = static_cast<double>(aci->second) *
+				static_cast<double>(interval) / 1000000000.0;
+	        total_time += entry.total_time;
+	        entry.percent = percent;
+	        m.push_back(entry);
+	    }
+
+	    // display each address and it's percent of total counts
+	    AddressEntryVec::iterator mi;
+	
+	    for (mi = m.begin(); mi != m.end(); ++mi) {
+                std::cout << "Address " << mi->addr
+        	<< " had %" << mi->percent << " of samples "
+        	<< " and " << mi->total_time << " of total time "
+		<< std::endl;
+	    }
+	    std::cout << "\ntotal samples: " << total_counts
+	    << "\npercent of total samples: " << percent_total
+	    << "\ntotal time: " << total_time
+	    << "\n" << std::endl;
+    }
+
 }
 
 /**
@@ -369,53 +433,8 @@ private:
     /** Handler for the "in" input.*/
     void displayHandler(const AddressBuffer& in)
     {
-	AddressCounts ac = in.addresscounts;
-	AddressCounts::iterator aci;
-	uint64_t total_counts = 0;
-	double percent_total = 0.0;
-	double total_time = 0.0;
-
-	AddressEntryVec m;
-
-	// compute total samples over all addresses.
-	for (aci = ac.begin(); aci != ac.end(); ++aci) {
-	    total_counts += aci->second;
-	}
-
-	// compute percent of total for each address.
-	for (aci = ac.begin(); aci != ac.end(); ++aci) {
-	    double percent = (double) 100 * ((double)aci->second/(double)total_counts);
-	    percent_total += percent;
-
-	    AddressEntry fe;
-	    fe.addr = aci->first;
-	    fe.sample_count = aci->second;
-	    fe.line = -1;
-	    fe.file = "no file found";
-	    fe.function_name = "no funcion name found";
-	    fe.total_time = static_cast<double>(aci->second) * static_cast<double>(interval) / 1000000000.0;
-	    total_time += fe.total_time;
-	    fe.percent = percent;
-	    m.push_back(fe);
-	}
-
-	// display each address and it's percent of total counts in
-	// descending order.
-	AddressEntryVec::reverse_iterator mi;
-	// HMM. having issues sorting this vector.
-	//m.sort();
-	//std::sort(m.begin(),m.end());
-	for (mi = m.rbegin(); mi != m.rend(); ++mi) {
-            std::cout << "Address " << mi->addr
-        	<< " had " << mi->percent << " percent of samples "
-        	<< " and " << mi->total_time << " total time "
-		<< std::endl;
-	}
-	std::cout << "\ntotal samples: " << total_counts
-	    << " percent of total samples: " << percent_total
-	    << " total time: " << total_time
-	    << "\n" << std::endl;
-
+	std::cout << "Intermediate aggregated results" << std::endl;
+	printResults(in.addresscounts);
         emitOutput<AddressBuffer>("displayout",  abuffer);
     }
 
@@ -472,14 +491,15 @@ private:
 	    entry.is_executable = message->is_executable;
 	    entry.time_loaded = message->time;
 
+// used to show the linkedobject information sent.
 #if 0
-std::cerr << "path " << entry.path
-	<< " loaded at time " << entry.time_loaded
-	<< " at " << AddressRange(entry.addr_begin,entry.addr_end)
-	<< " in thread " << entry.tname.getHost()
-	<< ":" << entry.tname.getPid().second
-	<< ":" <<  entry.tname.getPosixThreadId().second
-	<< std::endl;
+	    std::cerr << "path " << entry.path
+	    << " loaded at time " << entry.time_loaded
+	    << " at " << AddressRange(entry.addr_begin,entry.addr_end)
+	    << " in thread " << entry.tname.getHost()
+	    << ":" << entry.tname.getPid().second
+	    << ":" <<  entry.tname.getPosixThreadId().second
+	    << std::endl;
 #endif
 	}
     }
@@ -528,13 +548,22 @@ private:
 	    const CBTF_Protocol_ThreadName& msg_thread =
 				message->threads.names.names_val[i];
 
-	ThreadName tname(msg_thread);
-	std::cerr << "thread " << tname.getHost()
-	<< ":" << tname.getPid().second
-	<< ":" <<  (uint64_t) tname.getPosixThreadId().second
-	<< ":" <<  tname.getMPIRank().second
-	<< " ThreadState: " << message->state
-	<< std::endl;
+	    ThreadName tname(msg_thread);
+	    std::cerr << "ThreadStateChanged " << tname.getHost()
+	    << ":" << tname.getPid().second
+	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
+	    << ":" <<  tname.getMPIRank().second
+	    << " ThreadState: " << message->state
+	    << std::endl;
+
+	    tstatevec.push_back(std::make_pair(tname, (ThreadState) message->state));
+
+	    if (tvec.size() == tstatevec.size()) {
+		std::cerr << "\nAll Threads are finished.\n" << std::endl;
+		std::cout << "Final aggregated address results for all threads" << std::endl;
+		printResults(abuffer.addresscounts);
+	    }
+
 	}
 
     }
@@ -542,3 +571,101 @@ private:
 }; // class ThreadsStateChanged
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ThreadsStateChanged)
+
+/**
+ * Component that handles thread state,
+ */
+class __attribute__ ((visibility ("hidden"))) AttachedToThreads :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new AttachedToThreads())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    AttachedToThreads() :
+        Component(Type(typeid(AttachedToThreads)), Version(0, 0, 1))
+    {
+        declareInput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >(
+            "in", boost::bind(&AttachedToThreads::inHandler, this, _1)
+            );
+    }
+
+    /** Handlers for the inputs.*/
+    void inHandler(const boost::shared_ptr<CBTF_Protocol_AttachedToThreads>& in)
+    {
+        CBTF_Protocol_AttachedToThreads *message = in.get();
+	for(int i = 0; i < message->threads.names.names_len; ++i) {
+	    const CBTF_Protocol_ThreadName& msg_thread =
+				message->threads.names.names_val[i];
+
+	    ThreadName tname(msg_thread);
+	    std::cerr << "AttachedToThread " << tname.getHost()
+	    << ":" << tname.getPid().second
+	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
+	    << ":" <<  tname.getMPIRank().second
+	    << std::endl;
+
+	    tvec.push_back(tname);
+	}
+
+    }
+
+}; // class AttachedToThreads
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(AttachedToThreads)
+
+/**
+ * Component that handles thread state,
+ */
+class __attribute__ ((visibility ("hidden"))) CreatedProcess :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new CreatedProcess())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    CreatedProcess() :
+        Component(Type(typeid(CreatedProcess)), Version(0, 0, 1))
+    {
+        declareInput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
+            "in", boost::bind(&CreatedProcess::inHandler, this, _1)
+            );
+    }
+
+    /** Handlers for the inputs.*/
+    void inHandler(const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& in)
+    {
+        CBTF_Protocol_CreatedProcess *message = in.get();
+
+	ThreadName created_threadname(message->created_thread);
+	std::cerr << "CreatedProcess " << created_threadname.getHost()
+	<< ":" << created_threadname.getPid().second
+	<< ":" <<  (uint64_t) created_threadname.getPosixThreadId().second
+	<< ":" <<  created_threadname.getMPIRank().second
+	<< std::endl;
+
+    }
+
+}; // class CreatedProcess
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CreatedProcess)

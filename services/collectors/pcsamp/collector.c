@@ -124,6 +124,8 @@ void send_process_thread_message()
     if (tls == NULL)
 	return;
 
+    started_process_thread();
+
     if (!tls->process_created) {
 	if (tls->connected_to_mrnet) {
 	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
@@ -195,6 +197,8 @@ void started_process_thread()
     origtname.has_posix_tid = false;
     origtname.posix_tid = 0;
     origtname.rank = -1;
+
+    tls->tname.rank = monitor_mpi_comm_rank();
 
     //CBTF_Protocol_CreatedProcess message;
     tls->created_process_message.original_thread = origtname;
@@ -451,7 +455,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
 
-    started_process_thread();
+    //started_process_thread();
 #if !defined (CBTF_SERVICE_USE_MRNET_MPI)
     connect_to_mrnet();
 #endif

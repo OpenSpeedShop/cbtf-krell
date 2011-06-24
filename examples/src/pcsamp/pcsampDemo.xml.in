@@ -78,6 +78,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Component>
 
       <Component>
+        <Name>PacketToAttachedToThreads</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_AttachedToThreads&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToCreatedProcess</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_CreatedProcess&gt;</Type>
+      </Component>
+
+      <Component>
         <Name>PacketToAddressBuffer</Name>
         <Type>ConvertPacketToAddressBuffer</Type>
       </Component>
@@ -95,6 +105,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Component>
         <Name>ThreadsStateChanged</Name>
         <Type>ThreadsStateChanged</Type>
+      </Component>
+
+      <Component>
+        <Name>AttachedToThreads</Name>
+        <Type>AttachedToThreads</Type>
+      </Component>
+
+      <Component>
+        <Name>CreatedProcess</Name>
+        <Type>CreatedProcess</Type>
       </Component>
  
       <Input>
@@ -117,6 +137,22 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <Name>IncomingThreadsStateChanged</Name>
         <To>
           <Name>PacketToThreadsStateChanged</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingAttachedToThreads</Name>
+        <To>
+          <Name>PacketToAttachedToThreads</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingCreatedProcess</Name>
+        <To>
+          <Name>PacketToCreatedProcess</Name>
           <Input>in</Input>
         </To>
       </Input>
@@ -154,6 +190,28 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Connection>
 
+      <Connection>
+        <From>
+          <Name>PacketToAttachedToThreads</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>AttachedToThreads</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToCreatedProcess</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>CreatedProcess</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
     </Network>
 
     <IncomingUpstream>
@@ -167,6 +225,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
       <To><Input>IncomingThreadsStateChanged</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+      <To><Input>IncomingAttachedToThreads</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+      <To><Input>IncomingCreatedProcess</Input></To>
     </IncomingUpstream>
  
   </Frontend>

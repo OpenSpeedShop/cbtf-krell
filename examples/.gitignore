@@ -22,6 +22,7 @@ m4/ltversion.m4
 src/pcsamp/.deps/*
 src/pcsamp/.libs/*
 src/pcsamp/pcsampDemo
+src/pcsamp/pcsampDemo.xml
 Makefile
 Makefile.in
 missing

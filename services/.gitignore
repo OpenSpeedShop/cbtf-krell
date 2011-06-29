@@ -10,6 +10,7 @@ configure
 depcomp
 collectors/*/.deps/*
 collectors/*/.libs/*
+collectors/pcsamp/cbtfrun
 install-sh
 libltdl/*
 libtool

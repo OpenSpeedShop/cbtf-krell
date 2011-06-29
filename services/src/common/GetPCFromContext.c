@@ -40,7 +40,7 @@
  *
  * @ingroup RuntimeAPI
  */
-uint64_t CBTF_GetPCFromContext(const ucontext_t* context)
+inline uint64_t CBTF_GetPCFromContext(const ucontext_t* context)
 {
     /* Check preconditions */
     Assert(context != NULL);

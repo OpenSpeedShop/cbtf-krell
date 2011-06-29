@@ -260,13 +260,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-          export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-          export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -279,4 +279,4 @@ case "$collector" in
     ;;
 esac
 
-exec $1
+exec "$@"

@@ -35,6 +35,7 @@
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
 #include "KrellInstitute/Services/Common.h"
+#include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
@@ -113,6 +114,43 @@ void set_mpi_flag(int flag) {
     tls->is_mpi_job = flag;
 }
 
+void started_process_thread()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    CBTF_Protocol_ThreadName origtname;
+    origtname.host = strdup(tls->tname.host);
+    origtname.pid = -1;
+    origtname.has_posix_tid = false;
+    origtname.posix_tid = 0;
+    origtname.rank = -1;
+
+    tls->tname.rank = monitor_mpi_comm_rank();
+
+    //CBTF_Protocol_CreatedProcess message;
+    tls->created_process_message.original_thread = origtname;
+    tls->created_process_message.created_thread = tls->tname;
+
+    tls->tgrp.names.names_len = 0;
+    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
+    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
+
+    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
+           &tls->tname, sizeof(tls->tname));
+    tls->tgrp.names.names_len++;
+
+    //CBTF_Protocol_AttachedToThreads tmessage;
+    tls->attached_to_threads_message.threads = tls->tgrp;
+    tls->process_created = 0;
+}
+
 void send_process_thread_message()
 {
     /* Access our thread-local storage */
@@ -178,43 +216,6 @@ void connect_to_mrnet()
 
     //send_process_thread_message();
     //tls->sent_process_thread_info = 1;
-}
-
-void started_process_thread()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    CBTF_Protocol_ThreadName origtname;
-    origtname.host = strdup(tls->tname.host);
-    origtname.pid = -1;
-    origtname.has_posix_tid = false;
-    origtname.posix_tid = 0;
-    origtname.rank = -1;
-
-    tls->tname.rank = monitor_mpi_comm_rank();
-
-    //CBTF_Protocol_CreatedProcess message;
-    tls->created_process_message.original_thread = origtname;
-    tls->created_process_message.created_thread = tls->tname;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
-           &tls->tname, sizeof(tls->tname));
-    tls->tgrp.names.names_len++;
-
-    //CBTF_Protocol_AttachedToThreads tmessage;
-    tls->attached_to_threads_message.threads = tls->tgrp;
-    tls->process_created = 0;
 }
 
 void send_thread_state_changed_message()

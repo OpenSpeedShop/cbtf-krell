@@ -25,11 +25,9 @@ libcbtf_services_fileio_la_CFLAGS = \
 	@LTDLINCL@ 
 
 libcbtf_services_fileio_la_LDFLAGS = \
-	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
 
 libcbtf_services_fileio_la_LIBADD = \
-	@MESSAGES_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_services_fileio_la_SOURCES = \

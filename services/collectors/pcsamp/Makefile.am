@@ -19,9 +19,11 @@
 dist_bin_SCRIPTS = cbtfrun
 BUILT_FILES = cbtfrun
 
-plugindir = $(libdir)/KrellInstitute/Collectors
+CFLAGS = -g -O0
 
-plugin_LTLIBRARIES =
+pkglibdir = $(libdir)/KrellInstitute/Collectors
+
+pkglib_LTLIBRARIES =
 
 
 if HAVE_LIBMONITOR
@@ -31,7 +33,7 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_LIBMONITOR
-plugin_LTLIBRARIES += pcsamp-collector-monitor-fileio.la libpcsamp-monitor-fileio.la
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-fileio.la libpcsamp-monitor-fileio.la
 pcsamp_collector_monitor_fileio_la_CFLAGS = \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
@@ -95,7 +97,7 @@ libpcsamp_monitor_fileio_la_SOURCES = \
 	collector.c
 
 if HAVE_MRNET
-plugin_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la libpcsamp-monitor-mrnet.la
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la libpcsamp-monitor-mrnet.la
 pcsamp_collector_monitor_mrnet_la_CFLAGS = \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
@@ -165,7 +167,7 @@ libpcsamp_monitor_mrnet_la_SOURCES = \
 	collector.c
 
 
-plugin_LTLIBRARIES += pcsamp-collector-monitor-mrnet-mpi.la libpcsamp-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet-mpi.la libpcsamp-monitor-mrnet-mpi.la
 pcsamp_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
@@ -194,6 +196,7 @@ pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-data \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \

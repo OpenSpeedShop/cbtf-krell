@@ -31,8 +31,9 @@ libcbtf_services_mrnet_la_LDFLAGS = \
 	-version-info 0:0:0
 
 libcbtf_services_mrnet_la_LIBADD = \
-	@MESSAGES_LIBS@ \
-	@MRNET_LIBS@ \
+	@MESSAGES_BASE_LIBS@ \
+	@MESSAGES_EVENTS_LIBS@ \
+	@MRNET_LW_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_services_mrnet_la_SOURCES = \

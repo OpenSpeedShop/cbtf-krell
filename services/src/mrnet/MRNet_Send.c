@@ -178,8 +178,12 @@ int CBTF_MRNet_LW_connect (const int con_rank)
         fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_upstream\n");
     }
 #endif
-
-    //sleep(5);
+    // This caused the memory issues seen to occur immediately
+    //fflush(NULL);
+    // This sleep is needed because of timing issues between mpi, mrnet, and cbtf in knowing
+    // when the be processes are actually ready to receive data
+    // 10 is a minimum value for pcsampDemo to work for 64 pe, 20 worked for 128 pe
+    sleep(10);
 
     if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");

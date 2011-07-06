@@ -46,7 +46,7 @@ testXDR_LDADD = \
 	-lcbtf-xml \
         -lcbtf-messages-base -lcbtf-messages-converters-base \
 	-lcbtf-core \
-	-lboost_unit_test_framework-mt \
+	@BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 

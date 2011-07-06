@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 	    "Name of collector to use. Default is pcsamp.")
         ("program",
 	    boost::program_options::value<std::string>(&program)->default_value(""),
-	    "Program to collect data from, Program with arguments needs double quotes.")
+	    "Program to collect data from, Program with arguments needs double quotes.  If program is not specified this client will start the mrnet tree and wait for the user to manually attach backends in another window via cbtfrun.")
         ("mpiexecutable",
 	    boost::program_options::value<std::string>(&mpiexecutable)->default_value(""),
 	    "Name of the mpi executable. This must match the name of the mpi exectuable used in the program argument and implies the collection is being done on an mpi job if it is set.")
@@ -179,15 +179,23 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (program == "") {
-        std::cout << desc << std::endl;
-        return 1;
-    }
-
     // verify valid numBE.
     if (numBE == 0) {
         std::cout << desc << std::endl;
         return 1;
+    } else if (program == "" && numBE > 0) {
+	// this allows us to start the mrnet client FE
+	// and then start the program with collector in
+	// a separate window using cbtfrun.
+	PCSampDemo cbtfdemo;
+	cbtfdemo.start(topology,numBE);
+	std::cout << "Running Frontend for " << collector << " collector."
+	  << "\nNumber of mrnet backends: "  << numBE
+          << "\nTopology file used: " << topology << std::endl;
+	std::cout << "Start mrnet backends now..." << std::endl;
+	// ctrl-c to exit.  need cbtfdemo to notify us when all threads
+	// have finised.
+	while(true);
     } else {
         std::cout << "Running " << collector << " collector."
 	  << "\nProgram: " << program

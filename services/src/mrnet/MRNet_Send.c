@@ -35,10 +35,9 @@
 #include "mrnet_lightweight/MRNet.h"
 
 
-static Network_t* CBTF_MRNet_netPtr;
-static Stream_t* CBTF_MRNet_upstream;
-static Packet_t * CBTF_MRNet_packet;
-static int mrnet_connected = 0;
+ Network_t* CBTF_MRNet_netPtr;
+ Stream_t* CBTF_MRNet_upstream;
+ static int mrnet_connected = 0;
 
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
@@ -164,8 +163,9 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     }
 #endif
 
-    CBTF_MRNet_packet = (Packet_t *)malloc(sizeof(Packet_t));
-    Assert(CBTF_MRNet_packet);
+    Packet_t * p;
+    p = (Packet_t *)malloc(sizeof(Packet_t));
+    Assert(p);
 
     CBTF_MRNet_netPtr = Network_CreateNetworkBE(BE_argc, BE_argv);
     Assert(CBTF_MRNet_netPtr);
@@ -185,7 +185,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     // 10 is a minimum value for pcsampDemo to work for 64 pe, 20 worked for 128 pe
     sleep(10);
 
-    if (Network_recv(CBTF_MRNet_netPtr, &tag, CBTF_MRNet_packet, &CBTF_MRNet_upstream) != 1) {
+    if (Network_recv(CBTF_MRNet_netPtr, &tag, p, &CBTF_MRNet_upstream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
 	abort();
     }
@@ -197,6 +197,10 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     }
 #endif
     mrnet_connected = 1;
+
+    if (p != NULL) {
+        free(p);
+    } 
 }
 
 static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)

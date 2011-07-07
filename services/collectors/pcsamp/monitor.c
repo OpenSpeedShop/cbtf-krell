@@ -100,6 +100,8 @@ static __thread TLS the_tls;
 
 extern void cbtf_offline_service_start_timer();
 extern void cbtf_offline_service_stop_timer();
+extern void cbtf_offline_service_resume_sampling();
+extern void cbtf_offline_service_pause_sampling();
 extern void set_mpi_flag(int);
 
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -120,6 +122,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    set_mpi_flag(1);
+	    cbtf_offline_service_stop_timer();
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
@@ -141,7 +144,6 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    break;
     }
 #endif
-    cbtf_offline_service_stop_timer();
 }
 
 void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
@@ -185,13 +187,13 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #endif
 	        connect_to_mrnet();
 		tls->connected_to_mrnet = TRUE;
+		cbtf_offline_service_start_timer();
 	    }
 	    break;
 	default:
 	    break;
     }
 #endif
-    cbtf_offline_service_start_timer();
 }
 
 void cbtf_offline_sent_data(int sent_data)
@@ -377,6 +379,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	        fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
 			monitor_mpi_comm_rank());
 	    }
+	    set_mpi_flag(1);
 #endif
 	    break;
 #endif
@@ -472,7 +475,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
 
     if (is_dlopen) {
-	cbtf_offline_service_stop_timer();
+	cbtf_offline_service_pause_sampling();
     }
 
     //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
@@ -580,6 +583,6 @@ void cbtf_offline_record_dso(const char* dsoname,
     tls->dsoname_len += dsoname_len;
 
     if (is_dlopen) {
-	cbtf_offline_service_start_timer();
+	cbtf_offline_service_resume_sampling();
     }
 }

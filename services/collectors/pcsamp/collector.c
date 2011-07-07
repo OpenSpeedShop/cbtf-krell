@@ -267,8 +267,6 @@ void send_thread_state_changed_message()
 }
 #endif
 
-static void serviceTimerHandler(const ucontext_t* context);
-
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 extern void cbtf_offline_sent_data(int);
 #endif
@@ -550,7 +548,7 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
-void cbtf_offline_service_start_timer()
+void cbtf_offline_service_resume_sampling()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -564,7 +562,7 @@ void cbtf_offline_service_start_timer()
     tls->defer_sampling=FALSE;
 }
 
-void cbtf_offline_service_stop_timer()
+void cbtf_offline_service_defer_sampling()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -576,6 +574,25 @@ void cbtf_offline_service_stop_timer()
 	return;
 
     tls->defer_sampling=TRUE;
+}
+
+void cbtf_offline_service_start_timer()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+}
+
+void cbtf_offline_service_stop_timer()
+{
+    CBTF_Timer(0, NULL);
 }
 #endif
 

@@ -100,8 +100,6 @@ static __thread TLS the_tls;
 
 extern void cbtf_offline_service_start_timer();
 extern void cbtf_offline_service_stop_timer();
-extern void cbtf_offline_service_resume_sampling();
-extern void cbtf_offline_service_pause_sampling();
 extern void set_mpi_flag(int);
 
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -475,7 +473,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
 
     if (is_dlopen) {
-	cbtf_offline_service_pause_sampling();
+	cbtf_offline_pause_sampling(0);
     }
 
     //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
@@ -583,6 +581,6 @@ void cbtf_offline_record_dso(const char* dsoname,
     tls->dsoname_len += dsoname_len;
 
     if (is_dlopen) {
-	cbtf_offline_service_resume_sampling();
+	cbtf_offline_resume_sampling(0);
     }
 }

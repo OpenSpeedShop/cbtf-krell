@@ -129,12 +129,10 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
         sprintf(dir_path, "%s%s%s/cbtf-rawdata-%s-%d",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp/",
 	     pw->pw_name, "/offline-cbtf", host,pid);
-fprintf(stderr,"DEFAULT DIR_PATH=%s\n",dir_path);
     } else {
         sprintf(dir_path, "%s/cbtf-rawdata-%s-%d",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp",
 	     host,pid);
-fprintf(stderr,"ENV DIR_PATH=%s\n",dir_path);
     }
 
     if(posix_tid == 0) {
@@ -190,8 +188,10 @@ fprintf(stderr,"ENV DIR_PATH=%s\n",dir_path);
 void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
 			const char* suffix)
 {
+#if 0
 fprintf(stderr,"CBTF_EventSetSendToFile host %s, pid %d , posix_tid %#ld\n",
 	header->host, header->pid, header->posix_tid);
+#endif
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }

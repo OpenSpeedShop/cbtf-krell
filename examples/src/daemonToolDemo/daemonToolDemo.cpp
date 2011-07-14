@@ -87,9 +87,9 @@ class DaemonToolDemo
   {
   }
 
-  void start(const std::string& topology, const std::string& cmd)
+  void start(const std::string& topology, const std::string& cmd, const unsigned int& numBE)
   {
-    dm_thread = boost::thread(&DaemonToolDemo::run, this, topology, cmd);
+    dm_thread = boost::thread(&DaemonToolDemo::run, this, topology, cmd, numBE);
   }
 
   void join()
@@ -97,7 +97,7 @@ class DaemonToolDemo
     dm_thread.join();
   }
 
-  void run(const std::string& topology, const std::string& cmd)
+  void run(const std::string& topology, const std::string& cmd, const unsigned int& numBE)
   {
 
     registerXML(filesystem::path(XMLDIR) / "daemonToolDemo.xml");
@@ -143,11 +143,15 @@ class DaemonToolDemo
     // send the command to run on backend (on backend filter)
     *input_value = cmd;
 
+    int num_done = 0;
     // display the results of the command...
-    std::vector<std::string> outval = *output_value;
-    std::vector<std::string>::const_iterator ci;
-    for(ci = outval.begin(); ci != outval.end(); ci++) {
+    while (num_done < numBE) {
+        std::vector<std::string> outval = *output_value;
+        std::vector<std::string>::const_iterator ci;
+        for(ci = outval.begin(); ci != outval.end(); ci++) {
             std::cout << *ci << std::endl;
+        }
+	num_done++;
     }
 
   }
@@ -158,6 +162,7 @@ class DaemonToolDemo
 
 int main(int argc, char** argv)
 {
+    unsigned int numBE;
     std::string topology;
     std::string cmd;
 
@@ -170,6 +175,8 @@ int main(int argc, char** argv)
     boost::program_options::options_description desc("pcsampDemo options");
     desc.add_options()
         ("help,h", "Produce this help message.")
+        ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1),
+            "Number of expected mrnet backends. Default is 1, This should match the number of nodes in your topology and job allocation.")
         ("topology",
 	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
 	    "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen),")
@@ -196,7 +203,10 @@ int main(int argc, char** argv)
     }
 
     DaemonToolDemo dtdemo;
-    dtdemo.start(topology,cmd);
+    std::cout << "Running command " << cmd 
+          << "\nNumber of mrnet backends: "  << numBE
+	  << std::endl;
+    dtdemo.start(topology,cmd,numBE);
 
     dtdemo.join();
 }

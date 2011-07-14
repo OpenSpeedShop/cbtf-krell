@@ -18,6 +18,8 @@
 
 /** @file Plugin used by unit tests for the CBTF MRNet library. */
 
+#include <sys/param.h>
+
 #include <boost/bind.hpp>
 #include <mrnet/MRNet.h>
 #include <typeinfo>
@@ -198,10 +200,14 @@ private:
 	std::vector<std::string> psout;
 	std::string line;
 
-	fd = popen( in.data(), "r" );
+	fd = popen( in.c_str(), "r" );
+
+	char hostname[MAXHOSTNAMELEN];
+	gethostname(hostname, MAXHOSTNAMELEN);
+	std::string header("Output of " + in + " from host " +hostname);
+	psout.push_back(header);
 
 	if( fd != NULL ) {
-            std::cout << std::endl;
             while( fgets( buffer, sizeof( buffer ), fd ) ) {
                 std::string fline(buffer);
 		if (!fline.empty() && fline[fline.length()-1] == '\n') {
@@ -213,7 +219,6 @@ private:
 		line = fline;
             }
 	    pclose( fd );
-            std::cout  << std::endl;
 
             fd = NULL;
 

@@ -371,6 +371,7 @@ AC_CONFIG_FILES([
     include/Makefile
     libltdl/Makefile
     src/Makefile
+    src/daemonToolDemo/Makefile
     src/pcsamp/Makefile
     test/Makefile
 ])

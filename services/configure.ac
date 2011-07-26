@@ -349,8 +349,7 @@ AC_PKG_TARGET_LIBMONITOR()
 AC_PKG_TARGET_LIBUNWIND()
 AC_PKG_TARGET_PAPI
 
-AX_BOOST_BASE([1.35.0])
-AX_MRNET()
+AX_LW_MRNET()
 AX_MESSAGES()
 
 AC_CONFIG_FILES([
@@ -373,6 +372,7 @@ AC_CONFIG_FILES([
     test/Makefile
     collectors/Makefile
     collectors/pcsamp/Makefile
+    collectors/usertime/Makefile
 ])
 
 AC_OUTPUT

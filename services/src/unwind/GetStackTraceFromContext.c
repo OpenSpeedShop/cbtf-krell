@@ -89,13 +89,13 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 
     Assert(getcontext(&context) == 0);
     skip_frames = 5;
-    skip_signal_frames = FALSE;
+    skip_signal_frames = false;
 
 #elif defined(__linux) && defined( __powerpc__ )
 
     Assert(getcontext(&context) == 0);
     skip_frames = 5;
-    skip_signal_frames = FALSE;
+    skip_signal_frames = false;
 
 
 #elif defined(__linux) && defined(__ia64)

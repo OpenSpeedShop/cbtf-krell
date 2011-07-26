@@ -33,6 +33,7 @@ libcbtf_messages_events_la_CFLAGS = \
 libcbtf_messages_converters_events_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/base \
+	@BOOST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 

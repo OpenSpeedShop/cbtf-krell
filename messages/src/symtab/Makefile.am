@@ -30,6 +30,7 @@ libcbtf_messages_symtab_la_CFLAGS = \
 libcbtf_messages_converters_symtab_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/base \
+	@BOOST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 

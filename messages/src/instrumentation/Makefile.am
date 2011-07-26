@@ -34,6 +34,7 @@ libcbtf_messages_converters_instrumentation_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/base \
 	-I$(top_srcdir)/src/collector \
+	@BOOST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 

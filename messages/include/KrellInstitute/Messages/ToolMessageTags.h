@@ -67,6 +67,11 @@
 #define CBTF_PROTOCOL_TAG_MPI_STARTUP                        ((int)1127)
 
 #define CBTF_PROTOCOL_TAG_PERFORMANCE_DATA                   ((int)10000)
+
 #define CBTF_PROTOCOL_TAG_PCSAMP_PARAMETERS                  ((int)10010)
 #define CBTF_PROTOCOL_TAG_PCSAMP_ARGS                        ((int)10011)
 #define CBTF_PROTOCOL_TAG_PCSAMP_DATA                        ((int)10012)
+
+#define CBTF_PROTOCOL_TAG_USERTIME_PARAMETERS                ((int)10013)
+#define CBTF_PROTOCOL_TAG_USERTIME_ARGS                      ((int)10014)
+#define CBTF_PROTOCOL_TAG_USERTIME_DATA                      ((int)10015)

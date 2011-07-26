@@ -72,6 +72,21 @@ typedef struct {
 
 } CBTF_HWCPCData;
 
+/** Type representing StackTrace sampling data. */
+#define CBTF_ST_BufferSize  1024
+#define CBTF_ST_MAXFRAMES 32
+typedef struct {
+    uint64_t addr_begin;  /**< Beginning of gathered data's address range. */
+    uint64_t addr_end;    /**< End of gathered data's address range. */
+
+    uint64_t bt[CBTF_ST_BufferSize];    /**< Stack trace (PC) addresses. */
+    uint8_t  count[CBTF_ST_BufferSize]; /**< count value greater than 0 is top */
+                                        /**< of stack. A count of 255 indicates */
+                                /**< another instance of this stack may */
+                                /**< exist in buffer bt. */
+
+} CBTF_StackTraceData;
+
 bool CBTF_UpdatePCData(uint64_t, CBTF_PCData*);
 bool CBTF_UpdateHWCPCData(uint64_t, CBTF_HWCPCData*, long long* );
 

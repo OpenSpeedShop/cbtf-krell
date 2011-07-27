@@ -234,7 +234,7 @@ private:
 
         for (int i = 0; i < in.size(); ++i)
         {
-            x[i] = strdup(in[i]->c_str());
+            x[i] = strdup(in[i].c_str());
         }
 
         emitOutput<MRN::PacketPtr>(

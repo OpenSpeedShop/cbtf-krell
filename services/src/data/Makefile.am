@@ -28,11 +28,13 @@ libcbtf_services_data_la_LDFLAGS = \
 	-version-info 0:0:0
 
 libcbtf_services_data_la_LIBADD = \
+	@MESSAGES_EVENTS_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_services_data_la_SOURCES = \
 	InitializeDataHeader.c \
+	InitializeEventHeader.c \
 	UpdateHWCPCData.c \
 	UpdatePCData.c \
 	UpdateStackTraceBuffer.c

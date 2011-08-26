@@ -38,8 +38,8 @@
  Network_t* CBTF_MRNet_netPtr;
  // make the id of the stream we want global and use Network_get_Stream
  // locally in the send function to retrieve it.
- //Stream_t* CBTF_MRNet_upstream;
- static int upstream_id = 0;
+ //Stream_t* CBTF_MRNet_stream;
+ static int stream_id = 0;
  static int mrnet_connected = 0;
 
 
@@ -178,7 +178,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-        fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_upstream\n");
+        fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_stream\n");
     }
 #endif
     // This caused the memory issues seen to occur immediately
@@ -188,28 +188,20 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     // 10 is a minimum value for pcsampDemo to work for 64 pe, 20 worked for 128 pe
     //sleep(10);
 
-    Stream_t* CBTF_MRNet_upstream;
+    Stream_t* CBTF_MRNet_stream;
 
-#if 1
-    if (Network_recv(CBTF_MRNet_netPtr, &tag, p, &CBTF_MRNet_upstream) != 1) {
+    if (Network_recv(CBTF_MRNet_netPtr, &tag, p, &CBTF_MRNet_stream) != 1) {
         fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
 	abort();
     }
-#else
-    // can try the non blocking version here.
-    if (Network_recv_nonblock(CBTF_MRNet_netPtr, &tag, p, &CBTF_MRNet_upstream) != 1) {
-        fprintf(stderr, "CBTF_MRNet_LW_connect: BE receive failure\n");
-	abort();
-    }
-#endif
 
-    upstream_id = CBTF_MRNet_upstream->id;
+    stream_id = CBTF_MRNet_stream->id;
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
         fprintf(stderr,
 	"CBTF_MRNet_LW_connect: got tag %d, stream id %d, sync_filter_id %d, us_filter_id %d, ds_filter_id %d\n",
-	tag, CBTF_MRNet_upstream->id,CBTF_MRNet_upstream->sync_filter_id,
-	CBTF_MRNet_upstream->us_filter_id, CBTF_MRNet_upstream->ds_filter_id);
+	tag, CBTF_MRNet_stream->id,CBTF_MRNet_stream->sync_filter_id,
+	CBTF_MRNet_stream->us_filter_id, CBTF_MRNet_stream->ds_filter_id);
     }
 #endif
     mrnet_connected = 1;
@@ -229,9 +221,9 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
     }
 #endif
 
-    Stream_t* CBTF_MRNet_upstream = Network_get_Stream(CBTF_MRNet_netPtr,upstream_id);
-    if ( (Stream_send(CBTF_MRNet_upstream, tag, fmt_str, data, size) == -1) ||
-          Stream_flush(CBTF_MRNet_upstream) == -1 ) {
+    Stream_t* CBTF_MRNet_stream = Network_get_Stream(CBTF_MRNet_netPtr,stream_id);
+    if ( (Stream_send(CBTF_MRNet_stream, tag, fmt_str, data, size) == -1) ||
+          Stream_flush(CBTF_MRNet_stream) == -1 ) {
         fprintf(stderr, "BE: stream::send() failure\n");
     }
 
@@ -286,12 +278,48 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 }
 
 void CBTF_Waitfor_MRNet_Shutdown() {
+
+    Packet_t * p;
+    p = (Packet_t *)malloc(sizeof(Packet_t));
+    Assert(p);
+
     if (CBTF_MRNet_netPtr) {
-        Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
+	/* get our stream */
+	Stream_t* stream = Network_get_Stream(CBTF_MRNet_netPtr,stream_id);
+	int tag = 0;
+
+	/* wait for FE to request the shutdown */
+	do {
+	    if( Network_recv(CBTF_MRNet_netPtr, &tag, p, &stream) != 1 ) {
+		fprintf(stderr, "BE: receive failure\n");
+		break;
+	    }
+	} while ( tag != 101 );
+
+	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown recevied shutwon request tag %d.\n", tag);
+
+	/* send the FE the acknowledgement of shutdown */
+	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown sending ack tag %d.\n", tag);
+
+	if ( (Stream_send(stream, /*tag*/ 102, "%d", 102) == -1) ||
+	      Stream_flush(stream) == -1 ) {
+	    fprintf(stderr, "CBTF_Waitfor_MRNet_Shutdown BE: stream::send() failure\n");
+	}
+
+	//Stream_send(CBTF_MRNet_stream, 102, "%d", 102);
+	//Stream_flush(CBTF_MRNet_stream);
+
+	/* Now wait for mrnet to shutdown */
+	//fprintf(stderr,"MRNet Network waiting to shutdown.\n");
+	Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
     }
 
+    /* delete out network pointer */
     if (CBTF_MRNet_netPtr != NULL) {
         delete_Network_t(CBTF_MRNet_netPtr);
     }
+
+    if (p != NULL)
+	free(p);
 }
 

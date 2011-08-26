@@ -19,7 +19,17 @@ m4/lt~obsolete.m4
 m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
+src/.deps/*
+src/.libs/*
+collectionTool/collectionTool
+collectors/pcsamp/.deps/*
+collectors/pcsamp/.libs/*
+collectors/pcsamp/pcsamp.xml
+collectors/usertime/.deps/*
+collectors/usertime/.libs/*
+collectors/usertime/usertime.xml
 Makefile
 Makefile.in
 missing
 stamp-h1
+scripts/cbtfrun

@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2011 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+  <Type>usertime</Type>
+  <Version>1.0.0</Version>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+    <Tag>1101</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+    <Tag>1104</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+    <Tag>1116</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_UNLOADED_LINKED_OBJECT</Name>
+    <Tag>1126</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+    <Tag>10000</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_USERTIME_DATA</Name>
+    <Tag>10015</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+    <Tag>1124</Tag>
+  </Stream>
+
+  <Output>
+      <Name>output</Name>
+      <From><Output>output_from_frontend</Output></From>
+  </Output>
+ 
+  <Frontend>
+
+    <Network>
+      <Type>usertime_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>@@component_location@@</SearchPath>
+
+      <Plugin>CollectionPlugin</Plugin>
+
+      <Component>
+        <Name>PacketToLoadedLinkedObject</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_LoadedLinkedObject&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToThreadsStateChanged</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_ThreadsStateChanged&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToAttachedToThreads</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_AttachedToThreads&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToCreatedProcess</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_CreatedProcess&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
+      </Component>
+ 
+      <Component>
+        <Name>Display</Name>
+        <Type>DisplayAddressBuffer</Type>
+      </Component>
+
+      <Component>
+        <Name>LinkedObject</Name>
+        <Type>LinkedObject</Type>
+      </Component>
+
+      <Component>
+        <Name>ThreadsStateChanged</Name>
+        <Type>ThreadsStateChanged</Type>
+      </Component>
+
+      <Component>
+          <Name>convert_output</Name>
+          <Type>ConvertPacketToBool</Type>
+      </Component>
+
+      <Component>
+        <Name>AttachedToThreads</Name>
+        <Type>AttachedToThreads</Type>
+      </Component>
+
+      <Component>
+        <Name>CreatedProcess</Name>
+        <Type>CreatedProcess</Type>
+      </Component>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingLoadedLinkedObject</Name>
+        <To>
+          <Name>PacketToLoadedLinkedObject</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingThreadsStateChanged</Name>
+        <To>
+          <Name>PacketToThreadsStateChanged</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingAttachedToThreads</Name>
+        <To>
+          <Name>PacketToAttachedToThreads</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingCreatedProcess</Name>
+        <To>
+          <Name>PacketToCreatedProcess</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+          <Name>PacketToAddressBuffer</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Display</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToLoadedLinkedObject</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>LinkedObject</Name>
+          <Input>loaded</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToThreadsStateChanged</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>ThreadsStateChanged</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+<!--
+      <Connection>
+        <From>
+          <Name>ThreadsStateChanged</Name>
+          <Output>out1</Output>
+        </From>
+        <To>
+          <Name>convert_output</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+-->
+
+      <Connection>
+        <From>
+          <Name>PacketToAttachedToThreads</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>AttachedToThreads</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToCreatedProcess</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>CreatedProcess</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Output>
+          <Name>output_from_frontend</Name>
+          <From>
+              <Name>ThreadsStateChanged</Name>
+              <Output>out1</Output>
+          </From>
+      </Output>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+      <To><Input>IncomingLoadedLinkedObject</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+      <To><Input>IncomingThreadsStateChanged</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+      <To><Input>IncomingAttachedToThreads</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+      <To><Input>IncomingCreatedProcess</Input></To>
+    </IncomingUpstream>
+ 
+  </Frontend>
+
+  <Filter>
+ 
+    <Depth><AllOther/></Depth>
+
+    <Network>
+      <Type>usertime_Filter</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>@@component_location@@</SearchPath>
+
+      <Plugin>CollectionPlugin</Plugin>
+ 
+      <Component>
+        <Name>PacketToBlob</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_Blob&gt;</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToUsertimeData</Name>
+        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_usertime_data&gt;</Type>
+      </Component>
+ 
+      <Component>
+        <Name>PacketToAddressBuffer</Name>
+        <Type>ConvertPacketToAddressBuffer</Type>
+      </Component>
+ 
+      <Component>
+        <Name>Aggregator</Name>
+        <Type>AddressAggregator</Type>
+      </Component>
+ 
+      <Component>
+        <Name>AddressBufferToPacket</Name>
+        <Type>ConvertAddressBufferToPacket</Type>
+      </Component>
+ 
+      <Input>
+        <Name>IncomingBlobs</Name>
+        <To>
+          <Name>PacketToBlob</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingUsertimeData</Name>
+        <To>
+          <Name>PacketToUsertimeData</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>PacketToAddressBuffer</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+ 
+      <Connection>
+        <From>
+          <Name>PacketToBlob</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>in4</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>PacketToUsertimeData</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>in5</Input>
+        </To>
+      </Connection>
+ 
+      <Connection>
+        <From>
+          <Name>PacketToAddressBuffer</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+ 
+      <Connection>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>Aggregatorout</Output>
+        </From>
+        <To>
+          <Name>AddressBufferToPacket</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+ 
+      <Output>
+        <Name>OutgoingBuffers</Name>
+        <From>
+          <Name>AddressBufferToPacket</Name>
+          <Output>out</Output>
+        </From>
+      </Output>
+ 
+    </Network>    
+
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+      <To><Input>IncomingBlobs</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_USERTIME_DATA</Name>
+      <To><Input>IncomingUsertimeData</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingUpstream>
+      <Name>Buffers</Name>
+      <From><Output>OutgoingBuffers</Output></From>
+    </OutgoingUpstream>
+
+  </Filter>
+
+</MRNet>

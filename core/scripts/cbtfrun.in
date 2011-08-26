@@ -1,0 +1,297 @@
+#! /bin/bash
+# Some of this code is inspired by the libmonitor package (monitor-run).
+
+# The machine dependent abi libdir name has been computed 
+# so use the information from one central location. 
+machlibdir=@@machine_dependent_libdir@@
+alt_machlibdir=@@alt_machine_dependent_libdir@@
+
+monitor_prefix=@@libmonitordir@@
+monitor_exec_prefix="${monitor_prefix}"
+monitor_libdir="${monitor_prefix}/${machlibdir}"
+libmonitor="${monitor_libdir}/libmonitor.so"
+
+papi_prefix=@@libpapidir@@
+papi_libdir="${papi_prefix}/${machlibdir}"
+libpapi="${papi_libdir}/libpapi.so"
+
+libunwind_prefix=@@libunwinddir@@
+libunwind_libdir="${libunwind_prefix}/${machlibdir}"
+libunwind="${libunwind_libdir}/libunwind.so"
+
+libmrnet_prefix=@@libmrnetdir@@
+libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
+libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
+
+
+cbtf_prefix=@@cbtfinstalldir@@
+cbtf_libdir="${cbtf_prefix}/${machlibdir}"
+cbtf_bindir="${cbtf_prefix}/bin"
+cbtf_plugins="${cbtf_libdir}/KrellInstitute/Collectors"
+
+binutils_service="${cbtf_libdir}/libcbtf-services-binutils.so"
+common_service="${cbtf_libdir}/libcbtf-services-common.so"
+data_service="${cbtf_libdir}/libcbtf-services-data.so"
+events_service="${cbtf_libdir}/libcbtf-messages-events.so"
+fileio_service="${cbtf_libdir}/libcbtf-services-fileio.so"
+fpe_service="${cbtf_libdir}/libcbtf-services-fpe.so"
+monitor_service="${cbtf_libdir}/libcbtf-services-monitor.so"
+mrnet_service="${cbtf_libdir}/libcbtf-services-mrnet.so"
+offline_service="${cbtf_libdir}/libcbtf-services-offline.so"
+papi_service="${cbtf_libdir}/libcbtf-services-papi.so"
+send_service="${cbtf_libdir}/libcbtf-services-send.so"
+timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
+unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
+
+lam_prefix=@@lamdir@@
+lampi_prefix=@@lampidir@@
+mpich_prefix=@@mpichdir@@
+mpich2_prefix=@@mpich2dir@@
+mvapich_prefix=@@mvapichdir@@
+mvapich2_prefix=@@mvapich2dir@@
+mpt_prefix=@@mptdir@@
+openmpi_prefix=@@openmpidir@@
+
+if test -f ${mpich2_prefix}/${machlibdir}/libfmpich.so; then
+  f_mpich2_libs="${mpich2_prefix}/${machlibdir}/libfmpich.so"
+elif test -f ${mpich2_prefix}/${altmachlibdir}/libfmpich.so; then
+  f_mpich2_libs="${mpich2_prefix}/${altmachlibdir}/libfmpich.so"
+fi
+
+if test -f ${mvapich2_prefix}/${machlibdir}/libfmpich.so; then
+  f_mvapich2_libs="${mvapich2_prefix}/${machlibdir}/libfmpich.so"
+elif test -f ${mvapich2_prefix}/${altmachlibdir}/libfmpich.so; then
+  f_mvapich2_libs="${mvapich2_prefix}/${altmachlibdir}/libfmpich.so"
+fi
+
+mpi_plugin=
+output_dir=
+
+default_mpi_impl=@@cbtfdefaultmpi@@
+
+if [ -n "$CBTF_MPI_IMPLEMENTATION" ]
+then
+    mpitouse=$CBTF_MPI_IMPLEMENTATION
+else
+    mpitouse=`echo ${default_mpi_impl} |tr '[A-Z]' '[a-z]'`
+    export CBTF_MPI_IMPLEMENTATION=$mpitouse
+fi
+
+
+for i in $*
+do
+    # test if argument is a file
+    if test -f "$i"
+    then
+	# test if the file is elf binary and has the symbol MPI_Init.
+	# may not be portable!
+	isexecutable=`file $i | grep ELF`
+	if [ -n "$isexecutable" ]
+	then
+	    ismpi=`nm $i | grep -i MPI_Init`
+	fi
+
+	if [ -n "$ismpi" ]
+	then
+            mpi_plugin="${cbtf_plugins}/mpi-${mpitouse}-rt-offline.so"
+	    break
+	fi
+    fi 
+done
+
+die()
+{
+    echo "$0: error: $*" 1>&2
+    exit 1
+}
+
+usage()
+{
+    cat <<EOF
+Usage: $0 [options] command arg ...
+
+If command uses arguments then command and arg
+must be quoted. example:
+$0 "mpirun -np 2 foo"
+
+   -h, --help
+
+   -c, --collector
+Where collector name is an available collector: (pcsamp)
+
+   -d, --debug
+enable debugging
+
+   -m, --mrnet
+Use mrnet to send data.
+
+   --mpi
+Use mpi version of collector. This lightweight mrnet backends
+need this to properly connect to the mrnet tree for mpi programs.
+
+   -i, --fileio
+Save data to files.
+
+   -o, --output  <directory>
+Where directory is the location to write the
+raw performance data files. The utility tool
+${cbtf_bindir}/cbtfutil is then run with the
+named directory as an argument to create a .openss
+database that can be view with openss. On large
+cluster systems this should be set to fast file
+system capable of storing large datasets. 
+NOTE: this option will override any setting for
+the environment variable CBTF_RAWDATA_DIR.
+Only valid with fileio.
+
+EOF
+    exit 0
+}
+
+use_mrnet="true"
+use_fileo="false"
+use_mpi="false"
+
+while test "x$1" != x
+do
+    case "$1" in
+
+        -h | --help )
+            usage
+            ;;
+
+	-c | --collector)
+	    test "x$2" != x || die "missing argument: $*"
+	    collector=$2
+	    shift ; shift;
+	    ;;
+
+        -d | --debug )
+            export MONITOR_DEBUG=1
+            export CBTF_DEBUG_COLLECTOR=1
+            export CBTF_DEBUG_OFLINE_COLLECTOR=1
+	    shift
+            ;;
+
+        -i | --fileio )
+            use_fileio="true";
+            use_mrnet="false";
+	    shift
+            ;;
+
+        -m | --mrnet )
+            use_mrnet="true";
+            use_fileio="false";
+	    shift
+            ;;
+
+        --mpi )
+            use_mpi="true";
+	    shift
+            ;;
+
+	-o | --output)
+            test "x$2" != x || die "missing argument: $*"
+            case "$2" in
+                /* )  dir="$2" ;;
+		* )   dir="`pwd`/$2" ;;
+            esac
+	    test -d "$dir" || die "unable to find: $dir"
+	    export CBTF_RAWDATA_DIR="${dir}"
+            shift ; shift
+            ;;
+
+        -- )
+            shift
+            break
+            ;;
+
+        -* )
+            die "unknown option: $1"
+            ;;
+
+        * )
+            break
+            ;;
+    esac
+done
+
+
+if [ "use_fileio" == "true" ]
+then
+  if [ "x${CBTF_RAWDATA_DIR}" == "x" ]
+  then
+   test -d "/tmp/${USER}/offline-cbtf" || mkdir -p "/tmp/${USER}/offline-cbtf"
+   export CBTF_RAWDATA_DIR="/tmp/${USER}/offline-cbtf"
+  else
+   test -d ${CBTF_RAWDATA_DIR} || mkdir -p ${CBTF_RAWDATA_DIR}
+  fi
+fi
+
+extra_mpi_libs=""
+
+
+case "$mpitouse" in
+    mpich2)
+      extra_mpi_libs=${f_mpich2_libs}
+    ;;
+
+    mvapich2)
+      extra_mpi_libs=${f_mvapich2_libs}
+esac
+
+# 
+
+case "$collector" in
+    # The mpi tracing plugins already collect mpi rank information so
+    # we do not add the preload_file...
+    mpi|mpit|mpiotf )
+    mpicollector=${collector}-${mpitouse}
+    export LD_PRELOAD=${cbtf_plugins}/$mpicollector-rt-offline.so:${extra_mpi_libs}:${libmonitor}
+    ;;
+
+    mpi-*|mpit-*|mpiotf-*)
+    mpicollector=${collector}
+    export LD_PRELOAD=${cbtf_plugins}/$mpicollector-rt-offline.so:${extra_mpi_libs}:${libmonitor}
+    ;;
+
+    pcsamp)
+    if [ $use_mrnet == "true" ]
+    then
+        if [ $use_mpi == "true" ]
+	then
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	else
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	fi 
+    elif [ $use_fileio == "true" ]
+    then
+      export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+    fi
+    ;;
+
+    usertime)
+    if [ $use_mrnet == "true" ]
+    then
+        if [ $use_mpi == "true" ]
+	then
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	else
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	fi 
+    elif [ $use_fileio == "true" ]
+    then
+      export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+    fi
+    ;;
+
+
+    # The non mpi tracing experiments need to trace MPI_Init to
+    # gather the mpi rank information needed for the mpi_rank field
+    # in the THREADS table of the openss database.
+    * )
+    export LD_PRELOAD=${cbtf_plugins}/$collector-rt-offline.so:${libmonitor}
+    ;;
+esac
+
+exec "$@"

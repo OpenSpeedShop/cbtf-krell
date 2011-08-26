@@ -23,6 +23,10 @@ src/pcsamp/.deps/*
 src/pcsamp/.libs/*
 src/pcsamp/pcsampDemo
 src/pcsamp/pcsampDemo.xml
+src/daemonToolDemo/.deps/*
+src/daemonToolDemo/.libs/*
+src/daemonToolDemo/daemonToolDemo
+src/daemonToolDemo/daemonToolDemo.xml
 Makefile
 Makefile.in
 missing

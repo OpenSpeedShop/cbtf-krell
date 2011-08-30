@@ -61,6 +61,12 @@ namespace {
     typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
     LinkedObjectEntryVec linkedobjectvec;
 
+#ifndef NDEBUG
+/** Flag indicating if debuging for LinkedObjects is enabled. */
+bool is_debug_linkedobject_events_enabled =
+    (getenv("CBTF_DEBUG_LINKEDOBJECT_EVENTS") != NULL);
+#endif
+
 }
 
 /**
@@ -111,18 +117,22 @@ private:
 	    entry.addr_end = message->range.end;
 	    entry.is_executable = message->is_executable;
 	    entry.time_loaded = message->time;
+	    entry.time_unloaded = Time::Now();
 
 	    linkedobjectvec.push_back(entry);
 
 // used to show the linkedobject information sent.
-#if 0
+#ifndef NDEBUG
+	    if (is_debug_linkedobject_events_enabled) {
 	    std::cerr << "path " << entry.path
-	    << " loaded at time " << entry.time_loaded
+	    << " loaded at time " << entry.time_loaded.getValue()
+	    << " unloaded at time " << entry.time_unloaded.getValue()
 	    << " at " << AddressRange(entry.addr_begin,entry.addr_end)
 	    << " in thread " << entry.tname.getHost()
 	    << ":" << entry.tname.getPid().second
 	    << ":" <<  entry.tname.getPosixThreadId().second
 	    << std::endl;
+	    }
 #endif
 	}
     }

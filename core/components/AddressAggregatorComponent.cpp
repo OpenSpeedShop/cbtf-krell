@@ -94,7 +94,6 @@ private:
 	interval = data->interval;
 
 	PCData pcdata;
-	//pcdata.aggregateAddressCounts(*data,abuffer);
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
                                 data->count.count_val,
@@ -154,7 +153,6 @@ private:
 	interval = data.interval;
 
 	PCData pcdata;
-	//pcdata.aggregateAddressCounts(data,abuffer);
         pcdata.aggregateAddressCounts(data.pc.pc_len,
                                 data.pc.pc_val,
                                 data.count.count_val,
@@ -195,7 +193,6 @@ private:
 	interval = data.interval;
 
 	PCData pcdata;
-	//pcdata.aggregateAddressCounts(data,abuffer);
         pcdata.aggregateAddressCounts(data.pc.pc_len,
                                 data.pc.pc_val,
                                 data.count.count_val,

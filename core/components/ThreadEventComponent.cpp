@@ -47,6 +47,12 @@ namespace {
     typedef std::vector< std::pair<ThreadName,ThreadState> > ThreadNameStateVec;
     ThreadNameStateVec tstatevec;
 
+#ifndef NDEBUG
+/** Flag indicating if debuging for LinkedObjects is enabled. */
+bool is_debug_thread_events_enabled =
+    (getenv("CBTF_DEBUG_THREAD_EVENTS") != NULL);
+#endif
+
 }
 
 /**
@@ -89,12 +95,17 @@ private:
 				message->threads.names.names_val[i];
 
 	    ThreadName tname(msg_thread);
+
+#ifndef NDEBUG
+            if (is_debug_thread_events_enabled) {
 	    std::cerr << "ThreadStateChanged " << tname.getHost()
 	    << ":" << tname.getPid().second
 	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
 	    << ":" <<  tname.getMPIRank().second
 	    << " ThreadState: " << message->state
 	    << std::endl;
+	    }
+#endif
 
 	    tstatevec.push_back(std::make_pair(tname, (ThreadState) message->state));
 	    emitOutput<ThreadState>("out", (ThreadState) message->state);
@@ -150,11 +161,16 @@ private:
 				message->threads.names.names_val[i];
 
 	    ThreadName tname(msg_thread);
+
+#ifndef NDEBUG
+            if (is_debug_thread_events_enabled) {
 	    std::cerr << "AttachedToThread " << tname.getHost()
 	    << ":" << tname.getPid().second
 	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
 	    << ":" <<  tname.getMPIRank().second
 	    << std::endl;
+	    }
+#endif
 
 	    tvec.push_back(tname);
 	}
@@ -203,11 +219,16 @@ private:
         CBTF_Protocol_CreatedProcess *message = in.get();
 
 	ThreadName created_threadname(message->created_thread);
+
+#ifndef NDEBUG
+        if (is_debug_thread_events_enabled) {
 	std::cerr << "CreatedProcess " << created_threadname.getHost()
 	<< ":" << created_threadname.getPid().second
 	<< ":" <<  (uint64_t) created_threadname.getPosixThreadId().second
 	<< ":" <<  created_threadname.getMPIRank().second
 	<< std::endl;
+	}
+#endif
 
 	emitOutput<ThreadName>("out", created_threadname);
     }

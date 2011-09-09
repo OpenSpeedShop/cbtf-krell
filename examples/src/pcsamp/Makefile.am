@@ -51,6 +51,8 @@ pcsampDemo_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
 	-lboost_program_options \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \

@@ -49,6 +49,8 @@ daemonToolDemo_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
 	-lboost_program_options \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
 	@LIBXERCES_C@ \
 	@MRNET_LIBS@

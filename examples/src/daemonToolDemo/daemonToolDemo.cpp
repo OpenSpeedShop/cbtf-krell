@@ -82,7 +82,7 @@ public:
         //
 
         Component::registerPlugin(
-            filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers"
+            filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so"
             );
 
         //

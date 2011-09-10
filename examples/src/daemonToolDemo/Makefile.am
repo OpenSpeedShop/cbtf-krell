@@ -47,7 +47,6 @@ daemonToolDemo_LDFLAGS = \
 
 daemonToolDemo_LDADD = \
 	-lcbtf-mrnet \
-	-lcbtf-core \
 	-lboost_program_options \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
@@ -72,7 +71,6 @@ daemonToolDemoPlugin_la_LDFLAGS = \
 	@MRNET_LDFLAGS@
 
 daemonToolDemoPlugin_la_LIBADD = \
-	-lcbtf-core \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 

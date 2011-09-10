@@ -80,7 +80,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       -->
       
       <SearchPath>@@demolib_location@@</SearchPath>
-      <SearchPath>@@cbtflib_location@@</SearchPath>
       
       <Plugin>daemonToolDemoPlugin</Plugin>
       
@@ -201,7 +200,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Version>1.0.0</Version>
       
       <SearchPath>@@demolib_location@@</SearchPath>
-      <SearchPath>@@cbtflib_location@@</SearchPath>
       
       <Plugin>daemonToolDemoPlugin</Plugin>
       

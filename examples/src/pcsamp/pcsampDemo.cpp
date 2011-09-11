@@ -63,7 +63,7 @@ class PCSampDemo
 
 
     Component::registerPlugin(
-        filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers");
+        filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so");
     
     Component::Instance network = Component::instantiate(
         Type("PC_Sampling_Demo")

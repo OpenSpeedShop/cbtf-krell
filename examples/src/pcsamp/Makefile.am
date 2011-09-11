@@ -33,18 +33,18 @@ pcsampDemo_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
 	-DXMLDIR="\"$(demoxmldir)\"" \
-        @MESSAGES_CPPFLAGS@ \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
 	@LIBXERCES_C_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 pcsampDemo_LDFLAGS = \
 	-L$(top_srcdir)/src \
-        @MESSAGES_LDFLAGS@ \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ @CBTF_XML_LDFLAGS@ \
 	@LIBXERCES_C_LDFLAGS@ \
+        @MESSAGES_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 
 pcsampDemo_LDADD = \
@@ -53,11 +53,11 @@ pcsampDemo_LDADD = \
 	-lboost_program_options \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
+	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
+	@LIBXERCES_C@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \
-	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
-	@LIBXERCES_C@ \
 	@MRNET_LIBS@
 
 pcsampDemo_SOURCES = \

@@ -289,21 +289,21 @@ private:
         Component(Type(typeid(AddressAggregator)), Version(0, 0, 1))
     {
         declareInput<boost::shared_ptr<CBTF_pcsamp_data> >(
-            "in1", boost::bind(&AddressAggregator::pcsampHandler, this, _1)
+            "incomingPCSamp", boost::bind(&AddressAggregator::pcsampHandler, this, _1)
             );
         declareInput<AddressBuffer>(
-            "in2", boost::bind(&AddressAggregator::addressBufferHandler, this, _1)
+            "incomingAddressBuffer", boost::bind(&AddressAggregator::addressBufferHandler, this, _1)
             );
         declareInput<Blob>(
-            "in3", boost::bind(&AddressAggregator::blobHandler, this, _1)
+            "incomingBlob", boost::bind(&AddressAggregator::blobHandler, this, _1)
             );
         declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
-            "in4",
+            "incomingXDRBlob",
             boost::bind(
                 &AddressAggregator::cbtf_protocol_blob_Handler, this, _1
                 )
             );
-        declareOutput<AddressBuffer>("Aggregatorout");
+        declareOutput<AddressBuffer>("AggregatorOut");
     }
 
     /** Handler for the "in1" input.*/
@@ -317,7 +317,7 @@ private:
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(*data,abuffer);
 
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
     /** Handler for the "in4" input.*/
@@ -356,13 +356,13 @@ private:
 
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data,abuffer);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
     /** Handler for the "in2" input.*/
     void addressBufferHandler(const AddressBuffer& in)
     {
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
     /** Handler for the "in3" input.*/
@@ -393,7 +393,7 @@ private:
 
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data,abuffer);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
 }; // class AddressAggregator

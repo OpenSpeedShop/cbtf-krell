@@ -224,9 +224,6 @@ BOOST_AUTO_TEST_CASE(TestBlobXDRConverters)
     sbuffer = (char*)malloc(EncodingBufferSize);
 
     xdrmem_create(&xdrs, sbuffer, EncodingBufferSize, XDR_ENCODE);
-#if 0
-    Assert(xdr_CBTF_DataHeader(&xdrs, &tls.header) == TRUE);
-#endif
     Assert((xdr_CBTF_pcsamp_data)(&xdrs, &tls.data) == TRUE);
     Assert(xdr_CBTF_DataHeader(&xdrs, &tls.header) == TRUE);
     bsize = xdr_getpos(&xdrs);
@@ -258,14 +255,11 @@ BOOST_AUTO_TEST_CASE(TestBlobXDRConverters)
     memset(&blobdata, 0, sizeof(blobdata));
     unsigned datasize = myblob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &blobdata);
 
-#if 0
-    std::cerr << "datasize = " << datasize << std::endl;
-    std::cerr << "pc length = " << blobdata.pc.pc_len << std::endl;
-    std::cerr << "count length = " << blobdata.count.count_len << std::endl;
-#endif
-
     AddressBuffer abuffer;
 
     PCData pcdata;
-    pcdata.aggregateAddressCounts(blobdata,abuffer);
+    pcdata.aggregateAddressCounts(blobdata.pc.pc_len,
+                                blobdata.pc.pc_val,
+                                blobdata.count.count_val,
+                                abuffer);
 }

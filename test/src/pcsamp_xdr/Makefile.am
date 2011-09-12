@@ -35,7 +35,7 @@ testXDR_LDFLAGS = \
 	-L$(top_srcdir)/src \
 	-L$(top_srcdir)/../../tools/messages/src/base/.libs \
 	-L$(top_srcdir)/../../tools/core/src/.libs \
-	-L$(top_srcdir)/../../framework/libcbtf-xml/src/.libs \
+	-L$(top_srcdir)/../../framework/build/libcbtf-xml \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@MRNET_LDFLAGS@
@@ -47,6 +47,8 @@ testXDR_LDADD = \
         -lcbtf-messages-base -lcbtf-messages-converters-base \
 	-lcbtf-core \
 	@BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 

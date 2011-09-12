@@ -37,6 +37,7 @@ libcbtf_core_la_SOURCES = \
 	Blob.cpp \
 	Exception.cpp \
 	ExtentGroup.cpp \
+	LinkedObjectEntry.cpp \
 	Path.cpp \
 	PCData.cpp \
 	ThreadName.cpp

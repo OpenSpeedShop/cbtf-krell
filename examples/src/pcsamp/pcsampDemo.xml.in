@@ -52,6 +52,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Tag>1124</Tag>
   </Stream>
 
+  <Output>
+      <Name>output</Name>
+      <From><Output>output_from_frontend</Output></From>
+  </Output>
+ 
   <Frontend>
 
     <Network>
@@ -133,6 +138,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>in</Input>
         </To>
       </Input>
+
+      <Output>
+         <Name>output_from_frontend</Name>
+         <From>
+            <Name>ThreadsStateChanged</Name>
+            <Output>out1</Output>
+         </From>
+      </Output>
 
     </Network>
 

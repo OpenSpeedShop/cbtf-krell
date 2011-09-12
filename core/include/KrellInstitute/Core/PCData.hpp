@@ -46,10 +46,10 @@ namespace KrellInstitute { namespace Core {
 	
 	PCData();    
 
-	void getUniquePCValues(const CBTF_pcsamp_data&,
-			       AddressBuffer&) const;
-	void aggregateAddressCounts(const CBTF_pcsamp_data&,
-			       AddressBuffer&) const;
+	void aggregateAddressCounts(const unsigned int&,
+				    const uint64_t *,
+				    const uint8_t*,
+			 	    AddressBuffer&) const;
     };
     
 } }

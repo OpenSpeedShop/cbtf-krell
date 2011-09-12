@@ -21,12 +21,10 @@
  * Definition of the PC Data class.
  *
  */
-//#define DEBUG_OVERLAP 1
  
 #include "KrellInstitute/Core/Assert.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/PCData.hpp"
-#include "KrellInstitute/Messages/PCSamp_data.h"
 
 using namespace KrellInstitute::Core;
 
@@ -41,24 +39,32 @@ PCData::PCData()
 {
 }
 
-
-
-void PCData::aggregateAddressCounts( const CBTF_pcsamp_data& data,
-				AddressBuffer& buffer) const
+// pcsamp allows a pc address to be counted 255 times
+// before it creates another entry in the pc array for
+// that same pc address.  i.e. an address can appear
+// more than once in the pc array with the matching index
+// in the counts array maintaining sample counts.
+//
+// The hwc data uses counts as a measure of how many times
+// the pc address reached the threshold for the papi
+// counter used.
+//
+// hwcsamp data matches pcsamp in it's use of the pc and
+// counts arrays.  It has an additional array to record
+// the counts for up to si hardware counters and is not
+// used by the aggregator.
+void PCData::aggregateAddressCounts(
+	const unsigned& len,
+	const uint64_t* pc,
+	const uint8_t* counts,
+	AddressBuffer& buffer) const
 {
-    // Check assertions
-    // Assert(data.pc.pc_len == data.count.count_len);
-    if (data.pc.pc_len != data.count.count_len) {
-        std::cerr << "ASSERT getPCValues pc_len "
-	    << data.pc.pc_len
-	    << " != count_len "
-	    << data.count.count_len << std::endl;
-    }
-
-    // Iterate over each of the samples
-    for(unsigned i = 0; i < data.pc.pc_len; ++i) {
-	//std::cerr << "Address " << Address(data.pc.pc_val[i]) << " has count "
-	// << (int)data.count.count_val[i] <<  std::endl;
-	buffer.updateAddressCounts(data.pc.pc_val[i], data.count.count_val[i]);
+    // Iterate over each of the stacktrace address entries.
+    for(unsigned i = 0; i < len; ++i) {
+#if 0
+	std::cerr << "Address " << Address((uint64_t)pc[i]) << " has count "
+	 << (int)counts[i] <<  std::endl;
+#endif
+	buffer.updateAddressCounts(pc[i], counts[i]);
     }
 }

@@ -32,6 +32,7 @@
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
+#include "KrellInstitute/Core/LinkedObjectEntry.hpp"
 #include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/PCData.hpp"
 #include "KrellInstitute/Core/Time.hpp"
@@ -66,17 +67,8 @@ namespace {
     };
     typedef std::vector<AddressEntry > AddressEntryVec;
 
-    class LinkedObjectEntry {
-	public:
-	    ThreadName tname;
-	    Time time_loaded;
-	    Time time_unloaded;
-	    Address addr_begin;
-	    Address addr_end;
-	    Path path;
-	    bool  is_executable;
-    };
     typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
+    LinkedObjectEntryVec linkedobjectvec;
 
     // Sampling interval in nanoseconds.
     uint64_t interval;    
@@ -134,10 +126,12 @@ namespace {
 	    AddressEntryVec::iterator mi;
 	
 	    for (mi = m.begin(); mi != m.end(); ++mi) {
+	      if (mi->sample_count > 0 ) {
                 std::cout << "Address " << mi->addr
         	<< " had %" << mi->percent << " of samples "
         	<< " and " << mi->total_time << " of total time "
 		<< std::endl;
+	      }
 	    }
 	    std::cout << "\ntotal samples: " << total_counts
 	    << "\npercent of total samples: " << percent_total
@@ -311,11 +305,13 @@ private:
     {
         CBTF_pcsamp_data *data = in.get();
 
-
 	interval = data->interval;
 
 	PCData pcdata;
-	pcdata.aggregateAddressCounts(*data,abuffer);
+	pcdata.aggregateAddressCounts(data->pc.pc_len,
+				data->pc.pc_val,
+				data->count.count_val,
+				abuffer);
 
         emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
@@ -355,8 +351,11 @@ private:
 	interval = data.interval;
 
 	PCData pcdata;
-	pcdata.aggregateAddressCounts(data,abuffer);
-        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
+	pcdata.aggregateAddressCounts(data.pc.pc_len,
+				data.pc.pc_val,
+				data.count.count_val,
+				abuffer);
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     /** Handler for the "in2" input.*/
@@ -392,7 +391,10 @@ private:
 	interval = data.interval;
 
 	PCData pcdata;
-	pcdata.aggregateAddressCounts(data,abuffer);
+	pcdata.aggregateAddressCounts(data.pc.pc_len,
+				data.pc.pc_val,
+				data.count.count_val,
+				abuffer);
         emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
@@ -491,6 +493,8 @@ private:
 	    entry.is_executable = message->is_executable;
 	    entry.time_loaded = message->time;
 
+	    linkedobjectvec.push_back(entry);
+
 // used to show the linkedobject information sent.
 #if 0
 	    std::cerr << "path " << entry.path
@@ -538,6 +542,8 @@ private:
         declareInput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
             "in", boost::bind(&ThreadsStateChanged::inHandler, this, _1)
             );
+	declareOutput<ThreadState>("out");
+        declareOutput<bool>("out1");
     }
 
     /** Handlers for the inputs.*/
@@ -557,11 +563,13 @@ private:
 	    << std::endl;
 
 	    tstatevec.push_back(std::make_pair(tname, (ThreadState) message->state));
+	    emitOutput<ThreadState>("out", (ThreadState) message->state);
 
 	    if (tvec.size() == tstatevec.size()) {
 		std::cerr << "\nAll Threads are finished.\n" << std::endl;
 		std::cout << "Final aggregated address results for all threads" << std::endl;
 		printResults(abuffer.addresscounts);
+                emitOutput<bool>("out1", true);
 	    }
 
 	}

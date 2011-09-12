@@ -18,6 +18,9 @@
 
 /** @file Example PC sampling tool. */
 
+#include <sys/param.h>
+#include <sys/wait.h>
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 #include <boost/program_options.hpp>
@@ -26,8 +29,10 @@
 #include <KrellInstitute/CBTF/BoostExts.hpp>
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
+#include <KrellInstitute/CBTF/ValueSink.hpp>
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
+#include <mrnet/MRNet.h>
 
 using namespace boost;
 using namespace KrellInstitute::CBTF;
@@ -45,9 +50,12 @@ class PCSampDemo
   {
   }
 
-  void start(const std::string& topology, const unsigned int& numBE)
+  void start(const std::string& topology, const std::string& connections,
+	     const std::string& collector, const unsigned int& numBE,
+	     bool& finished)
   {
-    dm_thread = boost::thread(&PCSampDemo::run, this, topology, numBE);
+    dm_thread = boost::thread(&PCSampDemo::run, this, topology, connections,
+			      collector, numBE, finished);
   }
 
   void join()
@@ -55,11 +63,13 @@ class PCSampDemo
     dm_thread.join();
   }
 
-  void run(const std::string& topology, const unsigned int& numBE)
+  void run(const std::string& topology, const std::string& connections,
+	   const std::string& collector, const unsigned int& numBE,
+	   bool& finished)
   {
-    // FIXME: hardcoded path
-    //registerXML(filesystem::path(BUILDDIR) / "pcsampDemo.xml");
-    registerXML(filesystem::path(XMLDIR) / "pcsampDemo.xml");
+    std::string xmlfile("pcsampDemo");
+    xmlfile += ".xml";
+    registerXML(filesystem::path(XMLDIR) / xmlfile);
 
 
     Component::registerPlugin(
@@ -82,18 +92,6 @@ class PCSampDemo
         );
 
 
-// Offline/libmonitor Lightweight MRNet instrumentation:
-// The issue with specifying a connections file here is the we
-// need the lightweight mrnet instrumentation to be in sync
-// with any file specified here.  Currently both default to
-// users $HOME/.cbtf/attachBEconnection.  It is likely easier
-// to just leave it alone and standardize this aspect.
-// For a future dyninst mode of instrumenting lightweight mrnet
-// into a mutatee using a connections type file, we can
-// possibly specify a connections file.  But that may not
-// be needed since the dyninst backend daemon could like
-// just pass the needed connection onformaion directly.
-#if 0
     shared_ptr<ValueSource<filesystem::path> > backend_attach_file =
         ValueSource<filesystem::path>::instantiate();
     Component::Instance backend_attach_file_component = 
@@ -102,9 +100,6 @@ class PCSampDemo
         backend_attach_file_component, "value", launcher, "BackendAttachFile"
         );    
 
-    // FIXME: hardcoded path. this does not seem to work anywys. :(
-    *backend_attach_file = filesystem::path(BUILDDIR) / connection;
-#endif
 
     shared_ptr<ValueSource<filesystem::path> > topology_file =
         ValueSource<filesystem::path>::instantiate();
@@ -114,14 +109,22 @@ class PCSampDemo
         topology_file_component, "value", launcher, "TopologyFile"
         );
 
+    shared_ptr<ValueSink<bool> > done = ValueSink<bool>::instantiate();
+    Component::Instance outputs_component =
+            reinterpret_pointer_cast<Component>(done);
+
+
     Component::connect(launcher, "Network", network, "Network");
+    Component::connect(network, "output", outputs_component, "value");
 
     *backend_attach_count = numBE;
+    *backend_attach_file = connections;
     *topology_file = topology;
 
-    // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
-    // Do proper shutown of mrnet here?
-    while (true);
+    while (true) {
+	finished = *done;
+	if (finished) break;
+    }
   }
 
   private:
@@ -132,15 +135,16 @@ int main(int argc, char** argv)
 {
     unsigned int numBE;
     bool isMPI;
-    std::string topology;
-    std::string collector;
-    std::string program;
-    std::string mpiexecutable;
+    std::string topology, connections, collector, program, mpiexecutable;
 
     // create a default for topology file.
     char const* home = getenv("HOME");
     std::string default_topology(home);
     default_topology += "/.cbtf/cbtf_topology";
+    // create a default for connections file.
+    std::string default_connections(home);
+    default_connections += "/.cbtf/attachBE_connections";
+    // create a default for the collection type.
     std::string default_collector("pcsamp");
 
     boost::program_options::options_description desc("pcsampDemo options");
@@ -151,6 +155,9 @@ int main(int argc, char** argv)
         ("topology",
 	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
 	    "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen),")
+        ("connections",
+	    boost::program_options::value<std::string>(&connections)->default_value(default_connections),
+	    "Path name to a valid backend connections file. The connections file is created by the mrnet backends based on the mrnet topology file. The default is sufficient for most cases.")
         ("collector",
 	    boost::program_options::value<std::string>(&collector)->default_value(default_collector),
 	    "Name of collector to use. Default is pcsamp.")
@@ -179,6 +186,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    bool finished = false;
+
     // verify valid numBE.
     if (numBE == 0) {
         std::cout << desc << std::endl;
@@ -187,8 +196,8 @@ int main(int argc, char** argv)
 	// this allows us to start the mrnet client FE
 	// and then start the program with collector in
 	// a separate window using cbtfrun.
-	PCSampDemo cbtfdemo;
-	cbtfdemo.start(topology,numBE);
+	PCSampDemo fethread;
+	fethread.start(topology,connections,collector,numBE,finished);
 	std::cout << "Running Frontend for " << collector << " collector."
 	  << "\nNumber of mrnet backends: "  << numBE
           << "\nTopology file used: " << topology << std::endl;
@@ -196,6 +205,8 @@ int main(int argc, char** argv)
 	// ctrl-c to exit.  need cbtfdemo to notify us when all threads
 	// have finised.
 	while(true);
+        fethread.join();
+	exit(0);
     } else {
         std::cout << "Running " << collector << " collector."
 	  << "\nProgram: " << program
@@ -204,12 +215,14 @@ int main(int argc, char** argv)
     }
 
     // TODO: need to cleanly terminate mrnet.
-    PCSampDemo cbtfdemo;
-    cbtfdemo.start(topology,numBE);
+    PCSampDemo fethread;
+    fethread.start(topology,connections,collector,numBE,finished);
     sleep(3);
 
     // simple fork of process to run the program with collector.
-    pid_t child;
+    pid_t child,w;
+    int status;
+
     child = fork();
     if(child < 0){
         std::cout << "fork failed";
@@ -220,18 +233,28 @@ int main(int argc, char** argv)
 	    program.append("\"");
 	    std::cerr << "executing mpi program: " << program << std::endl;
 	    
-	    // FIXME: non-optimal.
             ::system(program.c_str());
+
 	} else {
     	    const char * command = "cbtfrun";
+
             std::cerr << "executing sequential program: "
 		<< command << " -m -c " << collector << " " << program << std::endl;
+
             execlp(command,"-m", "-c", collector.c_str(), program.c_str(), NULL);
 	}
     } else {
-        // FIXME: signal that we are done (from pcsampDemoPlugin Display component)
-        // Do proper shutown of mrnet here?
-        cbtfdemo.join();
+
+	do {
+	    w = waitpid(child, &status, WUNTRACED | WCONTINUED);
+	    if (w == -1) {
+		perror("waitpid");
+		exit(EXIT_FAILURE);
+	    }
+	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+        sleep(3);
+        fethread.join();
     }
 
 }

@@ -25,7 +25,7 @@ AC_DEFUN([AX_CBTF_XML], [
 
     CBTF_XML_CPPFLAGS="-I$cbtf_xml_dir/include"
     CBTF_XML_LDFLAGS="-L$cbtf_xml_dir/$abi_libdir"
-    CBTF_XML_LIBS="-lcbtf-xml"
+    CBTF_XML_LIBS="-lcbtf -lcbtf-xml"
 
     AC_LANG_PUSH(C++)
     AC_REQUIRE_CPP

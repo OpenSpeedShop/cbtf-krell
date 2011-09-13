@@ -20,24 +20,35 @@ lib_LTLIBRARIES = libcbtf-core.la
 
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
+	@BINUTILS_CPPFLAGS@ \
+	@DYNINST_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_la_LDFLAGS = \
+	@BINUTILS_LDFLAGS@ \
+	@DYNINST_LDFLAGS@ \
 	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
 
 
 libcbtf_core_la_LIBADD = \
+	@BINUTILS_BFD_LIB@ \
+	@DYNINST_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_core_la_SOURCES = \
+	AddressBitmap.cpp \
 	AddressBuffer.cpp \
+	BFDSymbols.cpp \
 	Blob.cpp \
 	Exception.cpp \
 	ExtentGroup.cpp \
 	LinkedObjectEntry.cpp \
 	Path.cpp \
 	PCData.cpp \
+	StacktraceData.cpp \
+	SymbolTable.cpp \
+	SymtabAPISymbols.cpp \
 	ThreadName.cpp

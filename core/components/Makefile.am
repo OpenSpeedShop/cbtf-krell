@@ -49,5 +49,6 @@ CollectionPlugin_la_SOURCES = \
 	AddressBufferComponent.cpp \
 	LinkedObjectComponent.cpp \
 	MRNetConverters.cpp \
+	SymbolComponent.cpp \
 	ThreadEventComponent.cpp
 

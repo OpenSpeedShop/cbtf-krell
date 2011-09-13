@@ -26,18 +26,23 @@ collectionTool_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
+	@CBTF_XML_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 collectionTool_LDFLAGS = \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
+	@CBTF_XML_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 
 collectionTool_LDADD = \
 	-lboost_program_options \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
+	@CBTF_XML_LIBS@\
 	@MRNET_LIBS@
 
 collectionTool_SOURCES = \

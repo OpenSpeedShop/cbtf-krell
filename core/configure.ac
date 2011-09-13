@@ -16,7 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-AC_INIT([messages], [1.0])
+AC_INIT([core], [1.0])
 AC_COPYRIGHT([[Copyright (c) 2010 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -144,6 +144,57 @@ AC_CHECK_HEADER(pthread.h, [ AC_CHECK_LIB(pthread, pthread_create, [
 ]) ])
 
 ################################################################################
+# Target PTHREADS Availability Specification
+################################################################################
+#
+# Option: --enable-target-pthreads=yes
+# Requires libpthread.
+#
+AC_MSG_CHECKING(for target pthread support specification)
+AC_ARG_ENABLE([target-pthreads],
+    [AS_HELP_STRING([--enable-target-pthreads],
+        [Enable support on target architecture for pthreads [default=yes]])],
+    [], [enable_target_pthreads=yes])
+
+AM_CONDITIONAL([HAVE_TARGET_TEST_POSIX_THREADS],
+    [test x$enable_target_pthreads = xyes])
+
+if test "x$enable_target_pthreads" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_TARGET_POSIX_THREADS], [1],
+        [Enable support on the target architecture for pthreads.])
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_POSIX_THREADS)
+
+
+################################################################################
+# Check for TLS option, default to implicit
+################################################################################
+
+AC_ARG_WITH(tls,
+            AC_HELP_STRING([--with-tls=TYPE],
+                           [tls (implicit, explicit) @<:@explicit@:>@]),
+            TLS=$withval, TLS="explicit")
+
+case "$TLS" in
+    implicit)
+        AM_CONDITIONAL(USE_EXPLICIT_TLS, false)
+        ;;
+
+    explicit)
+        AM_CONDITIONAL(USE_EXPLICIT_TLS, true)
+        AC_DEFINE(USE_EXPLICIT_TLS, 1, [Define to 1 if you want to use an explicit TLS implementation instead of the __thread keyword.])
+        ;;
+
+    *)
+        AC_MSG_ERROR([invalid tls specification "$TLS".])
+        ;;
+esac
+
+################################################################################
 # Target O/S Specification
 ################################################################################
 
@@ -196,12 +247,134 @@ esac
 AC_SUBST(BUILD_TARGETED)
 AC_SUBST(TARGET_OS)
 
+################################################################################
+# Target DLOPEN Availability Specification
+################################################################################
+#
+# Option: --enable-target_dlopen=yes
+#
+AC_MSG_CHECKING(for target dlopen support specification)
+AC_ARG_ENABLE([target_dlopen],
+    [AS_HELP_STRING([--enable-target_dlopen],
+        [include support on the target architecture for dlopen [default=yes]])],
+    [], [enable_target_dlopen=yes])
+
+if test "x$enable_target_dlopen" = xyes ; then
+    AC_DEFINE([HAVE_TARGET_DLOPEN], [1],
+        [Enable support on the target architecture for dlopen.])
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_DLOPEN)
+
+################################################################################
+# Target SIGNALS Availability Specification
+################################################################################
+#
+# Option: --enable-target-signals=yes
+#
+AC_MSG_CHECKING(for target signal support specification)
+AC_ARG_ENABLE([target-signals],
+    [AS_HELP_STRING([--enable-target-signals],
+        [Enable support on target architecture for signals [default=yes]])],
+    [],
+    [enable_target_signals=yes])
+
+if test "x$enable_target_signals" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_TARGET_SIGNALS], [1],
+        [Enable support on target architecture for signals.])
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_SIGNALS)
+
+################################################################################
+# Target FORK Availability Specification
+################################################################################
+#
+# Option: --enable-target-fork=yes
+# Requires fork and exec families.
+#
+AC_MSG_CHECKING(for target fork support specification)
+AC_ARG_ENABLE([target-fork],
+    [AS_HELP_STRING([--enable-target-fork],
+        [Enable support on target architecture for fork and exec families [default=yes]])],
+    [], [enable_target_fork=yes])
+
+if test "x$enable_target_fork" = xyes ; then
+    AC_DEFINE([HAVE_TARGET_FORK], [1],
+        [Enable support on target architecture for fork and exec families.])
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_FORK)
+
+################################################################################
+# Target SHARED LIBRAY BUILD Specification
+################################################################################
+#
+# Option: --enable-target-shared=yes
+#
+AC_MSG_CHECKING(for target shared libraries build specification)
+AC_ARG_ENABLE([target-shared],
+    [AS_HELP_STRING([--enable-target-shared],
+        [Enable support on target architecture for building shared libraries [default=no]])],
+    [enable_target_shared=yes],
+    [enable_target_shared=no])
+
+if test "x$enable_target_shared" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, true)
+    AC_DEFINE([HAVE_TARGET_SHARED], [1],
+        [Enable support on target architecture for shared libraries.])
+else
+    AC_MSG_RESULT(no)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, false)
+fi
+
+AC_SUBST(HAVE_TARGET_SHARED)
+
+AC_PKG_BINUTILS()
+AC_PKG_LIBMONITOR()
+AC_PKG_LIBUNWIND()
+AC_PKG_PAPI()
+AC_PKG_TARGET_BINUTILS()
+AC_PKG_TARGET_LIBMONITOR()
+AC_PKG_TARGET_LIBUNWIND()
+AC_PKG_TARGET_PAPI
+
+AX_BOOST_BASE([1.35.0])
+AX_BOOST_DATE_TIME()
+AX_BOOST_SYSTEM()
+AX_BOOST_THREAD()
+
+
+AX_MRNET()
+AX_CBTF()
+AX_CBTF_XML()
+AX_CBTF_MRNET()
+AX_DYNINST()
+
+
 AX_MESSAGES()
+AX_CBTF_SERVICES()
 
 AC_CONFIG_FILES([
     Makefile
     include/Makefile
     libltdl/Makefile
+    collectionTool/Makefile
+    collectors/Makefile
+    collectors/pcsamp/Makefile
+    collectors/usertime/Makefile
+    components/Makefile
+    scripts/Makefile
     src/Makefile
 ])
 

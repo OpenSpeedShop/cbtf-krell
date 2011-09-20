@@ -29,6 +29,7 @@ nobase_dist_xml_DATA = \
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
 
+WRAPPER_SOURCES = wrappers.c
 
 if HAVE_LIBMONITOR
 OFFLINE_SOURCES = \
@@ -40,6 +41,7 @@ if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
 io_collector_monitor_fileio_la_CFLAGS = \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -64,10 +66,11 @@ io_collector_monitor_fileio_la_LIBADD = \
 
 io_collector_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 libio_monitor_fileio_la_CFLAGS = \
 	-static \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -94,12 +97,13 @@ libio_monitor_fileio_la_LIBADD = \
 
 libio_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 if HAVE_MRNET
 pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la
 staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la
 io_collector_monitor_mrnet_la_CFLAGS = \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -128,10 +132,11 @@ io_collector_monitor_mrnet_la_LIBADD = \
 
 io_collector_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 libio_monitor_mrnet_la_CFLAGS = \
 	-static \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -161,12 +166,13 @@ libio_monitor_mrnet_la_LIBADD = \
 
 libio_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 
 pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la
 io_collector_monitor_mrnet_mpi_la_CFLAGS = \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -197,10 +203,11 @@ io_collector_monitor_mrnet_mpi_la_LIBADD = \
 
 io_collector_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 libio_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
+	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -231,7 +238,7 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 
 libio_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
-	collector.c
+	collector.c $(WRAPPER_SOURCES)
 
 endif
 endif

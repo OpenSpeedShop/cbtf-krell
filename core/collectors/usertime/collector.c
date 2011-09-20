@@ -52,6 +52,8 @@
 #define FALSE false
 #endif
 
+
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
@@ -77,11 +79,13 @@ typedef struct {
     struct {
         CBTF_Protocol_ThreadName tnames[4096];
     } tgrpbuf;
-
 #endif
+
 } TLS;
 
-#if defined(CBTF_SERVICE_USE_MRNET)
+
+#if defined (CBTF_SERVICE_USE_OFFLINE)
+extern void cbtf_offline_sent_data(int);
 #endif
 
 #ifdef USE_EXPLICIT_TLS
@@ -169,7 +173,8 @@ void send_process_thread_message()
     }
 }
 
-void set_mpi_flag(int flag) {
+void set_mpi_flag(int flag)
+{
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -267,10 +272,6 @@ void send_thread_state_changed_message()
 		  &tls->thread_state_changed_message);
     }
 }
-#endif
-
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-extern void cbtf_offline_sent_data(int);
 #endif
 
 static void send_samples ()

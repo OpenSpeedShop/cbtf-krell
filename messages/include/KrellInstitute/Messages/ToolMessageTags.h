@@ -75,3 +75,8 @@
 #define CBTF_PROTOCOL_TAG_USERTIME_PARAMETERS                ((int)10013)
 #define CBTF_PROTOCOL_TAG_USERTIME_ARGS                      ((int)10014)
 #define CBTF_PROTOCOL_TAG_USERTIME_DATA                      ((int)10015)
+
+#define CBTF_PROTOCOL_TAG_IO_PARAMETERS                      ((int)10016)
+#define CBTF_PROTOCOL_TAG_IO_ARGS                            ((int)10017)
+#define CBTF_PROTOCOL_TAG_IOTRACE_DATA                       ((int)10018)
+#define CBTF_PROTOCOL_TAG_IOPROFILE_DATA                     ((int)10019)

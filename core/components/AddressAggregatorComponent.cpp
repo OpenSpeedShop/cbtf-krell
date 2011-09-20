@@ -129,6 +129,7 @@ private:
 	    abort();
 	}
 
+#if 0
 // FIXME: can not decode both xdr messages.
 // Only the first xdr is decoded properly (CBTF_DataHeader).
 // Likely need to reposition the xdr stream...
@@ -157,6 +158,7 @@ private:
                                 data.pc.pc_val,
                                 data.count.count_val,
                                 abuffer);
+#endif
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
@@ -170,6 +172,7 @@ private:
     void blobHandler(const Blob& in)
     {
 
+#if 0
 // FIXME: can not decode both xdr messages.
 // Only the first xdr is decoded properly (CBTF_DataHeader).
 //
@@ -197,6 +200,7 @@ private:
                                 data.pc.pc_val,
                                 data.count.count_val,
                                 abuffer);
+#endif
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 

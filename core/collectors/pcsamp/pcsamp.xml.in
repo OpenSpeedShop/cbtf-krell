@@ -65,33 +65,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <SearchPath>@@component_location@@</SearchPath>
 
-      <Plugin>CollectionPlugin</Plugin>
+      <Plugin>CollectionPlugin.so</Plugin>
 
-      <Component>
-        <Name>PacketToLoadedLinkedObject</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_LoadedLinkedObject&gt;</Type>
-      </Component>
-
-      <Component>
-        <Name>PacketToThreadsStateChanged</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_ThreadsStateChanged&gt;</Type>
-      </Component>
-
-      <Component>
-        <Name>PacketToAttachedToThreads</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_AttachedToThreads&gt;</Type>
-      </Component>
-
-      <Component>
-        <Name>PacketToCreatedProcess</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_CreatedProcess&gt;</Type>
-      </Component>
-
-      <Component>
-        <Name>PacketToAddressBuffer</Name>
-        <Type>ConvertPacketToAddressBuffer</Type>
-      </Component>
- 
       <Component>
         <Name>Display</Name>
         <Type>DisplayAddressBuffer</Type>
@@ -108,11 +83,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Component>
 
       <Component>
-          <Name>convert_output</Name>
-          <Type>ConvertPacketToBool</Type>
-      </Component>
-
-      <Component>
         <Name>AttachedToThreads</Name>
         <Type>AttachedToThreads</Type>
       </Component>
@@ -125,7 +95,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>IncomingBuffers</Name>
         <To>
-          <Name>PacketToAddressBuffer</Name>
+          <Name>Display</Name>
           <Input>in</Input>
         </To>
       </Input>
@@ -133,15 +103,15 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>IncomingLoadedLinkedObject</Name>
         <To>
-          <Name>PacketToLoadedLinkedObject</Name>
-          <Input>in</Input>
+          <Name>LinkedObject</Name>
+          <Input>loaded</Input>
         </To>
       </Input>
 
       <Input>
         <Name>IncomingThreadsStateChanged</Name>
         <To>
-          <Name>PacketToThreadsStateChanged</Name>
+          <Name>ThreadsStateChanged</Name>
           <Input>in</Input>
         </To>
       </Input>
@@ -149,7 +119,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>IncomingAttachedToThreads</Name>
         <To>
-          <Name>PacketToAttachedToThreads</Name>
+          <Name>AttachedToThreads</Name>
           <Input>in</Input>
         </To>
       </Input>
@@ -157,72 +127,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>IncomingCreatedProcess</Name>
         <To>
-          <Name>PacketToCreatedProcess</Name>
+          <Name>CreatedProcess</Name>
           <Input>in</Input>
         </To>
       </Input>
 
-      <Connection>
-        <From>
-          <Name>PacketToAddressBuffer</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>Display</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-          <Name>PacketToLoadedLinkedObject</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>LinkedObject</Name>
-          <Input>loaded</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-          <Name>PacketToThreadsStateChanged</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>ThreadsStateChanged</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-          <Name>PacketToAttachedToThreads</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>AttachedToThreads</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-          <Name>PacketToCreatedProcess</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>CreatedProcess</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-
       <Output>
-          <Name>output_from_frontend</Name>
-          <From>
-              <Name>ThreadsStateChanged</Name>
-              <Output>out1</Output>
-          </From>
+         <Name>output_from_frontend</Name>
+         <From>
+            <Name>ThreadsStateChanged</Name>
+            <Output>out1</Output>
+         </From>
       </Output>
 
     </Network>
@@ -260,106 +175,42 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <SearchPath>@@component_location@@</SearchPath>
 
-      <Plugin>CollectionPlugin</Plugin>
- 
-      <Component>
-        <Name>PacketToBlob</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_Protocol_Blob&gt;</Type>
-      </Component>
+      <Plugin>CollectionPlugin.so</Plugin>
 
-      <Component>
-        <Name>PacketToPCSampData</Name>
-        <Type>KrellInstitute::CBTF::ConvertMRNetToXDR&lt;CBTF_pcsamp_data&gt;</Type>
-      </Component>
- 
-      <Component>
-        <Name>PacketToAddressBuffer</Name>
-        <Type>ConvertPacketToAddressBuffer</Type>
-      </Component>
- 
       <Component>
         <Name>Aggregator</Name>
         <Type>AddressAggregator</Type>
       </Component>
  
-      <Component>
-        <Name>AddressBufferToPacket</Name>
-        <Type>ConvertAddressBufferToPacket</Type>
-      </Component>
- 
       <Input>
         <Name>IncomingBlobs</Name>
         <To>
-          <Name>PacketToBlob</Name>
-          <Input>in</Input>
+          <Name>Aggregator</Name>
+          <Input>cbtf_protocol_blob</Input>
         </To>
       </Input>
 
       <Input>
         <Name>IncomingPCSampData</Name>
         <To>
-          <Name>PacketToPCSampData</Name>
-          <Input>in</Input>
+          <Name>Aggregator</Name>
+          <Input>pcsamp</Input>
         </To>
       </Input>
  
       <Input>
         <Name>IncomingBuffers</Name>
         <To>
-          <Name>PacketToAddressBuffer</Name>
-          <Input>in</Input>
+          <Name>Aggregator</Name>
+          <Input>addressBuffer</Input>
         </To>
       </Input>
- 
-      <Connection>
-        <From>
-          <Name>PacketToBlob</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>Aggregator</Name>
-          <Input>in4</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-          <Name>PacketToPCSampData</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>Aggregator</Name>
-          <Input>in1</Input>
-        </To>
-      </Connection>
- 
-      <Connection>
-        <From>
-          <Name>PacketToAddressBuffer</Name>
-          <Output>out</Output>
-        </From>
-        <To>
-          <Name>Aggregator</Name>
-          <Input>in2</Input>
-        </To>
-      </Connection>
- 
-      <Connection>
-        <From>
-          <Name>Aggregator</Name>
-          <Output>Aggregatorout</Output>
-        </From>
-        <To>
-          <Name>AddressBufferToPacket</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
  
       <Output>
         <Name>OutgoingBuffers</Name>
         <From>
-          <Name>AddressBufferToPacket</Name>
-          <Output>out</Output>
+          <Name>Aggregator</Name>
+          <Output>Aggregatorout</Output>
         </From>
       </Output>
  

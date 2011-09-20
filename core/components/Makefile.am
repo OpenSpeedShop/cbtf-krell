@@ -38,6 +38,7 @@ CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
 	-lcbtf-messages-converters-base \
 	-lcbtf-messages-converters-events \
+	-lcbtf-messages-converters-perfdata \
 	@CBTF_LIBS@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \

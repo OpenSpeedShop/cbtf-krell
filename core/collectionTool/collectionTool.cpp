@@ -73,7 +73,7 @@ class FEThread
 
 
     Component::registerPlugin(
-        filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers");
+        filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so");
     
     Component::Instance network = Component::instantiate(
         Type(collector)

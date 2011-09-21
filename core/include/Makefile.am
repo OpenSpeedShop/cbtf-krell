@@ -20,6 +20,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/Address.hpp \
 	KrellInstitute/Core/AddressBitmap.hpp \
 	KrellInstitute/Core/AddressBuffer.hpp \
+	KrellInstitute/Core/AddressEntry.hpp \
 	KrellInstitute/Core/AddressRange.hpp \
 	KrellInstitute/Core/Assert.hpp \
 	KrellInstitute/Core/BFDSymbols.hpp \

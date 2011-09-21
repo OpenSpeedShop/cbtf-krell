@@ -30,6 +30,7 @@
 
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
+#include "KrellInstitute/Core/AddressEntry.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
 #include "KrellInstitute/Core/LinkedObjectEntry.hpp"
@@ -37,6 +38,7 @@
 #include "KrellInstitute/Core/PCData.hpp"
 #include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
+#include "KrellInstitute/Core/ThreadState.hpp"
 
 #include "KrellInstitute/Messages/Address.h"
 #include "KrellInstitute/Messages/DataHeader.h"
@@ -53,45 +55,16 @@ using namespace KrellInstitute::Core;
 
 namespace { 
 
-    class AddressEntry {
-	    public:
-	    Address addr;
-	    std::string function_name;
-	    std::string file;
-	    int      line;
-	    uint64_t sample_count;
-	    double percent;
-	    double total_time;
-
-	    bool operator<(AddressEntry rhs) { return sample_count < rhs.sample_count; }
-    };
-    typedef std::vector<AddressEntry > AddressEntryVec;
-
-    typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
+    AddressBuffer abuffer;
     LinkedObjectEntryVec linkedobjectvec;
+    ThreadNameVec tvec;
+    ThreadNameStateVec tstatevec;
 
     // Sampling interval in nanoseconds.
-    uint64_t interval;    
-    AddressBuffer abuffer;
-
-    enum ThreadState {
-            Disconnected,  /**< Thread isn't connected (may not even exist). */
-            Connecting,    /**< Thread is being connected. */
-            Nonexistent,   /**< Thread doesn't exist. */
-            Running,       /**< Thread is active and running. */
-            Suspended,     /**< Thread has been temporarily suspended. */
-            Terminated     /**< Thread has terminated. */
-    };
-
-    typedef std::vector<ThreadName> ThreadNameVec;
-    ThreadNameVec tvec;
-
-    typedef std::vector< std::pair<ThreadName,ThreadState> > ThreadNameStateVec;
-    ThreadNameStateVec tstatevec;
+    uint64_t interval = 0;    
 
 
     void printResults( const AddressCounts& ac) {
-
 	    AddressCounts::const_iterator aci;
 	    uint64_t total_counts = 0;
 	    double percent_total = 0.0;
@@ -128,7 +101,7 @@ namespace {
 	    for (mi = m.begin(); mi != m.end(); ++mi) {
 	      if (mi->sample_count > 0 ) {
                 std::cout << "Address " << mi->addr
-        	<< " had %" << mi->percent << " of samples "
+        	<< " has %" << mi->percent << " of samples "
         	<< " and " << mi->total_time << " of total time "
 		<< std::endl;
 	      }
@@ -298,6 +271,7 @@ private:
                 )
             );
         declareOutput<AddressBuffer>("AggregatorOut");
+        declareOutput<uint64_t>("interval");
     }
 
     /** Handler for the "in1" input.*/
@@ -305,14 +279,13 @@ private:
     {
         CBTF_pcsamp_data *data = in.get();
 
-	interval = data->interval;
-
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data->pc.pc_len,
 				data->pc.pc_val,
 				data->count.count_val,
 				abuffer);
 
+        emitOutput<uint64_t>("interval",  data->interval);
         emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
@@ -348,20 +321,20 @@ private:
         memset(&data, 0, sizeof(data));
         myblob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
 
-	interval = data.interval;
-
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data.pc.pc_len,
 				data.pc.pc_val,
 				data.count.count_val,
 				abuffer);
+
+        emitOutput<uint64_t>("interval",  data.interval);
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     /** Handler for the "in2" input.*/
     void addressBufferHandler(const AddressBuffer& in)
     {
-        emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
+        emitOutput<AddressBuffer>("AggregatorOut",  in /*abuffer*/);
     }
 
     /** Handler for the "in3" input.*/
@@ -388,13 +361,12 @@ private:
         memset(&data, 0, sizeof(data));
         in.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
 
-	interval = data.interval;
-
 	PCData pcdata;
 	pcdata.aggregateAddressCounts(data.pc.pc_len,
 				data.pc.pc_val,
 				data.count.count_val,
 				abuffer);
+        emitOutput<uint64_t>("interval",  data.interval);
         emitOutput<AddressBuffer>("AggregatorOut",  abuffer);
     }
 
@@ -429,15 +401,25 @@ private:
             "in", boost::bind(&DisplayAddressBuffer::displayHandler, this, _1)
             );
 
+        declareInput<uint64_t>(
+            "interval", boost::bind(&DisplayAddressBuffer::intervalHandler, this, _1)
+            );
+
         declareOutput<AddressBuffer>("displayout");
     }
 
     /** Handler for the "in" input.*/
     void displayHandler(const AddressBuffer& in)
     {
-	std::cout << "Intermediate aggregated results" << std::endl;
+	std::cout << "Intermediate aggregated results interval is " << interval  << std::endl;
 	printResults(in.addresscounts);
-        emitOutput<AddressBuffer>("displayout",  abuffer);
+	abuffer = in;
+        emitOutput<AddressBuffer>("displayout",  in /*abuffer*/);
+    }
+
+    void intervalHandler(const uint64_t in)
+    {
+	interval = in;
     }
 
 }; // class DisplayAddressBuffer
@@ -677,3 +659,88 @@ private:
 }; // class CreatedProcess
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CreatedProcess)
+
+
+/**
+ * Component that converts an uint64_t value into a MRNet packet.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertUInt64ToPacket :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertUInt64ToPacket())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertUInt64ToPacket() :
+        Component(Type(typeid(ConvertUInt64ToPacket)), Version(0, 0, 1))
+    {
+        declareInput<uint64_t>(
+            "in", boost::bind(&ConvertUInt64ToPacket::inHandler, this, _1)
+            );
+        declareOutput<MRN::PacketPtr>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const uint64_t& in)
+    {
+        emitOutput<MRN::PacketPtr>(
+            "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%uld", in))
+            );
+    }
+    
+}; // class ConvertUInt64ToPacket
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertUInt64ToPacket)
+
+
+
+/**
+ * Component that converts a MRNet packet into an integer value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertPacketToUInt64 :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertPacketToUInt64())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertPacketToUInt64() :
+        Component(Type(typeid(ConvertPacketToUInt64)), Version(0, 0, 1))
+    {
+        declareInput<MRN::PacketPtr>(
+            "in", boost::bind(&ConvertPacketToUInt64::inHandler, this, _1)
+            );
+        declareOutput<uint64_t>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const MRN::PacketPtr& in)
+    {
+        uint64_t out = 0;
+        in->unpack("%uld", &out);
+        emitOutput<uint64_t>("out", out);
+    }
+    
+}; // class ConvertPacketToUInt64
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToUInt64)

@@ -67,12 +67,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <SearchPath>@@cbtflib_location@@</SearchPath>
 
       <Plugin>pcsampDemoPlugin.so</Plugin>
-<!--
-      <Plugin>libcbtf-messages-base.so</Plugin>
-      <Plugin>libcbtf-messages-converters-base.so</Plugin>
--->
-      <Plugin>libcbtf-messages-events.so</Plugin>
-      <Plugin>libcbtf-messages-converters-events.so</Plugin>
 
       <Component>
         <Name>Display</Name>
@@ -104,6 +98,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <To>
           <Name>Display</Name>
           <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingInterval</Name>
+        <To>
+          <Name>Display</Name>
+          <Input>interval</Input>
         </To>
       </Input>
 
@@ -150,6 +152,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     </Network>
 
     <IncomingUpstream>
+      <Name>Interval</Name>
+      <To><Input>IncomingInterval</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
       <Name>Buffers</Name>
       <To><Input>IncomingBuffers</Input></To>
     </IncomingUpstream>
@@ -184,12 +190,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <SearchPath>@@cbtflib_location@@</SearchPath>
 
       <Plugin>pcsampDemoPlugin.so</Plugin>
-<!--
---> 
-      <Plugin>libcbtf-messages-base.so</Plugin>
-      <Plugin>libcbtf-messages-converters-base.so</Plugin>
-      <Plugin>libcbtf-messages-perfdata.so</Plugin>
-      <Plugin>libcbtf-messages-converters-perfdata.so</Plugin>
 
       <Component>
         <Name>Aggregator</Name>
@@ -227,6 +227,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>AggregatorOut</Output>
         </From>
       </Output>
+
+      <Output>
+        <Name>OutgoingInterval</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>interval</Output>
+        </From>
+      </Output>
  
     </Network>    
 
@@ -248,6 +256,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <OutgoingUpstream>
       <Name>Buffers</Name>
       <From><Output>OutgoingBuffers</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>Interval</Name>
+      <From><Output>OutgoingInterval</Output></From>
     </OutgoingUpstream>
 
   </Filter>

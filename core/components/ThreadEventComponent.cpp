@@ -41,7 +41,6 @@ using namespace KrellInstitute::Core;
 
 namespace {
 
-    typedef std::vector<ThreadName> ThreadNameVec;
     ThreadNameVec tvec;
 
     typedef std::vector< std::pair<ThreadName,ThreadState> > ThreadNameStateVec;

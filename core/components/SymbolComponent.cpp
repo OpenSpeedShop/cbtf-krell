@@ -63,7 +63,6 @@ namespace {
         SymbolTableMap;
     SymbolTableMap symtabmap;
 
-    typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
     LinkedObjectEntryVec linkedobjectvec;
 
     AddressBuffer abuffer;

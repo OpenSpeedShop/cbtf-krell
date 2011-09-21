@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2011 The Krell Institute All Rights Reserved.
+// Copyright (c) 2011 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -19,31 +18,45 @@
 
 /** @file
  *
- * Declaration of the ThreadState enum.
+ * Declaration of the AddressEntry class.
  *
  */
 
-#ifndef _KrellInstitute_Core_ThreadState_
-#define _KrellInstitute_Core_ThreadState_
+#ifndef _OpenSpeedShop_Framework_AddressEntry_
+#define _OpenSpeedShop_Framework_AddressEntry_
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "KrellInstitute/Core/ThreadName.hpp"
+#include "KrellInstitute/Core/Address.hpp"
+#include "KrellInstitute/Core/AddressRange.hpp"
+
+
 
 namespace KrellInstitute { namespace Core {
 
-    enum ThreadState {
-            Disconnected,  /**< Thread isn't connected (may not even exist). */
-            Connecting,    /**< Thread is being connected. */
-            Nonexistent,   /**< Thread doesn't exist. */
-            Running,       /**< Thread is active and running. */
-            Suspended,     /**< Thread has been temporarily suspended. */
-            Terminated     /**< Thread has terminated. */
-    };
+    
+    /**
+     * Address entry.
+     *
+     * Representation of a single address.
+     *
+     */
+    class AddressEntry {
+            public:
+            Address addr;
+            std::string function_name;
+            std::string file;
+            int      line;
+            uint64_t sample_count;
+            double percent;
+            double total_time;
 
-    typedef std::vector< std::pair<ThreadName,ThreadState> > ThreadNameStateVec;
+            bool operator<(AddressEntry rhs) { return sample_count < rhs.sample_count; }
+    };
+    typedef std::vector<AddressEntry > AddressEntryVec;
+
 } }
 
 

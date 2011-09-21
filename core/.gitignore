@@ -28,6 +28,9 @@ collectors/pcsamp/pcsamp.xml
 collectors/usertime/.deps/*
 collectors/usertime/.libs/*
 collectors/usertime/usertime.xml
+collectors/io/.deps/*
+collectors/io/.libs/*
+collectors/io/io.xml
 Makefile
 Makefile.in
 missing

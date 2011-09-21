@@ -35,7 +35,7 @@
 #include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 
-#include <set>
+#include <vector>
 
 
 
@@ -78,6 +78,7 @@ namespace KrellInstitute { namespace Core {
 
     };
     
+    typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
 } }
 
 

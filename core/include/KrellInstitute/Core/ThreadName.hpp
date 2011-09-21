@@ -32,6 +32,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "KrellInstitute/Messages/Thread.h"
 
@@ -123,6 +124,7 @@ namespace KrellInstitute { namespace Core {
 
     };
     
+    typedef std::vector<ThreadName> ThreadNameVec;
 } }
 
 

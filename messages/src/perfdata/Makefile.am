@@ -23,6 +23,8 @@ BUILT_SOURCES = \
 	DataHeader.h DataHeader.c \
 	PCSamp.h PCSamp.c \
 	PCSamp_data.h PCSamp_data.c \
+	IO.h IO.c \
+	IO_data.h IO_data.c \
 	Usertime.h Usertime.c \
 	Usertime_data.h Usertime_data.c
 
@@ -55,7 +57,8 @@ libcbtf_messages_converters_perfdata_la_LIBADD = \
 
 libcbtf_messages_perfdata_la_SOURCES = \
 	DataHeader.x \
-	PCSamp.x PCSAMP_data.x \
+	PCSamp.x PCSamp_data.x \
+	IO.x IO_data.x \
 	Usertime.x Usertime_data.x \
 	$(BUILT_SOURCES)
 
@@ -65,6 +68,7 @@ libcbtf_messages_converters_perfdata_la_SOURCES = \
 xdr_headers = \
 	DataHeader.h \
 	PCSamp.h PCSamp_data.h \
+	IO.h IO_data.h \
 	Usertime.h Usertime_data.h
 
 SUFFIXES = .x
@@ -81,6 +85,16 @@ PCSamp.h PCSamp.c : PCSamp.x
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
 
 PCSamp_data.h PCSamp_data.c : PCSamp_data.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+IO.h IO.c : IO.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+IO_data.h IO_data.c : IO_data.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
 	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<

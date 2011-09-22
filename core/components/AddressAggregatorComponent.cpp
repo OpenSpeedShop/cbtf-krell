@@ -39,6 +39,7 @@
 #include "KrellInstitute/Messages/Address.h"
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
+#include "KrellInstitute/Messages/IO_data.h"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
@@ -83,6 +84,9 @@ private:
         declareInput<boost::shared_ptr<CBTF_usertime_data> >(
             "usertime", boost::bind(&AddressAggregator::usertimeHandler, this, _1)
             );
+        declareInput<boost::shared_ptr<CBTF_io_trace_data> >(
+            "io", boost::bind(&AddressAggregator::ioHandler, this, _1)
+            );
         declareOutput<AddressBuffer>("Aggregatorout");
     }
 
@@ -102,7 +106,7 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
-    /** Handler for the "in5" input.*/
+    /** Handler for the "usertime" input.*/
     void usertimeHandler(const boost::shared_ptr<CBTF_usertime_data>& in)
     {
         CBTF_usertime_data *data = in.get();
@@ -118,7 +122,20 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
-    /** Handler for the "in4" input.*/
+    /** Handler for the "io" input.*/
+    void ioHandler(const boost::shared_ptr<CBTF_io_trace_data>& in)
+    {
+        CBTF_io_trace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "CBTF_Protocol_Blob" input.*/
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
         CBTF_Protocol_Blob *B = in.get();

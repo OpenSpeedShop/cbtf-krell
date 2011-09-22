@@ -57,3 +57,17 @@ void StacktraceData::aggregateAddressCounts(
 	buffer.updateAddressCounts(st[i], counts[i]);
     }
 }
+
+void StacktraceData::aggregateAddressCounts(
+	const unsigned& len,
+	const uint64_t* st,
+	AddressBuffer& buffer) const
+{
+    // Iterate over each of the stacktrace address entries.
+    for(unsigned i = 0; i < len; ++i) {
+#if 0
+	std::cerr << "Address " << Address((uint64_t)st[i]) << " has count 1" <<  std::endl;
+#endif
+	buffer.updateAddressCounts(st[i], 1);
+    }
+}

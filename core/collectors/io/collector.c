@@ -357,12 +357,35 @@ static void io_send_events(TLS *tls)
     }
 #endif
 
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
+	CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_io_trace_data, &(tls->data));
+#endif
+
+#if defined(CBTF_SERVICE_USE_MRNET)
+	if (tls->connected_to_mrnet) {
+	    if (!tls->sent_process_thread_info) {
+	        send_process_thread_message();
+	    }
+	    tls->sent_process_thread_info = 1;
+#if 0
+	    CBTF_MRNet_Send_PerfData( &tls->header,
+				 (xdrproc_t)xdr_CBTF_usertime_data,
+				 &tls->data);
+#else
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_IOTRACE_DATA,
+                           (xdrproc_t) xdr_CBTF_io_trace_data,
+			   &tls->data);
+#endif
+	}
+#endif
+
 #if defined(CBTF_SERVICE_USE_OFFLINE)
-    offline_sent_data(1);
+    cbtf_offline_sent_data(1);
 #endif
 
     /* Send these events */
-    CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_io_trace_data, &(tls->data));
+//    CBTF_MRNet_Send(&(tls->header), (xdrproc_t)xdr_CBTF_io_trace_data, &(tls->data));
     
     /* Re-initialize the data blob's header */
     tls->header.time_begin = tls->header.time_end;

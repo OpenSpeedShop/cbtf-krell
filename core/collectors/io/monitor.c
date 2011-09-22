@@ -100,8 +100,7 @@ static __thread TLS the_tls;
 
 #endif
 
-extern void cbtf_offline_service_start_timer();
-extern void cbtf_offline_service_stop_timer();
+extern void defer_trace(int);
 extern void set_mpi_flag(int);
 
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -122,7 +121,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    set_mpi_flag(1);
-	    cbtf_offline_service_stop_timer();
+	    defer_trace(1);
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
@@ -187,7 +186,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #endif
 	        connect_to_mrnet();
 		tls->connected_to_mrnet = TRUE;
-		cbtf_offline_service_start_timer();
+	        defer_trace(0);
 	    }
 	    break;
 	default:
@@ -279,7 +278,6 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     cbtf_offline_sent_data(0);
     tls->finished = 0;
     tls->started = 1;
-    //cbtf_timer_service_start_sampling(arguments);
     io_start_tracing(arguments);
 }
 

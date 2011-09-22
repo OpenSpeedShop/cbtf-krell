@@ -47,6 +47,8 @@ namespace KrellInstitute { namespace Core {
 
 	void aggregateAddressCounts(const unsigned &, const uint64_t*,
 				    const uint8_t*, AddressBuffer&) const;
+	void aggregateAddressCounts(const unsigned &, const uint64_t*,
+				    AddressBuffer&) const;
     };
     
 } }

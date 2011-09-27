@@ -31,6 +31,9 @@ collectors/usertime/usertime.xml
 collectors/io/.deps/*
 collectors/io/.libs/*
 collectors/io/io.xml
+collectors/hwc/.deps/*
+collectors/hwc/.libs/*
+collectors/hwc/io.xml
 Makefile
 Makefile.in
 missing

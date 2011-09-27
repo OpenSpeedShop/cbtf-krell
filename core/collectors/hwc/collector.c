@@ -20,7 +20,7 @@
 
 /** @file
  *
- * Declaration and definition of the PC sampling collector's runtime.
+ * Declaration and definition of the HWC sampling collector's runtime.
  *
  */
 
@@ -29,14 +29,15 @@
 #endif
 
 #include "KrellInstitute/Messages/DataHeader.h"
-#include "KrellInstitute/Messages/PCSamp.h"
-#include "KrellInstitute/Messages/PCSamp_data.h"
+#include "KrellInstitute/Messages/Hwc.h"
+#include "KrellInstitute/Messages/Hwc_data.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
+#include "KrellInstitute/Services/PapiAPI.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
@@ -51,15 +52,17 @@
 #define FALSE false
 #endif
 
+static int hwc_papi_init_done = 0;
 
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_pcsamp_data data;        /**< Actual data blob. */
+    CBTF_hwc_data data;        /**< Actual data blob. */
 
     CBTF_PCData buffer;      /**< PC sampling data buffer. */
+    int EventSet;
 
     bool_t defer_sampling;
 
@@ -95,7 +98,7 @@ extern void cbtf_offline_sent_data(int);
  * Key used for looking up our thread-local storage. This key <em>must</em>
  * be globally unique across the entire Open|SpeedShop code base.
  */
-static const uint32_t TLSKey = 0x00001EF3;
+static const uint32_t TLSKey = 0x00001EF5;
 
 #else
 
@@ -291,7 +294,7 @@ static void send_samples ()
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-        fprintf(stderr,"PCSamp send_samples DATA:\n");
+        fprintf(stderr,"HWC send_samples DATA:\n");
         fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] pc_len(%d)\n",
             tls->header.time_end,tls->header.addr_begin,
 	    tls->header.addr_end,tls->data.pc.pc_len);
@@ -299,7 +302,7 @@ static void send_samples ()
 #endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_Send(&(tls->header),(xdrproc_t)xdr_CBTF_pcsamp_data,&(tls->data));
+    CBTF_Send(&(tls->header),(xdrproc_t)xdr_CBTF_hwc_data,&(tls->data));
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -310,11 +313,11 @@ static void send_samples ()
 	    tls->sent_process_thread_info = 1;
 #if 0
 	    CBTF_MRNet_Send_PerfData( &tls->header,
-				 (xdrproc_t)xdr_CBTF_pcsamp_data,
+				 (xdrproc_t)xdr_CBTF_hwc_data,
 				 &tls->data);
 #else
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_PCSAMP_DATA,
-                           (xdrproc_t) xdr_CBTF_pcsamp_data,
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_HWC_DATA,
+                           (xdrproc_t) xdr_CBTF_hwc_data,
 			   &tls->data);
 #endif
 	}
@@ -343,18 +346,19 @@ static void send_samples ()
 
 
 /**
- * Timer event handler.
+ * PAPI event handler.
  *
- * Called by the timer handler each time a sample is to be taken. Extracts the
- * program counter (PC) address from the signal context and places it into the
- * sample buffer. When the sample buffer is full, it is sent to the framework
- * for storage in the experiment's database.
+ * Called by PAPI each time a sample is to be taken. Takes the program counter
+ * (PC) address passed by PAPI and places it into the sample buffer. When the
+ * sample buffer is full, it is sent to the framework for storage in the
+ * experiment's database.
  *
  * @note    
  * 
- * @param context    Thread context at timer interrupt.
+ * @param context    Thread context at papi overflow.
  */
-static void serviceTimerHandler(const ucontext_t* context)
+static void
+hwcPAPIHandler(int EventSet, void* pc, long_long overflow_vector, void* context)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -368,11 +372,8 @@ static void serviceTimerHandler(const ucontext_t* context)
         return;
     }
     
-    /* Obtain the program counter (PC) address from the thread context */
-    uint64_t pc = CBTF_GetPCFromContext(context);
-
     /* Update the sampling buffer and check if it has been filled */
-    if(CBTF_UpdatePCData(pc, &tls->buffer)) {
+    if(CBTF_UpdatePCData((uint64_t)pc, &tls->buffer)) {
 
 	/* Send these samples */
 	send_samples();
@@ -384,13 +385,13 @@ static void serviceTimerHandler(const ucontext_t* context)
 /**
  * Start sampling.
  *
- * Starts program counter (PC) sampling for the thread executing this function.
- * Initializes the appropriate thread-local data structures and then enables the
- * sampling timer.
+ * Starts hardware counter (HWC) sampling for the thread executing this
+ * function. Initializes the appropriate thread-local data structures and
+ * then enables the sampling counter.
  *
  * @param arguments    Encoded function arguments.
  */
-void cbtf_timer_service_start_sampling(const char* arguments)
+void cbtf_hwc_service_start_sampling(const char* arguments)
 {
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -405,12 +406,37 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->defer_sampling=FALSE;
 
     /* Decode the passed function arguments */
-    CBTF_pcsamp_start_sampling_args args;
+    CBTF_hwc_start_sampling_args args;
     memset(&args, 0, sizeof(args));
+ 
+
+    /* set defaults */ 
+    int hwc_papithreshold = THRESHOLD*2;
+    char* hwc_papi_event = "PAPI_TOT_CYC";
+
+    /* Decode the passed function arguments */
+#if defined(CBTF_SERVICE_USE_OFFLINE)
+    char* hwc_event_param = getenv("CBTF_HWC_EVENT");
+    if (hwc_event_param != NULL) {
+        hwc_papi_event=hwc_event_param;
+    }
+
+    const char* sampling_rate = getenv("CBTF_HWC_THRESHOLD");
+    if (sampling_rate != NULL) {
+        hwc_papithreshold=atoi(sampling_rate);
+    }
+    args.collector = 1;
+    args.experiment = 0;
+    tls->data.interval = hwc_papithreshold;
+#else
     CBTF_DecodeParameters(arguments,
-			    (xdrproc_t)xdr_CBTF_pcsamp_start_sampling_args,
+			    (xdrproc_t)xdr_hwc_start_sampling_args,
 			    &args);
-    
+    hwc_papithreshold = (uint64_t)(args.sampling_rate);
+    hwc_papi_event = args.hwc_event;
+    tls->data.interval = (uint64_t)(args.sampling_rate);
+#endif
+
     /* 
      * Initialize the data blob's header
      *
@@ -425,12 +451,10 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     memcpy(&tls->header, &local_data_header, sizeof(CBTF_DataHeader));
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(&(tls->header), "pcsamp", "cbtf-data");
+    CBTF_SetSendToFile(&(tls->header), "hwc", "cbtf-data");
 #endif
-
+    
     /* Initialize the actual data blob */
-    tls->data.interval = 
-	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);
     tls->data.pc.pc_val = tls->buffer.pc;
     tls->data.count.count_val = tls->buffer.count;
 
@@ -485,7 +509,20 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+
+    if(hwc_papi_init_done == 0) {
+	CBTF_init_papi();
+	tls->EventSet = PAPI_NULL;
+	hwc_papi_init_done = 1;
+    }
+
+    unsigned papi_event_code = get_papi_eventcode(hwc_papi_event);
+
+    CBTF_Create_Eventset(&tls->EventSet);
+    CBTF_AddEvent(tls->EventSet, papi_event_code);
+    CBTF_Overflow(tls->EventSet, papi_event_code,
+		    hwc_papithreshold, hwcPAPIHandler);
+    CBTF_Start(tls->EventSet);
 }
 
 
@@ -493,12 +530,12 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 /**
  * Stop sampling.
  *
- * Stops program counter (PC) sampling for the thread executing this function.
- * Disables the sampling timer and sends any samples remaining in the buffer.
+ * Stops hardware counter (HWC) sampling for the thread executing this function.
+ * Disables the sampling counter and sends any samples remaining in the buffer.
  *
  * @param arguments    Encoded (unused) function arguments.
  */
-void cbtf_timer_service_stop_sampling(const char* arguments)
+void cbtf_hwc_service_stop_sampling(const char* arguments)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -509,13 +546,25 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
     Assert(tls != NULL);
 
+    if (tls->EventSet == PAPI_NULL) {
+	/*fprintf(stderr,"hwc_stop_sampling RETURNS - NO EVENTSET!\n");*/
+	/* we are called before eny events are set in papi. just return */
+        return;
+    }
+
     /* Stop sampling */
-    CBTF_Timer(0, NULL);
+    CBTF_Stop(tls->EventSet, NULL);
 
     tls->header.time_end = CBTF_GetTime();
 
     /* Are there any unsent samples? */
     if(tls->buffer.length > 0) {
+
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr, "hwc_stop_sampling calls send_samples.\n");
+	}
+#endif
 
 	/* Send these samples */
 	send_samples();
@@ -559,7 +608,7 @@ void cbtf_offline_service_defer_sampling()
     tls->defer_sampling=TRUE;
 }
 
-void cbtf_offline_service_start_timer()
+void hwc_resume_papi()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -567,15 +616,22 @@ void cbtf_offline_service_start_timer()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (tls == NULL)
+    if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
-
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+    CBTF_Start(tls->EventSet);
 }
 
-void cbtf_offline_service_stop_timer()
+void hwc_suspend_papi()
 {
-    CBTF_Timer(0, NULL);
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (hwc_papi_init_done == 0 || tls == NULL)
+	return;
+    CBTF_Stop(tls->EventSet, NULL);
 }
 #endif
 

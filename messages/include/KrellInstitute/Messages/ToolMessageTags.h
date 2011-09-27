@@ -80,3 +80,7 @@
 #define CBTF_PROTOCOL_TAG_IO_ARGS                            ((int)10017)
 #define CBTF_PROTOCOL_TAG_IOTRACE_DATA                       ((int)10018)
 #define CBTF_PROTOCOL_TAG_IOPROFILE_DATA                     ((int)10019)
+
+#define CBTF_PROTOCOL_TAG_HWC_PARAMETERS                     ((int)10020)
+#define CBTF_PROTOCOL_TAG_HWC_ARGS                           ((int)10021)
+#define CBTF_PROTOCOL_TAG_HWC_DATA                           ((int)10022)

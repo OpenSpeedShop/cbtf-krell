@@ -374,6 +374,7 @@ AC_CONFIG_FILES([
     collectors/pcsamp/Makefile
     collectors/usertime/Makefile
     collectors/io/Makefile
+    collectors/hwc/Makefile
     components/Makefile
     scripts/Makefile
     src/Makefile

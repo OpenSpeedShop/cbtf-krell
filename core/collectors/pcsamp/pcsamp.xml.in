@@ -101,6 +101,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Input>
 
       <Input>
+        <Name>IncomingInterval</Name>
+        <To>
+          <Name>Display</Name>
+          <Input>interval</Input>
+        </To>
+      </Input>
+
+      <Input>
         <Name>IncomingLoadedLinkedObject</Name>
         <To>
           <Name>LinkedObject</Name>
@@ -142,6 +150,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
     </Network>
 
+    <IncomingUpstream>
+      <Name>Interval</Name>
+      <To><Input>IncomingInterval</Input></To>
+    </IncomingUpstream>
     <IncomingUpstream>
       <Name>Buffers</Name>
       <To><Input>IncomingBuffers</Input></To>
@@ -213,6 +225,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>Aggregatorout</Output>
         </From>
       </Output>
+
+      <Output>
+        <Name>OutgoingInterval</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>interval</Output>
+        </From>
+      </Output>
  
     </Network>    
 
@@ -234,6 +254,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <OutgoingUpstream>
       <Name>Buffers</Name>
       <From><Output>OutgoingBuffers</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>Interval</Name>
+      <From><Output>OutgoingInterval</Output></From>
     </OutgoingUpstream>
 
   </Filter>

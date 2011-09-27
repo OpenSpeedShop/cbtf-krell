@@ -39,6 +39,7 @@
 #include "KrellInstitute/Messages/Address.h"
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
+#include "KrellInstitute/Messages/Hwc_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
 
 using namespace KrellInstitute::CBTF;
@@ -87,7 +88,11 @@ private:
         declareInput<boost::shared_ptr<CBTF_io_trace_data> >(
             "io", boost::bind(&AddressAggregator::ioHandler, this, _1)
             );
+        declareInput<boost::shared_ptr<CBTF_hwc_data> >(
+            "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
+            );
         declareOutput<AddressBuffer>("Aggregatorout");
+	declareOutput<uint64_t>("interval");
     }
 
     /** Handler for the "in1" input.*/
@@ -95,14 +100,32 @@ private:
     {
         CBTF_pcsamp_data *data = in.get();
 
-	interval = data->interval;
+	//interval = data->interval;
 
+        //std::cerr << "AddressAggregator::pcsampHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
                                 data->count.count_val,
                                 abuffer);
 
+	emitOutput<uint64_t>("interval",  data->interval);
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "in1" input.*/
+    void hwcHandler(const boost::shared_ptr<CBTF_hwc_data>& in)
+    {
+        CBTF_hwc_data *data = in.get();
+
+        //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
+	PCData pcdata;
+        pcdata.aggregateAddressCounts(data->pc.pc_len,
+                                data->pc.pc_val,
+                                data->count.count_val,
+                                abuffer);
+
+	emitOutput<uint64_t>("interval",  data->interval);
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
@@ -111,14 +134,13 @@ private:
     {
         CBTF_usertime_data *data = in.get();
 
-	interval = data->interval;
-
 	StacktraceData stdata;
 	stdata.aggregateAddressCounts(data->bt.bt_len,
 				data->bt.bt_val,
 				data->count.count_val,
 				abuffer);
 
+	emitOutput<uint64_t>("interval",  data->interval);
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
@@ -182,7 +204,7 @@ private:
     /** Handler for the "in2" input.*/
     void addressBufferHandler(const AddressBuffer& in)
     {
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        emitOutput<AddressBuffer>("Aggregatorout",  in /*abuffer*/);
     }
 
     /** Handler for the "in3" input.*/
@@ -219,6 +241,12 @@ private:
                                 abuffer);
 #endif
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    void intervalHandler(const uint64_t in)
+    {
+        interval = in;
+        //std::cerr << "AddressAggregator::intervalHandler: interval is " << interval <<  std::endl;
     }
 
     uint64_t interval;

@@ -315,3 +315,88 @@ private:
 }; // class ConvertPacketToBool
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToBool)
+
+
+/**
+ * Component that converts an uint64_t value into a MRNet packet.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertUInt64ToPacket :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertUInt64ToPacket())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertUInt64ToPacket() :
+        Component(Type(typeid(ConvertUInt64ToPacket)), Version(0, 0, 1))
+    {
+        declareInput<uint64_t>(
+            "in", boost::bind(&ConvertUInt64ToPacket::inHandler, this, _1)
+            );
+        declareOutput<MRN::PacketPtr>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const uint64_t& in)
+    {
+        emitOutput<MRN::PacketPtr>(
+            "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%uld", in))
+            );
+    }
+    
+}; // class ConvertUInt64ToPacket
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertUInt64ToPacket)
+
+
+
+/**
+ * Component that converts a MRNet packet into an integer value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertPacketToUInt64 :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertPacketToUInt64())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertPacketToUInt64() :
+        Component(Type(typeid(ConvertPacketToUInt64)), Version(0, 0, 1))
+    {
+        declareInput<MRN::PacketPtr>(
+            "in", boost::bind(&ConvertPacketToUInt64::inHandler, this, _1)
+            );
+        declareOutput<uint64_t>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const MRN::PacketPtr& in)
+    {
+        uint64_t out = 0;
+        in->unpack("%uld", &out);
+        emitOutput<uint64_t>("out", out);
+    }
+    
+}; // class ConvertPacketToUInt64
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToUInt64)

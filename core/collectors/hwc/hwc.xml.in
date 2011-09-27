@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
 
-  <Type>usertime</Type>
+  <Type>hwc</Type>
   <Version>1.0.0</Version>
 
   <Stream>
@@ -44,8 +44,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Tag>10000</Tag>
   </Stream>
   <Stream>
-    <Name>CBTF_PROTOCOL_TAG_USERTIME_DATA</Name>
-    <Tag>10015</Tag>
+    <Name>CBTF_PROTOCOL_TAG_HWC_DATA</Name>
+    <Tag>10022</Tag>
   </Stream>
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
@@ -60,7 +60,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
   <Frontend>
 
     <Network>
-      <Type>usertime_Frontend</Type>
+      <Type>hwc_Frontend</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -90,11 +90,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Component>
         <Name>CreatedProcess</Name>
         <Type>CreatedProcess</Type>
-      </Component>
-
-      <Component>
-        <Name>Symbols</Name>
-        <Type>ResolveSymbols</Type>
       </Component>
  
       <Input>
@@ -187,7 +182,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Depth><AllOther/></Depth>
 
     <Network>
-      <Type>usertime_Filter</Type>
+      <Type>hwc_Filter</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -208,10 +203,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Input>
 
       <Input>
-        <Name>IncomingUsertimeData</Name>
+        <Name>IncomingHWCData</Name>
         <To>
           <Name>Aggregator</Name>
-          <Input>usertime</Input>
+          <Input>hwc</Input>
         </To>
       </Input>
  
@@ -247,8 +242,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     </IncomingUpstream>
 
     <IncomingUpstream>
-      <Name>CBTF_PROTOCOL_TAG_USERTIME_DATA</Name>
-      <To><Input>IncomingUsertimeData</Input></To>
+      <Name>CBTF_PROTOCOL_TAG_HWC_DATA</Name>
+      <To><Input>IncomingHWCData</Input></To>
     </IncomingUpstream>
 
     <IncomingUpstream>

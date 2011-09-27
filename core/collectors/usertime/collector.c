@@ -322,7 +322,7 @@ static void send_samples ()
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)
-	cbtf_offline_sent_data(1);
+    cbtf_offline_sent_data(1);
 #endif
 
     /* Re-initialize the data blob's header */
@@ -338,7 +338,6 @@ static void send_samples ()
     /* Re-initialize the sampling buffer */
     memset(tls->buffer.bt, 0, sizeof(tls->buffer.bt));
     memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
-	
 }
 
 
@@ -370,8 +369,6 @@ static void serviceTimerHandler(const ucontext_t* context)
     int framecount = 0;
     int stackindex = 0;
     uint64_t framebuf[CBTF_ST_MAXFRAMES];
-    uint64_t beginaddr = tls->header.addr_begin;
-    uint64_t endaddr = tls->header.addr_end;
 
     memset(framebuf,0, sizeof(framebuf));
 
@@ -439,11 +436,11 @@ static void serviceTimerHandler(const ucontext_t* context)
 	    tls->buffer.count[tls->data.count.count_len] = 1;
 	}
 
-	if (framebuf[i] < tls->header.addr_begin ) {
-	    tls->header.addr_begin = framebuf[i];
+	if (framebuf[i] < tls->buffer.addr_begin ) {
+	    tls->buffer.addr_begin = framebuf[i];
 	}
-	if (framebuf[i] > tls->header.addr_end ) {
-	    tls->header.addr_end = framebuf[i];
+	if (framebuf[i] > tls->buffer.addr_end ) {
+	    tls->buffer.addr_end = framebuf[i];
 	}
 	tls->data.bt.bt_len++;
 	tls->data.count.count_len++;
@@ -499,12 +496,6 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile(&(tls->header), "usertime", "cbtf-data");
 #endif
-    
-    /* Initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    memset(tls->buffer.bt, 0, sizeof(tls->buffer.bt));
-    memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
 
     /* Initialize the actual data blob */
     tls->data.interval = 
@@ -512,6 +503,11 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->data.bt.bt_val = tls->buffer.bt;
     tls->data.count.count_val = tls->buffer.count;
 
+    /* Initialize the sampling buffer */
+    tls->buffer.addr_begin = ~0;
+    tls->buffer.addr_end = 0;
+    memset(tls->buffer.bt, 0, sizeof(tls->buffer.bt));
+    memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
  
 #if defined (CBTF_SERVICE_USE_MRNET)
     //CBTF_Protocol_ThreadName tname;

@@ -29,28 +29,20 @@
 #include <KrellInstitute/CBTF/Version.hpp>
 
 #include "KrellInstitute/Core/AddressBuffer.hpp"
+#include "KrellInstitute/Core/AddressEntry.hpp"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
 
 namespace {
 
-    class AddressEntry {
-	    public:
-	    Address addr;
-	    std::string function_name;
-	    std::string file;
-	    int      line;
-	    uint64_t sample_count;
-	    double percent;
-	    double total_time;
+    uint64_t interval = 0;
 
-	    bool operator<(AddressEntry rhs) { return sample_count < rhs.sample_count; }
-    };
-    typedef std::vector<AddressEntry > AddressEntryVec;
+    void printResults( const AddressCounts& ac, bool do_print) {
 
-    void printResults( const AddressCounts& ac) {
+	    if (!do_print) return;
 
+//	    std::cout << "DisplayAddressBuffer, printResults interval is " << interval << std::endl;
 	    AddressCounts::const_iterator aci;
 	    uint64_t total_counts = 0;
 	    double percent_total = 0.0;
@@ -74,7 +66,7 @@ namespace {
 	        entry.line = -1;
 	        entry.file = "no file found";
 	        entry.function_name = "no funcion name found";
-#if 0
+#if 1
 	        entry.total_time = static_cast<double>(aci->second) *
 				static_cast<double>(interval) / 1000000000.0;
 #endif
@@ -90,13 +82,17 @@ namespace {
 	      if (mi->sample_count > 0 ) {
                 std::cout << "Address " << mi->addr
         	<< " had %" << mi->percent << " of samples "
+#if 0
         	<< " and " << mi->total_time << " of total time "
+#endif
 		<< std::endl;
 	      }
 	    }
 	    std::cout << "\ntotal samples: " << total_counts
+#if 0
 	    << "\npercent of total samples: " << percent_total
 	    << "\ntotal time: " << total_time
+#endif
 	    << "\n" << std::endl;
     }
 }
@@ -246,6 +242,9 @@ private:
         declareInput<AddressBuffer>(
             "in", boost::bind(&DisplayAddressBuffer::displayHandler, this, _1)
             );
+	declareInput<uint64_t>(
+            "interval", boost::bind(&DisplayAddressBuffer::intervalHandler, this, _1)
+            );
 
         declareOutput<AddressBuffer>("displayout");
     }
@@ -253,9 +252,15 @@ private:
     /** Handler for the "in" input.*/
     void displayHandler(const AddressBuffer& in)
     {
-	std::cout << "Intermediate aggregated results" << std::endl;
-	printResults(in.addresscounts);
+	//std::cout << "Intermediate aggregated results" << std::endl;
+	printResults(in.addresscounts,true);
         emitOutput<AddressBuffer>("displayout",  in);
+    }
+
+    void intervalHandler(const uint64_t in)
+    {
+        interval = in;
+	//std::cout << "DisplayAddressBuffer::intervalHandler set interval to " << interval << std::endl;
     }
 
 }; // class DisplayAddressBuffer

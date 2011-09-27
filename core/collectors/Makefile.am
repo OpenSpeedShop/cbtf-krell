@@ -17,4 +17,4 @@
 ################################################################################
 
 
-SUBDIRS = pcsamp usertime io
+SUBDIRS = pcsamp usertime io hwc

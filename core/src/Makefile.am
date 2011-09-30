@@ -21,12 +21,14 @@ lib_LTLIBRARIES = libcbtf-core.la
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@BINUTILS_CPPFLAGS@ \
+	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_la_LDFLAGS = \
 	@BINUTILS_LDFLAGS@ \
+	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	@MESSAGES_LDFLAGS@ \
 	-version-info 0:0:0
@@ -34,6 +36,7 @@ libcbtf_core_la_LDFLAGS = \
 
 libcbtf_core_la_LIBADD = \
 	@BINUTILS_BFD_LIB@ \
+	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@

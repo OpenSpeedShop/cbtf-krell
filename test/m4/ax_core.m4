@@ -24,8 +24,8 @@ AC_DEFUN([AX_CORE], [
                 core_dir=$withval, core_dir="/usr")
 
     CORE_CPPFLAGS="-I$core_dir/include"
-    CORE_LDFLAGS="$DYNINST_LDFLAGS -L$core_dir/$abi_libdir"
-    CORE_LIBS="$DYNINST_LIBS -lcbtf-core"
+    CORE_LDFLAGS="$DYNINST_LDFLAGS $LIBDWARF_LDFLAGS -L$core_dir/$abi_libdir"
+    CORE_LIBS="$DYNINST_LIBS $LIBDWARF_LIBS -lcbtf-core"
 
     core_saved_CPPFLAGS=$CPPFLAGS
     core_saved_LDFLAGS=$LDFLAGS

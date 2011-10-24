@@ -27,6 +27,8 @@
 #include "Usertime.h"
 #include "IO_data.h"
 #include "IO.h"
+#include "Mem_data.h"
+#include "Mem.h"
 #include "Hwc_data.h"
 #include "Hwc.h"
 
@@ -44,3 +46,7 @@ KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_start_sampling_args)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_parameters)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_start_sampling_args)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_trace_data)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_profile_data)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_parameters)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_start_sampling_args)

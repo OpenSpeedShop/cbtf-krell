@@ -41,6 +41,7 @@
 #include "KrellInstitute/Messages/Usertime_data.h"
 #include "KrellInstitute/Messages/Hwc_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
+#include "KrellInstitute/Messages/Mem_data.h"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
@@ -90,6 +91,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_hwc_data> >(
             "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_mem_trace_data> >(
+            "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
             );
         declareOutput<AddressBuffer>("Aggregatorout");
 	declareOutput<uint64_t>("interval");
@@ -148,6 +152,19 @@ private:
     void ioHandler(const boost::shared_ptr<CBTF_io_trace_data>& in)
     {
         CBTF_io_trace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "io" input.*/
+    void memHandler(const boost::shared_ptr<CBTF_mem_trace_data>& in)
+    {
+        CBTF_mem_trace_data *data = in.get();
 
 	StacktraceData stdata;
 	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,

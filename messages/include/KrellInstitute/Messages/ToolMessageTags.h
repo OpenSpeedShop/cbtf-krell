@@ -84,3 +84,8 @@
 #define CBTF_PROTOCOL_TAG_HWC_PARAMETERS                     ((int)10020)
 #define CBTF_PROTOCOL_TAG_HWC_ARGS                           ((int)10021)
 #define CBTF_PROTOCOL_TAG_HWC_DATA                           ((int)10022)
+
+#define CBTF_PROTOCOL_TAG_MEM_PARAMETERS                      ((int)10030)
+#define CBTF_PROTOCOL_TAG_MEM_ARGS                            ((int)10031)
+#define CBTF_PROTOCOL_TAG_MEMTRACE_DATA                       ((int)10032)
+#define CBTF_PROTOCOL_TAG_MEMPROFILE_DATA                     ((int)10033)

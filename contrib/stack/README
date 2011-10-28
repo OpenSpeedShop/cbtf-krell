@@ -1,0 +1,5 @@
+stack - a debugging tool for MPI applications, it will run gstack on each proc 
+        across many nodes and group the output into clusters to allow the user
+        to quickly identify any procs that are in different states.
+
+Run stack with the name of an application to see the gstack output for each procedure with that application name.  Similar stack traces will be grouped together. 

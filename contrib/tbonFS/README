@@ -1,0 +1,4 @@
+tbonFS - an implementation of TBON-FS in CBTF that allows you to do (group) 
+         file operations on many backend nodes at the same time.
+
+tbonFS has its own CLI, first run tbonFS then type help to see the list of commands.

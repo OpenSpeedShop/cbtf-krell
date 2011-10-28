@@ -1,0 +1,5 @@
+psTool - a tool to run the ps command on backends then compare the output and
+         tell the user what procs are running on all backends and what nodes are
+         running unique procs.
+
+Run pstool after setting up the cbtf_topology file.

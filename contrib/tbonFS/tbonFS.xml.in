@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2010 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+
+  <Type>tbonFSNetwork</Type>
+  <Version>1.0.0</Version>
+
+  <Input>
+      <Name>topIn</Name>
+      <To><Input>sys_topIn</Input></To>
+  </Input>
+  <Input>
+      <Name>grepIn</Name>
+      <To><Input>sys_grepIn</Input></To>
+  </Input>
+  <Input>
+      <Name>tailIn</Name>
+      <To><Input>sys_tailIn</Input></To>
+  </Input>
+  <Input>
+      <Name>readIn</Name>
+      <To><Input>sys_readIn</Input></To>
+  </Input>
+  <Input>
+      <Name>writeIn</Name>
+      <To><Input>sys_writeIn</Input></To>
+  </Input>
+  <Input>
+      <Name>cpIn</Name>
+      <To><Input>sys_cpIn</Input></To>
+  </Input>
+
+  <Output>
+      <Name>vecOut</Name>
+      <From><Output>sys_vecOut</Output></From>
+  </Output>
+
+  <Frontend>
+    <Network>
+      <Type>tbonFSNetwork_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <Plugin>mrnetPlugin.so</Plugin>
+
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>S2Ptop</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>S2Pgrep</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>S2Ptail</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>S2Pread</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>S2Pwrite</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>S2Pcp</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+
+      <Input>
+        <Name>Frontend_InVec</Name>
+        <To>
+          <Name>PacketToString</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>sys_topIn</Name>
+        <To>
+          <Name>S2Ptop</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>sys_grepIn</Name>
+        <To>
+          <Name>S2Pgrep</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>sys_tailIn</Name>
+        <To>
+          <Name>S2Ptail</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>sys_readIn</Name>
+        <To>
+          <Name>S2Pread</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>sys_writeIn</Name>
+        <To>
+          <Name>S2Pwrite</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>sys_cpIn</Name>
+        <To>
+          <Name>S2Pcp</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Output>
+         <Name>sys_vecOut</Name>
+         <From>
+             <Name>PacketToString</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>Frontend_OutTop</Name>
+         <From>
+             <Name>S2Ptop</Name>
+             <Output>out1</Output>
+         </From>
+      </Output>
+      <Output>
+         <Name>Frontend_OutGrep</Name>
+         <From>
+             <Name>S2Pgrep</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+      <Output>
+         <Name>Frontend_OutTail</Name>
+         <From>
+             <Name>S2Ptail</Name>
+             <Output>out1</Output>
+         </From>
+      </Output>
+      <Output>
+         <Name>Frontend_OutRead</Name>
+         <From>
+             <Name>S2Pread</Name>
+             <Output>out1</Output>
+         </From>
+      </Output>
+      <Output>
+         <Name>Frontend_OutWrite</Name>
+         <From>
+             <Name>S2Pwrite</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+      <Output>
+         <Name>Frontend_OutCp</Name>
+         <From>
+             <Name>S2Pcp</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>UpwardStream</Name>
+      <To><Input>Frontend_InVec</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingDownstream>
+        <Name>DownwardStreamTop</Name>
+        <From><Output>Frontend_OutTop</Output></From>
+    </OutgoingDownstream>
+    <OutgoingDownstream>
+        <Name>DownwardStreamGrep</Name>
+        <From><Output>Frontend_OutGrep</Output></From>
+    </OutgoingDownstream>
+    <OutgoingDownstream>
+        <Name>DownwardStreamTail</Name>
+        <From><Output>Frontend_OutTail</Output></From>
+    </OutgoingDownstream>
+    <OutgoingDownstream>
+        <Name>DownwardStreamRead</Name>
+        <From><Output>Frontend_OutRead</Output></From>
+    </OutgoingDownstream>
+    <OutgoingDownstream>
+        <Name>DownwardStreamWrite</Name>
+        <From><Output>Frontend_OutWrite</Output></From>
+    </OutgoingDownstream>
+    <OutgoingDownstream>
+        <Name>DownwardStreamCp</Name>
+        <From><Output>Frontend_OutCp</Output></From>
+    </OutgoingDownstream>
+
+  </Frontend>
+
+  <Filter>
+    <Depth><RootRelative offset="1"/></Depth>
+    <!--Depth><LeafRelative offset="1"/></Depth-->
+    <!--Depth><AllOther/></Depth-->
+    <Network>
+      <Type>tbonFSNetwork_Filter</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <Plugin>mrnetPlugin.so</Plugin>
+      <Plugin>tbonFSFilter.so</Plugin>
+      
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>catVec</Name>
+        <Type>tbonFScatVec</Type>
+      </Component>
+
+      <Input>
+        <Name>Filter_In</Name>
+        <To>
+          <Name>PacketToString</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>Filter_Output</Name>
+        <From>
+          <Name>StringToPacket</Name>
+          <Output>out2</Output>
+        </From>
+      </Output>
+
+      <Connection>
+        <From>
+          <Name>PacketToString</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>catVec</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>catVec</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+<!-- stream from backend -->
+    <IncomingUpstream>
+      <Name>UpwardStream</Name>
+      <To><Input>Filter_In</Input></To>
+    </IncomingUpstream>
+
+<!-- stream to frontend -->    
+    <OutgoingUpstream>
+      <Name>UpwardStream</Name>
+      <From><Output>Filter_Output</Output></From>
+    </OutgoingUpstream>
+
+  </Filter> 
+
+  <Backend>
+    <Network>
+      <Type>TestNetwork_Backend</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <Plugin>mrnetPlugin.so</Plugin>
+      <Plugin>tbonFSPlugin.so</Plugin>
+
+      <Component>
+        <Name>P2Stop</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>P2Sgrep</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>P2Stail</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>P2Sread</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>P2Swrite</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>P2Scp</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      <Component>
+        <Name>gTop</Name>
+        <Type>tbonFStop</Type>
+      </Component>
+      <Component>
+        <Name>gTopToggle</Name>
+        <Type>tbonFStopToggle</Type>
+      </Component>
+      <Component>
+        <Name>gGrep</Name>
+        <Type>tbonFSgrep</Type>
+      </Component>
+      <Component>
+        <Name>gTail</Name>
+        <Type>tbonFStail</Type>
+      </Component>
+      <Component>
+        <Name>gRead</Name>
+        <Type>tbonFSread</Type>
+      </Component>
+      <Component>
+        <Name>gWrite</Name>
+        <Type>tbonFSwrite</Type>
+      </Component>
+      <Component>
+        <Name>gCp</Name>
+        <Type>tbonFScp</Type>
+      </Component>
+
+      <Input>
+        <Name>Backend_InTop</Name>
+        <To>
+          <Name>P2Stop</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>Backend_InGrep</Name>
+        <To>
+          <Name>P2Sgrep</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>Backend_InTail</Name>
+        <To>
+          <Name>P2Stail</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>Backend_InRead</Name>
+        <To>
+          <Name>P2Sread</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>Backend_InWrite</Name>
+        <To>
+          <Name>P2Swrite</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+      <Input>
+        <Name>Backend_InCp</Name>
+        <To>
+          <Name>P2Scp</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>Backend_Output</Name>
+        <From>
+          <Name>StringToPacket</Name>
+          <Output>out2</Output>
+        </From>
+      </Output>
+
+      <Connection>
+        <From>
+          <Name>P2Stop</Name>
+          <Output>out1</Output>
+        </From>
+        <To>
+          <Name>gTopToggle</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gTopToggle</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>gTop</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gTop</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>P2Sgrep</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>gGrep</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gGrep</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>P2Stail</Name>
+          <Output>out1</Output>
+        </From>
+        <To>
+          <Name>gTail</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gTail</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>P2Sread</Name>
+          <Output>out1</Output>
+        </From>
+        <To>
+          <Name>gRead</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gRead</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>P2Swrite</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>gWrite</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gWrite</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>P2Scp</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>gCp</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+          <Name>gCp</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+    <IncomingDownstream> 
+      <Name>DownwardStreamTop</Name>
+      <To><Input>Backend_InTop</Input></To>
+    </IncomingDownstream>
+    <IncomingDownstream> 
+      <Name>DownwardStreamGrep</Name>
+      <To><Input>Backend_InGrep</Input></To>
+    </IncomingDownstream>
+    <IncomingDownstream> 
+      <Name>DownwardStreamTail</Name>
+      <To><Input>Backend_InTail</Input></To>
+    </IncomingDownstream>
+    <IncomingDownstream> 
+      <Name>DownwardStreamRead</Name>
+      <To><Input>Backend_InRead</Input></To>
+    </IncomingDownstream>
+    <IncomingDownstream> 
+      <Name>DownwardStreamWrite</Name>
+      <To><Input>Backend_InWrite</Input></To>
+    </IncomingDownstream>
+    <IncomingDownstream> 
+      <Name>DownwardStreamCp</Name>
+      <To><Input>Backend_InCp</Input></To>
+    </IncomingDownstream>
+    
+    <OutgoingUpstream>
+      <Name>UpwardStream</Name>
+      <From><Output>Backend_Output</Output></From>
+    </OutgoingUpstream>
+
+  </Backend>
+
+</MRNet>

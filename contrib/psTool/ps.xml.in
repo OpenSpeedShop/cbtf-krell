@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2010 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+
+  <Type>psNetwork</Type>
+  <Version>1.0.0</Version>
+
+  <Input>
+      <Name>in</Name>
+      <To><Input>system_in</Input></To>
+  </Input>
+
+  <Output>
+      <Name>outSame</Name>
+      <From><Output>system_outSame</Output></From>
+  </Output>
+
+  <Output>
+      <Name>outDiff</Name>
+      <From><Output>system_outDiff</Output></From>
+  </Output>
+
+  <Frontend>
+    <Network>
+      <Type>psNetwork_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>/users/mmason/mycode-tu/psTool/.libs</SearchPath>
+      <Plugin>mrnetPlugin.so</Plugin>
+
+      <Component>
+        <Name>PacketToStringSame</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToStringDiff</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+
+      <Input>
+        <Name>Frontend_InSame</Name>
+        <To>
+          <Name>PacketToStringSame</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>Frontend_InDiff</Name>
+        <To>
+          <Name>PacketToStringDiff</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>system_in</Name>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+
+      <Output>
+         <Name>system_outSame</Name>
+         <From>
+             <Name>PacketToStringSame</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>system_outDiff</Name>
+         <From>
+             <Name>PacketToStringDiff</Name>
+             <Output>out2</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>Frontend_Out</Name>
+         <From>
+             <Name>StringToPacket</Name>
+             <Output>out1</Output>
+         </From>
+      </Output>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>UpwardStreamSame</Name>
+      <To><Input>Frontend_InSame</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>UpwardStreamDiff</Name>
+      <To><Input>Frontend_InDiff</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingDownstream>
+        <Name>DownwardStream</Name>
+        <From><Output>Frontend_Out</Output></From>
+    </OutgoingDownstream>
+
+  </Frontend>
+
+  <Filter>
+    <Depth><RootRelative offset="1"/></Depth>
+    <Network>
+      <Type>psNetwork_Filter</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/users/mmason/mycode-tu/psTool/.libs</SearchPath>
+      <Plugin>psPlugin.so</Plugin>
+      <Plugin>mrnetPlugin.so</Plugin>
+
+      <Component>
+        <Name>filterSame</Name>
+        <Type>psSame</Type>
+      </Component>
+
+      <Component>
+        <Name>filterDiff</Name>
+        <Type>psDiff</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+
+      <Component>
+        <Name>StringToPacketSame</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+
+      <Component>
+        <Name>StringToPacketDiff</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+
+      <Input>
+        <Name>Filter_In</Name>
+        <To>
+          <Name>PacketToString</Name>
+          <Input>in2</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>Filter_OutSame</Name>
+        <From>
+          <Name>StringToPacketSame</Name>
+          <Output>out2</Output>
+        </From>
+      </Output>
+
+      <Output>
+        <Name>Filter_OutDiff</Name>
+        <From>
+          <Name>StringToPacketDiff</Name>
+          <Output>out2</Output>
+        </From>
+      </Output>
+
+      <Connection>
+        <From>
+          <Name>PacketToString</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>filterSame</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+    
+      <Connection>
+        <From>
+          <Name>PacketToString</Name>
+          <Output>out2</Output>
+        </From>
+        <To>
+          <Name>filterDiff</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>filterSame</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacketSame</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>filterDiff</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacketDiff</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+<!-- stream from backend -->
+    <IncomingUpstream>
+      <Name>UpwardStream</Name>
+      <To><Input>Filter_In</Input></To>
+    </IncomingUpstream>
+
+<!-- stream to frontend -->    
+    <OutgoingUpstream>
+      <Name>UpwardStreamSame</Name>
+      <From><Output>Filter_OutSame</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>UpwardStreamDiff</Name>
+      <From><Output>Filter_OutDiff</Output></From>
+    </OutgoingUpstream>
+
+  </Filter> 
+
+  <Backend>
+    <Network>
+      <Type>TestNetwork_Backend</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/users/mmason/mycode-tu/psTool/.libs</SearchPath>
+      <Plugin>psPlugin.so</Plugin>
+      <Plugin>mrnetPlugin.so</Plugin>
+
+      <Component>
+        <Name>psCmd</Name>
+        <Type>psCmd</Type>
+      </Component>
+
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+
+      <Input>
+        <Name>Backend_In</Name>
+        <To>
+          <Name>PacketToString</Name>
+          <Input>in1</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>Backend_Output</Name>
+        <From>
+          <Name>StringToPacket</Name>
+          <Output>out2</Output>
+        </From>
+      </Output>
+
+      <Connection>
+        <From>
+          <Name>PacketToString</Name>
+          <Output>out1</Output>
+        </From>
+        <To>
+          <Name>psCmd</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+          <Name>psCmd</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>StringToPacket</Name>
+          <Input>in2</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+    <IncomingDownstream> 
+      <Name>DownwardStream</Name>
+      <To><Input>Backend_In</Input></To>
+    </IncomingDownstream>
+    
+    <OutgoingUpstream>
+      <Name>UpwardStream</Name>
+      <From><Output>Backend_Output</Output></From>
+    </OutgoingUpstream>
+
+  </Backend>
+
+</MRNet>

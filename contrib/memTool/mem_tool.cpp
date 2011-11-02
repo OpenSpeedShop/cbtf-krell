@@ -99,7 +99,6 @@ int main(int argc,  char *argv[ ])
   registerXML(filesystem::path(XMLDIR) / "mem.xml");
 
   // Setup MRNet
-  //Component::registerPlugin("/usr/projects/packages/mmason/opt/cbtf/lib64/KrellInstitute/CBTF/BasicMRNetLaunchers.so");
   Component::registerPlugin(
             filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so"
             );
@@ -134,7 +133,6 @@ int main(int argc,  char *argv[ ])
   Component::connect(network, "out", output_value_component, "value");
 
   // start mrnet network
-  //*topology_file = "./cbtf_topology";
   *topology_file = default_topology;
 
   // send the app name down the mrnet tree

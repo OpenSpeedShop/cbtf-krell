@@ -52,11 +52,14 @@ using namespace KrellInstitute::CBTF;
 int main(int argc, char *argv[])
 {
   // XML
-  registerXML("ps.xml");
+  registerXML(boost::filesystem::path(XMLDIR) / "ps.xml");
+  //registerXML("ps.xml");
 
   // Setup MRNet
-  Component::registerPlugin("/usr/projects/packages/mmason/opt/cbtf/lib64/KrellInstitute/CBTF/BasicMRNetLaunchers.so");
-  
+  Component::registerPlugin(
+            boost::filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so"
+            );
+
   Component::Instance launcher = Component::instantiate(
     Type("BasicMRNetLauncherUsingBackendCreate")  );
 
@@ -90,8 +93,12 @@ boost::shared_ptr<ValueSink<std::vector<std::string> > > outDiff_value = ValueSi
   Component::Instance outDiff_value_component = boost::reinterpret_pointer_cast<Component>(outDiff_value);
   Component::connect(network, "outDiff", outDiff_value_component, "value");
 
+  char const* home = getenv("HOME");
+  std::string default_topology(home);
+  default_topology += "/.cbtf/cbtf_topology";
+
   // start mrnet network
-  *topology_file = "./cbtf_topology";
+  *topology_file = default_topology;
 
   // start chain
   *input_value = "start";

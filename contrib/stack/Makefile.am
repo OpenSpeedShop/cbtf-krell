@@ -16,9 +16,18 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+contribxmldir = $(datadir)/KrellInstitute/contrib/xml
+contribbindir = $(datadir)/KrellInstitute/contrib/bin
+contribplugindir = $(datadir)/KrellInstitute/contrib/lib
+
+BUILT_FILES = stack.xml
+
+nobase_dist_contribxml_DATA = \
+        stack.xml
+
 ACLOCAL_AMFLAGS = -I m4
 
-noinst_PROGRAMS = stack
+contribbin_PROGRAMS = stack
 
 stack_SOURCES = stack_tool.cpp
 
@@ -26,6 +35,7 @@ stack_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(contribxmldir)\"" \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
 	@LIBXERCES_C_CPPFLAGS@ \
@@ -48,7 +58,7 @@ stack_LDADD = \
 	@MRNET_LIBS@ 
   	
 
-noinst_LTLIBRARIES = stackPlugin.la mrnetPlugin.la
+contribplugin_LTLIBRARIES = stackPlugin.la mrnetPlugin.la
 
 stackPlugin_la_SOURCES = stackPlugin.cpp
 
@@ -84,3 +94,14 @@ mrnetPlugin_la_LIBADD = \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 
+CLEANFILES = $(BUILT_FILES)
+
+stack.xml: stack.xml.in
+
+	@rm -f stack.xml
+	@sed \
+                -e 's,@@contriblib_location@@,$(contribplugindir),' \
+                -e 's,@@cbtflib_location@@,$(libdir),' \
+                $(srcdir)/stack.xml.in > stack.xml
+
+EXTRA_DIST = stack.xml.in

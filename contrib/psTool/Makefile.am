@@ -16,9 +16,18 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+contribxmldir = $(datadir)/KrellInstitute/contrib/xml
+contribbindir = $(datadir)/KrellInstitute/contrib/bin
+contribplugindir = $(datadir)/KrellInstitute/contrib/lib
+
+BUILT_FILES = ps.xml
+
+nobase_dist_contribxml_DATA = \
+        ps.xml
+
 ACLOCAL_AMFLAGS = -I m4
 
-noinst_PROGRAMS = pstool
+contribbin_PROGRAMS = pstool
 
 pstool_SOURCES = pstool.cpp
 
@@ -26,6 +35,7 @@ pstool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(contribxmldir)\"" \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
 	@LIBXERCES_C_CPPFLAGS@ \
@@ -48,7 +58,7 @@ pstool_LDADD = \
 	@MRNET_LIBS@ 
   	
 
-noinst_LTLIBRARIES = psPlugin.la mrnetPlugin.la
+contribplugin_LTLIBRARIES = psPlugin.la mrnetPlugin.la
 
 psPlugin_la_SOURCES = psPlugin.cpp
 
@@ -84,4 +94,14 @@ mrnetPlugin_la_LIBADD = \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 
+CLEANFILES = $(BUILT_FILES)
 
+ps.xml: ps.xml.in
+
+	@rm -f ps.xml
+	@sed \
+                -e 's,@@contriblib_location@@,$(contribplugindir),' \
+                -e 's,@@cbtflib_location@@,$(libdir),' \
+                $(srcdir)/ps.xml.in > ps.xml
+
+EXTRA_DIST = ps.xml.in

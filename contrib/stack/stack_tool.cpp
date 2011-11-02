@@ -60,11 +60,13 @@ int main(int argc,  char *argv[ ])
   }
 
   // XML
-  registerXML("stack.xml");
+  registerXML(boost::filesystem::path(XMLDIR) / "stack.xml");
+  //registerXML("stack.xml");
 
   // Setup MRNet
-  Component::registerPlugin("/usr/projects/packages/mmason/opt/cbtf/lib64/KrellInstitute/CBTF/BasicMRNetLaunchers.so");
-  //Component::registerPlugin(boost::filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so");
+  Component::registerPlugin(
+            boost::filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so"
+            );
 
   Component::Instance launcher = Component::instantiate(
     Type("BasicMRNetLauncherUsingBackendCreate")
@@ -96,8 +98,12 @@ int main(int argc,  char *argv[ ])
   Component::Instance output_value_component = boost::reinterpret_pointer_cast<Component>(output_value);
   Component::connect(network, "out", output_value_component, "value");
 
+  char const* home = getenv("HOME");
+  std::string default_topology(home);
+  default_topology += "/.cbtf/cbtf_topology";
+
   // start mrnet network
-  *topology_file = "./cbtf_topology";
+  *topology_file = default_topology;
 
   // send the app name down the mrnet tree
   *input_value = argv[1];

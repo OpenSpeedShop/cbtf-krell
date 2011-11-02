@@ -16,9 +16,18 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+contribxmldir = $(datadir)/KrellInstitute/contrib/xml
+contribbindir = $(datadir)/KrellInstitute/contrib/bin
+contribplugindir = $(datadir)/KrellInstitute/contrib/lib
+
+BUILT_FILES = tbonFS.xml
+
+nobase_dist_contribxml_DATA = \
+        tbonFS.xml
+
 ACLOCAL_AMFLAGS = -I m4
 
-noinst_PROGRAMS = tbonFS
+contribbin_PROGRAMS = tbonFS
 
 tbonFS_SOURCES = tbonFS_tool.cpp 
 
@@ -26,6 +35,7 @@ tbonFS_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(contribxmldir)\"" \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
 	@LIBXERCES_C_CPPFLAGS@ \
@@ -48,7 +58,7 @@ tbonFS_LDADD = \
 	@MRNET_LIBS@ 
   	
 
-noinst_LTLIBRARIES = tbonFSPlugin.la tbonFSFilter.la mrnetPlugin.la
+contribplugin_LTLIBRARIES = tbonFSPlugin.la tbonFSFilter.la mrnetPlugin.la
 
 tbonFSPlugin_la_SOURCES = tbonFSPlugin.cpp
 
@@ -99,3 +109,14 @@ mrnetPlugin_la_LIBADD = \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
 
+CLEANFILES = $(BUILT_FILES)
+
+tbonFS.xml: tbonFS.xml.in
+
+	@rm -f tbonFS.xml
+	@sed \
+                -e 's,@@contriblib_location@@,$(contribplugindir),' \
+                -e 's,@@cbtflib_location@@,$(libdir),' \
+                $(srcdir)/tbonFS.xml.in > tbonFS.xml
+
+EXTRA_DIST = tbonFS.xml.in

@@ -58,7 +58,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>tbonFSNetwork_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <SearchPath>@@contriblib_location@@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
 
       <Component>
@@ -233,7 +233,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Network>
       <Type>tbonFSNetwork_Filter</Type>
       <Version>1.0.0</Version>
-      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <SearchPath>@@contriblib_location@@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>tbonFSFilter.so</Plugin>
       
@@ -307,7 +307,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Network>
       <Type>TestNetwork_Backend</Type>
       <Version>1.0.0</Version>
-      <SearchPath>/users/mmason/mycode-tu/tbonFS/.libs</SearchPath>
+      <SearchPath>@@contriblib_location@@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>tbonFSPlugin.so</Plugin>
 

@@ -88,4 +88,5 @@
 #define CBTF_PROTOCOL_TAG_MEM_PARAMETERS                      ((int)10030)
 #define CBTF_PROTOCOL_TAG_MEM_ARGS                            ((int)10031)
 #define CBTF_PROTOCOL_TAG_MEMTRACE_DATA                       ((int)10032)
-#define CBTF_PROTOCOL_TAG_MEMPROFILE_DATA                     ((int)10033)
+#define CBTF_PROTOCOL_TAG_MEMEXTTRACE_DATA                    ((int)10033)
+#define CBTF_PROTOCOL_TAG_MEMPROFILE_DATA                     ((int)10034)

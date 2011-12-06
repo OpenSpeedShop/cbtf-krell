@@ -92,7 +92,7 @@ private:
         declareInput<boost::shared_ptr<CBTF_hwc_data> >(
             "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
             );
-        declareInput<boost::shared_ptr<CBTF_mem_trace_data> >(
+        declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
             "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
             );
         declareOutput<AddressBuffer>("Aggregatorout");
@@ -162,9 +162,9 @@ private:
     }
 
     /** Handler for the "io" input.*/
-    void memHandler(const boost::shared_ptr<CBTF_mem_trace_data>& in)
+    void memHandler(const boost::shared_ptr<CBTF_mem_exttrace_data>& in)
     {
-        CBTF_mem_trace_data *data = in.get();
+        CBTF_mem_exttrace_data *data = in.get();
 
 	StacktraceData stdata;
 	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
@@ -190,6 +190,7 @@ private:
 // Only the first xdr is decoded properly (CBTF_DataHeader).
 // Likely need to reposition the xdr stream...
 
+	unsigned begin_pos;
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
         unsigned header_size = myblob.getXDRDecoding(

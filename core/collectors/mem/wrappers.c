@@ -40,7 +40,7 @@ void* memmalloc(size_t size)
 #endif
 {
     void* retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("malloc");
 
@@ -84,7 +84,7 @@ void* memcalloc(size_t count, size_t size)
 #endif
 {
     void* retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("calloc");
 
@@ -130,7 +130,7 @@ void* memrealloc(void* oldPtr, size_t size)
 #endif
 {
     void* retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("realloc");
 
@@ -172,7 +172,7 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
 #endif
 {    
     int retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("posix_memalign");
 
@@ -216,7 +216,7 @@ int memmemalign(size_t blocksize, size_t bytes)
 #endif
 {    
     int retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("memalign");
 
@@ -263,7 +263,7 @@ void memfree(void * ptr)
 #endif
 {
     //void retval;
-    CBTF_mem_event event;
+    CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("free");
 

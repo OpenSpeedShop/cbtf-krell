@@ -96,10 +96,10 @@ typedef struct {
     CBTF_mem_trace_data data;              /**< Actual data blob. */
     CBTF_mem_exttrace_data extdata;              /**< Actual data blob. */
     
-    /** Tracing buffer. */
+    /** Tracing buffer. NOTE: using exended data memt for buffer*/
     struct {
 	uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
-	CBTF_mem_event events[EventBufferSize];          /**< Mem call events. */
+	CBTF_memt_event events[EventBufferSize];          /**< Mem call events. */
     } buffer;    
     
 #if defined (CBTF_SERVICE_USE_OFFLINE)
@@ -379,7 +379,7 @@ static void mem_send_events(TLS *tls)
 
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-	CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_trace_data, &(tls->data));
+	CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -394,7 +394,7 @@ static void mem_send_events(TLS *tls)
 				 &tls->data);
 #else
 	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_MEMTRACE_DATA,
-                           (xdrproc_t) xdr_CBTF_mem_trace_data,
+                           (xdrproc_t) xdr_CBTF_mem_exttrace_data,
 			   &tls->data);
 #endif
 	}
@@ -405,7 +405,7 @@ static void mem_send_events(TLS *tls)
 #endif
 
     /* Send these events */
-//    CBTF_MRNet_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_trace_data, &(tls->data));
+//    CBTF_MRNet_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
     
     /* Re-initialize the data blob's header */
     tls->header.time_begin = tls->header.time_end;
@@ -433,7 +433,7 @@ static void mem_send_events(TLS *tls)
 /*
 NO DEBUG PRINT STATEMENTS HERE.
 */
-void mem_start_event(CBTF_mem_event* event)
+void mem_start_event(CBTF_memt_event* event)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -450,7 +450,7 @@ void mem_start_event(CBTF_mem_event* event)
     ++tls->nesting_depth;
 
     /* Initialize the event record. */
-    memset(event, 0, sizeof(CBTF_mem_event));
+    memset(event, 0, sizeof(CBTF_memt_event));
 
     tls->do_trace = saved_do_trace;
 }
@@ -473,7 +473,7 @@ void mem_start_event(CBTF_mem_event* event)
 /*
 NO DEBUG PRINT STATEMENTS HERE IF TRACING "write, __libc_write".
 */
-void mem_record_event(const CBTF_mem_event* event, uint64_t function)
+void mem_record_event(const CBTF_memt_event* event, uint64_t function)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -492,7 +492,7 @@ void mem_record_event(const CBTF_mem_event* event, uint64_t function)
     unsigned pathindex = 0;
 
 #ifdef DEBUG
-fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mem_event),sizeof(stacktrace),tls->nesting_depth);
+fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_memt_event),sizeof(stacktrace),tls->nesting_depth);
 #endif
 
     /* Decrement the Mem function wrapper nesting depth */
@@ -603,7 +603,7 @@ fprintf(stderr,"StackTraceBufferSize is full, call mem_send_events\n");
     
     /* Add a new entry for this event to the tracing buffer. */
     memcpy(&(tls->buffer.events[tls->data.events.events_len]),
-	   event, sizeof(CBTF_mem_event));
+	   event, sizeof(CBTF_memt_event));
     tls->buffer.events[tls->data.events.events_len].stacktrace = entry;
     tls->data.events.events_len++;
     

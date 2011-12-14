@@ -29,6 +29,7 @@ testXDR_CXXFLAGS = \
 	-DTOPDIR="\"$(top_srcdir)\"" \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
+	@BINUTILS_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 testXDR_LDFLAGS = \
@@ -38,6 +39,7 @@ testXDR_LDFLAGS = \
 	-L$(top_srcdir)/../../framework/build/libcbtf-xml \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
+	@BINUTILS_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 
 
@@ -50,6 +52,7 @@ testXDR_LDADD = \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
+	@BINUTILS_BFD_LIB@ \
 	@MRNET_LIBS@
 
 testXDR_SOURCES = \

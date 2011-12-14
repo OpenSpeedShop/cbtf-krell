@@ -1,0 +1,10 @@
+This is a short and sweet README for the Statistics filter.
+
+To make a plugin file using this template simply create a statisticsPlugin.cpp file. The statisticsPlugin.cpp should include the statisticsPlugin.hpp header file and register the components you would like to use with the proper type specified.  For instance if you would like to collect statistics on incoming float values your statisticsPlugin.cpp would look something like this:
+
+#include statisticsPlugin.hpp
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ValueToStatistics<float>) //Collecting initial values
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(StatisticsAggregator<float>) //Gather statistics at filter level
+
+Then you will be free to use the component as you normally would (with the < and > symbols replaced by &lt; and &gt; respectively in xml files).

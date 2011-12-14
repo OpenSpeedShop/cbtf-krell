@@ -260,7 +260,7 @@ def SLURMgenerateSimpleBETopologyString():
         if fanout < 16:
 	    depth = x
             break
-    if fanout >= num_nodes:
+    if int(fanout) >= int(num_nodes):
 	fanout = fanout / 2
     print "Creating balanced tree with depth %d, fanout %d" % (depth,fanout)
 

@@ -2,8 +2,9 @@
 ##===========================================================================##
 #  Copyright (C) 2008 Los Alamos National Security, LLC. All Rights Reserved. #
 #               Author: Samuel K. Gutierrez - samuel[at]lanl.gov              #
-# Copyright (c) 2008-2009 Krell Institute  All Rights Reserved.               #
+# Copyright (c) 2008-2011 Krell Institute  All Rights Reserved.               #
 #               Author: Additional changes added by jeg                       #
+#               Author: Additional changes added by dpm                       #
 ##===========================================================================##
 
 #=============================================================================#
@@ -33,17 +34,43 @@ warnings.resetwarnings()
 from sys import stdout
 import os
 import sys
+import math
 from os import path
+from optparse import OptionParser
+
+# Location of user-specific CBTF preferences: $HOME/.cbtf
+#cbtfuserpref = os.environ['HOME'] + os.sep + '.cbtf'
+cbtfuserpref = "./"
+
+parser = OptionParser()
+parser.add_option("-d", "--depth",
+		  metavar="topologydepth",
+		  type="int", default=3,
+                  help="desired depth of mrnet tree.")
+parser.add_option("-f", "--fanout", default=16,
+		  metavar="topologyfanout",
+		  type="int",
+                  help="desired fanout of mrnet tree.")
+parser.add_option("-o", "--outputfile",
+		  type="string", default="cbtf_topology",
+                  metavar="topologyfile", help="write topology output to topologyfile.")
+parser.add_option("-n", "--nodelist",
+		  type="string", default=".cbtf-mrnet-nodelist",
+                  metavar="nodelist", help="File with list of nodes to use for topology.")
+parser.add_option("--debug",
+                  action="store_true", dest="debug", default=False,
+                  help="Print debug messages to stdout.")
+parser.add_option("-q", "--quiet",
+                  action="store_false", dest="verbose", default=True,
+                  help="don't print status messages to stdout.")
+
+(options, args) = parser.parse_args()
 
 # Flag indicating if debugging output will be displayed.
-debug = False
+debug = options.debug
 
 #Flag indicating if a topology file update is needed
 topFileUpdateNeeded = True
-
-# Regular expression string utilized to help parse qstat output.
-# jeg commented this out and replaced it with a scheme that takes the 
-# output of uname -n and strips all numeric characters off the right side.
 
 hostnodeName = os.uname()[1].split('.')[0]
 
@@ -54,26 +81,28 @@ hostnodeNameStrip = hostnodeName.rstrip('0123456789')
 if debug:
    print "stripped hostnodeNameStrip=%s" % hostnodeNameStrip
 
-frontEndQstatRegEx = hostnodeNameStrip + '[^/*]*'
 
-if debug:
-   print "stripped frontEndQstatRegEx=%s" % frontEndQstatRegEx
-
-# Location of user-specific CBTF preferences: $HOME/.cbtf
-cbtfuserpref = os.environ['HOME'] + os.sep + '.cbtf'
-
-def getAllocatedNodesString():
+def PBSgetAllocatedNodesString():
     if os.environ.has_key('PBS_JOBID'):
         allocnodes = commands.getoutput('cat $PBS_NODEFILE  | uniq')
         if debug:
             print ' '
-            #print "from getRawAllocatedNodesString, uniqallocnodes=%s" % uniqallocnodes
+    else:
+        print 'fatal error...PBS_JOBID not defined.'
+        sys.exit()
+    return allocnodes
+
+def PBSgetAllocatedNodeCount():
+    if os.environ.has_key('PBS_JOBID'):
+	numPBSnodes = commands.getoutput('wc -l < $PBS_NODEFILE')
+        if debug:
+            print ' '
     else:
         print 'fatal error...PBS_JOBID not defined.'
         sys.exit()
     if debug:
-       print "From getRawAllocatedNodesString, allocnodes=%s" % allocnodes
-    return allocnodes
+       print "numPBSnodes=" + str(numPBSnodes)
+    return numPBSnodes
 
 def prepENV(topologyStringHash):
     global topFileUpdateNeeded
@@ -89,14 +118,12 @@ def prepENV(topologyStringHash):
             print 'present'
             sys.stdout.write('topology update needed...')
         
-        #Overwrite CBTF_MRNET_TOPOLOGY_FILE with:
-        #$HOME/.cbtf/HOSTNAME.<topologyStringHash>.top
-        #newtopenv = cbtfuserpref + os.sep + os.uname()[1].split('.')[0] + \
-        #'.' + topologyStringHash + '.top'
-        newtopenv = cbtfuserpref + os.sep + 'cbtf_topology'
+        #Overwrite CBTF_MRNET_TOPOLOGY_FILE
+        #newtopenv = cbtfuserpref + os.sep + 'cbtf_topology'
+        newtopenv = cbtfuserpref + options.outputfile
         
         os.environ['CBTF_MRNET_TOPOLOGY_FILE'] = newtopenv
-        print 'created topology file: ' + newtopenv
+        print 'Creating topology file: ' + newtopenv
     else:
         if debug:
             print 'not present'
@@ -104,15 +131,10 @@ def prepENV(topologyStringHash):
         
         #Make Directory $HOME/.cbtf
         os.mkdir(cbtfuserpref, 0755)
-        
-        #os.environ['CBTF_MRNET_TOPOLOGY_FILE'] = \
-        #cbtfuserpref + os.sep + os.uname()[1].split('.')[0] + \
-        #'.' + topologyStringHash + '.top'
-
         os.environ['CBTF_MRNET_TOPOLOGY_FILE'] = \
-        cbtfuserpref + os.sep + 'cbtf_topology'
+        cbtfuserpref + os.sep + options.outputfile
 
-        print 'created topology file: ' + cbtfuserpref + os.sep + 'cbtf_topology'
+        print 'created topology file: ' + cbtfuserpref + os.sep + options.outputfile
 
     if os.path.isfile(os.environ['CBTF_MRNET_TOPOLOGY_FILE']):
         if debug:
@@ -146,16 +168,63 @@ def getCBTFPrefix():
 ## haveTopgen()
 # Returns True if mrnet_topgen is present in $CBTF_PREFIX/bin.
 # Returns False otherwise.
+# FIXME: Depends on CBTF_PREFIX.  Really should just try and
+# find mrnet_topgen in users path via something like which.
 def haveTopgen():
     return os.path.isfile(os.environ['CBTF_PREFIX'] + os.sep + 'bin' + \
                         os.sep + 'mrnet_topgen')
 
-#FIXME
-## generateMRNetTopologyString(degree, numleaves)
 # Returns mrnet_topgen-based MRNet topology string.
-def generateMRNetTopologyString(degree, numleaves):
-    mrntstr = 'echo "' + getAllocatedNodesString() + '" | ' + \
+def PBSgenerateFlatMRNetTopologyString(degree, numleaves):
+    mrntstr = 'echo "' + PBSgetAllocatedNodesString() + '" | ' + \
 				'mrnet_topgen -b %dx%d' % (degree, numleaves)
+    
+    #Capture generated MRNet topology string
+    mrntopstr = commands.getoutput(mrntstr)
+    
+    if debug:
+        print mrntopstr
+
+    return mrntopstr
+
+# Returns mrnet_topgen-based MRNet topology string.
+def PBSgenerateBalancedMRNetTopologyString():
+    nodelist = PBSgetAllocatedNodesString().split('\n')
+    nodestring = ""
+    for node in nodelist[0::1]:
+	nodestring += node + '\n'
+
+    #print nodestring
+    nodefile = open(options.nodelist, 'w')
+    nodefile.write(nodestring)
+    nodefile.close()
+
+    num_nodes = PBSgetAllocatedNodeCount()
+
+    fanout = 0
+    depth = options.depth;
+    for x in range(1,1024):
+	inner = math.pow(float(num_nodes), (float(1.0) / float(x)))
+        fanout = int(math.ceil(inner))
+        if fanout < options.fanout:
+	    if x < options.depth:
+	        depth = x
+                print "new depth " + str(depth)
+            break
+    if int(fanout) >= int(num_nodes):
+	fanout = fanout / 2
+
+    print "Creating balanced tree with depth %d, fanout %d" % (depth,fanout)
+
+    # attempt to create a balanced tree of this depth and fanout
+    # NOTE: could use mrnet_topgen options to write file too.
+    # example: mrnet_topgen -c cp-hosts-file -b be-hosts-file -f fe-host -o output-file -q max-be-procs -r max-cp-procs
+    mrntstr = 'mrnet_topgen --topology=b:%d^%d' % (fanout, depth) + " --hosts " + options.nodelist
+    print "Command to use for topology:"
+    print mrntstr
+
+    #mrntstr = 'echo "' + PBSgetAllocatedNodesString() + '" | ' + \
+    #				'mrnet_topgen -b %dx%d' % (degree, numleaves)
     
     #Capture generated MRNet topology string
     mrntopstr = commands.getoutput(mrntstr)
@@ -171,6 +240,7 @@ def createTopologyFile(topologyString):
     if debug:
        print "In createTopologyFile, topologyString=%s" % topologyString
 
+    #FIXME: Depends on environment variable only.
     if os.environ.has_key('CBTF_MRNET_TOPOLOGY_FILE'):
         try:
             topfile = open(os.environ['CBTF_MRNET_TOPOLOGY_FILE'], 'w')
@@ -187,19 +257,19 @@ def createTopologyFile(topologyString):
         'not defined...')
         sys.exit()
     
-def getAllocatedNodeCount():
+def PBSgetQstatAllocatedNodeCount():
     rlnodeinfo = commands.getoutput('qstat -f $PBS_JOBID | ' + 
     'grep Resource_List.nodes')
     return int(rlnodeinfo.split(' ')[-1].split(':')[0])
      
-def getAllocatedNodePPNCount():
+def PBSgetQstatAllocatedNodePPNCount():
     rlnodeinfo = commands.getoutput('qstat -f $PBS_JOBID | ' +
     'grep Resource_List.nodes')
     
     return int(rlnodeinfo.split(' ')[-1].split('=')[-1])
 
-##generateSimpleTopologyString() 
-def generateSimpleTopologyString():
+##generateSimpleFlatTopologyString() 
+def generateSimpleFlatTopologyString():
     #Strip .lanl.gov
     hostname = os.uname()[1]
     hostname = hostname.split('.')[0]
@@ -207,8 +277,8 @@ def generateSimpleTopologyString():
     return hostname + ':0 => \n' + '  ' + hostname + ':1 ;'
 
 #TODO:FIXME 
-def generateSimpleBETopologyString():
-    nodelist = getAllocatedNodesString().split('\n')
+def PBSgenerateSimpleBETopologyString():
+    nodelist = PBSgetAllocatedNodesString().split('\n')
     
     topstring = nodelist[0] + ':0 =>\n  ' + nodelist[0] + ':1'
 
@@ -222,52 +292,82 @@ def generateSimpleBETopologyString():
     topstring += ' ;'
     return topstring
 
-#TODO:FIXME
-def generateSimpleSLURMBETopologyString():
-    if debug:
-       print "generateSimpleSLURMBETopologyString, hostnodeName=" + hostnodeName
-    #slurmnodescmdstr = "srun " + "/bin/hostname" + " | sort | uniq"
+#SLURM
+def SLURMgenerateSimpleBETopologyString():
     if os.getenv('SLURM_JOB_NUM_NODES'):
        num_nodes = os.environ['SLURM_JOB_NUM_NODES']
 
-    slurmnodescmdstr = "srun " + " -N " + num_nodes + " -n " + num_nodes + " uname -n " + " | sort | uniq"
-    if debug:
-       print "generateSimpleSLURMBETopologyString, slurmnodescmdstr=" + slurmnodescmdstr
-    nodelist = commands.getoutput(slurmnodescmdstr).split('\n')
-    if debug:
-       print "generateSimpleSLURMBETopologyString, begin nodelist="
-       print nodelist
-       print "generateSimpleSLURMBETopologyString, end nodelist"
+    if os.getenv('SLURM_JOB_NODELIST'):
+        nodelist = os.environ['SLURM_JOB_NODELIST']
 
-    if debug:
-       print "generateSimpleSLURMBETopologyString, first reference, begin topstring="
-    topstring = hostnodeName + ':0 =>\n  ' + hostnodeName + ':1'
-    if debug:
-       print topstring
-       print "generateSimpleSLURMBETopologyString, first reference, end topstring"
+    print "Generating topology for Slurm job on " + hostnodeName
+    print "Number of nodes: " + num_nodes
+    print "Nodelist: " + nodelist
 
-    for node in nodelist[0::1]:
-        #if (node != hostnodeName):
-        if (not node.startswith(hostnodeName)):
-          if debug:
-             print "generateSimpleSLURMBETopologyString, in for loop, begin topstring="
-             print topstring
-             print "generateSimpleSLURMBETopologyString, in for loop, end topstring"
-          topstring += '\n  ' + node + ':0'
+    nodes = []
+    if nodelist.find('[') > -1:
+        l = nodelist.split('[')
+        n = l[0]
+        r = l[1]
+        r = r.strip(']')
+        ranges = []
+        while r.find(',') > -1:
+           r1, r = r.split(',')
+           ranges.append(r1)
+        ranges.append(r)
+        for r in ranges:
+            if r.find('-'):
+               s,e = r.split('-')
+               for i in range(int(s), int(e)+1, 1):
+                   nodes.append(n + "%d" % i)
+            else:
+                   nodes.append(n + r)
+    else:
+        nodes.append(nodelist)
 
-    topstring += ' ;'
+    nodestring = ""
+    for node in nodes[0::1]:
+	nodestring += node + '\n'
 
-    if debug:
-       print "generateSimpleSLURMBETopologyString, RETURN begin topstring="
-       print topstring
-       print "generateSimpleSLURMBETopologyString, RETURN end topstring"
+    #print nodestring
+    nodefile = open(options.nodelist, 'w')
+    nodefile.write(nodestring)
+    nodefile.close()
 
-    return topstring
+    fanout = 0
+    depth = options.depth;
+    for x in range(1,1024):
+	inner = math.pow(float(num_nodes), (float(1.0) / float(x)))
+        fanout = int(math.ceil(inner))
+        if fanout < options.fanout:
+	    if x < options.depth:
+	        depth = x
+                print "new depth " + str(depth)
+            break
+    if int(fanout) >= int(num_nodes):
+	fanout = fanout / 2
+    print "Creating balanced tree with depth %d, fanout %d" % (depth,fanout)
+
+    # attempt to create a balanced tree of this depth and fanout
+    # NOTE: could use mrnet_topgen options to write file too.
+    # example: mrnet_topgen -c cp-hosts-file -b be-hosts-file -f fe-host -o output-file -q max-be-procs -r max-cp-procs
+    mrntstr = 'mrnet_topgen --topology=b:%d^%d' % (fanout, depth) + " --hosts " + options.nodelist
+    print "Command to use for topology:"
+    print mrntstr
+
+    #Capture generated MRNet topology string
+    mrntopstr = commands.getoutput(mrntstr)
+
+    if options.debug == True:
+        print mrntopstr
+
+    return mrntopstr
 
 
 # Overkill
 def getStringHashValue(inputString):
     return hex(hash(inputString))
+
 # main()
 def main():
 
@@ -286,7 +386,8 @@ def main():
     if os.environ.has_key('PBS_JOBID'):
         if debug:
             print 'on compute node...'
-        prepENV(getStringHashValue(generateSimpleBETopologyString()))
+
+        prepENV(getStringHashValue("PBS"))
 
         if debug:
             print ""
@@ -295,13 +396,10 @@ def main():
             print ""
             print "Current MRNet configuration in " + cbtfuserpref
             print ""
-            print generateSimpleBETopologyString()
-        if debug:
-           print "after print of generateSimpleBETopologyString()"
 
         #TODO:FIXME Simple hack to get things going
         if(topFileUpdateNeeded):
-            createTopologyFile(generateSimpleBETopologyString())
+            createTopologyFile(PBSgenerateBalancedMRNetTopologyString())
 
     #Assuming presence of SLURM_JOBID is a good 
     #indicator that we are on compute nodes
@@ -309,10 +407,10 @@ def main():
         if debug:
             print 'USING SLURM ... from node ' + hostnodeName
 
-        prepENV(getStringHashValue(generateSimpleSLURMBETopologyString()))
+        prepENV(getStringHashValue("SLURM"))
         #TODO:FIXME Simple hack to get things going
         if(topFileUpdateNeeded):
-            createTopologyFile(generateSimpleSLURMBETopologyString())
+            createTopologyFile(SLURMgenerateSimpleBETopologyString())
 
     #If PBS_JOBID or SLURM_JOBID is not present, then we
     #better be on a compile node...
@@ -334,13 +432,9 @@ def main():
         cmdstr = "uname -n > " + cbtfuserpref + os.sep + ".cbtf-mrnet-hosts"
         os.system(cmdstr);
  
-        #Make sure we have mrnet_topgen before we continue. 
-        #It's not used here, but will be.??
-        prepENV(getStringHashValue(generateSimpleTopologyString()))
-        #print generateSimpleTopologyString()
-                #TODO: FIXME Simple hack to get things going
+        prepENV(getStringHashValue("SIMPLEFLAT"))
         if(topFileUpdateNeeded):
-            createTopologyFile(generateSimpleTopologyString())
+            createTopologyFile(generateSimpleFlatTopologyString())
 
 if __name__ == '__main__' :
     #Used to suppress python hex() Future Warning message.

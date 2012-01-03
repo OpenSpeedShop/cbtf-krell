@@ -23,12 +23,22 @@
  */
 
 
+enum CBTF_mem_type {
+    CBTF_MEM_UNKNOWN=0,
+    CBTF_MEM_MALLOC,
+    CBTF_MEM_CALLOC,
+    CBTF_MEM_REALLOC,
+    CBTF_MEM_FREE,
+    CBTF_MEM_MEMALIGN,
+    CBTF_MEM_POSIX_MEMALIGN
+};
 
 /** Event structure describing a single I/O call. */
 struct CBTF_mem_event {
     uint64_t start_time;  /**< Start time of the call. */
     uint64_t stop_time;   /**< End time of the call. */
     uint16_t stacktrace;  /**< Index of the stack trace. */
+    CBTF_mem_type mem_type;
 };
 
 /** Event structure describing a single I/O call. */
@@ -40,6 +50,7 @@ struct CBTF_memt_event {
     uint64_t ptr;         /**< void* ptr type args */
     int      size1;       /**< first size_t arg */
     int      size2;       /**< second size_t arg */
+    CBTF_mem_type mem_type;
 };
 
 

@@ -47,9 +47,10 @@ void* memmalloc(size_t size)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_MALLOC;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_malloc(size);
 #else
@@ -68,7 +69,7 @@ void* memmalloc(size_t size)
 #endif
     }
     
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     return retval;
 }
 
@@ -91,15 +92,16 @@ void* memcalloc(size_t count, size_t size)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_CALLOC;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_calloc(count,size);
 #else
-    //void* (*realfunc)() = dlsym (RTLD_NEXT, "calloc");
-    //retval = (*realfunc)(count,size);
-    retval = __libc_calloc(count,size);
+    void* (*realfunc)() = dlsym (RTLD_NEXT, "calloc");
+    retval = (*realfunc)(count,size);
+    //retval = (void*)__libc_calloc(count,size);
 #endif
 
 
@@ -109,12 +111,12 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_calloc);
 #else
-        //mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
-        mem_record_event(&event, CBTF_GetAddressOfFunction((__libc_calloc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        //mem_record_event(&event, CBTF_GetAddressOfFunction((__libc_calloc)));
 #endif
     }
     
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     return retval;
 }
 
@@ -137,9 +139,10 @@ void* memrealloc(void* oldPtr, size_t size)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_REALLOC;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_realloc(oldPtr,size);
 #else
@@ -158,7 +161,7 @@ void* memrealloc(void* oldPtr, size_t size)
 #endif
     }
     
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     return retval;
 }
 
@@ -179,9 +182,10 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_POSIX_MEMALIGN;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_posix_memalign(memptr,alignment,size);
 #else
@@ -201,7 +205,7 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
     }
     
 
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     return retval;
 }
 
@@ -223,9 +227,10 @@ int memmemalign(size_t blocksize, size_t bytes)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_MEMALIGN;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_posix_memalign(blocksize,bytes);
 #else
@@ -245,7 +250,7 @@ int memmemalign(size_t blocksize, size_t bytes)
     }
     
 
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     return retval;
 }
 
@@ -270,9 +275,10 @@ void memfree(void * ptr)
     if (dotrace) {
         mem_start_event(&event);
         event.start_time = CBTF_GetTime();
+	event.mem_type = CBTF_MEM_FREE;
     }
 
-    /* Call the real IO function */
+    /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     __real_free(ptr);
 #else
@@ -291,6 +297,6 @@ void memfree(void * ptr)
 #endif
     }
     
-    /* Return the real IO function's return value to the caller */
+    /* Return the real MEM function's return value to the caller */
     //return retval;
 }

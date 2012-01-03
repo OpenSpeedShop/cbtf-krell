@@ -28,7 +28,6 @@
 #include "config.h"
 #endif
 
-//#define CBTF_PROTOCOL_TAG_MEMTRACE_DATA 10030
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Mem.h"
 #include "KrellInstitute/Messages/Mem_data.h"
@@ -393,7 +392,7 @@ static void mem_send_events(TLS *tls)
 				 (xdrproc_t)xdr_CBTF_usertime_data,
 				 &tls->data);
 #else
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_MEMTRACE_DATA,
+	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_MEMEXTTRACE_DATA,
                            (xdrproc_t) xdr_CBTF_mem_exttrace_data,
 			   &tls->data);
 #endif

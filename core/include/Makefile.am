@@ -32,6 +32,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/LinkedObjectEntry.hpp \
 	KrellInstitute/Core/Path.hpp \
 	KrellInstitute/Core/PCData.hpp \
+	KrellInstitute/Core/StackTrace.hpp \
 	KrellInstitute/Core/StacktraceData.hpp \
 	KrellInstitute/Core/SymbolTable.hpp \
 	KrellInstitute/Core/SymtabAPISymbols.hpp \

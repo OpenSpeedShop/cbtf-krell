@@ -37,7 +37,7 @@ collectionTool_LDFLAGS = \
 	@MRNET_LDFLAGS@
 
 collectionTool_LDADD = \
-	-lboost_program_options \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \

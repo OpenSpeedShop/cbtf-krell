@@ -52,7 +52,7 @@ pcsampDemo_LDFLAGS = \
 pcsampDemo_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
-	-lboost_program_options \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \

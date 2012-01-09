@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -53,7 +53,7 @@ stack_LDADD = \
 	-lcbtf-xml \
 	-lcbtf-mrnet \
 	-lcbtf-core \
-	-lboost_program_options \
+        @BOOST_PROGRAM_OPTIONS_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \

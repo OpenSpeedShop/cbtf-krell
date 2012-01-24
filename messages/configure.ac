@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
 ################################################################################
 
 AC_INIT([messages], [1.0])
-AC_COPYRIGHT([[Copyright (c) 2010 Krell Institute. All Rights Reserved.]])
+AC_COPYRIGHT([[Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE ([foreign])
@@ -26,7 +26,7 @@ AM_CONFIG_HEADER([config.h])
 
 AH_TOP([
 /*******************************************************************************
-** Copyright (c) 2010 Krell Institute. All Rights Reserved.
+** Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -128,10 +128,10 @@ AC_SUBST(abi_libdir_name)
 alt_abi_libdir_name=${alt_abi_libdir}
 AC_SUBST(alt_abi_libdir_name)
 
-oss_platform=`uname -i`
-oss_hardware_platform=$oss_platform
-AC_MSG_CHECKING([Checking for oss_hardware_platform=$oss_hardware_platform])
-AC_SUBST(oss_hardware_platform)
+cbtf_platform=`uname -i`
+cbtf_hardware_platform=$cbtf_platform
+AC_MSG_CHECKING([Checking for cbtf_hardware_platform=$cbtf_hardware_platform])
+AC_SUBST(cbtf_hardware_platform)
 
 
 ################################################################################
@@ -159,39 +159,46 @@ AC_ARG_WITH(target-os,
 AM_CONDITIONAL(BUILD_TARGETED, false)
 case "$TARGET_OS" in
     cray-xt5)
-        AM_CONDITIONAL(BUILD_TARGETED, true)
-        AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
-        AC_DEFINE(TARGET_OS_CRAYXT5, 1, [Do not define if not building for targeted cray-xt5.])
-        AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt5,
-                           [Name targeted OS])
-        ;;
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_CRAYXT5, 1, [Do not define if not building for targeted cray-xt5.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt5,
+			[Name targeted OS])
+	;;
     cray-xt4)
-        AM_CONDITIONAL(BUILD_TARGETED, true)
-        AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
-        AC_DEFINE(TARGET_OS_CRAYXT4, 1, [Do not define if not building for targeted cray-xt4.])
-        AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt4,
-                           [Name targeted OS])
-        ;;
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_CRAYXT4, 1, [Do not define if not building for targeted cray-xt4.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt4,
+			[Name targeted OS])
+	;;
     bgl)
-        AM_CONDITIONAL(BUILD_TARGETED, true)
-        AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
-        AC_DEFINE(TARGET_OS_BGL, 1, [Do not define if not building for targeted bgl.])
-        AC_DEFINE_UNQUOTED(TARGET_OS,bgl,
-                           [Name targeted OS])
-        ;;
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_BGL, 1, [Do not define if not building for targeted bgl.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,bgl,
+			[Name targeted OS])
+	;;
     bgp)
-        AM_CONDITIONAL(BUILD_TARGETED, true)
-        AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
-        AC_DEFINE(TARGET_OS_BGP, 1, [Do not define if not building for targeted bgp.])
-        AC_DEFINE_UNQUOTED(TARGET_OS,bgp,
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_BGP, 1, [Do not define if not building for targeted bgp.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,bgp,
+			   [Name targeted OS])
+	;; 
+    bgq)
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_BGQ, 1, [Do not define if not building for targeted bgq.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,bgq,
                            [Name targeted OS])
         ;;
     *)
-        AM_CONDITIONAL(BUILD_TARGETED, false)
-        AC_DEFINE(BUILD_TARGETED, 0, [Define to 1 if building a targeted runtime.])
-        AC_DEFINE_UNQUOTED(TARGET_OS,$host,
-                           [Name targeted OS])
-        ;;
+	AM_CONDITIONAL(BUILD_TARGETED, false)
+	AC_DEFINE(BUILD_TARGETED, 0, [Define to 1 if building a targeted runtime.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,$host,
+			   [Name targeted OS])
+	;; 
 esac
 
 AC_SUBST(BUILD_TARGETED)

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -16,19 +16,38 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-dist_bin_SCRIPTS = cbtfrun
-BUILT_FILES = cbtfrun
+dist_bin_SCRIPTS = 
+BUILT_FILES =
+
+if !BUILD_RUNTIME
+dist_bin_SCRIPTS += cbtfrun
+BUILT_FILES += cbtfrun
+endif
+if HAVE_TARGET_SHARED
+dist_bin_SCRIPTS += cbtfrun
+BUILT_FILES += cbtfrun
+endif
 
 CLEANFILES = $(BUILT_FILES)
 
-
+if BUILD_TARGETED 
+monitor_dir=$(TARGET_LIBMONITOR_DIR)
+unwind_dir=$(TARGET_LIBUNWIND_DIR)
+papi_dir=$(TARGET_PAPI_DIR)
+mrnet_dir=$(TARGET_MRNET_DIR)
+else
 monitor_dir=$(LIBMONITOR_DIR)
 unwind_dir=$(LIBUNWIND_DIR)
 papi_dir=$(PAPI_DIR)
 mrnet_dir=$(MRNET_DIR)
+endif
 
+if !BUILD_RUNTIME
 cbtfrun: cbtfrun.in
-
+endif
+if HAVE_TARGET_SHARED
+cbtfrun: cbtfrun.in
+endif
 	@rm -f cbtfrun
 	@sed \
 		-e 's,@@machine_dependent_libdir@@,$(abi_libdir_name),' \
@@ -49,4 +68,5 @@ cbtfrun: cbtfrun.in
 		-e 's,@@cbtfdefaultmpi@@,$(DEFAULT_MPI_IMPL),' \
 			$(srcdir)/cbtfrun.in > cbtfrun
 	@chmod 755 cbtfrun
+
 EXTRA_DIST = cbtfrun.in

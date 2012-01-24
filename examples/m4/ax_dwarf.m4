@@ -1,3 +1,21 @@
+#################################################################################
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA  02111-1307  USA
+#################################################################################
+
 ################################################################################
 # Check for libdwarf (http://www.reality.sgiweb.org/davea/dwarf.html)
 ################################################################################
@@ -77,3 +95,61 @@ AC_DEFUN([AX_LIBDWARF], [
     AC_SUBST(LIBDWARF_LIBS)
 
 ])
+
+
+#######################################################################################
+# Check for libdwarf for Target Architecture (http://www.reality.sgiweb.org/davea/dwarf.html)
+#######################################################################################
+
+AC_DEFUN([AC_PKG_TARGET_LIBDWARF], [
+
+    AC_ARG_WITH(target-libdwarf,
+                AC_HELP_STRING([--with-target-libdwarf=DIR],
+                               [libdwarf target architecture installation @<:@/opt@:>@]),
+                target_libdwarf_dir=$withval, target_libdwarf_dir="/zzz")
+
+    AC_MSG_CHECKING([for Targetted libdwarf support])
+
+
+    found_target_libdwarf=0
+    if test -f  $target_libdwarf_dir/$abi_libdir/libdwarf.so; then
+       found_target_libdwarf=1
+       TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$abi_libdir"
+    elif test -f  $target_libdwarf_dir/$alt_abi_libdir/libdwarf.so; then
+       found_target_libdwarf=1
+       TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$alt_abi_libdir"
+    fi
+
+
+    if test $found_target_libdwarf == 0 && test "$target_libdwarf_dir" == "/zzz" ; then
+      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, false)
+      TARGET_LIBDWARF_CPPFLAGS=""
+      TARGET_LIBDWARF_LDFLAGS=""
+      TARGET_LIBDWARF_LIBS=""
+      TARGET_LIBDWARF_DIR=""
+      AC_MSG_RESULT(no)
+    elif test $found_target_libdwarf == 1 ; then
+      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, true)
+      AC_DEFINE(HAVE_TARGET_LIBDWARF, 1, [Define to 1 if you have a target version of LIBDWARF.])
+      TARGET_LIBDWARF_CPPFLAGS="-I$target_libdwarf_dir/include"
+      TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$abi_libdir"
+      TARGET_LIBDWARF_LIBS="-ldwarf"
+      TARGET_LIBDWARF_DIR="$target_libdwarf_dir"
+      AC_MSG_RESULT(yes)
+    else
+      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, false)
+      TARGET_LIBDWARF_CPPFLAGS=""
+      TARGET_LIBDWARF_LDFLAGS=""
+      TARGET_LIBDWARF_LIBS=""
+      TARGET_LIBDWARF_DIR=""
+      AC_MSG_RESULT(no)
+    fi
+
+
+    AC_SUBST(TARGET_LIBDWARF_CPPFLAGS)
+    AC_SUBST(TARGET_LIBDWARF_LDFLAGS)
+    AC_SUBST(TARGET_LIBDWARF_LIBS)
+    AC_SUBST(TARGET_LIBDWARF_DIR)
+
+])
+

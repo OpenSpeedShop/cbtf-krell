@@ -1,7 +1,7 @@
 ################################################################################
 # Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 # Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-# Copyright (c) 2006-2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -509,14 +509,23 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
 
     AC_MSG_CHECKING([for Targetted libmonitor support])
 
-    if test "$target_libmonitor_dir" == "/zzz" ; then
+    found_target_libmonitor=0
+    if test -f  $target_libmonitor_dir/$abi_libdir/libmonitor.so; then
+       found_target_libmonitor=1
+       TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$abi_libdir"
+    elif test -f  $target_libmonitor_dir/$alt_abi_libdir/libmonitor.so; then
+       found_target_libmonitor=1
+       TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$alt_abi_libdir"
+    fi
+
+    if test $found_target_libmonitor == 0 && test "$target_libmonitor_dir" == "/zzz" ; then
       AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, false)
       TARGET_LIBMONITOR_CPPFLAGS=""
       TARGET_LIBMONITOR_LDFLAGS=""
       TARGET_LIBMONITOR_LIBS=""
       TARGET_LIBMONITOR_DIR=""
       AC_MSG_RESULT(no)
-    else
+    elif test $found_target_libmonitor == 1 ; then
       AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, true)
       AC_DEFINE(HAVE_TARGET_LIBMONITOR, 1, [Define to 1 if you have a target version of LIBMONITOR.])
       TARGET_LIBMONITOR_CPPFLAGS="-I$target_libmonitor_dir/include"
@@ -524,8 +533,14 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
       TARGET_LIBMONITOR_LIBS="-lmonitor"
       TARGET_LIBMONITOR_DIR="$target_libmonitor_dir"
       AC_MSG_RESULT(yes)
+    else
+      AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, false)
+      TARGET_LIBMONITOR_CPPFLAGS=""
+      TARGET_LIBMONITOR_LDFLAGS=""
+      TARGET_LIBMONITOR_LIBS=""
+      TARGET_LIBMONITOR_DIR=""
+      AC_MSG_RESULT(no)
     fi
-
 
     AC_SUBST(TARGET_LIBMONITOR_CPPFLAGS)
     AC_SUBST(TARGET_LIBMONITOR_LDFLAGS)

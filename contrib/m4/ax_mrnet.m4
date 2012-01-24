@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -30,6 +30,7 @@ AC_DEFUN([AX_MRNET], [
     MRNET_LIBS="$MRNET_LIBS -lpthread -ldl"
     MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     MRNET_LW_LIBS="$MRNET_LW_LIBS -lpthread -ldl"
+    MRNET_DIR="$mrnet_dir"
 
     AC_LANG_PUSH(C++)
     AC_REQUIRE_CPP
@@ -68,6 +69,7 @@ AC_DEFUN([AX_MRNET], [
     AC_SUBST(MRNET_LDFLAGS)
     AC_SUBST(MRNET_LIBS)
     AC_SUBST(MRNET_LW_LIBS)
+    AC_SUBST(MRNET_DIR)
 
     if test $foundMRNET == 1; then
         AM_CONDITIONAL(HAVE_MRNET, true)

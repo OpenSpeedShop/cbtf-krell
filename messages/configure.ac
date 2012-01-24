@@ -144,6 +144,32 @@ AC_CHECK_HEADER(pthread.h, [ AC_CHECK_LIB(pthread, pthread_create, [
     AC_MSG_FAILURE([cannot locate POSIX thread library and/or headers.])
 ]) ])
 
+
+################################################################################
+# Target SHARED LIBRAY BUILD Specification
+################################################################################
+#
+# Option: --enable-target-shared=yes
+#
+AC_MSG_CHECKING(for target shared libraries build specification)
+AC_ARG_ENABLE([target-shared],
+    [AS_HELP_STRING([--enable-target-shared],
+        [Enable support on target architecture for building shared libraries [default=no]])],
+    [enable_target_shared=yes],
+    [enable_target_shared=no])
+
+if test "x$enable_target_shared" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, true)
+    AC_DEFINE([HAVE_TARGET_SHARED], [1],
+        [Enable support on target architecture for shared libraries.])
+else
+    AC_MSG_RESULT(no)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, false)
+fi
+
+AC_SUBST(HAVE_TARGET_SHARED)
+
 ################################################################################
 # Target O/S Specification
 ################################################################################

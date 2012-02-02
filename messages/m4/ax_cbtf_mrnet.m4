@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,7 @@ AC_DEFUN([AX_CBTF_MRNET], [
 
     CBTF_MRNET_CPPFLAGS="-I$cbtf_mrnet_dir/include"
     CBTF_MRNET_LDFLAGS="-L$cbtf_mrnet_dir/$abi_libdir"
-    CBTF_MRNET_LIBS="$BOOST_SYSTEM_LIB $BOOST_THREAD_LIB $BOOST_FILESYSTEM_LIB $MRNET_LIBS -lcbtf -lcbtf-xml -lcbtf-mrnet"
+    CBTF_MRNET_LIBS="$BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_THREAD_LIB $LIBXERCES_C $MRNET_LIBS -lcbtf -lcbtf-mrnet -lcbtf-xml"
 
     AC_LANG_PUSH(C++)
     AC_REQUIRE_CPP
@@ -45,7 +45,7 @@ AC_DEFUN([AX_CBTF_MRNET], [
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([CBTF MRNet library could not be found.])
+            #AC_MSG_ERROR([CBTF MRNet library could not be found.])
         ])
 
     CPPFLAGS=$cbtf_mrnet_saved_CPPFLAGS

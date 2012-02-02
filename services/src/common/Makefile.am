@@ -18,6 +18,8 @@
 
 lib_LTLIBRARIES = libcbtf-services-common.la
 
+if BUILD_TARGETED
+if HAVE_TARGET_SHARED
 libcbtf_services_common_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	@LTDLINCL@ 
@@ -27,6 +29,32 @@ libcbtf_services_common_la_LDFLAGS = \
 
 libcbtf_services_common_la_LIBADD = \
 	@LIBLTDL@
+endif
+if HAVE_TARGET_STATIC
+libcbtf_services_common_la_CFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	@LTDLINCL@ 
+
+libcbtf_services_common_la_LDFLAGS = \
+	-static \
+	-version-info 0:0:0
+
+libcbtf_services_common_la_LIBADD = \
+	@LIBLTDL@
+endif
+# else for not targeted (below) targeted above
+else
+libcbtf_services_common_la_CFLAGS = \
+	-I$(top_srcdir)/include \
+	@LTDLINCL@ 
+
+libcbtf_services_common_la_LDFLAGS = \
+	-version-info 0:0:0
+
+libcbtf_services_common_la_LIBADD = \
+	@LIBLTDL@
+endif
 
 libcbtf_services_common_la_SOURCES = \
 	GetAddressOfFunction.c \

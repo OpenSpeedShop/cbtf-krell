@@ -112,14 +112,13 @@ AC_DEFUN([AC_PKG_TARGET_LIBDWARF], [
 
 
     found_target_libdwarf=0
-    if test -f  $target_libdwarf_dir/$abi_libdir/libdwarf.so; then
+    if test -f  $target_libdwarf_dir/$abi_libdir/libdwarf.so -o -f $target_libdwarf_dir/$abi_libdir/libdwarf.a; then
        found_target_libdwarf=1
        TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$abi_libdir"
-    elif test -f  $target_libdwarf_dir/$alt_abi_libdir/libdwarf.so; then
+    elif test -f  $target_libdwarf_dir/$alt_abi_libdir/libdwarf.so -o -f $target_libdwarf_dir/$alt_abi_libdir/libdwarf.a; then
        found_target_libdwarf=1
        TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$alt_abi_libdir"
     fi
-
 
     if test $found_target_libdwarf == 0 && test "$target_libdwarf_dir" == "/zzz" ; then
       AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, false)
@@ -132,7 +131,6 @@ AC_DEFUN([AC_PKG_TARGET_LIBDWARF], [
       AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, true)
       AC_DEFINE(HAVE_TARGET_LIBDWARF, 1, [Define to 1 if you have a target version of LIBDWARF.])
       TARGET_LIBDWARF_CPPFLAGS="-I$target_libdwarf_dir/include"
-      TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$abi_libdir"
       TARGET_LIBDWARF_LIBS="-ldwarf"
       TARGET_LIBDWARF_DIR="$target_libdwarf_dir"
       AC_MSG_RESULT(yes)

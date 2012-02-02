@@ -47,7 +47,7 @@ AC_DEFUN([AX_CBTF], [
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([CBTF library could not be found.])
+            #AC_MSG_ERROR([CBTF library could not be found.])
         ])
 
     CPPFLAGS=$cbtf_saved_CPPFLAGS

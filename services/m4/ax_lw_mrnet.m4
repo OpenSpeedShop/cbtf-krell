@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -50,7 +50,7 @@ AC_DEFUN([AX_LW_MRNET], [
 
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([MRNet could not be found.])
+            #AC_MSG_ERROR([LW MRNet could not be found.])
 
 	    foundMRNET=0
 
@@ -72,3 +72,63 @@ AC_DEFUN([AX_LW_MRNET], [
     fi
 
 ])
+
+AC_DEFUN([AX_TARGET_LW_MRNET], [
+
+    foundMRNET=0
+    AC_ARG_WITH(target-mrnet,
+                AC_HELP_STRING([--with-target-mrnet=DIR],
+                               [MRNet installation @<:@/opt@:>@]),
+                target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
+
+    TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -Dos_linux"
+    TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
+    TARGET_MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
+    TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lpthread -ldl"
+    TARGET_MRNET_DIR="$target_mrnet_dir"
+
+    AC_REQUIRE_CPP
+
+    target_mrnet_saved_CPPFLAGS=$CPPFLAGS
+    target_mrnet_saved_LDFLAGS=$LDFLAGS
+
+    CPPFLAGS="$CPPFLAGS $TARGET_MRNET_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $TARGET_MRNET_LDFLAGS $TARGET_MRNET_LIBS"
+
+    AC_MSG_CHECKING([for Lightweight MRNet targeted library and headers])
+
+    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+        #include <mrnet_lightweight/MRNet.h>
+        ]], [[
+        ]]), [ 
+            AC_MSG_RESULT(yes)
+
+	    foundMRNET=1
+
+        ], [
+            AC_MSG_RESULT(no)
+            #AC_MSG_ERROR([LW MRNet could not be found.])
+
+	    foundMRNET=0
+
+        ])
+
+    CPPFLAGS=$target_mrnet_saved_CPPFLAGS
+    LDFLAGS=$target_mrnet_saved_LDFLAGS
+
+    AC_SUBST(TARGET_MRNET_CPPFLAGS)
+    AC_SUBST(TARGET_MRNET_LDFLAGS)
+    AC_SUBST(TARGET_MRNET_LW_LIBS)
+    AC_SUBST(TARGET_MRNET_DIR)
+
+    if test $foundMRNET == 1; then
+        AM_CONDITIONAL(HAVE_TARGET_MRNET, true)
+        AC_DEFINE(HAVE_TARGET_MRNET, 1, [Define to 1 if you have MRNet.])
+    else
+        AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
+    fi
+
+])
+
+
+

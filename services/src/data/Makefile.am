@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,43 @@
 
 lib_LTLIBRARIES = libcbtf-services-data.la
 
+if BUILD_TARGETED
+if HAVE_TARGET_SHARED
+libcbtf_services_data_la_CFLAGS = \
+	-I$(top_srcdir)/include \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_services_data_la_LDFLAGS = \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_services_data_la_LIBADD = \
+	@TARGET_MESSAGES_EVENTS_LIBS@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+endif
+if HAVE_TARGET_STATIC
+libcbtf_services_data_la_CFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_services_data_la_LDFLAGS = \
+	-static \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_services_data_la_LIBADD = \
+	@TARGET_MESSAGES_EVENTS_LIBS@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+endif
+
+# else for not targeted (below) targeted above
+else
+
 libcbtf_services_data_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
@@ -31,6 +68,7 @@ libcbtf_services_data_la_LIBADD = \
 	@MESSAGES_EVENTS_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@
+endif
 
 libcbtf_services_data_la_SOURCES = \
 	InitializeDataHeader.c \

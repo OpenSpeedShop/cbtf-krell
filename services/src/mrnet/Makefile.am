@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,51 @@
 
 lib_LTLIBRARIES = libcbtf-services-mrnet.la
 
+if BUILD_TARGETED
+if HAVE_TARGET_SHARED
+libcbtf_services_mrnet_la_CFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/data \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_services_mrnet_la_LDFLAGS = \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_services_mrnet_la_LIBADD = \
+	@TARGET_MESSAGES_BASE_LIBS@ \
+	@TARGET_MESSAGES_EVENTS_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	@LIBLTDL@
+endif
+if HAVE_TARGET_STATIC
+libcbtf_services_mrnet_la_CFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/data \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_services_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_services_mrnet_la_LIBADD = \
+	@TARGET_MESSAGES_BASE_LIBS@ \
+	@TARGET_MESSAGES_EVENTS_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	@LIBLTDL@
+endif
+
+# else for not targeted (below) targeted above
+else
+
 libcbtf_services_mrnet_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/data \
@@ -35,6 +80,7 @@ libcbtf_services_mrnet_la_LIBADD = \
 	@MESSAGES_EVENTS_LIBS@ \
 	@MRNET_LW_LIBS@ \
 	@LIBLTDL@
+endif
 
 libcbtf_services_mrnet_la_SOURCES = \
 	MRNet_Send.c \

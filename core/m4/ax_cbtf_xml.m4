@@ -46,7 +46,7 @@ AC_DEFUN([AX_CBTF_XML], [
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([CBTF XML library could not be found.])
+            #AC_MSG_ERROR([CBTF XML library could not be found.])
         ])
 
     CPPFLAGS=$cbtf_xml_saved_CPPFLAGS

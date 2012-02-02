@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -32,16 +32,17 @@ nobase_dist_xml_DATA = \
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
 
+if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
 OFFLINE_SOURCES = \
 	monitor.c
-
 endif
 
 if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-fileio.la
+
 pcsamp_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -210,6 +211,288 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
+
+endif
+endif
+
+# endif for if not build targeted (below)
+endif
+
+if HAVE_TARGET_LIBMONITOR
+OFFLINE_SOURCES = \
+	monitor.c
+endif
+
+if HAVE_TARGET_LIBMONITOR
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libpcsamp-monitor-fileio.la
+
+if HAVE_TARGET_SHARED
+pcsamp_collector_monitor_fileio_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+pcsamp_collector_monitor_fileio_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+pcsamp_collector_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+pcsamp_collector_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_SHARED
+libpcsamp_monitor_fileio_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+libpcsamp_monitor_fileio_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_STATIC
+libpcsamp_monitor_fileio_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+libpcsamp_monitor_fileio_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_MRNET
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet.la
+
+if HAVE_TARGET_SHARED
+pcsamp_collector_monitor_mrnet_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+pcsamp_collector_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+pcsamp_collector_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_SHARED
+libpcsamp_monitor_mrnet_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libpcsamp_monitor_mrnet_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_STATIC
+libpcsamp_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libpcsamp_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+
+pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet-mpi.la
+
+if HAVE_TARGET_SHARED
+pcsamp_collector_monitor_mrnet_mpi_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+pcsamp_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lcbtf-services-data \
+	-lpthread -lrt
+
+pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_SHARED
+libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
+
+if HAVE_TARGET_STATIC
+libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+endif
 
 endif
 endif

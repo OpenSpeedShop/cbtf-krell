@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -47,7 +47,7 @@ AC_DEFUN([AX_CBTF], [
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([CBTF library could not be found.])
+            #AC_MSG_ERROR([CBTF library could not be found.])
         ])
 
     CPPFLAGS=$cbtf_saved_CPPFLAGS

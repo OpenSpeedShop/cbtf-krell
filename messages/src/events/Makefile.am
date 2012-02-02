@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,8 +16,17 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-lib_LTLIBRARIES = libcbtf-messages-events.la \
-		  libcbtf-messages-converters-events.la
+lib_LTLIBRARIES = libcbtf-messages-events.la
+# If build for target only add converters if target is also shared
+if BUILD_TARGETED
+
+if HAVE_TARGET_SHARED
+lib_LTLIBRARIES += libcbtf-messages-converters-events.la
+endif
+else
+# for non targeted, always build the converters
+lib_LTLIBRARIES += libcbtf-messages-converters-events.la
+endif
 
 BUILT_SOURCES = \
 	EventHeader.h EventHeader.c \
@@ -30,26 +39,10 @@ libcbtf_messages_events_la_CFLAGS = \
 	-I$(top_srcdir)/src/base \
 	@LTDLINCL@ 
 
-libcbtf_messages_converters_events_la_CXXFLAGS = \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/src/base \
-	@BOOST_CPPFLAGS@ \
-	@MRNET_CPPFLAGS@ \
-	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
-	@LTDLINCL@ 
-
 libcbtf_messages_events_la_LDFLAGS = \
 	-version-info 0:0:0
 
-libcbtf_messages_converters_events_la_LDFLAGS = \
-	@MRNET_LDFLAGS@ \
-	-version-info 0:0:0
-
 libcbtf_messages_events_la_LIBADD = \
-	@LIBLTDL@
-
-libcbtf_messages_converters_events_la_LIBADD = \
-	@MRNET_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_messages_events_la_SOURCES = \
@@ -59,8 +52,71 @@ libcbtf_messages_events_la_SOURCES = \
 	ThreadEvents.x \
 	$(BUILT_SOURCES)
 
+if !BUILD_TARGETED
+libcbtf_messages_converters_events_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/base \
+	@BOOST_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_messages_converters_events_la_LDFLAGS = \
+	@MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_messages_converters_events_la_LIBADD = \
+	@MRNET_LIBS@ \
+	@LIBLTDL@
+
 libcbtf_messages_converters_events_la_SOURCES = \
 	Converters.cpp
+else
+if HAVE_TARGET_SHARED
+libcbtf_messages_converters_events_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/base \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_messages_converters_events_la_LDFLAGS = \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_messages_converters_events_la_LIBADD = \
+	@TARGET_MRNET_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_messages_converters_events_la_SOURCES = \
+	Converters.cpp
+endif
+
+if HAVE_TARGET_STATIC
+libcbtf_messages_converters_events_la_CXXFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src/base \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_messages_converters_events_la_LDFLAGS = \
+	-static \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_messages_converters_events_la_LIBADD = \
+	@TARGET_MRNET_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_messages_converters_events_la_SOURCES = \
+	Converters.cpp
+endif
+# endif below is for end of build targeted check
+endif
 
 xdr_headers = EventHeader.h LinkedObjectEvents.h OfflineEvents.h ThreadEvents.h
 

@@ -54,7 +54,7 @@ AC_DEFUN([AX_MRNET], [
 
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([MRNet could not be found.])
+            #AC_MSG_ERROR([MRNet could not be found.])
 
 	    foundMRNET=0
 
@@ -79,3 +79,63 @@ AC_DEFUN([AX_MRNET], [
     fi
 
 ])
+
+#############################################################################################
+# Check for MRNet for Target Architecture 
+#############################################################################################
+
+AC_DEFUN([AC_PKG_TARGET_MRNET], [
+
+    AC_ARG_WITH(target-mrnet,
+                AC_HELP_STRING([--with-target-mrnet=DIR],
+                               [mrnet target architecture installation @<:@/opt@:>@]),
+                target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
+
+    AC_MSG_CHECKING([for Targetted mrnet support])
+
+    found_target_mrnet=0
+    if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then
+       found_target_mrnet=1
+       TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
+    elif test -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.a; then
+       found_target_mrnet=1
+       TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$alt_abi_libdir"
+    fi
+
+    if test $found_target_mrnet == 0 && test "$target_mrnet_dir" == "/zzz" ; then
+      AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
+      TARGET_MRNET_CPPFLAGS=""
+      TARGET_MRNET_LDFLAGS=""
+      TARGET_MRNET_LIBS=""
+      TARGET_MRNET_LW_LIBS=""
+      TARGET_MRNET_DIR=""
+      AC_MSG_RESULT(no)
+    elif test $found_target_mrnet == 1 ; then
+      AC_MSG_RESULT(yes)
+      AM_CONDITIONAL(HAVE_TARGET_MRNET, true)
+      AC_DEFINE(HAVE_TARGET_MRNET, 1, [Define to 1 if you have a target version of MRNET.])
+      TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -DUNW_LOCAL_ONLY"
+      TARGET_MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
+      TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lpthread -ldl"
+      TARGET_MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
+      TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lpthread -ldl"
+      TARGET_MRNET_DIR="$target_mrnet_dir"
+    else 
+      AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
+      TARGET_MRNET_CPPFLAGS=""
+      TARGET_MRNET_LDFLAGS=""
+      TARGET_MRNET_LIBS=""
+      TARGET_MRNET_LW_LIBS=""
+      TARGET_MRNET_DIR=""
+      AC_MSG_RESULT(no)
+    fi
+
+
+    AC_SUBST(TARGET_MRNET_CPPFLAGS)
+    AC_SUBST(TARGET_MRNET_LDFLAGS)
+    AC_SUBST(TARGET_MRNET_LIBS)
+    AC_SUBST(TARGET_MRNET_LW_LIBS)
+    AC_SUBST(TARGET_MRNET_DIR)
+
+])
+

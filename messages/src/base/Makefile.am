@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,17 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-lib_LTLIBRARIES = libcbtf-messages-base.la libcbtf-messages-converters-base.la
+lib_LTLIBRARIES = libcbtf-messages-base.la 
+# If build for target only add converters if target is also shared
+if BUILD_TARGETED
+
+if HAVE_TARGET_SHARED
+lib_LTLIBRARIES += libcbtf-messages-converters-base.la 
+endif
+else
+# for non targeted, always build the converters
+lib_LTLIBRARIES += libcbtf-messages-converters-base.la 
+endif
 
 BUILT_SOURCES = \
 	Address.h Address.c \
@@ -27,11 +37,7 @@ BUILT_SOURCES = \
 	Thread.h Thread.c \
 	Time.h Time.c
 
-
-libcbtf_messages_base_la_CFLAGS = \
-	-I$(top_srcdir)/include \
-	@LTDLINCL@ 
-
+if !BUILD_TARGETED
 libcbtf_messages_converters_base_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
@@ -39,18 +45,69 @@ libcbtf_messages_converters_base_la_CXXFLAGS = \
 	@CBTF_CPPFLAGS@ @CBTF_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
-libcbtf_messages_base_la_LDFLAGS = \
-	-version-info 0:0:0
-
 libcbtf_messages_converters_base_la_LDFLAGS = \
 	@MRNET_LDFLAGS@ \
 	-version-info 0:0:0
 
-libcbtf_messages_base_la_LIBADD = \
-	@LIBLTDL@
-
 libcbtf_messages_converters_base_la_LIBADD = \
 	@MRNET_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_messages_converters_base_la_SOURCES = \
+	Converters.cpp
+else
+if HAVE_TARGET_SHARED
+libcbtf_messages_converters_base_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_messages_converters_base_la_LDFLAGS = \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_messages_converters_base_la_LIBADD = \
+	@TARGET_MRNET_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_messages_converters_base_la_SOURCES = \
+	Converters.cpp
+endif
+
+if HAVE_TARGET_STATIC
+libcbtf_messages_converters_base_la_CXXFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_messages_converters_base_la_LDFLAGS = \
+	-static \
+	@TARGET_MRNET_LDFLAGS@ \
+	-version-info 0:0:0
+
+libcbtf_messages_converters_base_la_LIBADD = \
+	@TARGET_MRNET_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_messages_converters_base_la_SOURCES = \
+	Converters.cpp
+endif
+# endif below is for build targeted
+endif
+
+libcbtf_messages_base_la_CFLAGS = \
+	-I$(top_srcdir)/include \
+	@LTDLINCL@ 
+
+libcbtf_messages_base_la_LDFLAGS = \
+	-version-info 0:0:0
+
+libcbtf_messages_base_la_LIBADD = \
 	@LIBLTDL@
 
 libcbtf_messages_base_la_SOURCES = \
@@ -62,9 +119,6 @@ libcbtf_messages_base_la_SOURCES = \
 	Time.x \
 	Thread.x \
 	$(BUILT_SOURCES)
-
-libcbtf_messages_converters_base_la_SOURCES = \
-	Converters.cpp
 
 xdr_headers = \
 	Address.h \

@@ -34,7 +34,7 @@ libcbtf_services_monitor_la_LDFLAGS = \
 libcbtf_services_monitor_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@LIBLTDL@
-endif
+else
 if HAVE_TARGET_STATIC
 libcbtf_services_monitor_la_CFLAGS = \
 	-static \
@@ -52,6 +52,7 @@ libcbtf_services_monitor_la_LDFLAGS = \
 libcbtf_services_monitor_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@LIBLTDL@
+endif
 endif
 
 # else for not targeted (below) targeted above

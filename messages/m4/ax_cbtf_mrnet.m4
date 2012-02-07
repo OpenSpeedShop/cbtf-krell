@@ -58,3 +58,56 @@ AC_DEFUN([AX_CBTF_MRNET], [
     AC_SUBST(CBTF_MRNET_LIBS)
 
 ])
+
+AC_DEFUN([AX_TARGET_CBTF_MRNET], [
+
+    AC_ARG_WITH(target-cbtf-mrnet,
+                AC_HELP_STRING([--with-target-cbtf-mrnet=DIR],
+                               [CBTF MRNet library installation @<:@/usr@:>@]),
+                target_cbtf_mrnet_dir=$withval, target_cbtf_mrnet_dir="/usr")
+
+    TARGET_CBTF_MRNET_CPPFLAGS="-I$target_cbtf_mrnet_dir/include"
+    TARGET_CBTF_MRNET_LDFLAGS="-L$target_cbtf_mrnet_dir/$abi_libdir"
+    TARGET_CBTF_MRNET_LIBS="$TARGET_BOOST_SYSTEM_LIB $TARGET_BOOST_FILESYSTEM_LIB $TARGET_BOOST_THREAD_LIB $TARGET_LIBXERCES_C $TARGET_MRNET_LIBS -lcbtf -lcbtf-mrnet -lcbtf-xml"
+    TARGET_CBTF_MRNET_DIR="$target_cbtf_mrnet_dir"
+
+    AC_MSG_CHECKING([for Targetted CBTF MRNet support])
+
+    found_target_cbtf=0
+    if test -f $target_cbtf_mrnet_dir/$abi_libdir/libcbtf-mrnet.so -o -f $target_cbtf_mrnet_dir/$abi_libdir/libcbtf-mrnet.a ; then
+       found_target_cbtf=1
+       TARGET_CBTF_MRNET_LDFLAGS="-L$target_cbtf_mrnet_dir/$abi_libdir"
+    elif test -f  $target_cbtf_mrnet_dir/$alt_abi_libdir/libcbtf-mrnet.so -o -f $target_cbtf_mrnet_dir/$alt_abi_libdir/libcbtf-mrnet.a ; then
+       found_target_cbtf=1
+       TARGET_CBTF_MRNET_LDFLAGS="-L$target_cbtf_mrnet_dir/$alt_abi_libdir"
+    fi
+
+    if test $found_target_cbtf == 0 && test "$target_cbtf_mrnet_dir" == "/zzz" ; then
+      AM_CONDITIONAL(HAVE_TARGET_CBTF_MRNET, false)
+      TARGET_CBTF_MRNET_CPPFLAGS=""
+      TARGET_CBTF_MRNET_LDFLAGS=""
+      TARGET_CBTF_MRNET_LIBS=""
+      TARGET_CBTF_MRNET_DIR=""
+      AC_MSG_RESULT(no)
+    elif test $found_target_cbtf == 1 ; then
+      AM_CONDITIONAL(HAVE_TARGET_CBTF_MRNET, true)
+      AC_DEFINE(HAVE_TARGET_CBTF_MRNET, 1, [Define to 1 if you have a target version of CBTF.])
+      AC_MSG_RESULT(yes)
+    else
+      AM_CONDITIONAL(HAVE_TARGET_CBTF_MRNET, false)
+      TARGET_CBTF_MRNET_CPPFLAGS=""
+      TARGET_CBTF_MRNET_LDFLAGS=""
+      TARGET_CBTF_MRNET_LIBS=""
+      TARGET_CBTF_MRNET_DIR=""
+      AC_MSG_RESULT(no)
+    fi
+
+    AC_SUBST(TARGET_CBTF_MRNET_CPPFLAGS)
+    AC_SUBST(TARGET_CBTF_MRNET_LDFLAGS)
+    AC_SUBST(TARGET_CBTF_MRNET_LIBS)
+    AC_SUBST(TARGET_CBTF_MRNET_DIR)
+
+])
+
+
+

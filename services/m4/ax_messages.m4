@@ -70,13 +70,13 @@ AC_DEFUN([AX_MESSAGES], [
 
 AC_DEFUN([AX_TARGET_MESSAGES], [
 
-    AC_ARG_WITH(cbtf-target-messages,
-            AC_HELP_STRING([--with-cbtf-target-messages=DIR],
+    AC_ARG_WITH(target-cbtf-messages,
+            AC_HELP_STRING([--with-target-cbtf-messages=DIR],
                            [CBTF target message library installation @<:@/opt@:>@]),
-                target_messages_dir=$withval, target_messages_dir="/zzz")
+                target_cbtf_messages_dir=$withval, target_cbtf_messages_dir="/zzz")
 
-    TARGET_MESSAGES_CPPFLAGS="-I$target_messages_dir/include"
-    TARGET_MESSAGES_LDFLAGS="-L$target_messages_dir/$abi_libdir"
+    TARGET_MESSAGES_CPPFLAGS="-I$target_cbtf_messages_dir/include"
+    TARGET_MESSAGES_LDFLAGS="-L$target_cbtf_messages_dir/$abi_libdir"
     TARGET_MESSAGES_LIBS="-lcbtf-messages-base -lcbtf-messages-collector -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-perfdata -lcbtf-messages-symtab -lcbtf-messages-thread"
     TARGET_MESSAGES_BASE_LIBS="-lcbtf-messages-base"
     TARGET_MESSAGES_COLLECTOR_LIBS="-lcbtf-messages-collector"

@@ -31,7 +31,7 @@ libcbtf_services_fileio_la_LDFLAGS = \
 
 libcbtf_services_fileio_la_LIBADD = \
 	@LIBLTDL@
-endif
+else
 if HAVE_TARGET_STATIC
 libcbtf_services_fileio_la_CFLAGS = \
 	-static \
@@ -46,6 +46,7 @@ libcbtf_services_fileio_la_LDFLAGS = \
 
 libcbtf_services_fileio_la_LIBADD = \
 	@LIBLTDL@
+endif
 endif
 
 # else for not targeted (below) targeted above

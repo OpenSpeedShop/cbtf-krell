@@ -19,6 +19,7 @@
 lib_LTLIBRARIES = libcbtf-services-binutils.la
 
 if BUILD_TARGETED
+
 if HAVE_TARGET_SHARED
 libcbtf_services_binutils_la_CFLAGS = \
 	-I$(top_srcdir)/include \
@@ -32,7 +33,10 @@ libcbtf_services_binutils_la_LDFLAGS = \
 libcbtf_services_binutils_la_LIBADD = \
 	@TARGET_BINUTILS_LIBS@ \
 	@LIBLTDL@
-endif
+
+libcbtf_services_binutils_la_SOURCES = \
+	GetInstrLength.c
+else
 
 if HAVE_TARGET_STATIC
 libcbtf_services_binutils_la_CFLAGS = \
@@ -49,6 +53,11 @@ libcbtf_services_binutils_la_LDFLAGS = \
 libcbtf_services_binutils_la_LIBADD = \
 	@TARGET_BINUTILS_LIBS@ \
 	@LIBLTDL@
+
+libcbtf_services_binutils_la_SOURCES = \
+	GetInstrLength.c
+endif
+
 endif
 
 # else for not targeted (below) targeted above
@@ -66,7 +75,7 @@ libcbtf_services_binutils_la_LDFLAGS = \
 libcbtf_services_binutils_la_LIBADD = \
 	@BINUTILS_LIBS@ \
 	@LIBLTDL@
-endif
 
 libcbtf_services_binutils_la_SOURCES = \
 	GetInstrLength.c
+endif

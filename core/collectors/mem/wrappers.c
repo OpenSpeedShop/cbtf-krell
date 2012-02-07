@@ -61,6 +61,11 @@ void* memmalloc(size_t size)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = (uint64_t)retval;
+	event.ptr = 0;
+	event.size1 = size;
+	event.size2 = size;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_malloc);
@@ -107,6 +112,11 @@ void* memcalloc(size_t count, size_t size)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = (uint64_t)retval;
+	event.ptr = 0;
+	event.size1 = count;
+	event.size2 = size;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_calloc);
@@ -153,6 +163,11 @@ void* memrealloc(void* oldPtr, size_t size)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = (uint64_t)retval;
+	event.ptr = (uint64_t)oldPtr;
+	event.size1 = size;
+	event.size2 = size;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_realloc);
@@ -196,6 +211,11 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = (uint64_t)retval;
+	event.ptr = (uint64_t)memptr;
+	event.size1 = alignment;
+	event.size2 = size;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_posix_memalign);
@@ -241,6 +261,11 @@ int memmemalign(size_t blocksize, size_t bytes)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = (uint64_t)retval;
+	event.ptr = 0;
+	event.size1 = blocksize;
+	event.size2 = bytes;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __realmemalign);
@@ -289,6 +314,11 @@ void memfree(void * ptr)
 
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
+	event.retval = 0;
+	event.ptr = (uint64_t)ptr;
+	event.size1 = 0;
+	event.size2 = 0;
+
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_free);

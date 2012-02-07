@@ -247,16 +247,18 @@ AX_BOOST_BASE([1.35.0])
 AX_BOOST_SYSTEM()
 AX_BOOST_THREAD()
 AX_BOOST_FILESYSTEM()
-
 AX_XERCESC()
-AX_XERCESC_VERSION()
-
+# This helps with targeted builds when there is no xercesc
+if test "$LIBXERCES_C" = "-lxerces-c" ; then
+  AX_XERCESC_VERSION()
+fi
 AX_CBTF()
 AX_CBTF_XML()
 AX_MRNET()
 AX_CBTF_MRNET()
 
 AC_PKG_TARGET_MRNET()
+AC_PKG_TARGET_BOOST()
 
 AC_CONFIG_FILES([
     Makefile

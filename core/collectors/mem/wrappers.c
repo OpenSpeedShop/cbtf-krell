@@ -252,7 +252,7 @@ int memmemalign(size_t blocksize, size_t bytes)
 
     /* Call the real MEM function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-    retval = __real_posix_memalign(blocksize,bytes);
+    retval = __real_memalign(blocksize,bytes);
 #else
     int (*realfunc)() = dlsym (RTLD_NEXT, "memalign");
     retval = (*realfunc)(blocksize,bytes);
@@ -268,7 +268,7 @@ int memmemalign(size_t blocksize, size_t bytes)
 
     /* Record event and it's stacktrace*/
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-        mem_record_event(&event, (uint64_t) __realmemalign);
+        mem_record_event(&event, (uint64_t) __real_memalign);
 #else
         mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #endif

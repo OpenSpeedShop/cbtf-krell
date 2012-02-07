@@ -212,7 +212,7 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
 	event.retval = (uint64_t)retval;
-	event.ptr = (uint64_t)memptr;
+	event.ptr = (uint64_t)(*memptr);
 	event.size1 = alignment;
 	event.size2 = size;
 

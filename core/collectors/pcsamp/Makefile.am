@@ -212,7 +212,9 @@ libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
 
+# endif for HAVE_MRNET
 endif
+# endif for HAVE_LIBMONITOR
 endif
 
 # endif for if not build targeted (below)
@@ -250,16 +252,16 @@ pcsamp_collector_monitor_fileio_la_LIBADD = \
 pcsamp_collector_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
 
-if HAVE_TARGET_SHARED
 libpcsamp_monitor_fileio_la_CFLAGS = \
+	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
 libpcsamp_monitor_fileio_la_LDFLAGS = \
+	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	-no-undefined
@@ -275,7 +277,7 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 libpcsamp_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
+else
 
 if HAVE_TARGET_STATIC
 libpcsamp_monitor_fileio_la_CFLAGS = \
@@ -302,6 +304,10 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 libpcsamp_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
+# endif TARGET_STATIC
+endif
+
+# endif for else for not TARGET_SHARED
 endif
 
 if HAVE_TARGET_MRNET
@@ -335,10 +341,9 @@ pcsamp_collector_monitor_mrnet_la_LIBADD = \
 pcsamp_collector_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
 
-if HAVE_TARGET_SHARED
 libpcsamp_monitor_mrnet_la_CFLAGS = \
+	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
@@ -347,6 +352,7 @@ libpcsamp_monitor_mrnet_la_CFLAGS = \
 	@TARGET_MRNET_CPPFLAGS@
 
 libpcsamp_monitor_mrnet_la_LDFLAGS = \
+	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
@@ -364,7 +370,7 @@ libpcsamp_monitor_mrnet_la_LIBADD = \
 libpcsamp_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
+else
 
 if HAVE_TARGET_STATIC
 libpcsamp_monitor_mrnet_la_CFLAGS = \
@@ -395,6 +401,9 @@ libpcsamp_monitor_mrnet_la_LIBADD = \
 libpcsamp_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
 endif
 
 
@@ -430,10 +439,9 @@ pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
 
-if HAVE_TARGET_SHARED
 libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -443,6 +451,7 @@ libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_MRNET_CPPFLAGS@
 
 libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
@@ -460,7 +469,7 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
-endif
+else
 
 if HAVE_TARGET_STATIC
 libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
@@ -492,9 +501,14 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
 endif
 
+# endif for else for not TARGET_MRNET
 endif
+# endif for else for not TARGET_LIBMONITOR
 endif
 
 

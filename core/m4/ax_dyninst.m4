@@ -30,8 +30,8 @@ AC_DEFUN([AX_DYNINST], [
 
     AC_ARG_WITH(dyninst-version,
                 AC_HELP_STRING([--with-dyninst-version=VERS],
-                               [dyninst-version installation @<:@7.0@:>@]),
-                dyninst_vers=$withval, dyninst_vers="7.0")
+                               [dyninst-version installation @<:@7.0.1@:>@]),
+                dyninst_vers=$withval, dyninst_vers="7.0.1")
 
     DYNINST_CPPFLAGS="-I$dyninst_dir/include/dyninst"
     DYNINST_LDFLAGS="-L$dyninst_dir/$abi_libdir"
@@ -124,7 +124,14 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
                                [dyninst target architecture installation @<:@/opt@:>@]),
                 target_dyninst_dir=$withval, target_dyninst_dir="/zzz")
 
+    AC_ARG_WITH(target-dyninst-version,
+                AC_HELP_STRING([--with-target-dyninst-version=VERS],
+                               [target dyninst version installation @<:@7.0.1@:>@]),
+                target_dyninst_vers=$withval, target_dyninst_vers="7.0.1")
+
     AC_MSG_CHECKING([for Targetted dyninst support])
+
+    TARGET_DYNINST_VERS="$target_dyninst_vers"
 
     found_target_dyninst=0
     if test -f $target_dyninst_dir/$abi_libdir/libdyninstAPI.so -o -f $target_dyninst_dir/$abi_libdir/libdyninstAPI.a; then
@@ -141,12 +148,13 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
       TARGET_DYNINST_LDFLAGS=""
       TARGET_DYNINST_LIBS=""
       TARGET_DYNINST_DIR=""
+      TARGET_DYNINST_VERS=""
       AC_MSG_RESULT(no)
     elif test $found_target_dyninst == 1 ; then
       AC_MSG_RESULT(yes)
       AM_CONDITIONAL(HAVE_TARGET_DYNINST, true)
       AC_DEFINE(HAVE_TARGET_DYNINST, 1, [Define to 1 if you have a target version of DYNINST.])
-      TARGET_DYNINST_CPPFLAGS="-I$target_dyninst_dir/include -DUNW_LOCAL_ONLY"
+      TARGET_DYNINST_CPPFLAGS="-I$target_dyninst_dir/include/dyninst -DUNW_LOCAL_ONLY"
       TARGET_DYNINST_LIBS="-ldyninstAPI"
       TARGET_DYNINST_DIR="$target_dyninst_dir"
     else 
@@ -155,6 +163,7 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
       TARGET_DYNINST_LDFLAGS=""
       TARGET_DYNINST_LIBS=""
       TARGET_DYNINST_DIR=""
+      TARGET_DYNINST_VERS=""
       AC_MSG_RESULT(no)
     fi
 
@@ -162,6 +171,7 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
     AC_SUBST(TARGET_DYNINST_CPPFLAGS)
     AC_SUBST(TARGET_DYNINST_LDFLAGS)
     AC_SUBST(TARGET_DYNINST_LIBS)
+    AC_SUBST(TARGET_DYNINST_VERS)
     AC_SUBST(TARGET_DYNINST_DIR)
 
 ])

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -20,6 +20,36 @@ xmldir = $(datadir)/KrellInstitute/xml
 
 bin_PROGRAMS = collectionTool
 
+if BUILD_TARGETED
+
+if HAVE_TARGET_SHARED
+collectionTool_CXXFLAGS = \
+	-DLIBDIR="\"$(libdir)\"" \
+	-DXMLDIR="\"$(xmldir)\"" \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_CBTF_MRNET_CPPFLAGS@ \
+	@TARGET_CBTF_XML_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+collectionTool_LDFLAGS = \
+	@TARGET_BOOST_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_CBTF_MRNET_LDFLAGS@ \
+	@TARGET_CBTF_XML_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+collectionTool_LDADD = \
+	@TARGET_MRNET_LIBS@ \
+	@TARGET_BOOST_PROGRAM_OPTIONS_LIB@ \
+	@TARGET_BOOST_SYSTEM_LIB@ \
+	@TARGET_BOOST_THREAD_LIB@ \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_CBTF_MRNET_LIBS@\
+	@TARGET_CBTF_XML_LIBS@
+endif
+# else for non-target version
+else
 collectionTool_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
@@ -44,6 +74,7 @@ collectionTool_LDADD = \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@\
 	@MRNET_LIBS@
+endif
 
 collectionTool_SOURCES = \
 	collectionTool.cpp

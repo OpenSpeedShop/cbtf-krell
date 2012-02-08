@@ -105,7 +105,7 @@ AC_DEFUN([AX_CBTF_SERVICES], [
 # Check for TARGET CBTF SERVICES 
 ################################################################################
 
-AC_DEFUN([AX_CBTF_TARGET_SERVICES], [
+AC_DEFUN([AX_TARGET_CBTF_SERVICES], [
 
     AC_ARG_WITH(target-cbtf-services,
             AC_HELP_STRING([--with-target-cbtf-services=DIR],
@@ -139,13 +139,12 @@ AC_DEFUN([AX_CBTF_TARGET_SERVICES], [
 
     AC_MSG_CHECKING([for CBTF TARGET SERVICES library and headers])
 
-    AC_SEARCH_LIBS(CBTF_GetPCFromContext, cbtf-services-common[], 
-        [ AC_MSG_RESULT(yes)
-
-        ], [ AC_MSG_RESULT(no)
-             #AC_MSG_ERROR([CBTF services library could not be found.])
-        ]
-    )
+    if [ test -f $target_services_dir/$abi_libdir/libcbtf-services-common.a ]; then
+        AC_MSG_RESULT(yes)
+    else
+        AC_MSG_RESULT(no)
+        #AC_MSG_ERROR([CBTF services library could not be found.])
+    fi
 
     CPPFLAGS=$target_services_saved_CPPFLAGS
     LDFLAGS=$target_services_saved_LDFLAGS

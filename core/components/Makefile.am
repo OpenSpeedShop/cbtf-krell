@@ -20,6 +20,64 @@ plugindir = $(libdir)/KrellInstitute/Components
 
 plugin_LTLIBRARIES = CollectionPlugin.la
 
+if BUILD_TARGETED
+if HAVE_TARGET_SHARED
+CollectionPlugin_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+        @TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+CollectionPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+CollectionPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-converters-perfdata \
+	@TARGET_CBTF_LIBS@ \
+        @TARGET_MESSAGES_BASE_LIBS@ \
+        @TARGET_MESSAGES_EVENTS_LIBS@ \
+        @TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@
+else
+if HAVE_TARGET_STATIC
+CollectionPlugin_la_CXXFLAGS = \
+	-static \
+	-I$(top_srcdir)/include \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+        @TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+CollectionPlugin_la_LDFLAGS = \
+	-static \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @MESSAGES_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+CollectionPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-converters-perfdata \
+	@TARGET_CBTF_LIBS@ \
+        @TARGET_MESSAGES_BASE_LIBS@ \
+        @TARGET_MESSAGES_EVENTS_LIBS@ \
+        @TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@
+endif
+endif
+# else non-targeted
+else
 CollectionPlugin_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
@@ -44,6 +102,7 @@ CollectionPlugin_la_LIBADD = \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \
 	@MRNET_LIBS@
+endif
 
 CollectionPlugin_la_SOURCES = \
 	AddressAggregatorComponent.cpp \

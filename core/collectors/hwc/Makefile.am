@@ -32,6 +32,7 @@ nobase_dist_xml_DATA = \
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
 
+if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
 OFFLINE_SOURCES = \
@@ -42,6 +43,7 @@ endif
 if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += hwc-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libhwc-monitor-fileio.la
+
 hwc_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -211,7 +213,303 @@ libhwc_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
 
+# endif for HAVE_MRNET
 endif
+# endif for HAVE_LIBMONITOR
+endif
+
+# endif for if not build targeted 
+endif
+
+if HAVE_TARGET_LIBMONITOR
+OFFLINE_SOURCES = \
+	monitor.c
+endif
+
+if HAVE_TARGET_LIBMONITOR
+pkglib_LTLIBRARIES += hwc-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libhwc-monitor-fileio.la
+
+if HAVE_TARGET_SHARED
+hwc_collector_monitor_fileio_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+hwc_collector_monitor_fileio_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+hwc_collector_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+hwc_collector_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+
+libhwc_monitor_fileio_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+libhwc_monitor_fileio_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+else
+
+if HAVE_TARGET_STATIC
+libhwc_monitor_fileio_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
+
+libhwc_monitor_fileio_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_fileio_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+# endif TARGET_STATIC
+endif
+
+# endif for else for not TARGET_SHARED
+endif
+
+if HAVE_TARGET_MRNET
+pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet.la
+
+if HAVE_TARGET_SHARED
+hwc_collector_monitor_mrnet_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+hwc_collector_monitor_mrnet_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+hwc_collector_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+hwc_collector_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+
+libhwc_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libhwc_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+else
+
+if HAVE_TARGET_STATIC
+libhwc_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libhwc_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
+endif
+
+
+pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet-mpi.la
+
+if HAVE_TARGET_SHARED
+hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lcbtf-services-data \
+	-lpthread -lrt
+
+hwc_collector_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+
+libhwc_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+else
+
+if HAVE_TARGET_STATIC
+libhwc_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libhwc_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-timer \
+	-lpthread -lrt
+
+libhwc_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
+endif
+
+# endif for else for not TARGET_MRNET
+endif
+# endif for else for not TARGET_LIBMONITOR
 endif
 
 

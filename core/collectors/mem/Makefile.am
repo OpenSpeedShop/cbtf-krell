@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -32,6 +32,8 @@ staticpkglib_LTLIBRARIES =
 
 WRAPPER_SOURCES = wrappers.c
 
+if !BUILD_TARGETED
+
 if HAVE_LIBMONITOR
 OFFLINE_SOURCES = \
 	monitor.c
@@ -41,6 +43,7 @@ endif
 if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += mem-collector-monitor-filemem.la
 staticpkglib_LTLIBRARIES += libmem-monitor-filemem.la
+
 mem_collector_monitor_filemem_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -167,7 +170,6 @@ libmem_monitor_mrnet_la_SOURCES = \
 	$(BUILT_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
-
 pkglib_LTLIBRARIES += mem-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libmem-monitor-mrnet-mpi.la
 mem_collector_monitor_mrnet_mpi_la_CFLAGS = \
@@ -239,7 +241,350 @@ libmem_monitor_mrnet_mpi_la_SOURCES = \
 	$(BUILT_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
+# endif for else for not HAVE_MRNET
 endif
+# endif for else for not HAVE_LIBMONITOR
+endif
+
+# endif for if not build targeted (below)
+endif
+
+if HAVE_TARGET_LIBMONITOR
+OFFLINE_SOURCES = \
+	monitor.c
+endif
+
+if HAVE_TARGET_LIBMONITOR
+pkglib_LTLIBRARIES += mem-collector-monitor-filemem.la
+staticpkglib_LTLIBRARIES += libmem-monitor-filemem.la
+
+if HAVE_TARGET_SHARED
+
+mem_collector_monitor_filemem_la_CFLAGS = \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@
+
+mem_collector_monitor_filemem_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+mem_collector_monitor_filemem_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+mem_collector_monitor_filemem_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libmem_monitor_filemem_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@
+
+libmem_monitor_filemem_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_filemem_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_filemem_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+else
+
+if HAVE_TARGET_STATIC
+libmem_monitor_filemem_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@
+
+libmem_monitor_filemem_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_filemem_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_filemem_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+# endif TARGET_STATIC
+endif
+
+# endif for else for not TARGET_SHARED
+endif
+
+if HAVE_TARGET_MRNET
+pkglib_LTLIBRARIES += mem-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libmem-monitor-mrnet.la
+
+if HAVE_TARGET_SHARED
+
+mem_collector_monitor_mrnet_la_CFLAGS = \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mem_collector_monitor_mrnet_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+mem_collector_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+mem_collector_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libmem_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libmem_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+else
+
+if HAVE_TARGET_STATIC
+libmem_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libmem_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_mrnet_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
+endif
+
+
+pkglib_LTLIBRARIES += mem-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmem-monitor-mrnet-mpi.la
+
+if HAVE_TARGET_SHARED
+mem_collector_monitor_mrnet_mpi_la_CFLAGS = \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mem_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+mem_collector_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-data \
+	-lpthread -lrt
+
+mem_collector_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libmem_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libmem_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+else
+
+if HAVE_TARGET_STATIC
+libmem_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@ \
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+libmem_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@TARGET_CBTF_SERVICES_LDFLAGS@ \
+	@TARGET_LIBMONITOR_LDFLAGS@ \
+	@TARGET_LIBUNWIND_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
+	-no-undefined
+
+libmem_monitor_mrnet_mpi_la_LIBADD = \
+	@TARGET_LIBMONITOR_LIBS@ \
+	@TARGET_LIBUNWIND_LIBS@ \
+	@TARGET_MRNET_LW_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lpthread -lrt
+
+libmem_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	$(BUILT_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+# endif TARGET_STATIC
+endif
+# endif for else for not TARGET_SHARED
+endif
+
+# endif for else for not TARGET_MRNET
+endif
+# endif for else for not TARGET_LIBMONITOR
 endif
 
 

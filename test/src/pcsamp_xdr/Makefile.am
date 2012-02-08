@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,6 +18,7 @@
 
 noinst_PROGRAMS = testXDR
 
+if !BUILD_TARGETED
 testXDR_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/../../tools/messages/include \
@@ -57,3 +58,47 @@ testXDR_LDADD = \
 
 testXDR_SOURCES = \
 	testXDR.cpp
+endif
+
+if HAVE_TARGET_SHARED
+testXDR_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/../../tools/messages/include \
+	-I$(top_srcdir)/../../tools/messages/src/perfdata \
+	-I$(top_srcdir)/../../tools/services/include \
+	-I$(top_srcdir)/../../tools/core/include \
+	-I$(top_srcdir)/../../framework/libcbtf-xml/include \
+	-DBUILDDIR="\"$(abs_builddir)\"" \
+	-DTOPDIR="\"$(top_srcdir)\"" \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_BINUTILS_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+testXDR_LDFLAGS = \
+	-L$(top_srcdir)/src \
+	-L$(top_srcdir)/../../tools/messages/src/base/.libs \
+	-L$(top_srcdir)/../../tools/core/src/.libs \
+	-L$(top_srcdir)/../../framework/build/libcbtf-xml \
+	@TARGET_BOOST_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_BINUTILS_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+
+testXDR_LDADD = \
+	-lcbtf-mrnet \
+	-lcbtf-xml \
+        -lcbtf-messages-base -lcbtf-messages-converters-base \
+	-lcbtf-core \
+	@TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
+	@TARGET_BOOST_SYSTEM_LIB@ \
+	@TARGET_BOOST_THREAD_LIB@ \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_BINUTILS_BFD_LIB@ \
+	@TARGET_MRNET_LIBS@
+
+testXDR_SOURCES = \
+	testXDR.cpp
+endif
+

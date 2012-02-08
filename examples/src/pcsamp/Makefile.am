@@ -27,6 +27,7 @@ nobase_dist_demoxml_DATA = \
 
 demobin_PROGRAMS = pcsampDemo
 
+if !BUILD_TARGETED
 pcsampDemo_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
@@ -65,10 +66,52 @@ pcsampDemo_LDADD = \
 
 pcsampDemo_SOURCES = \
 	pcsampDemo.cpp
+endif
 
+if HAVE_TARGET_SHARED
+pcsampDemo_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	-DBUILDDIR="\"$(abs_builddir)\"" \
+	-DLIBDIR="\"$(libdir)\"" \
+	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(demoxmldir)\"" \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_XML_CPPFLAGS@ \
+	@TARGET_LIBXERCES_C_CPPFLAGS@ \
+        @TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_BINUTILS_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+pcsampDemo_LDFLAGS = \
+	-L$(top_srcdir)/src \
+	@TARGET_BOOST_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ @TARGET_CBTF_XML_LDFLAGS@ \
+	@TARGET_BINUTILS_LDFLAGS@ \
+	@TARGET_LIBXERCES_C_LDFLAGS@ \
+        @TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+pcsampDemo_LDADD = \
+	-lcbtf-mrnet \
+	-lcbtf-core \
+	@TARGET_BOOST_PROGRAM_OPTIONS_LIB@ \
+	@TARGET_BOOST_SYSTEM_LIB@ \
+	@TARGET_BOOST_THREAD_LIB@ \
+	@TARGET_CBTF_LIBS@ @TARGET_CBTF_XML_LIBS@ \
+	@TARGET_BINUTILS_BFD_LIB@ \
+	@TARGET_LIBXERCES_C@ \
+        @TARGET_MESSAGES_BASE_LIBS@ \
+        @TARGET_MESSAGES_EVENTS_LIBS@ \
+        @TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+pcsampDemo_SOURCES = \
+	pcsampDemo.cpp
+endif
 
 demoplugin_LTLIBRARIES = pcsampDemoPlugin.la
 
+if !BUILD_TARGETED
 pcsampDemoPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
@@ -93,6 +136,34 @@ pcsampDemoPlugin_la_LIBADD = \
 	@MRNET_LIBS@
 
 pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
+endif
+
+if HAVE_TARGET_SHARED
+pcsampDemoPlugin_la_CXXFLAGS = \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+        @TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+pcsampDemoPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+        @TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+pcsampDemoPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-converters-perfdata \
+	@TARGET_CBTF_LIBS@ \
+        @TARGET_MESSAGES_BASE_LIBS@ \
+        @TARGET_MESSAGES_EVENTS_LIBS@ \
+        @TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
+endif
 
 CLEANFILES = $(BUILT_FILES)
 

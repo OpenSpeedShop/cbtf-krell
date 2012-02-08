@@ -29,6 +29,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 contribbin_PROGRAMS = memtool
 
+
+if !BUILD_TARGETED
 memtool_SOURCES = mem_tool.cpp
 
 memtool_CXXFLAGS = \
@@ -60,10 +62,47 @@ memtool_LDADD = \
 	@BINUTILS_BFD_LIB@ \
 	@LIBXERCES_C@ \
 	@MRNET_LIBS@ 
+endif
+  	
+if HAVE_TARGET_SHARED
+memtool_SOURCES = mem_tool.cpp
+
+memtool_CXXFLAGS = \
+	-DBUILDDIR="\"$(abs_builddir)\"" \
+	-DLIBDIR="\"$(libdir)\"" \
+	-DTOPDIR="\"$(top_srcdir)\"" \
+	-DXMLDIR="\"$(contribxmldir)\"" \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ @CBTF_XML_CPPFLAGS@ \
+	@LIBXERCES_C_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@ 
+
+memtool_LDFLAGS = \
+	-L$(top_srcdir) \
+	@BOOST_LDFLAGS@ \
+	@CBTF_LDFLAGS@ @CBTF_XML_LDFLAGS@ \
+	@BINUTILS_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@ \
+	@MRNET_LDFLAGS@ 
+
+memtool_LDADD = \
+	-lcbtf-xml \
+	-lcbtf-mrnet \
+	-lcbtf-core \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
+	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
+	@BINUTILS_BFD_LIB@ \
+	@LIBXERCES_C@ \
+	@MRNET_LIBS@ 
+endif
   	
 
 contribplugin_LTLIBRARIES = memPlugin.la mrnetPlugin.la
 
+
+if !BUILD_TARGETED
 memPlugin_la_SOURCES = memPlugin.cpp
 
 memPlugin_la_CXXFLAGS = \
@@ -97,6 +136,43 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
+endif
+
+if HAVE_TARGET_SHARED
+memPlugin_la_SOURCES = memPlugin.cpp
+
+memPlugin_la_CXXFLAGS = \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+memPlugin_la_LDFLAGS = \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+memPlugin_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+
+mrnetPlugin_la_CXXFLAGS = \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mrnetPlugin_la_LDFLAGS = \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+endif
 
 
 CLEANFILES = $(BUILT_FILES)

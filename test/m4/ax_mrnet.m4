@@ -97,9 +97,11 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
     if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
     elif test -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$alt_abi_libdir"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
     fi
 
     if test $found_target_mrnet == 0 && test "$target_mrnet_dir" == "/zzz" ; then
@@ -117,8 +119,10 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
       TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -DUNW_LOCAL_ONLY"
       TARGET_MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
       TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lpthread -ldl"
+      TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lalpslli -lalpsutil"
       TARGET_MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
       TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lpthread -ldl"
+      TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lalpslli -lalpsutil"
       TARGET_MRNET_DIR="$target_mrnet_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_MRNET, false)

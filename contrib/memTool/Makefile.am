@@ -27,10 +27,10 @@ nobase_dist_contribxml_DATA = \
 
 ACLOCAL_AMFLAGS = -I m4
 
-contribbin_PROGRAMS = memtool
 
 
 if !BUILD_TARGETED
+contribbin_PROGRAMS = memtool
 memtool_SOURCES = mem_tool.cpp
 
 memtool_CXXFLAGS = \
@@ -65,6 +65,7 @@ memtool_LDADD = \
 endif
   	
 if HAVE_TARGET_SHARED
+contribbin_PROGRAMS = memtool
 memtool_SOURCES = mem_tool.cpp
 
 memtool_CXXFLAGS = \
@@ -136,7 +137,7 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
-endif
+else
 
 if HAVE_TARGET_SHARED
 memPlugin_la_SOURCES = memPlugin.cpp
@@ -172,6 +173,51 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+else
+
+if HAVE_TARGET_STATIC
+memPlugin_la_SOURCES = memPlugin.cpp
+
+memPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+memPlugin_la_LDFLAGS = \
+	-static \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+memPlugin_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+
+mrnetPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mrnetPlugin_la_LDFLAGS = \
+	-static \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+endif
+# endif for target shared
+endif
+# endif for not build targeted
 endif
 
 

@@ -16,9 +16,9 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-noinst_PROGRAMS = testXDR
 
 if !BUILD_TARGETED
+noinst_PROGRAMS = testXDR
 testXDR_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/../../tools/messages/include \
@@ -61,6 +61,7 @@ testXDR_SOURCES = \
 endif
 
 if HAVE_TARGET_SHARED
+noinst_PROGRAMS = testXDR
 testXDR_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/../../tools/messages/include \

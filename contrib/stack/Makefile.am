@@ -27,9 +27,9 @@ nobase_dist_contribxml_DATA = \
 
 ACLOCAL_AMFLAGS = -I m4
 
-contribbin_PROGRAMS = stack
 
 if !BUILD_TARGETED
+contribbin_PROGRAMS = stack
 stack_SOURCES = stack_tool.cpp
 
 stack_CXXFLAGS = \
@@ -64,6 +64,7 @@ stack_LDADD = \
 endif
   	
 if HAVE_TARGET_SHARED
+contribbin_PROGRAMS = stack
 stack_SOURCES = stack_tool.cpp
 
 stack_CXXFLAGS = \
@@ -134,7 +135,8 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
-endif
+
+else
 
 if HAVE_TARGET_SHARED
 stackPlugin_la_SOURCES = stackPlugin.cpp
@@ -170,6 +172,49 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+else
+if HAVE_TARGET_STATIC
+stackPlugin_la_SOURCES = stackPlugin.cpp
+
+stackPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+stackPlugin_la_LDFLAGS = \
+	-static \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+stackPlugin_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+
+mrnetPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mrnetPlugin_la_LDFLAGS = \
+	-static \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+endif
+# endif for target shared
+endif
+# endif for the else clause for not build targeted
 endif
 
 CLEANFILES = $(BUILT_FILES)

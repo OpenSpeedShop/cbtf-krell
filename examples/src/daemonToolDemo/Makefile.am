@@ -25,9 +25,11 @@ BUILT_FILES = daemonToolDemo.xml
 nobase_dist_demoxml_DATA = \
 	daemonToolDemo.xml
 
-demobin_PROGRAMS = daemonToolDemo
 
 if !BUILD_TARGETED
+
+demobin_PROGRAMS = daemonToolDemo
+
 daemonToolDemo_SOURCES = \
 	daemonToolDemo.cpp
 
@@ -60,6 +62,9 @@ daemonToolDemo_LDADD = \
 endif
 
 if HAVE_TARGET_SHARED
+
+demobin_PROGRAMS = daemonToolDemo
+
 daemonToolDemo_SOURCES = \
 	daemonToolDemo.cpp
 
@@ -110,7 +115,7 @@ daemonToolDemoPlugin_la_LDFLAGS = \
 daemonToolDemoPlugin_la_LIBADD = \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
-endif
+else
 
 if HAVE_TARGET_SHARED
 daemonToolDemoPlugin_la_SOURCES = daemonToolDemoPlugin.cpp
@@ -128,6 +133,32 @@ daemonToolDemoPlugin_la_LDFLAGS = \
 daemonToolDemoPlugin_la_LIBADD = \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+else
+
+if HAVE_TARGET_STATIC
+daemonToolDemoPlugin_la_SOURCES = daemonToolDemoPlugin.cpp
+
+daemonToolDemoPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+daemonToolDemoPlugin_la_LDFLAGS = \
+	-static \
+	-module -avoid-version \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+daemonToolDemoPlugin_la_LIBADD = \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+# endif for target static
+endif
+
+# endif for targeted shared else
+endif
+# endif for targeted else
 endif
 
 CLEANFILES = $(BUILT_FILES)

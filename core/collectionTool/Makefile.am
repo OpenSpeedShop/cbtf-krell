@@ -18,11 +18,45 @@
 
 xmldir = $(datadir)/KrellInstitute/xml
 
+
+if !BUILD_TARGETED
+
 bin_PROGRAMS = collectionTool
 
-if BUILD_TARGETED
+collectionTool_CXXFLAGS = \
+	-DLIBDIR="\"$(libdir)\"" \
+	-DXMLDIR="\"$(xmldir)\"" \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+	@CBTF_MRNET_CPPFLAGS@ \
+	@CBTF_XML_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+collectionTool_LDFLAGS = \
+	@BOOST_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@CBTF_MRNET_LDFLAGS@ \
+	@CBTF_XML_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+collectionTool_LDADD = \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
+	@CBTF_LIBS@ \
+	@CBTF_MRNET_LIBS@\
+	@CBTF_XML_LIBS@\
+	@MRNET_LIBS@
+
+collectionTool_SOURCES = \
+	collectionTool.cpp
+# else for not build targeted
+else
 
 if HAVE_TARGET_SHARED
+
+bin_PROGRAMS = collectionTool
+
 collectionTool_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
@@ -50,34 +84,11 @@ collectionTool_LDADD = \
 	@TARGET_LIBXERCES_C@ \
 	@TARGET_CBTF_MRNET_LIBS@\
 	@TARGET_CBTF_XML_LIBS@
-endif
-# else for non-target version
-else
-collectionTool_CXXFLAGS = \
-	-DLIBDIR="\"$(libdir)\"" \
-	-DXMLDIR="\"$(xmldir)\"" \
-	@BOOST_CPPFLAGS@ \
-	@CBTF_CPPFLAGS@ \
-	@CBTF_MRNET_CPPFLAGS@ \
-	@CBTF_XML_CPPFLAGS@ \
-	@MRNET_CPPFLAGS@
-
-collectionTool_LDFLAGS = \
-	@BOOST_LDFLAGS@ \
-	@CBTF_LDFLAGS@ \
-	@CBTF_MRNET_LDFLAGS@ \
-	@CBTF_XML_LDFLAGS@ \
-	@MRNET_LDFLAGS@
-
-collectionTool_LDADD = \
-	@BOOST_PROGRAM_OPTIONS_LIB@ \
-	@BOOST_SYSTEM_LIB@ \
-	@BOOST_THREAD_LIB@ \
-	@CBTF_LIBS@ \
-	@CBTF_MRNET_LIBS@\
-	@CBTF_XML_LIBS@\
-	@MRNET_LIBS@
-endif
 
 collectionTool_SOURCES = \
 	collectionTool.cpp
+# endif for targeted shared
+endif
+# endif for targeted else
+endif
+

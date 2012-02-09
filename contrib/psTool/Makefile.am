@@ -27,11 +27,11 @@ nobase_dist_contribxml_DATA = \
 
 ACLOCAL_AMFLAGS = -I m4
 
-contribbin_PROGRAMS = pstool
 
 pstool_SOURCES = pstool.cpp
 
 if !BUILD_TARGETED
+contribbin_PROGRAMS = pstool
 pstool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
@@ -66,6 +66,7 @@ pstool_LDADD = \
 endif
 
 if HAVE_TARGET_SHARED
+contribbin_PROGRAMS = pstool
 pstool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
@@ -133,7 +134,7 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
-endif
+else
 
 if HAVE_TARGET_SHARED
 psPlugin_la_SOURCES = psPlugin.cpp
@@ -169,6 +170,52 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+else
+
+if HAVE_TARGET_STATIC
+psPlugin_la_SOURCES = psPlugin.cpp
+
+psPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+psPlugin_la_LDFLAGS = \
+	-static \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+psPlugin_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+
+mrnetPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mrnetPlugin_la_LDFLAGS = \
+	-static \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+endif
+
+# endif for target shared else clause
+endif
+
+# endif for else of not build targeted
 endif
 
 CLEANFILES = $(BUILT_FILES)

@@ -207,8 +207,12 @@ AC_ARG_WITH(target-os,
 
 
 AM_CONDITIONAL(BUILD_TARGETED, false)
+AM_CONDITIONAL(HAVE_TARGET_STATIC, false)
+
 case "$TARGET_OS" in
     cray-xt5)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXT5, 1, [Do not define if not building for targeted cray-xt5.])
@@ -216,6 +220,8 @@ case "$TARGET_OS" in
 			[Name targeted OS])
 	;;
     cray-xt4)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXT4, 1, [Do not define if not building for targeted cray-xt4.])
@@ -223,6 +229,8 @@ case "$TARGET_OS" in
 			[Name targeted OS])
 	;;
     bgl)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_BGL, 1, [Do not define if not building for targeted bgl.])
@@ -230,6 +238,8 @@ case "$TARGET_OS" in
 			[Name targeted OS])
 	;;
     bgp)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_BGP, 1, [Do not define if not building for targeted bgp.])
@@ -237,6 +247,8 @@ case "$TARGET_OS" in
 			   [Name targeted OS])
 	;; 
     bgq)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_BGQ, 1, [Do not define if not building for targeted bgq.])
@@ -244,6 +256,8 @@ case "$TARGET_OS" in
                            [Name targeted OS])
         ;;
     *)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, false)
+        AC_DEFINE([HAVE_TARGET_STATIC], [0],[Define to 0 for targeted non-static builds.])
 	AM_CONDITIONAL(BUILD_TARGETED, false)
 	AC_DEFINE(BUILD_TARGETED, 0, [Define to 1 if building a targeted runtime.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,$host,

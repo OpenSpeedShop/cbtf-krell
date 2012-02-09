@@ -25,9 +25,10 @@ BUILT_FILES = pcsampDemo.xml
 nobase_dist_demoxml_DATA = \
 	pcsampDemo.xml
 
+if !BUILD_TARGETED
+
 demobin_PROGRAMS = pcsampDemo
 
-if !BUILD_TARGETED
 pcsampDemo_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
@@ -69,6 +70,9 @@ pcsampDemo_SOURCES = \
 endif
 
 if HAVE_TARGET_SHARED
+
+demobin_PROGRAMS = pcsampDemo
+
 pcsampDemo_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
@@ -136,7 +140,7 @@ pcsampDemoPlugin_la_LIBADD = \
 	@MRNET_LIBS@
 
 pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
-endif
+else
 
 if HAVE_TARGET_SHARED
 pcsampDemoPlugin_la_CXXFLAGS = \
@@ -163,6 +167,42 @@ pcsampDemoPlugin_la_LIBADD = \
 	@TARGET_MRNET_LIBS@
 
 pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
+
+else
+
+if HAVE_TARGET_STATIC
+pcsampDemoPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+        @TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+pcsampDemoPlugin_la_LDFLAGS = \
+	-static \
+	-module -avoid-version \
+        @TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+pcsampDemoPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-converters-perfdata \
+	@TARGET_CBTF_LIBS@ \
+        @TARGET_MESSAGES_BASE_LIBS@ \
+        @TARGET_MESSAGES_EVENTS_LIBS@ \
+        @TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+pcsampDemoPlugin_la_SOURCES = pcsampDemoPlugin.cpp
+
+# endif for target static
+endif
+# endif for target shared else clause
+endif
+# endif for not build targeted else clause
 endif
 
 CLEANFILES = $(BUILT_FILES)

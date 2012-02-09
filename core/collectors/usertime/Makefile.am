@@ -249,7 +249,9 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_TARGET_LIBMONITOR
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += usertime-collector-monitor-fileio.la
+endif
 staticpkglib_LTLIBRARIES += libusertime-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
@@ -348,7 +350,9 @@ endif
 endif
 
 if HAVE_TARGET_MRNET
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += usertime-collector-monitor-mrnet.la
+endif
 staticpkglib_LTLIBRARIES += libusertime-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
@@ -456,7 +460,9 @@ endif
 endif
 
 
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += usertime-collector-monitor-mrnet-mpi.la
+endif
 staticpkglib_LTLIBRARIES += libusertime-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED

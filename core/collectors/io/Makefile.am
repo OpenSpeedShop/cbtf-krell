@@ -258,7 +258,9 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_TARGET_LIBMONITOR
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
+endif
 staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
@@ -360,7 +362,9 @@ endif
 endif
 
 if HAVE_TARGET_MRNET
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la
+endif
 staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
@@ -472,7 +476,9 @@ endif
 endif
 
 
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la
+endif
 staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED

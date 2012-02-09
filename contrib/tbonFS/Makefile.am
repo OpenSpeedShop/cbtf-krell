@@ -27,9 +27,9 @@ nobase_dist_contribxml_DATA = \
 
 ACLOCAL_AMFLAGS = -I m4
 
-contribbin_PROGRAMS = tbonFS
 
 if !BUILD_TARGETED
+contribbin_PROGRAMS = tbonFS
 tbonFS_SOURCES = tbonFS_tool.cpp 
 
 tbonFS_CXXFLAGS = \
@@ -64,6 +64,7 @@ tbonFS_LDADD = \
 endif
   	
 if HAVE_TARGET_SHARED
+contribbin_PROGRAMS = tbonFS
 tbonFS_SOURCES = tbonFS_tool.cpp 
 
 tbonFS_CXXFLAGS = \
@@ -149,7 +150,7 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
-endif
+else
 
 if HAVE_TARGET_SHARED
 tbonFSPlugin_la_SOURCES = tbonFSPlugin.cpp
@@ -200,6 +201,68 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+else
+if HAVE_TARGET_STATIC
+tbonFSPlugin_la_SOURCES = tbonFSPlugin.cpp
+
+tbonFSPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+tbonFSPlugin_la_LDFLAGS = \
+	-static \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+tbonFSPlugin_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+tbonFSFilter_la_SOURCES = tbonFSFilter.cpp
+
+tbonFSFilter_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@
+
+tbonFSFilter_la_LDFLAGS = \
+	-static \
+	-L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+	@TARGET_CBTF_LDFLAGS@
+
+tbonFSFilter_la_LIBADD = \
+	-lcbtf-core \
+	@TARGET_CBTF_LIBS@
+
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+
+mrnetPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+mrnetPlugin_la_LDFLAGS = \
+	-static \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+endif
+
+# endif for target shared
+endif
+# endif for not build targeted
 endif
 
 CLEANFILES = $(BUILT_FILES)

@@ -92,8 +92,10 @@ libpcsamp_monitor_fileio_la_SOURCES = \
 	collector.c
 
 if HAVE_MRNET
+
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet.la
+
 pcsamp_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -153,6 +155,7 @@ libpcsamp_monitor_mrnet_la_SOURCES = \
 
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet-mpi.la
+
 pcsamp_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -226,7 +229,9 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_TARGET_LIBMONITOR
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-fileio.la
+endif
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
@@ -311,7 +316,9 @@ endif
 endif
 
 if HAVE_TARGET_MRNET
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet.la
+endif
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
@@ -407,7 +414,9 @@ endif
 endif
 
 
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-mrnet-mpi.la
+endif
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED

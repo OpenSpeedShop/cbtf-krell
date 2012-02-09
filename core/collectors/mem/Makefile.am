@@ -255,11 +255,12 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_TARGET_LIBMONITOR
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += mem-collector-monitor-filemem.la
+endif
 staticpkglib_LTLIBRARIES += libmem-monitor-filemem.la
 
 if HAVE_TARGET_SHARED
-
 mem_collector_monitor_filemem_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -357,11 +358,12 @@ endif
 endif
 
 if HAVE_TARGET_MRNET
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += mem-collector-monitor-mrnet.la
+endif
 staticpkglib_LTLIBRARIES += libmem-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
-
 mem_collector_monitor_mrnet_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -468,7 +470,9 @@ endif
 endif
 
 
+if HAVE_TARGET_SHARED
 pkglib_LTLIBRARIES += mem-collector-monitor-mrnet-mpi.la
+endif
 staticpkglib_LTLIBRARIES += libmem-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED

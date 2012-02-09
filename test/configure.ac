@@ -398,7 +398,10 @@ AX_MRNET()
 AX_CBTF()
 
 AX_XERCESC()
-AX_XERCESC_VERSION()
+# This helps with targeted builds when there is no xercesc
+if test "$LIBXERCES_C" = "-lxerces-c" ; then
+  AX_XERCESC_VERSION()
+fi
 
 AX_CBTF_XML()
 AX_CBTF_MRNET()
@@ -408,6 +411,24 @@ AX_DYNINST()
 
 AX_MESSAGES()
 AX_CORE()
+
+AC_PKG_TARGET_BOOST()
+AC_PKG_TARGET_BOOST_SYSTEM()
+AC_PKG_TARGET_BOOST_THREAD()
+AC_PKG_TARGET_BOOST_UNIT_TEST_FRAMEWORK()
+AC_PKG_TARGET_MRNET()
+AX_TARGET_MESSAGES()
+
+AC_PKG_TARGET_XERCESC()
+# This helps with targeted builds when there is no xercesc
+if test "$TARGET_LIBXERCES_C" = "-lxerces-c" ; then
+  AX_TARGET_XERCESC_VERSION()
+fi
+
+AX_TARGET_CBTF()
+AX_TARGET_CBTF_XML()
+AX_TARGET_CBTF_MRNET()
+AX_TARGET_CORE()
 
 AC_CONFIG_FILES([
     Makefile

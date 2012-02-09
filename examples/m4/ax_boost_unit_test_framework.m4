@@ -132,3 +132,62 @@ AC_DEFUN([AX_BOOST_UNIT_TEST_FRAMEWORK],
     	LDFLAGS="$LDFLAGS_SAVED"
 	fi
 ])
+
+#############################################################################################
+# Check for Boost Unit Test Framework for Target Architecture 
+#############################################################################################
+
+AC_DEFUN([AC_PKG_TARGET_BOOST_UNIT_TEST_FRAMEWORK], [
+
+    AC_ARG_WITH(target-boost-unit-test-framework,
+                AC_HELP_STRING([--with-target-boost-unit-test-framework=DIR],
+                               [Boost unit framework target architecture installation @<:@/opt@:>@]),
+                target_boost_unit_test_framework_dir=$withval, target_boost_unit_test_framework_dir="/zzz")
+
+    AC_MSG_CHECKING([for Targetted Boost Unit Framework support])
+
+    found_target_boost_unit_test_framework=0
+    if test -f $target_boost_unit_test_framework_dir/$abi_libdir/libboost_unit_test_framework.so -o -f $target_boost_unit_test_framework_dir/$abi_libdir/libboost_unit_test_framework.a; then
+       found_target_boost_unit_test_framework=1
+       TARGET_BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS="-L$target_boost_unit_test_framework_dir/$abi_libdir"
+       TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB="$target_boost_unit_test_framework_dir/$abi_libdir"
+    elif test -f $target_boost_unit_test_framework_dir/$alt_abi_libdir/libboost_unit_test_framework.so -o -f $target_boost_unit_test_framework_dir/$alt_abi_libdir/libboost_unit_test_framework.a; then
+       found_target_boost_unit_test_framework=1
+       TARGET_BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS="-L$target_boost_unit_test_framework_dir/$alt_abi_libdir"
+       TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB="$target_boost_unit_test_framework_dir/$abi_libdir"
+    fi
+
+    if test $found_target_boost_unit_test_framework == 0 && test "$target_boost_unit_test_framework_dir" == "/zzz" ; then
+      AM_CONDITIONAL(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, false)
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_CPPFLAGS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_DIR=""
+      AC_MSG_RESULT(no)
+    elif test $found_target_boost_unit_test_framework == 1 ; then
+      AC_MSG_RESULT(yes)
+      AM_CONDITIONAL(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, true)
+      AC_DEFINE(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, 1, [Define to 1 if you have a target version of BOOST_UNIT_TEST_FRAMEWORK.])
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_CPPFLAGS="-I$target_boost_unit_test_framework_dir/include/boost"
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS="-lboost_unit_test_framework-mt"
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB="-lboost_unit_test_framework-mt"
+      TARGET_BOOST_DIR="$target_boost_unit_test_framework_dir"
+    else 
+      AM_CONDITIONAL(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, false)
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_CPPFLAGS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB=""
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_DIR=""
+      AC_MSG_RESULT(no)
+    fi
+
+    AC_SUBST(TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB)
+    AC_SUBST(TARGET_BOOST_UNIT_TEST_FRAMEWORK_CPPFLAGS)
+    AC_SUBST(TARGET_BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+    AC_SUBST(TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+    AC_SUBST(TARGET_BOOST_UNIT_TEST_FRAMEWORK_DIR)
+
+])
+

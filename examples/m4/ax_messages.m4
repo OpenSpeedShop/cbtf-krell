@@ -50,6 +50,16 @@ AC_DEFUN([AX_MESSAGES], [
         ], [
             AC_MSG_RESULT(no)
             #AC_MSG_ERROR([CBTF messages library could not be found.])
+            MESSAGES_CPPFLAGS=""
+            MESSAGES_LDFLAGS=""
+            MESSAGES_LIBS=""
+            MESSAGES_BASE_LIBS=""
+            MESSAGES_COLLECTOR_LIBS=""
+            MESSAGES_EVENTS_LIBS=""
+            MESSAGES_INSTRUMENTATION_LIBS=""
+            MESSAGES_PERFDATA_LIBS=""
+            MESSAGES_SYMTAB_LIBS=""
+            MESSAGES_THREAD_LIBS=""
         ])
 
     CPPFLAGS=$messages_saved_CPPFLAGS
@@ -72,9 +82,10 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
 
     AC_ARG_WITH(target-cbtf-messages,
             AC_HELP_STRING([--with-target-cbtf-messages=DIR],
-                           [CBTF target message library installation @<:@/opt@:>@]),
+                           [Targeted CBTF message library installation @<:@/opt@:>@]),
                 target_cbtf_messages_dir=$withval, target_cbtf_messages_dir="/zzz")
 
+    TARGET_MESSAGES_DIR="$target_cbtf_messages_dir"
     TARGET_MESSAGES_CPPFLAGS="-I$target_cbtf_messages_dir/include"
     TARGET_MESSAGES_LDFLAGS="-L$target_cbtf_messages_dir/$abi_libdir"
     TARGET_MESSAGES_LIBS="-lcbtf-messages-base -lcbtf-messages-collector -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-perfdata -lcbtf-messages-symtab -lcbtf-messages-thread"
@@ -92,11 +103,12 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
 #    CPPFLAGS="$TARGET_MESSAGES_CPPFLAGS"
 #    LDFLAGS="$TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
 
-    AC_MSG_CHECKING([for CBTF TARGET_MESSAGES library and headers])
+    AC_MSG_CHECKING([for Targetted CBTF messages library and headers])
 
-    if [ test -f $target_cbtf_messages_dir/include/KrellInstitute/Messages/Address.h ]; then
+    if test -f $target_cbtf_messages_dir/include/KrellInstitute/Messages/Address.h; then
             AC_MSG_RESULT(yes)
     else
+            TARGET_MESSAGES_DIR="$target_cbtf_messages_dir"
             TARGET_MESSAGES_CPPFLAGS=""
             TARGET_MESSAGES_LDFLAGS=""
             TARGET_MESSAGES_LIBS=""
@@ -115,6 +127,7 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
 #    CPPFLAGS=$target_messages_saved_CPPFLAGS
 #    LDFLAGS=$target_messages_saved_LDFLAGS
 
+    AC_SUBST(TARGET_MESSAGES_DIR)
     AC_SUBST(TARGET_MESSAGES_CPPFLAGS)
     AC_SUBST(TARGET_MESSAGES_LDFLAGS)
     AC_SUBST(TARGET_MESSAGES_LIBS)

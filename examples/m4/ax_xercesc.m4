@@ -86,8 +86,8 @@ AC_DEFUN([AX_XERCESC], [
 
 AC_DEFUN([AC_PKG_TARGET_XERCESC], [
 
-    AC_ARG_WITH(target-xercesc,
-                AC_HELP_STRING([--with-target-xercesc=DIR],
+    AC_ARG_WITH(target-libxerces-c-prefix,
+                AC_HELP_STRING([--with-target-libxerces-c-prefix=DIR],
                                [xercesc target architecture installation @<:@/opt@:>@]),
                 target_xercesc_dir=$withval, target_xercesc_dir="/zzz")
 

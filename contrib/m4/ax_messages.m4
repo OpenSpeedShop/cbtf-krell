@@ -92,7 +92,7 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
 #    CPPFLAGS="$TARGET_MESSAGES_CPPFLAGS"
 #    LDFLAGS="$TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
 
-    AC_MSG_CHECKING([for CBTF TARGET_MESSAGES library and headers])
+    AC_MSG_CHECKING([for Targetted cbtf messages library and headers])
 
     if [ test -f $target_cbtf_messages_dir/include/KrellInstitute/Messages/Address.h ]; then
             AC_MSG_RESULT(yes)

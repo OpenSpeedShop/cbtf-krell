@@ -174,8 +174,8 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_THREAD], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, false)
       TARGET_BOOST_THREAD_CPPFLAGS=""
       TARGET_BOOST_THREAD_LDFLAGS=""
-      TARGET_BOOST_THREAD_LIBS="-lboost_thread-mt"
-      TARGET_BOOST_THREAD_LIB="-lboost_thread-mt"
+      TARGET_BOOST_THREAD_LIBS=""
+      TARGET_BOOST_THREAD_LIB=""
       TARGET_BOOST_THREAD_DIR=""
       AC_MSG_RESULT(no)
     elif test $found_target_boost_thread == 1 ; then
@@ -183,8 +183,9 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_THREAD], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, true)
       AC_DEFINE(HAVE_TARGET_BOOST_THREAD, 1, [Define to 1 if you have a target version of BOOST_THREAD.])
       TARGET_BOOST_THREAD_CPPFLAGS="-I$target_boost_thread_dir/include/boost"
-      TARGET_BOOST_THREAD_LIBS=""
-      TARGET_BOOST_THREAD_LIB=""
+      TARGET_BOOST_THREAD_LIBS="-lboost_thread-mt"
+      TARGET_BOOST_THREAD_LIB="-lboost_thread-mt"
+      TARGET_BOOST_THREAD_DIR="$target_boost_thread_dir"
       TARGET_BOOST_DIR="$target_boost_thread_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, false)

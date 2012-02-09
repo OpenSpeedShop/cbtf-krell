@@ -116,18 +116,18 @@ if HAVE_TARGET_SHARED
 daemonToolDemoPlugin_la_SOURCES = daemonToolDemoPlugin.cpp
 
 daemonToolDemoPlugin_la_CXXFLAGS = \
-	@BOOST_CPPFLAGS@ \
-	@CBTF_CPPFLAGS@ \
-	@MRNET_CPPFLAGS@
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
 
 daemonToolDemoPlugin_la_LDFLAGS = \
 	-module -avoid-version \
-	@CBTF_LDFLAGS@ \
-	@MRNET_LDFLAGS@
+	@TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
 
 daemonToolDemoPlugin_la_LIBADD = \
-	@CBTF_LIBS@ \
-	@MRNET_LIBS@
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
 endif
 
 CLEANFILES = $(BUILT_FILES)

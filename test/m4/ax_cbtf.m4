@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -47,7 +47,7 @@ AC_DEFUN([AX_CBTF], [
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)
-            AC_MSG_ERROR([CBTF library could not be found.])
+            #AC_MSG_ERROR([CBTF library could not be found.])
         ])
 
     CPPFLAGS=$cbtf_saved_CPPFLAGS
@@ -60,3 +60,62 @@ AC_DEFUN([AX_CBTF], [
     AC_SUBST(CBTF_LIBS)
 
 ])
+
+
+
+################################################################################
+# Check for CBTF for Target Architecture 
+################################################################################
+
+AC_DEFUN([AX_TARGET_CBTF], [
+
+    AC_ARG_WITH(target-cbtf,
+                AC_HELP_STRING([--with-target-cbtf=DIR],
+                               [CBTF library installation @<:@/opt@:>@]),
+                target_cbtf_dir=$withval, target_cbtf_dir="/zzz")
+
+    TARGET_CBTF_CPPFLAGS="-I$target_cbtf_dir/include"
+    TARGET_CBTF_LDFLAGS="-L$target_cbtf_dir/$abi_libdir"
+    TARGET_CBTF_LIBS="-lcbtf"
+    TARGET_CBTF_DIR="$target_cbtf_dir"
+
+    AC_MSG_CHECKING([for Targetted CBTF support])
+
+    found_target_cbtf=0
+    if test -f $target_cbtf_dir/$abi_libdir/libcbtf.so -o -f $target_cbtf_dir/$abi_libdir/libcbtf.a ; then
+       found_target_cbtf=1
+       TARGET_CBTF_LDFLAGS="-L$target_cbtf_dir/$abi_libdir"
+    elif test -f  $target_cbtf_dir/$alt_abi_libdir/libcbtf.so -o -f $target_cbtf_dir/$alt_abi_libdir/libcbtf.a ; then
+       found_target_cbtf=1
+       TARGET_CBTF_LDFLAGS="-L$target_cbtf_dir/$alt_abi_libdir"
+    fi
+
+    if test $found_target_cbtf == 0 && test "$target_cbtf_dir" == "/zzz" ; then
+      AM_CONDITIONAL(HAVE_TARGET_CBTF, false)
+      TARGET_CBTF_CPPFLAGS=""
+      TARGET_CBTF_LDFLAGS=""
+      TARGET_CBTF_LIBS=""
+      TARGET_CBTF_DIR=""
+      AC_MSG_RESULT(no)
+    elif test $found_target_cbtf == 1 ; then
+      AM_CONDITIONAL(HAVE_TARGET_CBTF, true)
+      AC_DEFINE(HAVE_TARGET_CBTF, 1, [Define to 1 if you have a target version of CBTF.])
+      AC_MSG_RESULT(yes)
+    else
+      AM_CONDITIONAL(HAVE_TARGET_CBTF, false)
+      TARGET_CBTF_CPPFLAGS=""
+      TARGET_CBTF_LDFLAGS=""
+      TARGET_CBTF_LIBS=""
+      TARGET_CBTF_DIR=""
+      AC_MSG_RESULT(no)
+    fi
+
+    AC_SUBST(TARGET_CBTF_CPPFLAGS)
+    AC_SUBST(TARGET_CBTF_LDFLAGS)
+    AC_SUBST(TARGET_CBTF_LIBS)
+    AC_SUBST(TARGET_CBTF_DIR)
+
+])
+
+
+

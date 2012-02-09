@@ -70,13 +70,13 @@ AC_DEFUN([AX_MESSAGES], [
 
 AC_DEFUN([AX_TARGET_MESSAGES], [
 
-    AC_ARG_WITH(cbtf-target-messages,
-            AC_HELP_STRING([--with-cbtf-target-messages=DIR],
+    AC_ARG_WITH(target-cbtf-messages,
+            AC_HELP_STRING([--with-target-cbtf-messages=DIR],
                            [CBTF target message library installation @<:@/opt@:>@]),
-                target_messages_dir=$withval, target_messages_dir="/zzz")
+                target_cbtf_messages_dir=$withval, target_cbtf_messages_dir="/zzz")
 
-    TARGET_MESSAGES_CPPFLAGS="-I$target_messages_dir/include"
-    TARGET_MESSAGES_LDFLAGS="-L$target_messages_dir/$abi_libdir"
+    TARGET_MESSAGES_CPPFLAGS="-I$target_cbtf_messages_dir/include"
+    TARGET_MESSAGES_LDFLAGS="-L$target_cbtf_messages_dir/$abi_libdir"
     TARGET_MESSAGES_LIBS="-lcbtf-messages-base -lcbtf-messages-collector -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-perfdata -lcbtf-messages-symtab -lcbtf-messages-thread"
     TARGET_MESSAGES_BASE_LIBS="-lcbtf-messages-base"
     TARGET_MESSAGES_COLLECTOR_LIBS="-lcbtf-messages-collector"
@@ -89,23 +89,31 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
     target_messages_saved_CPPFLAGS=$CPPFLAGS
     target_messages_saved_LDFLAGS=$LDFLAGS
 
-    CPPFLAGS="$CPPFLAGS $TARGET_MESSAGES_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
+#    CPPFLAGS="$TARGET_MESSAGES_CPPFLAGS"
+#    LDFLAGS="$TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
 
     AC_MSG_CHECKING([for CBTF TARGET_MESSAGES library and headers])
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
-        #include <KrellInstitute/Messages/Address.h>
-        ]], [[
-        ]]), [ 
+    if [ test -f $target_cbtf_messages_dir/include/KrellInstitute/Messages/Address.h ]; then
             AC_MSG_RESULT(yes)
-        ], [
+    else
+            TARGET_MESSAGES_CPPFLAGS=""
+            TARGET_MESSAGES_LDFLAGS=""
+            TARGET_MESSAGES_LIBS=""
+            TARGET_MESSAGES_BASE_LIBS=""
+            TARGET_MESSAGES_COLLECTOR_LIBS=""
+            TARGET_MESSAGES_EVENTS_LIBS=""
+            TARGET_MESSAGES_INSTRUMENTATION_LIBS=""
+            TARGET_MESSAGES_PERFDATA_LIBS=""
+            TARGET_MESSAGES_SYMTAB_LIBS=""
+            TARGET_MESSAGES_THREAD_LIBS=""
             AC_MSG_RESULT(no)
 #            AC_MSG_ERROR([CBTF target messages library could not be found.])
+    fi
         ])
 
-    CPPFLAGS=$target_messages_saved_CPPFLAGS
-    LDFLAGS=$target_messages_saved_LDFLAGS
+#    CPPFLAGS=$target_messages_saved_CPPFLAGS
+#    LDFLAGS=$target_messages_saved_LDFLAGS
 
     AC_SUBST(TARGET_MESSAGES_CPPFLAGS)
     AC_SUBST(TARGET_MESSAGES_LDFLAGS)

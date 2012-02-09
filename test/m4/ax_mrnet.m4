@@ -88,10 +88,10 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
 
     AC_ARG_WITH(target-mrnet,
                 AC_HELP_STRING([--with-target-mrnet=DIR],
-                               [mrnet target architecture installation @<:@/opt@:>@]),
+                               [MRNet target architecture installation @<:@/opt@:>@]),
                 target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
 
-    AC_MSG_CHECKING([for Targetted mrnet support])
+    AC_MSG_CHECKING([for Targetted MRNet support])
 
     found_target_mrnet=0
     if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then

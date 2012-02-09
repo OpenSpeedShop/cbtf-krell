@@ -164,6 +164,7 @@ AC_DEFUN([AC_PKG_TARGET_BINUTILS], [
       TARGET_BINUTILS_CPPFLAGS=""
       TARGET_BINUTILS_LDFLAGS=""
       TARGET_BINUTILS_LIBS=""
+      TARGET_BINUTILS_BFD_LIB=""
       AC_MSG_RESULT(no)
     else
       AC_MSG_RESULT(yes)
@@ -174,13 +175,15 @@ AC_DEFUN([AC_PKG_TARGET_BINUTILS], [
             TARGET_BINUTILS_DIR="$target_binutils_dir"
 	    TARGET_BINUTILS_CPPFLAGS="-I$target_binutils_dir/include"
 	    TARGET_BINUTILS_LDFLAGS="-L$target_binutils_dir/$abi_libdir"
-	    TARGET_BINUTILS_LIBS="-lopcodes-lbfd -liberty"
+	    TARGET_BINUTILS_LIBS="-lopcodes -lbfd -liberty"
+            TARGET_BINUTILS_BFD_LIB="-lbfd"
             ;;
 	*)
             TARGET_BINUTILS_DIR="$target_binutils_dir"
 	    TARGET_BINUTILS_CPPFLAGS="-I$target_binutils_dir/include"
 	    TARGET_BINUTILS_LDFLAGS="-L$target_binutils_dir/$abi_libdir"
 	    TARGET_BINUTILS_LIBS="-lopcodes -lbfd -liberty"
+            TARGET_BINUTILS_BFD_LIB="-lbfd"
             ;;
       esac
     fi
@@ -190,5 +193,6 @@ AC_DEFUN([AC_PKG_TARGET_BINUTILS], [
     AC_SUBST(TARGET_BINUTILS_LDFLAGS)
     AC_SUBST(TARGET_BINUTILS_LIBS)
     AC_SUBST(TARGET_BINUTILS_DIR)
+    AC_SUBST(TARGET_BINUTILS_BFD_LIB)
 
 ])

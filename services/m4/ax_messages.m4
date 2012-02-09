@@ -89,23 +89,31 @@ AC_DEFUN([AX_TARGET_MESSAGES], [
     target_messages_saved_CPPFLAGS=$CPPFLAGS
     target_messages_saved_LDFLAGS=$LDFLAGS
 
-    CPPFLAGS="$CPPFLAGS $TARGET_MESSAGES_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
+#    CPPFLAGS="$TARGET_MESSAGES_CPPFLAGS"
+#    LDFLAGS="$TARGET_MESSAGES_LDFLAGS $TARGET_MESSAGES_BASE_LIBS"
 
     AC_MSG_CHECKING([for CBTF TARGET_MESSAGES library and headers])
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
-        #include <KrellInstitute/Messages/Address.h>
-        ]], [[
-        ]]), [ 
+    if [ test -f $target_cbtf_messages_dir/include/KrellInstitute/Messages/Address.h ]; then
             AC_MSG_RESULT(yes)
-        ], [
+    else
+            TARGET_MESSAGES_CPPFLAGS=""
+            TARGET_MESSAGES_LDFLAGS=""
+            TARGET_MESSAGES_LIBS=""
+            TARGET_MESSAGES_BASE_LIBS=""
+            TARGET_MESSAGES_COLLECTOR_LIBS=""
+            TARGET_MESSAGES_EVENTS_LIBS=""
+            TARGET_MESSAGES_INSTRUMENTATION_LIBS=""
+            TARGET_MESSAGES_PERFDATA_LIBS=""
+            TARGET_MESSAGES_SYMTAB_LIBS=""
+            TARGET_MESSAGES_THREAD_LIBS=""
             AC_MSG_RESULT(no)
 #            AC_MSG_ERROR([CBTF target messages library could not be found.])
+    fi
         ])
 
-    CPPFLAGS=$target_messages_saved_CPPFLAGS
-    LDFLAGS=$target_messages_saved_LDFLAGS
+#    CPPFLAGS=$target_messages_saved_CPPFLAGS
+#    LDFLAGS=$target_messages_saved_LDFLAGS
 
     AC_SUBST(TARGET_MESSAGES_CPPFLAGS)
     AC_SUBST(TARGET_MESSAGES_LDFLAGS)

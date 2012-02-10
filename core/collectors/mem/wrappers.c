@@ -78,6 +78,7 @@ void* memmalloc(size_t size)
     return retval;
 }
 
+
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef calloc
 #undef calloc
@@ -104,9 +105,9 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_calloc(count,size);
 #else
-    void* (*realfunc)() = dlsym (RTLD_NEXT, "calloc");
-    retval = (*realfunc)(count,size);
-    //retval = (void*)__libc_calloc(count,size);
+    //void* (*realfunc)() = dlsym (RTLD_NEXT, "calloc");
+    //retval = (*realfunc)(count,size);
+    retval = (void*)__libc_calloc(count,size);
 #endif
 
 
@@ -121,14 +122,15 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_calloc);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
-        //mem_record_event(&event, CBTF_GetAddressOfFunction((__libc_calloc)));
+        //mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction((__libc_calloc)));
 #endif
     }
     
     /* Return the real MEM function's return value to the caller */
     return retval;
 }
+
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef realloc

@@ -42,7 +42,7 @@ namespace {
 
 	    if (!do_print) return;
 
-//	    std::cout << "DisplayAddressBuffer, printResults interval is " << interval << std::endl;
+	    //std::cout << "DisplayAddressBuffer, printResults interval is " << interval << std::endl;
 	    AddressCounts::const_iterator aci;
 	    uint64_t total_counts = 0;
 	    double percent_total = 0.0;
@@ -69,8 +69,8 @@ namespace {
 #if 1
 	        entry.total_time = static_cast<double>(aci->second) *
 				static_cast<double>(interval) / 1000000000.0;
-#endif
 	        total_time += entry.total_time;
+#endif
 	        entry.percent = percent;
 	        m.push_back(entry);
 	    }
@@ -81,18 +81,11 @@ namespace {
 	    for (mi = m.begin(); mi != m.end(); ++mi) {
 	      if (mi->sample_count > 0 ) {
                 std::cout << "Address " << mi->addr
-        	<< " had %" << mi->percent << " of samples "
-#if 0
-        	<< " and " << mi->total_time << " of total time "
-#endif
+        	<< ": " << mi->percent << "% of unique sampled addresses"
 		<< std::endl;
 	      }
 	    }
-	    std::cout << "\ntotal samples: " << total_counts
-#if 0
-	    << "\npercent of total samples: " << percent_total
-	    << "\ntotal time: " << total_time
-#endif
+	    std::cout << "\ntotal unique sampled addresses: " << total_counts
 	    << "\n" << std::endl;
     }
 }

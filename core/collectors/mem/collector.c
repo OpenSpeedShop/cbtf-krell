@@ -364,6 +364,7 @@ static void mem_send_events(TLS *tls)
 
     /* Set the end time of this data blob */
     tls->header.time_end = CBTF_GetTime();
+    tls->header.id = strdup("mem");
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
@@ -387,15 +388,10 @@ static void mem_send_events(TLS *tls)
 	        send_process_thread_message();
 	    }
 	    tls->sent_process_thread_info = 1;
-#if 0
+
 	    CBTF_MRNet_Send_PerfData( &tls->header,
-				 (xdrproc_t)xdr_CBTF_usertime_data,
+				 (xdrproc_t)xdr_CBTF_mem_exttrace_data,
 				 &tls->data);
-#else
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_MEMEXTTRACE_DATA,
-                           (xdrproc_t) xdr_CBTF_mem_exttrace_data,
-			   &tls->data);
-#endif
 	}
 #endif
 
@@ -403,9 +399,6 @@ static void mem_send_events(TLS *tls)
     cbtf_offline_sent_data(1);
 #endif
 
-    /* Send these events */
-//    CBTF_MRNet_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
-    
     /* Re-initialize the data blob's header */
     tls->header.time_begin = tls->header.time_end;
     tls->header.time_end = 0;

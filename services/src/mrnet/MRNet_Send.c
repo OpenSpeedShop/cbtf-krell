@@ -29,6 +29,7 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
+#include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 
 #include <rpc/rpc.h>
@@ -274,7 +275,13 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
     size = xdr_getpos(&xdrs);
     xdr_destroy(&xdrs);
 
-    CBTF_MRNet_LW_sendToFrontend(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA ,size , (void *) buffer);
+    /* send it as a blob */
+    CBTF_Protocol_Blob blob;
+    blob.data.data_val = buffer;
+    blob.data.data_len = size;
+
+    CBTF_MRNet_Send(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,
+                 (xdrproc_t) xdr_CBTF_Protocol_Blob, &blob);
 }
 
 void CBTF_Waitfor_MRNet_Shutdown() {
@@ -296,21 +303,14 @@ void CBTF_Waitfor_MRNet_Shutdown() {
 	    }
 	} while ( tag != 101 );
 
-	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown recevied shutwon request tag %d.\n", tag);
 
 	/* send the FE the acknowledgement of shutdown */
-	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown sending ack tag %d.\n", tag);
-
 	if ( (Stream_send(stream, /*tag*/ 102, "%d", 102) == -1) ||
 	      Stream_flush(stream) == -1 ) {
 	    fprintf(stderr, "CBTF_Waitfor_MRNet_Shutdown BE: stream::send() failure\n");
 	}
 
-	//Stream_send(CBTF_MRNet_stream, 102, "%d", 102);
-	//Stream_flush(CBTF_MRNet_stream);
-
 	/* Now wait for mrnet to shutdown */
-	//fprintf(stderr,"MRNet Network waiting to shutdown.\n");
 	Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
     }
 

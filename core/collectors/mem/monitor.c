@@ -319,6 +319,8 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 	return;
     }
 
+    defer_trace(1);
+
     /* Stop sampling */
     mem_stop_tracing(NULL);
 

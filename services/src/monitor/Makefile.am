@@ -16,6 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+pkglibdir = ${libdir}/KrellInstitute/Collectors
 lib_LTLIBRARIES = libcbtf-services-monitor.la
 
 if BUILD_TARGETED
@@ -76,3 +77,11 @@ endif
 
 libcbtf_services_monitor_la_SOURCES = \
 	Monitor.c
+
+
+install-exec-hook:
+	test -d "${pkglibdir}" || mkdir -p "${pkglibdir}"
+	ar x .libs/libcbtf-services-monitor.a libcbtf_services_monitor_la-Monitor.o
+	cp  libcbtf_services_monitor_la-Monitor.o ${pkglibdir}/cbtf_monitor.o
+uninstall-hook:
+	rm -f ${pkglibdir}/cbtf_monitor.o

@@ -28,6 +28,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <To><Input>system_in</Input></To>
   </Input>
 
+  <Input>
+      <Name>freq_in</Name>
+      <To><Input>system_freq_in</Input></To>
+  </Input>
+
+  <Output>
+      <Name>elapsed_time_out</Name>
+      <To><Input>system_elapsed_time_out</Input></To>
+  </Output>
+
   <Output>
       <Name>out</Name>
       <From><Output>system_out</Output></From>
@@ -40,6 +50,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <SearchPath>@@contriblib_location@@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
+      <Plugin>memPlugin.so</Plugin>
+
+      <Component>
+        <Name>EndCircut</Name>
+        <Type>EndCircutLogic</Type>
+      </Component>
+
+      <Component>
+        <Name>StartCircut</Name>
+        <Type>BeginCircutLogic</Type>
+      </Component>
 
       <Component>
         <Name>PacketToString</Name>
@@ -59,21 +80,81 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Input>
 
-      <Input>
-        <Name>system_in</Name>
+      <Connection>
+        <From>
+            <Name>PacketToString</Name>
+            <Output>out2</Output>
+        </From>
         <To>
-          <Name>StringToPacket</Name>
-          <Input>in1</Input>
+            <Name>EndCircut</Name>
+            <Input>MemoryInfoIn</Input>
         </To>
-      </Input>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>EndCircut</Name>
+            <Output>RestartOut</Output>
+        </From>
+        <To>
+            <Name>StartCircut</Name>
+            <Input>RestartIn</Input>
+        </To>
+      </Connection>
 
       <Output>
          <Name>system_out</Name>
          <From>
-             <Name>PacketToString</Name>
-             <Output>out2</Output>
+             <Name>EndCircut</Name>
+             <Output>MemoryInfoOut</Output>
          </From>
       </Output>
+
+      <Output>
+         <Name>system_elapsed_time_out</Name>
+         <From>
+             <Name>EndCircut</Name>
+             <Output>ElapsedTimeOut</Output>
+         </From>
+      </Output>
+
+      <Input>
+        <Name>system_freq_in</Name>
+        <To>
+          <Name>StartCircut</Name>
+          <Input>FrequencyIn</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>system_in</Name>
+        <To>
+          <Name>StartCircut</Name>
+          <Input>FilenameIn</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+            <Name>StartCircut</Name>
+            <Output>FilenameOut</Output>
+        </From>
+        <To>
+            <Name>StringToPacket</Name>
+            <Input>in1</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>StartCircut</Name>
+            <Output>StartTimeOut</Output>
+        </From>
+        <To>
+            <Name>EndCircut</Name>
+            <Input>StartTimeIn</Input>
+        </To>
+      <Connection>
 
       <Output>
          <Name>Frontend_Out</Name>

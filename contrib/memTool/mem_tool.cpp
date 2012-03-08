@@ -127,10 +127,25 @@ int main(int argc,  char *argv[ ])
   Component::Instance input_value_component = boost::reinterpret_pointer_cast<Component>(input_value);
   Component::connect(input_value_component, "value", network, "in");
 
+  boost::shared_ptr<ValueSource<struct timespec> > freq_input_value 
+    = ValueSource<struct timespec>::instantiate();
+  Component::Instance freq_input_component 
+    = boost::reinterpret_pointer_cast<Component>(freq_input_value);
+  Component::connect(freq_input_component, "value", network, "frequency_in");
+
   // create the output
   boost::shared_ptr<ValueSink<std::vector<std::string> > > output_value = ValueSink<std::vector<std::string> >::instantiate();
   Component::Instance output_value_component = boost::reinterpret_pointer_cast<Component>(output_value);
   Component::connect(network, "out", output_value_component, "value");
+
+  boost::shared_ptr<ValueSink<struct timeval> elapsed_time_output_value 
+    = ValueSink<struct timeval>::instantiate();
+  Component::Instance elapsed_time_output_component 
+    = boost::reinterpret_pointer_cast<Component>(elapsed_time_output_value);
+  Component::connect(network,
+        "elapsed_time_out",
+        elapsed_time_output_component,
+        "value");
 
   // start mrnet network
   *topology_file = default_topology;
@@ -140,10 +155,9 @@ int main(int argc,  char *argv[ ])
 
   std::vector<std::string> output;
   // get the output from each backend
-  for(int numrec = 0; numrec < numBE; numrec++)
-  {
     // wait for output
     output = *output_value;
+    while(!output.empty()) {
 
     // print each line in the output vector
     for(std::vector<std::string>::const_iterator i = output.begin(); 
@@ -152,8 +166,8 @@ int main(int argc,  char *argv[ ])
       std::cout << *i << std::endl;
     }
     std::cout << "----------------------" << std::endl;
-  } // end for numBE
-
+    output = *output_value;
+    }
   return 0;
 }
 

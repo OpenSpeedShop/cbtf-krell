@@ -6,10 +6,15 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <time.h>
+#include <sys/time.h>
+#include <cmath>
 
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
+
+typedef struct timeval timevalue;
 
 using namespace KrellInstitute::CBTF;
 
@@ -38,6 +43,7 @@ public Component
                 "in", boost::bind(&memPlugin::inHandler, this, _1)
                 );
         declareOutput<std::vector<std::string> >("out");
+        declareOutput<bool>("TermOut");
     }
 
         /** Handler for the "in" input.*/
@@ -171,11 +177,13 @@ private:
             "in", boost::bind(&getPID::inHandler, this, _1)
             );
     declareOutput<std::vector<std::string> >("out");
+    declareOutput<bool> ("TermOut");
 }
 
     /** Handler for the "in" input.*/
     void inHandler(const std::string& in)
     { 
+        bool terminate;
         char buffer[100];
         //memset(&buffer,0,sizeof(buffer));
         FILE *p = NULL;
@@ -209,6 +217,12 @@ private:
         }
 
         emitOutput<std::vector <std::string> >("out", output ); 
+        if(output.size() == 0) {
+            terminate = true;
+        } else {
+            terminate = false;
+        }
+        emitOutput<bool>("TermOut", terminate);
     }
 }; // end class getPID
 
@@ -230,31 +244,35 @@ public Component {
         /** Default constructor. */
         BeginCircutLogic() :
             Component(Type(typeid(BeginCircutLogic)), Version(1, 0, 0)) {
+                frequency.tv_sec = 0;
+                frequency.tv_nsec = 0;
+                filename = "";
                 declareInput<std::string>(
                         "FilenameIn",
                         boost::bind(&BeginCircutLogic::inFilenameHandler,
                                 this,
                                 _1)
                         );
-                declareInput<long>(
+                declareInput<struct timespec>(
                         "FrequencyIn",
                         boost::bind(&BeginCircutLogic::inFrequencyHandler,
                                 this,
                                 _1)
                         );
-                delcareInput<bool>(
+                declareInput<bool>(
                         "RestartIn",
                         boost::bind(&BeginCircutLogic::inRestartHandler,
                                 this,
                                 _1)
                         );
                 declareOutput<std::string>("FilenameOut");
-                declareOutput<struct timeval>("StartTimeOut");
+                declareOutput<timevalue>("StartTimeOut");
             }
 
         void inFilenameHandler(const std::string & fn) {
             filename = fn;
-            start_circut();
+            if (frequency.tv_sec != 0 || frequency.tv_nsec !=0)
+                start_circut();
         }
 
         void inRestartHandler(const bool & restart) {
@@ -262,18 +280,17 @@ public Component {
                 start_circut();
         }
 
-        void inFrequencyHandler(const long & freq) {
-            double seconds = floor(freq);
-            double nanoseconds = (freq - seconds)*1000000000.0;
-
-            frequency.tv_sec = (time_t) seconds;
-            frequency.tv_nsec = (long) nanoseconds;
+        void inFrequencyHandler(const struct timespec & freq) {
+            frequency.tv_sec = freq.tv_sec;
+            frequency.tv_nsec = freq.tv_nsec;
+            if (filename != "")
+                start_circut();
         }
 
         void start_circut() {
-            struct timeval start_time;
+            timevalue start_time;
             gettimeofday(&start_time, NULL);
-            emitOutput<struct timeval>("StartTimeOut", start_time);
+            emitOutput<timevalue>("StartTimeOut", start_time);
             nanosleep(&frequency, NULL);
             emitOutput<std::string>("FilenameOut", filename);
         }
@@ -291,10 +308,12 @@ public Component {
         }
 
     private:
-        struct timeval start_time;
+        timevalue start_time;
+        bool terminate;
         EndCircutLogic() :
             Component(Type(typeid(EndCircutLogic)), Version(1, 0, 0)) {
-                declareInput<struct tivmeval>(
+                terminate = false;
+                declareInput<timevalue>(
                         "StartTimeIn",
                         boost::bind(&EndCircutLogic::inStartTimeHandler,
                                 this,
@@ -304,30 +323,53 @@ public Component {
                         "MemoryInfoIn",
                         boost::bind(&EndCircutLogic::inMemoryInfo, this, _1)
                         );
+                declareInput<bool> (
+                        "TermIn",
+                        boost::bind(&EndCircutLogic::inTerm, this, _1)
+                        );
                 declareOutput<std::vector <std::string> >("MemoryInfoOut");
-                declareOutput<struct timeval>("ElapsedTimeOut");
+                declareOutput<timevalue>("ElapsedTimeOut");
                 declareOutput<bool>("RestartOut");
+                declareOutput<bool>("TermOut");
             }
 
-        void inStartTimeHandler(const struct timeval & start) {
+        void inStartTimeHandler(const timevalue & start) {
             start_time.tv_sec = start.tv_sec;
             start_time.tv_usec = start.tv_usec;
         }
 
         void inMemoryInfo(const std::vector<std::string> & mem_info) {
-            struct timeval elapsed_time = getElapsedTime();
-            emitOutput<struct timeval>("ElapsedTimeOut", elapsed_time);
-            if (!mem_info.empty())
+            timevalue elapsed_time = getElapsedTime();
+            emitOutput<timevalue>("ElapsedTimeOut", elapsed_time);
+            if (!terminate)
                 emitOutput<bool>("RestartOut", true);
             emitOutput<std::vector <std::string> >("MemoryInfoOut", mem_info);
         }
 
-        struct timeval getElapsedTime() {
-            struct timeval elapsed_time;
-            struct timeval end_time;
+        void inTerm(const bool & term_signal) {
+            terminate = term_signal;
+            emitOutput<bool>("TermOut", terminate);
+        }
+
+        timevalue getElapsedTime() {
+            long sec;
+            long usec;
+            timevalue elapsed_time;
+            timevalue end_time;
             gettimeofday(&end_time, NULL);
-            elapsed_time.tv_sec = end_time.tv_sec - start_time.tv_sec;
-            elapsed_time.tv_usec = end_time.tv_usec - start_time.tv_usec;
+            sec = end_time.tv_sec - start_time.tv_sec;
+            if ((usec = end_time.tv_usec - start_time.tv_usec) < 0) {
+                usec += 1000000;
+                sec -= 1;
+                if(sec < 0) {
+                    std::cerr << "Elapsed time is negative." << std::endl;
+                    sec = 0;
+                    usec = 0;
+                }
+            }
+            elapsed_time.tv_sec = sec;
+            elapsed_time.tv_usec = usec;
+            return elapsed_time;
         }
 };
 

@@ -221,8 +221,6 @@ void connect_to_mrnet()
     }
 #endif
 
-    //send_process_thread_message();
-    //tls->sent_process_thread_info = 1;
 }
 
 void send_thread_state_changed_message()
@@ -285,6 +283,7 @@ static void send_samples ()
 
     Assert(tls != NULL);
 
+    tls->header.id = strdup("usertime");
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
@@ -292,9 +291,9 @@ static void send_samples ()
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "cbtf_timer_service_stop_sampling:\n");
-	    fprintf(stderr, "time_end(%#lu) addr range[%#lx, %#lx] bt_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_end(%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
 		tls->header.time_end,tls->header.addr_begin,
-		tls->header.addr_end,tls->data.bt.bt_len,
+		tls->header.addr_end,tls->data.stacktraces.stacktraces_len,
 		tls->data.count.count_len);
 	}
 #endif
@@ -309,15 +308,10 @@ static void send_samples ()
 	        send_process_thread_message();
 	    }
 	    tls->sent_process_thread_info = 1;
-#if 0
+
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_usertime_data,
 				 &tls->data);
-#else
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_USERTIME_DATA,
-                           (xdrproc_t) xdr_CBTF_usertime_data,
-			   &tls->data);
-#endif
 	}
 #endif
 
@@ -332,7 +326,7 @@ static void send_samples ()
     tls->header.addr_end = 0;
 
     /* Re-initialize the actual data blob */
-    tls->data.bt.bt_len = 0;
+    tls->data.stacktraces.stacktraces_len = 0;
     tls->data.count.count_len = 0;
 
     /* Re-initialize the sampling buffer */
@@ -416,7 +410,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     }
 
     /* sample buffer has no room for these stack frames.*/
-    int buflen = tls->data.bt.bt_len + framecount;
+    int buflen = tls->data.stacktraces.stacktraces_len + framecount;
     if ( buflen > CBTF_ST_BufferSize) {
 	/* send the current sample buffer. (will init a new buffer) */
 	send_samples(tls);
@@ -426,7 +420,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     for (i = 0; i < framecount ; i++)
     {
 	/* always add address to buffer bt */
-	tls->buffer.bt[tls->data.bt.bt_len] = framebuf[i];
+	tls->buffer.bt[tls->data.stacktraces.stacktraces_len] = framebuf[i];
 
 	/* top of stack indicated by a positive count. */
 	/* all other elements are 0 */
@@ -442,7 +436,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 	if (framebuf[i] > tls->buffer.addr_end ) {
 	    tls->buffer.addr_end = framebuf[i];
 	}
-	tls->data.bt.bt_len++;
+	tls->data.stacktraces.stacktraces_len++;
 	tls->data.count.count_len++;
     }
 }
@@ -500,7 +494,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     /* Initialize the actual data blob */
     tls->data.interval = 
 	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);
-    tls->data.bt.bt_val = tls->buffer.bt;
+    tls->data.stacktraces.stacktraces_val = tls->buffer.bt;
     tls->data.count.count_val = tls->buffer.count;
 
     /* Initialize the sampling buffer */
@@ -583,7 +577,7 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
 
     /* Are there any unsent samples? */
-    if(tls->data.bt.bt_len > 0) {
+    if(tls->data.stacktraces.stacktraces_len > 0) {
 	/* Send these samples */
 	send_samples();
     }

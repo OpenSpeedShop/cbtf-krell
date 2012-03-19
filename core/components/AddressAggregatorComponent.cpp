@@ -45,6 +45,91 @@
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
+
+namespace {
+
+    void aggregatePCData(const std::string id, const Blob &blob,
+			 AddressBuffer &buf, uint64_t &interval)
+    {
+	uint64_t *pc_val;
+	u_int pc_len;
+	uint8_t *count_val;
+
+	if (id == "pcsamp") {
+            CBTF_pcsamp_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
+	    pc_val = data.pc.pc_val;
+	    count_val = data.count.count_val;
+	    pc_len = data.pc.pc_len;
+	    interval = data.interval;
+	} else if (id == "hwc") {
+            CBTF_hwc_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
+	    pc_val = data.pc.pc_val;
+	    count_val = data.count.count_val;
+	    pc_len = data.pc.pc_len;
+	    interval = data.interval;
+	} else {
+	    return;
+	}
+
+	PCData pcdata;
+        pcdata.aggregateAddressCounts(pc_len, pc_val, count_val, buf);
+    }
+
+    void aggregateSTSampleData(const std::string id, const Blob &blob,
+			 AddressBuffer &buf, uint64_t &interval)
+    {
+	uint64_t *stacktraces_val;
+	u_int stacktraces_len;
+	uint8_t *count_val;
+
+	if (id == "usertime") {
+            CBTF_usertime_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    count_val = data.count.count_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    interval = data.interval;
+	} else {
+	    return;
+	}
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(stacktraces_len,
+				stacktraces_val, count_val, buf);
+    }
+
+    void aggregateSTTraceData(const std::string id, const Blob &blob,
+			 AddressBuffer &buf)
+    {
+	uint64_t *stacktraces_val;
+	u_int stacktraces_len;
+
+	if (id == "io") {
+            CBTF_io_trace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
+	} else if (id == "mem") {
+            CBTF_mem_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
+	} else {
+	    return;
+	}
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(stacktraces_len, stacktraces_val, buf);
+    }
+}
+
 /**
  * Component that aggregates address values and their counts.
  */
@@ -104,9 +189,6 @@ private:
     {
         CBTF_pcsamp_data *data = in.get();
 
-	//interval = data->interval;
-
-        //std::cerr << "AddressAggregator::pcsampHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -122,7 +204,7 @@ private:
     {
         CBTF_hwc_data *data = in.get();
 
-        //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
+        std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -139,8 +221,8 @@ private:
         CBTF_usertime_data *data = in.get();
 
 	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->bt.bt_len,
-				data->bt.bt_val,
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
 				data->count.count_val,
 				abuffer);
 
@@ -185,37 +267,35 @@ private:
 	    abort();
 	}
 
-#if 0
-// FIXME: can not decode both xdr messages.
-// Only the first xdr is decoded properly (CBTF_DataHeader).
-// Likely need to reposition the xdr stream...
-
-	unsigned begin_pos;
+	// decode this blobs data header
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
         unsigned header_size = myblob.getXDRDecoding(
             reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
             );
 
-// FIXME:
-// this currently is hard coded to pcsamp data.
-// the data header has an int for experiment type which in OSS
-// is used to match the expId.  Maybe in cbtf this can be an
-// enum to define each type of data type and then used to
-// choose the appropro data xdrproc....
-//
-        CBTF_pcsamp_data data;
-        memset(&data, 0, sizeof(data));
-        myblob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
+	std::string collectorID(header.id);
+	std::cerr << "Aggregating addresses for "
+	    << collectorID << " data from "
+	    << header.host << ":" << header.pid << std::endl;
 
-	interval = data.interval;
+	// find the actual data blob after the header
+	unsigned data_size = myblob.getSize() - header_size;
+	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
+	Blob dblob(data_size,data_ptr);
 
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(data.pc.pc_len,
-                                data.pc.pc_val,
-                                data.count.count_val,
-                                abuffer);
-#endif
+	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
+            aggregatePCData(collectorID, dblob, abuffer, interval);
+	    emitOutput<uint64_t>("interval",  interval);
+	} else if (collectorID == "usertime" || collectorID == "hwctime") {
+            aggregateSTSampleData(collectorID, dblob, abuffer, interval);
+	    emitOutput<uint64_t>("interval",  interval);
+        } else if (collectorID == "io" || collectorID == "mem") {
+            aggregateSTTraceData(collectorID, dblob, abuffer);
+	} else {
+	    std::cerr << "Unknown collector data handled!" << std::endl;
+	}
+
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
@@ -228,37 +308,7 @@ private:
     /** Handler for the "in3" input.*/
     void blobHandler(const Blob& in)
     {
-
-#if 0
-// FIXME: can not decode both xdr messages.
-// Only the first xdr is decoded properly (CBTF_DataHeader).
-//
-        CBTF_DataHeader header;
-        memset(&header, 0, sizeof(header));
-        unsigned header_size = in.getXDRDecoding(
-            reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
-            );
-
-// FIXME:
-// this currently is hard coded to pcsamp data.
-// the data header has an int for experiment type which in OSS
-// is used to match the expId.  Maybe in cbtf this can be an
-// enum to define each type of data type and then used to
-// choose the appropro data xdrproc....
-//
-        CBTF_pcsamp_data data;
-        memset(&data, 0, sizeof(data));
-        in.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
-
-	interval = data.interval;
-
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(data.pc.pc_len,
-                                data.pc.pc_val,
-                                data.count.count_val,
-                                abuffer);
-#endif
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        //emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     void intervalHandler(const uint64_t in)

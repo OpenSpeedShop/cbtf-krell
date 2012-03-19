@@ -49,6 +49,7 @@ struct CBTF_DataHeader
 
     int experiment;  /**< Identifier of experiment to contain the data. */
     int collector;   /**< Identifier of collector gathering data. */
+    string id<>;     /**< Name identifier of collector gathering data. */
 
     char host[HOST_NAME_MAX];  /**< Identifier of gathered data's host. */
     int64_t pid;               /**< Identifier of gathered data's process. */

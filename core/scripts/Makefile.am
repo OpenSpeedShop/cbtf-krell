@@ -20,12 +20,12 @@ dist_bin_SCRIPTS =
 BUILT_FILES =
 
 if !BUILD_RUNTIME
-dist_bin_SCRIPTS += cbtfrun
-BUILT_FILES += cbtfrun
+dist_bin_SCRIPTS += cbtfrun cbtflink
+BUILT_FILES += cbtfrun cbtflink
 endif
 if HAVE_TARGET_SHARED
-dist_bin_SCRIPTS += cbtfrun
-BUILT_FILES += cbtfrun
+dist_bin_SCRIPTS += cbtfrun cbtflink
+BUILT_FILES += cbtfrun cbtflink
 endif
 
 CLEANFILES = $(BUILT_FILES)
@@ -69,4 +69,17 @@ endif
 			$(srcdir)/cbtfrun.in > cbtfrun
 	@chmod 755 cbtfrun
 
-EXTRA_DIST = cbtfrun.in
+cbtflink: cbtflink.in
+	@rm -f cbtflink
+	@sed \
+		-e 's,@@default_mpi_impl@@,$(DEFAULT_MPI_IMPL),' \
+		-e 's,@@cbtfinstalldir@@,$(prefix),' \
+		-e 's,@@libmonitordir@@,$(monitor_dir),' \
+		-e 's,@@libunwinddir@@,$(unwind_dir),' \
+		-e 's,@@cbtftargetos@@,$(TARGET_OS),' \
+		-e 's,@@papidir@@,$(papi_dir),' \
+			$(srcdir)/cbtflink.in > cbtflink
+	@chmod 755 cbtflink
+
+
+EXTRA_DIST = cbtfrun.in cbtflink.in

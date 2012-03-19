@@ -285,6 +285,7 @@ static void send_samples ()
 
     Assert(tls != NULL);
 
+    tls->header.id = strdup("hwc");
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
@@ -311,15 +312,10 @@ static void send_samples ()
 	        send_process_thread_message();
 	    }
 	    tls->sent_process_thread_info = 1;
-#if 0
+
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_hwc_data,
 				 &tls->data);
-#else
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_HWC_DATA,
-                           (xdrproc_t) xdr_CBTF_hwc_data,
-			   &tls->data);
-#endif
 	}
 #endif
 

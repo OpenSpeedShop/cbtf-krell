@@ -128,11 +128,11 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_FILESYSTEM], [
     AC_MSG_CHECKING([for Targetted Boost Filesystem support])
 
     found_target_boost_filesystem=0
-    if test -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem.so -o -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem.a; then
+    if test -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem.so -o -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem.a -o -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem-mt.so -o -f $target_boost_filesystem_dir/$abi_libdir/libboost_filesystem-mt.a; then
        found_target_boost_filesystem=1
        TARGET_BOOST_FILESYSTEM_LDFLAGS="-L$target_boost_filesystem_dir/$abi_libdir"
        TARGET_BOOST_FILESYSTEM_LIB="$target_boost_filesystem_dir/$abi_libdir"
-    elif test -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem.so -o -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem.a; then
+    elif test -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem.so -o -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem.a -o -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem-mt.so -o -f $target_boost_filesystem_dir/$alt_abi_libdir/libboost_filesystem-mt.a; then
        found_target_boost_filesystem=1
        TARGET_BOOST_FILESYSTEM_LDFLAGS="-L$target_boost_filesystem_dir/$alt_abi_libdir"
        TARGET_BOOST_FILESYSTEM_LIB="$target_boost_filesystem_dir/$abi_libdir"

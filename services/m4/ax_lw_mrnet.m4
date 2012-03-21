@@ -81,7 +81,14 @@ AC_DEFUN([AX_TARGET_LW_MRNET], [
                                [MRNet installation @<:@/opt@:>@]),
                 target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
 
-    TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -Dos_linux"
+    if test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir -Dos_linux"
+    elif test -f $target_mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$alt_abi_libdir -Dos_linux"
+    else
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -Dos_linux"
+    fi
+
     TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
     TARGET_MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lpthread -ldl"

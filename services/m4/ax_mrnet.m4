@@ -116,7 +116,13 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
       AC_MSG_RESULT(yes)
       AM_CONDITIONAL(HAVE_TARGET_MRNET, true)
       AC_DEFINE(HAVE_TARGET_MRNET, 1, [Define to 1 if you have a target version of MRNET.])
-      TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -DUNW_LOCAL_ONLY"
+      if test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir -Dos_linux"
+      elif test -f $target_mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$alt_abi_libdir -Dos_linux"
+      else
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -Dos_linux"
+      fi
       TARGET_MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
       TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lpthread -ldl"
       TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lalpslli -lalpsutil"

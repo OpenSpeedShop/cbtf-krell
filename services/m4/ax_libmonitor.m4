@@ -84,10 +84,10 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
     AC_MSG_CHECKING([for Targetted libmonitor support])
 
     found_target_libmonitor=0
-    if test -f $target_libmonitor_dir/$abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$abi_libdir/libmonitor.a ; then
+    if test -f $target_libmonitor_dir/$abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$abi_libdir/libmonitor_wrap.a ; then
        found_target_libmonitor=1
        TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$abi_libdir"
-    elif test -f  $target_libmonitor_dir/$alt_abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$alt_abi_libdir/libmonitor.a ; then
+    elif test -f  $target_libmonitor_dir/$alt_abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$alt_abi_libdir/libmonitor_wrap.a ; then
        found_target_libmonitor=1
        TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$alt_abi_libdir"
     fi

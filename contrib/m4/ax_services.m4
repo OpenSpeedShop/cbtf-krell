@@ -139,7 +139,7 @@ AC_DEFUN([AX_TARGET_CBTF_SERVICES], [
 
     AC_MSG_CHECKING([for Targeted CBTF services library and headers])
 
-    if test -f $target_services_dir/$abi_libdir/libcbtf-services-common.a; then
+    if [ test -f $target_services_dir/$abi_libdir/libcbtf-services-common.a ]; then
         AC_MSG_RESULT(yes)
     else
         TARGET_CBTF_SERVICES_CPPFLAGS=""

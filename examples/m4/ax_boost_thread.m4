@@ -160,11 +160,11 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_THREAD], [
     AC_MSG_CHECKING([for Targetted Boost Thread support])
 
     found_target_boost_thread=0
-    if test -f $target_boost_thread_dir/$abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread.a; then
+    if test -f $target_boost_thread_dir/$abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread.a -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread-mt.so -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread-mt.a; then
        found_target_boost_thread=1
        TARGET_BOOST_THREAD_LDFLAGS="-L$target_boost_thread_dir/$abi_libdir"
        TARGET_BOOST_THREAD_LIB="$target_boost_thread_dir/$abi_libdir"
-    elif test -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.a; then
+    elif test -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.a -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread-mt.so -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread-mt.a; then
        found_target_boost_thread=1
        TARGET_BOOST_THREAD_LDFLAGS="-L$target_boost_thread_dir/$alt_abi_libdir"
        TARGET_BOOST_THREAD_LIB="$target_boost_thread_dir/$abi_libdir"

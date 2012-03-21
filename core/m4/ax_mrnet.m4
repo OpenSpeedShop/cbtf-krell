@@ -97,11 +97,11 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
     if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
-       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"
     elif test -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$alt_abi_libdir"
-       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"
     fi
 
     if test $found_target_mrnet == 0 && test "$target_mrnet_dir" == "/zzz" ; then

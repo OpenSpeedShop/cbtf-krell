@@ -24,7 +24,13 @@ AC_DEFUN([AX_MRNET], [
                                [MRNet installation @<:@/usr@:>@]),
                 mrnet_dir=$withval, mrnet_dir="/usr")
 
-    MRNET_CPPFLAGS="-I$mrnet_dir/include -Dos_linux"
+    if test -f $mrnet_dir/$abi_libdir/mrnet_config.h ; then
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir -Dos_linux"
+    elif test -f $mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir -Dos_linux"
+    else
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -Dos_linux"
+    fi
     MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
     MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
     MRNET_LIBS="$MRNET_LIBS -lpthread -ldl"
@@ -97,11 +103,11 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
     if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
-       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"
     elif test -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$alt_abi_libdir"
-       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps"
+       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"
     fi
 
     if test $found_target_mrnet == 0 && test "$target_mrnet_dir" == "/zzz" ; then

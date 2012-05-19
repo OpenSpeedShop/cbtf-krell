@@ -236,6 +236,11 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
 void CBTF_MRNet_Send(const int tag,
                  const xdrproc_t xdrproc, const void* data)
 {
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr,"CBTF_MRNet_Send: sends message with tag %d\n",tag);
+    }
+#endif
     unsigned size,dm_size;
     char* dm_contents = NULL;
 
@@ -243,6 +248,7 @@ void CBTF_MRNet_Send(const int tag,
         char* buffer = alloca(size);
         XDR xdrs;
         xdrmem_create(&xdrs, buffer, size, XDR_ENCODE);
+
 
         if ((*xdrproc)(&xdrs, (void*)data) == TRUE) {
             dm_size = xdr_getpos(&xdrs);

@@ -58,6 +58,7 @@
 #include "monitor.h"
 
 #include "KrellInstitute/Services/Monitor.h"
+#include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
 
 extern void cbtf_offline_start_sampling(const char* arguments);

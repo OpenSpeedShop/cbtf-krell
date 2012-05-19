@@ -35,6 +35,7 @@
  * CBTF_OBJBufferSize is exceeded and start a new buffer.
  */
 #define CBTF_OBJBufferSize (8*1024)
+#define CBTF_MAXLINKEDOBJECTS 512
 
 extern void cbtf_offline_start_sampling(const char* arguments);
 extern void cbtf_offline_stop_sampling(const char* arguments, const int finished);

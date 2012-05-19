@@ -35,6 +35,8 @@ AC_DEFUN([AX_LW_MRNET], [
     MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
     MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     MRNET_LW_LIBS="$MRNET_LW_LIBS -lpthread -ldl"
+    MRNET_LWR_LIBS="-Wl,--whole-archive -lmrnet_lightweight_r -lxplat_lightweight_r -Wl,--no-whole-archive"
+    MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lpthread -ldl"
     MRNET_DIR="$mrnet_dir"
 
     AC_REQUIRE_CPP
@@ -69,6 +71,7 @@ AC_DEFUN([AX_LW_MRNET], [
     AC_SUBST(MRNET_CPPFLAGS)
     AC_SUBST(MRNET_LDFLAGS)
     AC_SUBST(MRNET_LW_LIBS)
+    AC_SUBST(MRNET_LWR_LIBS)
     AC_SUBST(MRNET_DIR)
 
     if test $foundMRNET == 1; then
@@ -99,6 +102,8 @@ AC_DEFUN([AX_TARGET_LW_MRNET], [
     TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
     TARGET_MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lpthread -ldl"
+    TARGET_MRNET_LWR_LIBS="-Wl,--whole-archive -lmrnet_lightweight_r -lxplat_lightweight_r -Wl,--no-whole-archive"
+    TARGET_MRNET_LWR_LIBS="$TARGET_MRNET_LWR_LIBS -lpthread -ldl"
     TARGET_MRNET_DIR="$target_mrnet_dir"
 
     AC_REQUIRE_CPP
@@ -133,6 +138,7 @@ AC_DEFUN([AX_TARGET_LW_MRNET], [
     AC_SUBST(TARGET_MRNET_CPPFLAGS)
     AC_SUBST(TARGET_MRNET_LDFLAGS)
     AC_SUBST(TARGET_MRNET_LW_LIBS)
+    AC_SUBST(TARGET_MRNET_LWR_LIBS)
     AC_SUBST(TARGET_MRNET_DIR)
 
     if test $foundMRNET == 1; then

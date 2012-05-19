@@ -22,6 +22,9 @@ libunwind="${libunwind_libdir}/libunwind.so"
 libmrnet_prefix=@@libmrnetdir@@
 libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
+libmrnet_r="${libmrnet_libdir}/libmrnet_lightweight_r.so"
+libxplat="${libmrnet_libdir}/libxplat_lightweight.so"
+libxplat_r="${libmrnet_libdir}/libxplat_lightweight_r.so"
 
 
 cbtf_prefix=@@cbtfinstalldir@@

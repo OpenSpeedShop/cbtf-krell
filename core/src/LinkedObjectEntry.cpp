@@ -61,8 +61,6 @@ Path LinkedObjectEntry::getPath() const
  */
 bool LinkedObjectEntry::isExecutable() const
 {
-    bool is_executable = false;
-
     // Return the flag to the caller
     return is_executable;
 }

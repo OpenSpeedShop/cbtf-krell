@@ -82,6 +82,7 @@ private:
             "in", boost::bind(&ThreadsStateChanged::inHandler, this, _1)
             );
 	declareOutput<ThreadState>("out");
+	declareOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >("xdr_out");
 	declareOutput<bool>("out1");
     }
 
@@ -108,6 +109,7 @@ private:
 
 	    tstatevec.push_back(std::make_pair(tname, (ThreadState) message->state));
 	    emitOutput<ThreadState>("out", (ThreadState) message->state);
+	    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >("xdr_out", in);
 
 	    if (tvec.size() == tstatevec.size()) {
 		std::cerr << "\nAll Threads are finished.\n" << std::endl;
@@ -149,6 +151,7 @@ private:
             "in", boost::bind(&AttachedToThreads::inHandler, this, _1)
             );
 	declareOutput<ThreadNameVec>("out");
+	declareOutput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >("xdr_out");
     }
 
     /** Handlers for the inputs.*/
@@ -175,6 +178,7 @@ private:
 	}
 
 	emitOutput<ThreadNameVec>("out", tvec);
+	emitOutput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >("xdr_out", in);
 
     }
 
@@ -210,6 +214,7 @@ private:
             );
 
 	declareOutput<ThreadName>("out");
+	declareOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >("xdr_out");
     }
 
     /** Handlers for the inputs.*/
@@ -230,6 +235,7 @@ private:
 #endif
 
 	emitOutput<ThreadName>("out", created_threadname);
+	emitOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >("xdr_out", in);
     }
 
 }; // class CreatedProcess

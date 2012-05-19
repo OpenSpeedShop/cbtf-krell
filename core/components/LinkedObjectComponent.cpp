@@ -58,8 +58,7 @@ using namespace KrellInstitute::Core;
 namespace { 
 
 
-    typedef std::vector<LinkedObjectEntry > LinkedObjectEntryVec;
-    LinkedObjectEntryVec linkedobjectvec;
+    int handled_threads = 0;
 
 #ifndef NDEBUG
 /** Flag indicating if debuging for LinkedObjects is enabled. */
@@ -92,15 +91,88 @@ private:
     LinkedObject() :
         Component(Type(typeid(LinkedObject)), Version(0, 0, 1))
     {
+        declareInput<ThreadNameVec>(
+            "threadnames", boost::bind(&LinkedObject::threadnamesHandler, this, _1)
+            );
         declareInput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
             "loaded", boost::bind(&LinkedObject::loadedHandler, this, _1)
             );
+	declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out");
+
         declareInput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
             "unloaded", boost::bind(&LinkedObject::unloadedHandler, this, _1)
             );
+	declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out");
+
+        declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
+            "group", boost::bind(&LinkedObject::groupHandler, this, _1)
+            );
+	declareOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out");
+	declareOutput<LinkedObjectEntryVec>("linkedobjectvec_out");
     }
 
     /** Handlers for the inputs.*/
+    void threadnamesHandler(const ThreadNameVec& in)
+    {
+	threadnames = in;
+	//std::cerr  << "LinkedObject::threadnamesHandler threadnames size is " << threadnames.size() << std::endl;
+    }
+
+
+    void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
+    {
+        CBTF_Protocol_LinkedObjectGroup *message = in.get();
+	ThreadName tname(message->thread);
+
+	LinkedObjectEntryVec linkedobjects;
+	for(int i = 0; i < message->linkedobjects.linkedobjects_len; ++i) {
+	    const CBTF_Protocol_LinkedObject& msg_lo =
+				message->linkedobjects.linkedobjects_val[i];
+	    LinkedObjectEntry entry;
+	    entry.tname = tname;
+	    entry.path = msg_lo.linked_object.path;
+	    entry.addr_begin = msg_lo.range.begin;
+	    entry.addr_end = msg_lo.range.end;
+	    entry.is_executable = msg_lo.is_executable;
+	    entry.time_loaded = msg_lo.time_begin;
+	    entry.time_unloaded = Time::TheEnd();
+	    linkedobjectvec.push_back(entry);
+	}
+
+#ifndef NDEBUG
+	if (is_debug_linkedobject_events_enabled) {
+	    std::cerr  << "LinkedObject::groupHandler thread " << tname.getHost()
+	    	<< ":" << tname.getPid().second
+	    	<< ":" << tname.getPosixThreadId().second
+	    	<< std::endl;
+	    std::cerr  << "LinkedObject::groupHandler linkedobjects size is "
+		<< linkedobjectvec.size() << std::endl;
+	}
+#endif
+
+	// We process threads before linkedobjects. Therefore we know how
+	// many threads to expect to handle for linkedobjectgroup's sent
+	// from the collector.  Once we have them all we should send the
+	// vector of linked objects to the client.
+	handled_threads++;
+	if (handled_threads == threadnames.size() ) {
+
+#ifndef NDEBUG
+	    if (is_debug_linkedobject_events_enabled) {
+	    std::cerr  << "LinkedObject::groupHandler handled "
+		<< threadnames.size() << " pending threads. " << std::endl;
+	    }
+#endif
+	    
+	    emitOutput<LinkedObjectEntryVec>("linkedobjectvec_out",linkedobjectvec);
+	}
+
+	// collector runtimes send this message.  we would rather emit the
+	// linkedobject vector.
+	//emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
+    }
+
+    // Handler for dlopen events.
     void loadedHandler(const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& in)
     {
         CBTF_Protocol_LoadedLinkedObject *message = in.get();
@@ -135,11 +207,21 @@ private:
 	    }
 #endif
 	}
+	emitOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out", in);
     }
 
+    // Handler for dlclose events.
     void unloadedHandler(const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& in)
     {
+	emitOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out", in);
     }
+
+    // vector of linkedobjects with thread info. output when we handle the
+    // number of pending threads.
+    LinkedObjectEntryVec linkedobjectvec;
+
+    // vector of incoming threadnames. For each thread we expect
+    ThreadNameVec threadnames;
 
 }; // class LinkedObject
 

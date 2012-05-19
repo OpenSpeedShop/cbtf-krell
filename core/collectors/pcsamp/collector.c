@@ -37,6 +37,7 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
+#include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
@@ -85,6 +86,9 @@ typedef struct {
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 extern void cbtf_offline_sent_data(int);
+extern void cbtf_send_info();
+//extern void cbtf_send_dsos();
+extern void cbtf_record_dsos();
 #endif
 
 #ifdef USE_EXPLICIT_TLS
@@ -118,6 +122,7 @@ void started_process_thread()
 	return;
 
     CBTF_Protocol_ThreadName origtname;
+    origtname.experiment = 0;
     origtname.host = strdup(tls->tname.host);
     origtname.pid = -1;
     origtname.has_posix_tid = false;
@@ -161,14 +166,29 @@ void send_process_thread_message()
 	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
                            (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
 			   &tls->created_process_message);
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+		fprintf(stderr,
+		    "SEND CBTF_PROTOCOL_TAG_CREATED_PROCESS, for %s:%d rank %d\n",
+		    tls->header.host, tls->header.pid, tls->header.rank);
+	    }
+#endif
 	}
 	tls->process_created = true;
     }
 
-    if (tls->connected_to_mrnet) {
+    if (tls->connected_to_mrnet && ! tls->sent_process_thread_info) {
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
 			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
 			&tls->attached_to_threads_message);
+	tls->sent_process_thread_info = 1;
+#ifndef NDEBUG
+        if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    	     fprintf(stderr,
+		"SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%d:%lu rank %d\n",
+    		tls->header.host, tls->header.pid, tls->header.posix_tid, tls->header.rank);
+        }
+#endif
     }
 }
 
@@ -282,8 +302,9 @@ static void send_samples ()
 
     Assert(tls != NULL);
 
+    //uint64_t current_time = (uint64_t) CBTF_GetTime();
     tls->header.id = strdup("pcsamp");
-    tls->header.time_end = CBTF_GetTime();
+    tls->header.time_end =  CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
     tls->data.pc.pc_len = tls->buffer.length;
@@ -293,9 +314,10 @@ static void send_samples ()
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
         fprintf(stderr,"PCSamp send_samples DATA:\n");
-        fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] pc_len(%d)\n",
-            tls->header.time_end,tls->header.addr_begin,
-	    tls->header.addr_end,tls->data.pc.pc_len);
+        fprintf(stderr,"time_range[%lu, %lu) addr range [%#lx, %#lx] pc_len(%d)\n",
+            (uint64_t)tls->header.time_begin, (uint64_t)tls->header.time_end,
+	    tls->header.addr_begin, tls->header.addr_end,
+	    tls->data.pc.pc_len);
     }
 #endif
 
@@ -438,6 +460,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
  
 #if defined (CBTF_SERVICE_USE_MRNET)
     //CBTF_Protocol_ThreadName tname;
+    tls->tname.experiment = 0;
     tls->tname.host = strdup(local_data_header.host);
     tls->tname.pid = local_data_header.pid;
     tls->tname.has_posix_tid = true;
@@ -445,6 +468,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->tname.rank = local_data_header.rank;
 
     CBTF_Protocol_ThreadName origtname;
+    origtname.experiment = 0;
     origtname.host = strdup(tls->tname.host);
     origtname.pid = -1;
     origtname.has_posix_tid = false;
@@ -475,11 +499,21 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
 #if !defined (CBTF_SERVICE_USE_MRNET_MPI)
     connect_to_mrnet();
+    if (tls->connected_to_mrnet) {
+	if (!tls->sent_process_thread_info) {
+	    send_process_thread_message();
+	}
+	tls->sent_process_thread_info = 1;
+    }
+    cbtf_send_info();
+    //cbtf_send_dsos();
+    cbtf_record_dsos();
 #endif
 
 #endif
 
     /* Begin sampling */
+    //uint64_t curr_time = (uint64_t) CBTF_GetTime();
     tls->header.time_begin = CBTF_GetTime();
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }

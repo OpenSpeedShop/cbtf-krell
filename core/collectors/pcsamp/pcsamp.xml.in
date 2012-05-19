@@ -40,12 +40,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Tag>1126</Tag>
   </Stream>
   <Stream>
-    <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
-    <Tag>10000</Tag>
+    <Name>CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP</Name>
+    <Tag>1128</Tag>
   </Stream>
   <Stream>
-    <Name>CBTF_PROTOCOL_TAG_PCSAMP_DATA</Name>
-    <Tag>10012</Tag>
+    <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+    <Tag>10000</Tag>
   </Stream>
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
@@ -56,9 +56,59 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Name>output</Name>
       <From><Output>output_from_frontend</Output></From>
   </Output>
+
+  <Output>
+      <Name>created_process_xdr_output</Name>
+      <From><Output>created_process_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>attached_to_threads_xdr_output</Name>
+      <From><Output>attached_threads_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>threads_state_changed_xdr_output</Name>
+      <From><Output>threads_state_changed_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>loaded_linkedobject_xdr_output</Name>
+      <From><Output>loaded_linkedobject_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>unloaded_linkedobject_xdr_output</Name>
+      <From><Output>unloaded_linkedobject_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>linkedobjectgroup_xdr_output</Name>
+      <From><Output>linkedobjectgroup_xdr_output_from_frontend</Output></From>
+  </Output>
+
+<!--
+-->
+  <Output>
+      <Name>perfdata_xdr_output</Name>
+      <From><Output>perfdata_xdr_output_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>addressbuffer_output</Name>
+      <From><Output>addressbuffer_from_frontend</Output></From>
+  </Output>
+
+  <Output>
+      <Name>linkedobjectentryvec_output</Name>
+      <From><Output>linkedobjectentryvec_from_frontend</Output></From>
+  </Output>
  
   <Frontend>
 
+<!--
+    <Network xmlns="http://www.krellinst.org/CBTF/Network">
+-->
     <Network>
       <Type>pcsamp_Frontend</Type>
       <Version>1.0.0</Version>
@@ -66,6 +116,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <SearchPath>@@component_location@@</SearchPath>
 
       <Plugin>CollectionPlugin.so</Plugin>
+
+<!--
+-->
+      <Component>
+        <Name>Aggregator</Name>
+        <Type>AddressAggregator</Type>
+      </Component>
 
       <Component>
         <Name>Display</Name>
@@ -75,6 +132,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Component>
         <Name>LinkedObject</Name>
         <Type>LinkedObject</Type>
+      </Component>
+
+      <Component>
+        <Name>ResolveSymbols</Name>
+        <Type>ResolveSymbols</Type>
       </Component>
 
       <Component>
@@ -92,11 +154,21 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <Type>CreatedProcess</Type>
       </Component>
  
+<!--
+-->
+      <Input>
+        <Name>IncomingBlobs</Name>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>pass_cbtf_protocol_blob</Input>
+        </To>
+      </Input>
+
       <Input>
         <Name>IncomingBuffers</Name>
         <To>
-          <Name>Display</Name>
-          <Input>in</Input>
+          <Name>Aggregator</Name>
+          <Input>addressBuffer</Input>
         </To>
       </Input>
 
@@ -113,6 +185,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <To>
           <Name>LinkedObject</Name>
           <Input>loaded</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingLinkedObjectGroup</Name>
+        <To>
+          <Name>LinkedObject</Name>
+          <Input>group</Input>
         </To>
       </Input>
 
@@ -140,12 +220,108 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Input>
 
+      <Connection>
+        <From>
+            <Name>AttachedToThreads</Name>
+            <Output>out</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>threadnames</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>AttachedToThreads</Name>
+            <Output>out</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>threadnames</Input>
+        </To>
+      </Connection>
+
       <Output>
          <Name>output_from_frontend</Name>
          <From>
             <Name>ThreadsStateChanged</Name>
             <Output>out1</Output>
          </From>
+      </Output>
+
+      <Output>
+         <Name>created_process_xdr_output_from_frontend</Name>
+         <From>
+            <Name>CreatedProcess</Name>
+            <Output>xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>attached_threads_xdr_output_from_frontend</Name>
+         <From>
+            <Name>AttachedToThreads</Name>
+            <Output>xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>threads_state_changed_xdr_output_from_frontend</Name>
+         <From>
+            <Name>ThreadsStateChanged</Name>
+            <Output>xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>loaded_linkedobject_xdr_output_from_frontend</Name>
+         <From>
+            <Name>LinkedObject</Name>
+            <Output>loaded_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>unloaded_linkedobject_xdr_output_from_frontend</Name>
+         <From>
+            <Name>LinkedObject</Name>
+            <Output>unloaded_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>linkedobjectgroup_xdr_output_from_frontend</Name>
+         <From>
+            <Name>LinkedObject</Name>
+            <Output>group_xdr_out</Output>
+         </From>
+      </Output>
+
+<!--
+-->
+      <Output>
+        <Name>perfdata_xdr_output_from_frontend</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>datablob_xdr_out</Output>
+        </From>
+      </Output>
+
+      <Output>
+        <Name>addressbuffer_from_frontend</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>Aggregatorout</Output>
+        </From>
+      </Output>
+
+      <Output>
+        <Name>linkedobjectentryvec_from_frontend</Name>
+        <From>
+          <Name>LinkedObject</Name>
+          <Output>linkedobjectvec_out</Output>
+        </From>
       </Output>
 
     </Network>
@@ -163,6 +339,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <To><Input>IncomingLoadedLinkedObject</Input></To>
     </IncomingUpstream>
     <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP</Name>
+      <To><Input>IncomingLinkedObjectGroup</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
       <To><Input>IncomingThreadsStateChanged</Input></To>
     </IncomingUpstream>
@@ -174,14 +354,32 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
       <To><Input>IncomingCreatedProcess</Input></To>
     </IncomingUpstream>
+
+<!--
+-->
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+      <To><Input>IncomingBlobs</Input></To>
+    </IncomingUpstream>
  
   </Frontend>
 
+<!--
+     This filter is intended to run on the Leaf CP nodes only.
+-->
   <Filter>
  
-    <Depth><AllOther/></Depth>
+    <Depth>
+	<LeafRelative>
+	    <Offset>1</Offset>
+	</LeafRelative>
+    </Depth>
 
-    <Network>
+    <FilterMode>
+	<WaitForAll/>
+    </FilterMode>
+
+    <Network xmlns="http://www.krellinst.org/CBTF/Network">
       <Type>pcsamp_Filter</Type>
       <Version>1.0.0</Version>
 
@@ -193,7 +391,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <Name>Aggregator</Name>
         <Type>AddressAggregator</Type>
       </Component>
- 
+
       <Input>
         <Name>IncomingBlobs</Name>
         <To>
@@ -202,14 +400,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Input>
 
-      <Input>
-        <Name>IncomingPCSampData</Name>
-        <To>
-          <Name>Aggregator</Name>
-          <Input>pcsamp</Input>
-        </To>
-      </Input>
- 
       <Input>
         <Name>IncomingBuffers</Name>
         <To>
@@ -233,17 +423,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>interval</Output>
         </From>
       </Output>
+
+<!--
+-->
+      <Output>
+        <Name>OutgoingBlobs</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>datablob_xdr_out</Output>
+        </From>
+      </Output>
  
     </Network>    
 
+<!--
+-->
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
       <To><Input>IncomingBlobs</Input></To>
-    </IncomingUpstream>
-
-    <IncomingUpstream>
-      <Name>CBTF_PROTOCOL_TAG_PCSAMP_DATA</Name>
-      <To><Input>IncomingPCSampData</Input></To>
     </IncomingUpstream>
 
     <IncomingUpstream>
@@ -259,6 +456,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <OutgoingUpstream>
       <Name>Interval</Name>
       <From><Output>OutgoingInterval</Output></From>
+    </OutgoingUpstream>
+
+<!--
+-->
+    <OutgoingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+      <From><Output>OutgoingBlobs</Output></From>
     </OutgoingUpstream>
 
   </Filter>

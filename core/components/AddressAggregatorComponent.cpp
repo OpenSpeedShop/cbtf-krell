@@ -33,7 +33,9 @@
 #include "KrellInstitute/Core/AddressRange.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
 #include "KrellInstitute/Core/PCData.hpp"
+#include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/StacktraceData.hpp"
+#include "KrellInstitute/Core/ThreadName.hpp"
 #include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Address.h"
@@ -47,6 +49,8 @@ using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
 
 namespace {
+
+    int handled_threads = 0;
 
     void aggregatePCData(const std::string id, const Blob &blob,
 			 AddressBuffer &buf, uint64_t &interval)
@@ -128,6 +132,7 @@ namespace {
 	StacktraceData stdata;
 	stdata.aggregateAddressCounts(stacktraces_len, stacktraces_val, buf);
     }
+
 }
 
 /**
@@ -165,6 +170,12 @@ private:
                 &AddressAggregator::cbtf_protocol_blob_Handler, this, _1
                 )
             );
+        declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
+            "pass_cbtf_protocol_blob",
+            boost::bind(
+                &AddressAggregator::pass_cbtf_protocol_blob_Handler, this, _1
+                )
+            );
         declareInput<boost::shared_ptr<CBTF_pcsamp_data> >(
             "pcsamp", boost::bind(&AddressAggregator::pcsampHandler, this, _1)
             );
@@ -180,9 +191,21 @@ private:
         declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
             "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
             );
+	declareInput<ThreadNameVec>(
+            "threadnames", boost::bind(&AddressAggregator::threadnamesHandler, this, _1)
+            );
         declareOutput<AddressBuffer>("Aggregatorout");
 	declareOutput<uint64_t>("interval");
+	declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out");
     }
+
+    /** Handlers for the inputs.*/
+    void threadnamesHandler(const ThreadNameVec& in)
+    {
+        threadnames = in;
+        //std::cerr  << "AddressAggregator::threadnamesHandler threadnames size is " << threadnames.size() << std::endl;
+    }
+ 
 
     /** Handler for the "in1" input.*/
     void pcsampHandler(const boost::shared_ptr<CBTF_pcsamp_data>& in)
@@ -262,6 +285,8 @@ private:
         CBTF_Protocol_Blob *B = in.get();
 	Blob myblob(B->data.data_len, B->data.data_val);
 
+	//std::cerr << "ENTER AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
+
 	if (in->data.data_len == 0 ) {
 	    std::cerr << "EXIT AddressAggregator::cbtf_protocol_blob_Handler: data length 0" << std::endl;
 	    abort();
@@ -275,9 +300,12 @@ private:
             );
 
 	std::string collectorID(header.id);
+
+#if 0
 	std::cerr << "Aggregating addresses for "
 	    << collectorID << " data from "
 	    << header.host << ":" << header.pid << std::endl;
+#endif
 
 	// find the actual data blob after the header
 	unsigned data_size = myblob.getSize() - header_size;
@@ -296,19 +324,80 @@ private:
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
 
+	// Too bad the waitforall sync filter can't control the
+	// emit of the AddressBuffer based on the number of
+	// children below.
+	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT Addressbuffer" << std::endl;
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+
+	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
+    }
+
+    /** Pass Through Handler for the "CBTF_Protocol_Blob" input.*/
+    void pass_cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
+    {
+	// Would be nice to group these on their way up the tree.
+	//std::cerr << "AddressAggregator::pass_cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
     }
 
     /** Handler for the "in2" input.*/
     void addressBufferHandler(const AddressBuffer& in)
     {
-        emitOutput<AddressBuffer>("Aggregatorout",  in /*abuffer*/);
+	
+	AddressCounts::const_iterator aci;
+	for (aci = in.addresscounts.begin(); aci != in.addresscounts.end(); ++aci) {
+
+	    AddressCounts::iterator lb = abuffer.addresscounts.lower_bound(aci->first);
+	    abuffer.updateAddressCounts(aci->first.getValue(), aci->second);
+	}
+
+        handled_threads++;
+        if (handled_threads == threadnames.size() ) {
+ 	    //std::cerr << "AddressAggregator::addressBufferHandler "
+ 	    //<< "handled " << handled_threads << " threads."
+ 	    //<< std::endl;
+	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+	}
     }
 
     /** Handler for the "in3" input.*/
     void blobHandler(const Blob& in)
     {
-        //emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+	std::cerr << "ENTER AddressAggregator::blobHandler" << std::endl;
+
+	// decode this blobs data header
+        CBTF_DataHeader header;
+        memset(&header, 0, sizeof(header));
+        unsigned header_size = in.getXDRDecoding(
+            reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
+            );
+
+	std::string collectorID(header.id);
+	std::cerr << "Aggregating addresses for "
+	    << collectorID << " data from "
+	    << header.host << ":" << header.pid << std::endl;
+
+	// find the actual data blob after the header
+	unsigned data_size = in.getSize() - header_size;
+	const void* data_ptr = &(reinterpret_cast<const char *>(in.getContents())[header_size]);
+	Blob dblob(data_size,data_ptr);
+
+	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
+            aggregatePCData(collectorID, dblob, abuffer, interval);
+	    emitOutput<uint64_t>("interval",  interval);
+	} else if (collectorID == "usertime" || collectorID == "hwctime") {
+            aggregateSTSampleData(collectorID, dblob, abuffer, interval);
+	    emitOutput<uint64_t>("interval",  interval);
+        } else if (collectorID == "io" || collectorID == "mem") {
+            aggregateSTTraceData(collectorID, dblob, abuffer);
+	} else {
+	    std::cerr << "Unknown collector data handled!" << std::endl;
+	}
+
+	std::cerr << "AddressAggregator::blobHandler: EMIT Addressbuffer" << std::endl;
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     void intervalHandler(const uint64_t in)
@@ -318,7 +407,11 @@ private:
     }
 
     uint64_t interval;
+
     AddressBuffer abuffer;
+
+    // vector of incoming threadnames. For each thread we expect
+    ThreadNameVec threadnames;
 
 }; // class AddressAggregator
 

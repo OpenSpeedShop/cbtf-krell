@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2011 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2012 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -70,6 +70,12 @@ namespace KrellInstitute { namespace Core {
 			  const Path&, const int&, const int&);
 	
 	void processAndStore(const LinkedObjectEntry&);
+
+	AddressRange getAddressRange() { return dm_range; };
+	
+	std::map<AddressRange, std::string> getFunctions()
+		{ return dm_functions;};
+
 	
     private:
 
@@ -124,9 +130,21 @@ namespace KrellInstitute { namespace Core {
 	
 	/** Statements in this symbol table. */
 	std::map<StatementEntry, std::vector<AddressRange> > dm_statements;
+
+	public:
+
+	typedef std::map<StatementEntry, std::vector<AddressRange> >
+	StatementMap;
+
+	StatementMap getStatements() { return dm_statements; };
 	
     };
 
+        typedef std::map<AddressRange,
+        std::pair<SymbolTable, LinkedObjectEntry > >
+        SymbolTableMap;
+
+	typedef std::map<AddressRange, std::string> FunctionMap;
 } }
 
 

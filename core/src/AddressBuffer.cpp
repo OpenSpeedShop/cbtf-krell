@@ -23,10 +23,62 @@
  */
 
 #include "KrellInstitute/Core/Address.hpp"
+#include "KrellInstitute/Core/AddressEntry.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 
 using namespace KrellInstitute::Core;
 
+
+void AddressBuffer::printResults() const {
+
+	    //std::cout << "DisplayAddressBuffer, printResults interval is " << interval << std::endl;
+	    AddressCounts::const_iterator aci;
+	    uint64_t total_counts = 0;
+	    double percent_total = 0.0;
+	    double total_time = 0.0;
+
+	    AddressEntryVec m;
+
+	    // compute total samples over all addresses.
+	    for (aci = addresscounts.begin(); aci != addresscounts.end();
+								    ++aci) {
+	        total_counts += aci->second;
+	    }
+
+	    // compute percent of total for each address.
+	    for (aci = addresscounts.begin(); aci != addresscounts.end();
+								    ++aci) {
+	        double percent = (double) 100 * ((double)aci->second/(double)total_counts);
+	        percent_total += percent;
+
+	        AddressEntry entry;
+	        entry.addr = aci->first;
+	        entry.sample_count = aci->second;
+	        entry.line = -1;
+	        entry.file = "no file found";
+	        entry.function_name = "no funcion name found";
+#if 1
+	        entry.total_time = static_cast<double>(aci->second) *
+				static_cast<double>(100) / 1000000000.0;
+	        total_time += entry.total_time;
+#endif
+	        entry.percent = percent;
+	        m.push_back(entry);
+	    }
+
+	    // display each address and it's percent of total counts
+	    AddressEntryVec::iterator mi;
+	
+	    for (mi = m.begin(); mi != m.end(); ++mi) {
+	      if (mi->sample_count > 0 ) {
+                std::cout << "Address " << mi->addr
+        	<< ": " << mi->percent << "% of unique sampled addresses"
+		<< std::endl;
+	      }
+	    }
+	    std::cout << "\ntotal unique sampled addresses: " << total_counts
+	    << "\n" << std::endl;
+}
 
 bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
 {

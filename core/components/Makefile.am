@@ -38,9 +38,18 @@ CollectionPlugin_la_LDFLAGS = \
 
 CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
+	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
+	-lcbtf-messages-collector \
+	-lcbtf-messages-converters-collector \
+	-lcbtf-messages-events \
 	-lcbtf-messages-converters-events \
+	-lcbtf-messages-perfdata \
 	-lcbtf-messages-converters-perfdata \
+	-lcbtf-messages-symtab \
+	-lcbtf-messages-converters-symtab \
+	-lcbtf-messages-thread \
+	-lcbtf-messages-converters-thread \
 	@TARGET_CBTF_LIBS@ \
         @TARGET_MESSAGES_BASE_LIBS@ \
         @TARGET_MESSAGES_EVENTS_LIBS@ \
@@ -66,9 +75,18 @@ CollectionPlugin_la_LDFLAGS = \
 
 CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
+	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
+	-lcbtf-messages-collector \
+	-lcbtf-messages-converters-collector \
+	-lcbtf-messages-events \
 	-lcbtf-messages-converters-events \
+	-lcbtf-messages-perfdata \
 	-lcbtf-messages-converters-perfdata \
+	-lcbtf-messages-symtab \
+	-lcbtf-messages-converters-symtab \
+	-lcbtf-messages-thread \
+	-lcbtf-messages-converters-thread \
 	@TARGET_CBTF_LIBS@ \
         @TARGET_MESSAGES_BASE_LIBS@ \
         @TARGET_MESSAGES_EVENTS_LIBS@ \
@@ -94,9 +112,18 @@ CollectionPlugin_la_LDFLAGS = \
 
 CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
+	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
+	-lcbtf-messages-collector \
+	-lcbtf-messages-converters-collector \
+	-lcbtf-messages-events \
 	-lcbtf-messages-converters-events \
+	-lcbtf-messages-perfdata \
 	-lcbtf-messages-converters-perfdata \
+	-lcbtf-messages-symtab \
+	-lcbtf-messages-converters-symtab \
+	-lcbtf-messages-thread \
+	-lcbtf-messages-converters-thread \
 	@CBTF_LIBS@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
@@ -107,6 +134,7 @@ endif
 CollectionPlugin_la_SOURCES = \
 	AddressAggregatorComponent.cpp \
 	AddressBufferComponent.cpp \
+	BlobComponent.cpp \
 	LinkedObjectComponent.cpp \
 	MRNetConverters.cpp \
 	SymbolComponent.cpp \

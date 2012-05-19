@@ -29,6 +29,7 @@
 #include "config.h"
 #endif
 
+#include <vector>
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
 
@@ -55,7 +56,8 @@ namespace KrellInstitute { namespace Core {
 
             bool operator<(AddressEntry rhs) { return sample_count < rhs.sample_count; }
     };
-    typedef std::vector<AddressEntry > AddressEntryVec;
+
+    typedef std::vector<AddressEntry> AddressEntryVec;
 
 } }
 

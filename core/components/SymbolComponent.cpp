@@ -58,9 +58,6 @@ using namespace KrellInstitute::Core;
 
 namespace {
 
-    typedef std::map<AddressRange,
-        std::pair<SymbolTable, LinkedObjectEntry > >
-        SymbolTableMap;
     SymbolTableMap symtabmap;
 
     LinkedObjectEntryVec linkedobjectvec;
@@ -157,6 +154,7 @@ private:
 		SymbolTable st = i->first;
 		stapi_symbols.getSymbols(abuffer,le,st);
 	}
+	emitOutput<SymtabAPISymbols>("symtabapisymsout",stapi_symbols);
     }
 
     /** Handler for the "bfdsymsin" input.*/

@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2011 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2011-2012 The Krell Institute. All Rights Reserved.
 **
 ** This program is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU General Public License as published by the Free Software
@@ -65,6 +65,7 @@
 #define CBTF_PROTOCOL_TAG_UNINSTRUMENT                       ((int)1125)
 #define CBTF_PROTOCOL_TAG_UNLOADED_LINKED_OBJECT             ((int)1126)
 #define CBTF_PROTOCOL_TAG_MPI_STARTUP                        ((int)1127)
+#define CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP                ((int)1128)
 
 #define CBTF_PROTOCOL_TAG_PERFORMANCE_DATA                   ((int)10000)
 #define CBTF_PROTOCOL_TAG_DATA                               ((int)10001)

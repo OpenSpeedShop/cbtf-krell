@@ -87,3 +87,39 @@ struct CBTF_Protocol_UnloadedLinkedObject
     /** Name of the linked object's file. */
     CBTF_Protocol_FileName linked_object;
 };
+
+
+/** Structure of the blob containing our file objects.
+ * Used by libmonitor based collection code.
+*/
+struct CBTF_Protocol_LinkedObject {
+
+    /** Name of the linked object's file. */
+    CBTF_Protocol_FileName linked_object;
+
+    /** Address range at which this linked object was loaded. */
+    CBTF_Protocol_AddressRange range;
+
+    /** Time at which the linked object was loaded. */
+    CBTF_Protocol_Time time_begin;
+
+    /** Time at which the linked object was unloaded. */
+    /** For this purpose, the end time is -ULL */
+    CBTF_Protocol_Time time_end;
+
+    /**
+     * Boolean "true" if this linked object is an
+     * executable, or "false" otherwise.
+     */
+    bool is_executable;
+};
+
+/* this message is the group of linked object initially
+ * loaded in a process or thread. Used by libmonitor based
+ * collection code.
+ */
+struct CBTF_Protocol_LinkedObjectGroup {
+    /** Thread which contains these linked objects. */
+    CBTF_Protocol_ThreadName thread;
+    CBTF_Protocol_LinkedObject linkedobjects<>;
+};

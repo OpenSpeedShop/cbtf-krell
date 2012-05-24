@@ -55,6 +55,7 @@ pstool_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
 	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \

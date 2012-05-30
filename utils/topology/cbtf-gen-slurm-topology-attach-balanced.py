@@ -230,12 +230,12 @@ def SLURMgenerateSimpleBETopologyString():
         r = r.strip(']')
         ranges = []
         while r.find(',') > -1:
-           r1, r = r.split(',')
+           r1,r = r.split(',',1)
            ranges.append(r1)
         ranges.append(r)
         for r in ranges:
-            if r.find('-'):
-               s,e = r.split('-')
+            if r.find('-') > -1:
+               s,e = r.split('-',1)
                for i in range(int(s), int(e)+1, 1):
                    nodes.append(n + "%d" % i)
             else:

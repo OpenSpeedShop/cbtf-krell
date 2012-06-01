@@ -112,7 +112,7 @@ pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
 
 pcsamp_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -141,7 +141,7 @@ libpcsamp_monitor_mrnet_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -173,7 +173,7 @@ pcsamp_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 
 pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -204,7 +204,7 @@ libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -338,7 +338,7 @@ pcsamp_collector_monitor_mrnet_la_LDFLAGS = \
 
 pcsamp_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -367,7 +367,7 @@ libpcsamp_monitor_mrnet_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -398,7 +398,7 @@ libpcsamp_monitor_mrnet_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -437,7 +437,7 @@ pcsamp_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 
 pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -468,7 +468,7 @@ libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -500,7 +500,7 @@ libpcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \

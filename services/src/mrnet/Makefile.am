@@ -35,7 +35,7 @@ libcbtf_services_mrnet_la_LDFLAGS = \
 libcbtf_services_mrnet_la_LIBADD = \
 	@TARGET_MESSAGES_BASE_LIBS@ \
 	@TARGET_MESSAGES_EVENTS_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	@LIBLTDL@
 else
 if HAVE_TARGET_STATIC
@@ -56,7 +56,7 @@ libcbtf_services_mrnet_la_LDFLAGS = \
 libcbtf_services_mrnet_la_LIBADD = \
 	@TARGET_MESSAGES_BASE_LIBS@ \
 	@TARGET_MESSAGES_EVENTS_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	@LIBLTDL@
 endif
 endif
@@ -79,7 +79,7 @@ libcbtf_services_mrnet_la_LDFLAGS = \
 libcbtf_services_mrnet_la_LIBADD = \
 	@MESSAGES_BASE_LIBS@ \
 	@MESSAGES_EVENTS_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	@LIBLTDL@
 endif
 

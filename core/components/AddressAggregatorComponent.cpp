@@ -50,7 +50,11 @@ using namespace KrellInstitute::Core;
 
 namespace {
 
+    // count of threads handled
     int handled_threads = 0;
+
+    // vector of incoming threadnames. For each thread we expect
+    ThreadNameVec threadnames;
 
     void aggregatePCData(const std::string id, const Blob &blob,
 			 AddressBuffer &buf, uint64_t &interval)
@@ -354,6 +358,12 @@ private:
 	}
 
         handled_threads++;
+#if 0
+ 	std::cerr << "AddressAggregator::addressBufferHandler"
+	   << " handled threads " << handled_threads
+	   << " known threads " << threadnames.size()
+	   << std::endl;
+#endif
         if (handled_threads == threadnames.size() ) {
  	    //std::cerr << "AddressAggregator::addressBufferHandler "
  	    //<< "handled " << handled_threads << " threads."
@@ -409,9 +419,6 @@ private:
     uint64_t interval;
 
     AddressBuffer abuffer;
-
-    // vector of incoming threadnames. For each thread we expect
-    ThreadNameVec threadnames;
 
 }; // class AddressAggregator
 

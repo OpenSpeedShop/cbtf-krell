@@ -344,6 +344,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Connection>
 
+      <Connection>
+        <From>
+            <Name>ThreadsStateChanged</Name>
+            <Output>out1</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+
+
+
 <!--
      Connection to send list of attached threads to the linkedobject component.
      This is a sync connection used by the linkedobject component to wait for

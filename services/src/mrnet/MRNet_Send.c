@@ -36,12 +36,12 @@
 #include "mrnet_lightweight/MRNet.h"
 
 
- Network_t* CBTF_MRNet_netPtr;
- // make the id of the stream we want global and use Network_get_Stream
- // locally in the send function to retrieve it.
- //Stream_t* CBTF_MRNet_stream;
- static int stream_id = 0;
- static int mrnet_connected = 0;
+Network_t* CBTF_MRNet_netPtr;
+// make the id of the stream we want global and use Network_get_Stream
+// locally in the send function to retrieve it.
+//Stream_t* CBTF_MRNet_stream;
+static int stream_id = 0;
+static int mrnet_connected = 0;
 
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
@@ -182,12 +182,6 @@ int CBTF_MRNet_LW_connect (const int con_rank)
         fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_stream\n");
     }
 #endif
-    // This caused the memory issues seen to occur immediately
-    //fflush(NULL);
-    // This sleep is needed because of timing issues between mpi, mrnet, and cbtf in knowing
-    // when the be processes are actually ready to receive data
-    // 10 is a minimum value for pcsampDemo to work for 64 pe, 20 worked for 128 pe
-    //sleep(10);
 
     Stream_t* CBTF_MRNet_stream;
 
@@ -292,9 +286,16 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 
 void CBTF_Waitfor_MRNet_Shutdown() {
 
+    //fprintf(stderr,"ENTERED CBTF_Waitfor_MRNet_Shutdown %d\n",getpid());
     Packet_t * p;
     p = (Packet_t *)malloc(sizeof(Packet_t));
     Assert(p);
+
+    if (CBTF_MRNet_netPtr && Network_is_ShutDown(CBTF_MRNet_netPtr)) {
+	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown -- already SHUTDOWN %d\n",getpid());
+	return;
+    }
+
 
     if (CBTF_MRNet_netPtr) {
 	/* get our stream */
@@ -303,7 +304,8 @@ void CBTF_Waitfor_MRNet_Shutdown() {
 
 	/* wait for FE to request the shutdown */
 	do {
-	    if( Network_recv(CBTF_MRNet_netPtr, &tag, p, &stream) != 1 ) {
+	    //fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown WAIT FOR FE request of shutdown %d\n",getpid());
+	    if( CBTF_MRNet_netPtr && Network_recv(CBTF_MRNet_netPtr, &tag, p, &stream) != 1 ) {
 		fprintf(stderr, "BE: receive failure\n");
 		break;
 	    }
@@ -311,21 +313,28 @@ void CBTF_Waitfor_MRNet_Shutdown() {
 
 
 	/* send the FE the acknowledgement of shutdown */
+	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown SENDS FE acknowledgement of shutdown %d\n",getpid());
 	if ( (Stream_send(stream, /*tag*/ 102, "%d", 102) == -1) ||
 	      Stream_flush(stream) == -1 ) {
 	    fprintf(stderr, "CBTF_Waitfor_MRNet_Shutdown BE: stream::send() failure\n");
 	}
 
 	/* Now wait for mrnet to shutdown */
-	Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
+	if (CBTF_MRNet_netPtr && !Network_is_ShutDown(CBTF_MRNet_netPtr)) {
+	    //fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown Network_waitfor_ShutDown %d\n",getpid());
+	    //Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
+        }
+
     }
 
     /* delete out network pointer */
     if (CBTF_MRNet_netPtr != NULL) {
+	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown delete_Network_t CBTF_MRNet_netPtr %d\n",getpid());
         delete_Network_t(CBTF_MRNet_netPtr);
     }
 
     if (p != NULL)
 	free(p);
+    //fprintf(stderr,"EXIT CBTF_Waitfor_MRNet_Shutdown %d\n",getpid());
 }
 

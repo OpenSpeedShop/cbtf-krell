@@ -115,7 +115,8 @@ private:
     void threadnamesHandler(const ThreadNameVec& in)
     {
 	threadnames = in;
-	//std::cerr  << "LinkedObject::threadnamesHandler threadnames size is " << threadnames.size() << std::endl;
+	//std::cerr  << "LinkedObject::threadnamesHandler threadnames size is "
+	//    << threadnames.size() << std::endl;
     }
 
 
@@ -155,12 +156,14 @@ private:
 	// from the collector.  Once we have them all we should send the
 	// vector of linked objects to the client.
 	handled_threads++;
+	//std::cerr  << "LinkedObject::groupHandler handle_threads " << handled_threads
+	//	<< " of total " << threadnames.size() << std::endl;
 	if (handled_threads == threadnames.size() ) {
 
 #ifndef NDEBUG
 	    if (is_debug_linkedobject_events_enabled) {
-	    std::cerr  << "LinkedObject::groupHandler handled "
-		<< threadnames.size() << " pending threads. " << std::endl;
+	        std::cerr  << "LinkedObject::groupHandler handled "
+		    << threadnames.size() << " pending threads. " << std::endl;
 	    }
 #endif
 	    

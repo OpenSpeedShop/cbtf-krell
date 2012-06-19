@@ -87,9 +87,10 @@ typedef struct {
     int  finished;
     int  sent_data;
 
-#if defined(CBTF_SERVICE_USE_MRNET)
-    bool_t  connected_to_mrnet;
-#endif
+    // marker if ANY collector is connected to mrnet.
+    // this applies to the non mrnet builds.
+    short  connected_to_mrnet;
+
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
     bool_t  mpi_init_done;
 #endif
@@ -114,16 +115,41 @@ static __thread TLS the_tls;
 
 #endif
 
+// external functions for all collection types.
 extern void cbtf_offline_service_start_timer();
-extern void send_process_thread_message();
 extern void cbtf_offline_service_stop_timer();
 extern void set_mpi_flag(int);
+extern void started_process();
 
+// external functions for using mrnet.
 #if defined(CBTF_SERVICE_USE_MRNET)
 extern void connect_to_mrnet();
 extern void send_thread_state_changed_message();
+extern void send_process_created_message();
+extern void send_attached_to_threads_message();
 #endif
 
+// No-op for non mrnet builds.
+void cbtf_offline_waitforshutdown() {
+#if defined(CBTF_SERVICE_USE_MRNET)
+	CBTF_Waitfor_MRNet_Shutdown();
+#endif
+}
+
+// non mrnet builds just refurn false here..
+short cbtf_connected_to_mrnet() {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+    return tls->connected_to_mrnet;
+}
+
+
+// forward declarations.
 void cbtf_offline_finish();
 void cbtf_send_info();
 void cbtf_record_dsos();
@@ -206,7 +232,9 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #endif
 	        connect_to_mrnet();
 		tls->connected_to_mrnet = TRUE;
-		send_process_thread_message();
+                init_process_thread();
+                send_process_created_message();
+                send_attached_to_threads_message();
 		cbtf_send_info();
 		cbtf_record_dsos();
 		cbtf_offline_service_start_timer();
@@ -246,20 +274,6 @@ void cbtf_offline_send_dsos(TLS *tls)
     CBTF_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
-#else
-
-#if 0
-    fprintf(stderr,"SEND DSOS\n");
-    int i;
-    for (i = 0; i < tls->data.linkedobjects.linkedobjects_len; i++) {
-	fprintf(stderr,"TLS tls->data.linkedobjects INDEX is %d\n",i);
-        fprintf(stderr,"TLS objname = %s\n",tls->buffer.objs[i].linked_object);
-        fprintf(stderr,"TLS addresses = %#lx,%#lx\n",tls->buffer.objs[i].range.begin, tls->buffer.objs[i].range.end);
-        fprintf(stderr,"TLS times = %lu,%lu\n",tls->buffer.objs[i].time_begin, tls->buffer.objs[i].time_end);
-    }
-    fprintf(stderr,"TLS tls->data.objs.objs_len = %d\n",tls->data.linkedobjects.linkedobjects_len);
-    fprintf(stderr,"TLS tls->dsoname_len = %d\n",tls->dsoname_len);
-    fprintf(stderr,"TLS BYTES %d\n",sizeof(char) * tls->dsoname_len + sizeof(CBTF_Protocol_LinkedObject) * tls->data.linkedobjects.linkedobjects_len);
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
@@ -274,7 +288,6 @@ void cbtf_offline_send_dsos(TLS *tls)
         CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP,
                   (xdrproc_t) xdr_CBTF_Protocol_LinkedObjectGroup,&(tls->data));
     }
-#endif
 #endif
 
     tls->data.linkedobjects.linkedobjects_len = 0;
@@ -303,14 +316,10 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 #endif
     Assert(tls != NULL);
 
-#if defined(CBTF_SERVICE_USE_MRNET)
     tls->connected_to_mrnet = FALSE;
-#endif
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
     tls->mpi_init_done = FALSE;
 #endif
-
-    //fprintf(stderr,"ENTERED cbtf_offline_start_sampling\n");
 
     CBTF_pcsamp_start_sampling_args args;
     char arguments[3 * sizeof(CBTF_pcsamp_start_sampling_args)];
@@ -327,8 +336,6 @@ void cbtf_offline_start_sampling(const char* in_arguments)
         
     tls->time_started = CBTF_GetTime();
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-#endif
     tls->dsoname_len = 0;
     tls->data.linkedobjects.linkedobjects_len = 0;
     tls->data.linkedobjects.linkedobjects_val = tls->buffer.objs;
@@ -342,7 +349,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
  /* FIXME: should query this from collector.c where connection
  * is made.
  */
-	        connect_to_mrnet();
+    connect_to_mrnet();
     tls->connected_to_mrnet = TRUE;
 #endif
     cbtf_timer_service_start_sampling(arguments);
@@ -387,6 +394,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
     tls->finished = finished;
 
     if (finished && tls->sent_data) {
+	// FIXME: is this cbtf_offline_finish for fileio?
 	//cbtf_offline_finish();
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
@@ -402,8 +410,6 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 		tls->dso_header.pid, tls->dso_header.posix_tid);
 	}
 #endif
-	send_thread_state_changed_message();
-	CBTF_Waitfor_MRNet_Shutdown();
 #endif
     }
 }
@@ -445,6 +451,15 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #endif
 	    break;
 #endif
+	case CBTF_Monitor_init_process_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_init_process_event for pid %d\n",
+			getpid());
+	    }
+#endif
+	    started_process();
+	    break;
 	default:
 	    break;
     }
@@ -494,10 +509,11 @@ void cbtf_send_info()
     const char* sampling_rate = getenv("CBTF_PCSAMP_RATE");
     info.rate = (sampling_rate != NULL) ? atoi(sampling_rate) : 100;
     
+// FIXME: does mrnet collection handle this yet?
     /* Send the offline "info" blob */
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-        fprintf(stderr,"cbtf_offline_stop_sampling SENDS INFO for HOST %s, PID %d, POSIX_TID %lu\n",
+        fprintf(stderr,"cbtf_send_info SENDS INFO for HOST %s, PID %d, POSIX_TID %lu\n",
         local_header.host, local_header.pid, local_header.posix_tid);
     }
 #endif
@@ -525,8 +541,6 @@ void cbtf_record_dsos()
 
     /* Write the thread's initial address space to the appropriate buffer */
     CBTF_GetDLInfo(getpid(), NULL);
-#if defined(CBTF_SERVICE_USE_FILEIO)
-#endif
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
@@ -660,6 +674,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     }
 
 
+//FIXME: verify that mrnet collections works for dlopen/dlclose.
 #if 0
 #if defined(CBTF_SERVICE_USE_MRNET)
 #ifndef NDEBUG
@@ -698,6 +713,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     }
 
 
+// FIXME: DEBUG.
 #if defined(CBTF_SERVICE_USE_MRNET) && 0
     fprintf(stderr,"RECORD OBJ to tls->buffer.objs INDEX %d\n",
 	tls->data.linkedobjects.linkedobjects_len);

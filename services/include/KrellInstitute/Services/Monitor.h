@@ -55,6 +55,8 @@ typedef enum {
     CBTF_Monitor_dlopen_event,
     CBTF_Monitor_dlclose_event,
     CBTF_Monitor_post_dlclose_event,
+    CBTF_Monitor_init_process_event,
+    CBTF_Monitor_init_thread_event,
     CBTF_Monitor_Default_event
 } CBTF_Monitor_Event_Type;
 

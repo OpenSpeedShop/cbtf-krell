@@ -73,8 +73,7 @@ typedef struct {
 
     int connected_to_mrnet;
     int is_mpi_job;
-    int sent_process_thread_info;
-    int process_created;
+    bool sent_attached_to_threads;
 
     struct {
         CBTF_Protocol_ThreadName tnames[4096];
@@ -83,11 +82,13 @@ typedef struct {
 
 } TLS;
 
+#if defined(CBTF_SERVICE_USE_MRNET)
+bool sent_process_created;
+#endif
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 extern void cbtf_offline_sent_data(int);
 extern void cbtf_send_info();
-//extern void cbtf_send_dsos();
 extern void cbtf_record_dsos();
 #endif
 
@@ -110,7 +111,7 @@ static __thread TLS the_tls;
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 
-void started_process_thread()
+void init_process_thread()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -132,8 +133,10 @@ void started_process_thread()
     tls->tname.rank = monitor_mpi_comm_rank();
 
     //CBTF_Protocol_CreatedProcess message;
-    tls->created_process_message.original_thread = origtname;
-    tls->created_process_message.created_thread = tls->tname;
+    if (!sent_process_created) {
+	tls->created_process_message.original_thread = origtname;
+	tls->created_process_message.created_thread = tls->tname;
+    }
 
     tls->tgrp.names.names_len = 0;
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
@@ -145,10 +148,9 @@ void started_process_thread()
 
     //CBTF_Protocol_AttachedToThreads tmessage;
     tls->attached_to_threads_message.threads = tls->tgrp;
-    tls->process_created = 0;
 }
 
-void send_process_thread_message()
+void send_process_created_message()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -159,9 +161,7 @@ void send_process_thread_message()
     if (tls == NULL)
 	return;
 
-    started_process_thread();
-
-    if (!tls->process_created) {
+    if (!sent_process_created) {
 	if (tls->connected_to_mrnet) {
 	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
                            (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
@@ -174,14 +174,26 @@ void send_process_thread_message()
 	    }
 #endif
 	}
-	tls->process_created = true;
+	sent_process_created = true;
     }
+}
 
-    if (tls->connected_to_mrnet && ! tls->sent_process_thread_info) {
+void send_attached_to_threads_message()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    if (tls->connected_to_mrnet && ! tls->sent_attached_to_threads) {
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
 			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
 			&tls->attached_to_threads_message);
-	tls->sent_process_thread_info = 1;
+	tls->sent_attached_to_threads = true;
 #ifndef NDEBUG
         if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
     	     fprintf(stderr,
@@ -241,9 +253,21 @@ void connect_to_mrnet()
 #endif
 
 }
+#endif
 
+
+// noop for non mrnet collection.
+void started_process()
+{
+#if defined(CBTF_SERVICE_USE_MRNET)
+    sent_process_created = false;
+#endif
+}
+
+// noop for non mrnet collection.
 void send_thread_state_changed_message()
 {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -252,8 +276,12 @@ void send_thread_state_changed_message()
 #endif
 
     if (tls == NULL) {
-	fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	    fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
 		monitor_mpi_comm_rank());
+	}
+#endif
 	return;
     }
 
@@ -284,12 +312,19 @@ void send_thread_state_changed_message()
     tls->thread_state_changed_message.state = Terminated;
 
     if (tls->connected_to_mrnet) {
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+            fprintf(stderr,
+		"SENDING send_thread_state_changed_message for rank %d\n",
+		monitor_mpi_comm_rank());
+	}
+#endif
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
                   (xdrproc_t) xdr_CBTF_Protocol_ThreadsStateChanged,
 		  &tls->thread_state_changed_message);
     }
-}
 #endif
+}
 
 static void send_samples ()
 {
@@ -302,7 +337,6 @@ static void send_samples ()
 
     Assert(tls != NULL);
 
-    //uint64_t current_time = (uint64_t) CBTF_GetTime();
     tls->header.id = strdup("pcsamp");
     tls->header.time_end =  CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
@@ -327,10 +361,15 @@ static void send_samples ()
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
-	    if (!tls->sent_process_thread_info) {
-	        send_process_thread_message();
+	    // in case we did not send it earlier...
+	    if (!sent_process_created) {
+		init_process_thread();
+		send_process_created_message();
 	    }
-	    tls->sent_process_thread_info = 1;
+	    if (!tls->sent_attached_to_threads) {
+		init_process_thread();
+	        send_attached_to_threads_message();
+	    }
 
 	    CBTF_MRNet_Send_PerfData( &tls->header,
 				 (xdrproc_t)xdr_CBTF_pcsamp_data,
@@ -467,18 +506,6 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->tname.posix_tid = local_data_header.posix_tid;
     tls->tname.rank = local_data_header.rank;
 
-    CBTF_Protocol_ThreadName origtname;
-    origtname.experiment = 0;
-    origtname.host = strdup(tls->tname.host);
-    origtname.pid = -1;
-    origtname.has_posix_tid = false;
-    origtname.posix_tid = 0;
-    origtname.rank = -1;
-
-    CBTF_Protocol_CreatedProcess message;
-    message.original_thread = origtname;
-    message.created_thread = tls->tname;
-
     tls->tgrp.names.names_len = 0;
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
     memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
@@ -487,33 +514,31 @@ void cbtf_timer_service_start_sampling(const char* arguments)
            &tls->tname, sizeof(tls->tname));
     tls->tgrp.names.names_len++;
 
-    CBTF_Protocol_AttachedToThreads tmessage;
-    tmessage.threads = tls->tgrp;
-
     tls->connected_to_mrnet = 0;
-    tls->sent_process_thread_info = 0;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
+    tls->sent_attached_to_threads = false;
 
 #if !defined (CBTF_SERVICE_USE_MRNET_MPI)
+    // Non-mpi applications connect here.
     connect_to_mrnet();
     if (tls->connected_to_mrnet) {
-	if (!tls->sent_process_thread_info) {
-	    send_process_thread_message();
+	if (!sent_process_created) {
+	    init_process_thread();
+	    send_process_created_message();
+	    sent_process_created = true;
 	}
-	tls->sent_process_thread_info = 1;
+	if (!tls->sent_attached_to_threads) {
+	    init_process_thread();
+	    send_attached_to_threads_message();
+	    tls->sent_attached_to_threads = true;
+	}
     }
     cbtf_send_info();
-    //cbtf_send_dsos();
     cbtf_record_dsos();
 #endif
 
 #endif
 
     /* Begin sampling */
-    //uint64_t curr_time = (uint64_t) CBTF_GetTime();
     tls->header.time_begin = CBTF_GetTime();
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }

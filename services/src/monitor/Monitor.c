@@ -68,6 +68,11 @@ extern void cbtf_offline_defer_sampling(const int flag);
 extern void cbtf_offline_pause_sampling();
 extern void cbtf_offline_resume_sampling();
 
+extern short cbtf_connected_to_mrnet();
+extern void cbtf_offline_waitforshutdown();
+extern void send_thread_state_changed_message();
+
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
     int debug;
@@ -123,7 +128,13 @@ void monitor_fini_process(int how, void *data)
     }
 #endif 
 
-    /*collector stop_sampling does not use the arguments param */
+    if (tls->sampling_status == CBTF_Monitor_Finished) {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_fini_process ALREADY FINISHED %d.\n",tls->pid);
+	}
+	return;
+    }
+
     if (tls->debug) {
 	fprintf(stderr,"monitor_fini_process FINISHED SAMPLING %d,%lu\n",
 		tls->pid,tls->tid);
@@ -134,6 +145,7 @@ void monitor_fini_process(int how, void *data)
       raise(SIGSEGV);
     f++;
 
+    /*collector stop_sampling does not use the arguments param */
     tls->sampling_status = CBTF_Monitor_Finished;
     if(how == MONITOR_EXIT_EXEC) {
 	tls->process_is_terminating = 1;
@@ -141,6 +153,11 @@ void monitor_fini_process(int how, void *data)
     } else {
 	tls->process_is_terminating = 1;
 	cbtf_offline_stop_sampling(NULL, 1);
+    }
+    send_thread_state_changed_message();
+    //fprintf(stderr,"FINI PROCESS connected to MRNET %d\n",cbtf_connected_to_mrnet());
+    if (cbtf_connected_to_mrnet()) {
+	cbtf_offline_waitforshutdown();
     }
 }
 
@@ -183,6 +200,7 @@ void *monitor_init_process(int *argc, char **argv, void *data)
     tls->in_mpi_pre_init = 0;
     tls->CBTF_monitor_type = CBTF_Monitor_Proc;
     tls->sampling_status = CBTF_Monitor_Started;
+    cbtf_offline_notify_event(CBTF_Monitor_init_process_event);
     cbtf_offline_start_sampling(NULL);
     return (data);
 }
@@ -224,6 +242,7 @@ void monitor_fini_thread(void *ptr)
     tls->sampling_status = CBTF_Monitor_Finished;
     tls->thread_is_terminating = 1;
     cbtf_offline_stop_sampling(NULL,1);
+    send_thread_state_changed_message();
 }
 
 void *monitor_init_thread(int tid, void *data)
@@ -570,8 +589,15 @@ void monitor_mpi_post_fini(void)
 	    fprintf(stderr,"monitor_mpi_post_fini RESUME SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	tls->sampling_status = CBTF_Monitor_Resumed;
-	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_post_fini_event);
+	tls->sampling_status = CBTF_Monitor_Finished;
+	cbtf_offline_stop_sampling(NULL, 1);
+	//fprintf(stderr,"monitor_mpi_post_fini FINISHED connected to MRNET %d\n",cbtf_connected_to_mrnet());
+
+        send_thread_state_changed_message();
+	if (cbtf_connected_to_mrnet()) {
+	    cbtf_offline_waitforshutdown();
+	}
+
     }
 }
 

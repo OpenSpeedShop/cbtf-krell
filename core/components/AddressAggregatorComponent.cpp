@@ -50,8 +50,18 @@ using namespace KrellInstitute::Core;
 
 namespace {
 
+#ifndef NDEBUG
+/** Flag indicating if debuging for LinkedObjects is enabled. */
+bool is_debug_aggregator_events_enabled =
+    (getenv("CBTF_DEBUG_AGGR_EVENTS") != NULL);
+#endif
+
     // count of threads handled
     int handled_threads = 0;
+
+    bool is_finished = false;
+
+    bool sent_buffer = false;
 
     // vector of incoming threadnames. For each thread we expect
     ThreadNameVec threadnames;
@@ -198,6 +208,10 @@ private:
 	declareInput<ThreadNameVec>(
             "threadnames", boost::bind(&AddressAggregator::threadnamesHandler, this, _1)
             );
+       declareInput<bool>(
+            "finished", boost::bind(&AddressAggregator::finishedHandler, this, _1)
+            );
+
         declareOutput<AddressBuffer>("Aggregatorout");
 	declareOutput<uint64_t>("interval");
 	declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out");
@@ -207,7 +221,36 @@ private:
     void threadnamesHandler(const ThreadNameVec& in)
     {
         threadnames = in;
-        //std::cerr  << "AddressAggregator::threadnamesHandler threadnames size is " << threadnames.size() << std::endl;
+#ifndef NDEBUG
+        if (is_debug_aggregator_events_enabled) {
+            std::cerr
+	    << "AddressAggregator::threadnamesHandler threadnames size is "
+	    << threadnames.size() << std::endl;
+	}
+#endif
+    }
+
+    void finishedHandler(const bool& in)
+    {
+        is_finished = in;
+#ifndef NDEBUG
+        if (is_debug_aggregator_events_enabled) {
+            std::cerr
+	    << "AddressAggregator::threadnamesHandler finished is "
+	    << is_finished << std::endl;
+	}
+#endif
+	if (!sent_buffer) {
+#ifndef NDEBUG
+            if (is_debug_aggregator_events_enabled) {
+                std::cerr
+	        << "AddressAggregator::threadnamesHandler sends buffer "
+	        << sent_buffer << std::endl;
+	    }
+#endif
+	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+	    sent_buffer = true;
+	}
     }
  
 
@@ -305,10 +348,12 @@ private:
 
 	std::string collectorID(header.id);
 
-#if 0
-	std::cerr << "Aggregating addresses for "
+#ifndef NDEBUG
+        if (is_debug_aggregator_events_enabled) {
+	    std::cerr << "Aggregating addresses for "
 	    << collectorID << " data from "
 	    << header.host << ":" << header.pid << std::endl;
+	}
 #endif
 
 	// find the actual data blob after the header
@@ -358,25 +403,31 @@ private:
 	}
 
         handled_threads++;
-#if 0
- 	std::cerr << "AddressAggregator::addressBufferHandler"
-	   << " handled threads " << handled_threads
-	   << " known threads " << threadnames.size()
-	   << std::endl;
+#ifndef NDEBUG
+        if (is_debug_aggregator_events_enabled) {
+ 	    std::cerr << "AddressAggregator::addressBufferHandler"
+	    << " handled threads " << handled_threads
+	    << " known threads " << threadnames.size()
+	    << " is_finished " << is_finished
+	    << std::endl;
+	}
 #endif
-        if (handled_threads == threadnames.size() ) {
- 	    //std::cerr << "AddressAggregator::addressBufferHandler "
- 	    //<< "handled " << handled_threads << " threads."
- 	    //<< std::endl;
+        if (handled_threads == threadnames.size() /*|| is_finished*/ ) {
+#ifndef NDEBUG
+            if (is_debug_aggregator_events_enabled) {
+ 	        std::cerr << "AddressAggregator::addressBufferHandler "
+ 	        << "handled " << handled_threads << " threads."
+ 	        << std::endl;
+	    }
+#endif
 	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+	    sent_buffer = true;
 	}
     }
 
     /** Handler for the "in3" input.*/
     void blobHandler(const Blob& in)
     {
-	std::cerr << "ENTER AddressAggregator::blobHandler" << std::endl;
-
 	// decode this blobs data header
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
@@ -385,9 +436,13 @@ private:
             );
 
 	std::string collectorID(header.id);
-	std::cerr << "Aggregating addresses for "
+#ifndef NDEBUG
+        if (is_debug_aggregator_events_enabled) {
+	    std::cerr << "Aggregating addresses for "
 	    << collectorID << " data from "
 	    << header.host << ":" << header.pid << std::endl;
+	}
+#endif
 
 	// find the actual data blob after the header
 	unsigned data_size = in.getSize() - header_size;
@@ -406,7 +461,7 @@ private:
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
 
-	std::cerr << "AddressAggregator::blobHandler: EMIT Addressbuffer" << std::endl;
+	//std::cerr << "AddressAggregator::blobHandler: EMIT Addressbuffer" << std::endl;
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 

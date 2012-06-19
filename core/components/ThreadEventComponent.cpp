@@ -107,7 +107,14 @@ private:
 	    }
 #endif
 
+
 	    tstatevec.push_back(std::make_pair(tname, (ThreadState) message->state));
+#ifndef NDEBUG
+            if (is_debug_thread_events_enabled) {
+		std::cerr << "ThreadStateChanged: known threads " << tvec.size()
+		    << " state threads " << tstatevec.size() << std::endl;
+	    }
+#endif
 	    emitOutput<ThreadState>("out", (ThreadState) message->state);
 	    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >("xdr_out", in);
 

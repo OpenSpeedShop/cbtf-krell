@@ -337,7 +337,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
 		tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
-	offline_resume_sampling(CBTF_Monitor_dlopen_event);
+	cbtf_offline_resume_sampling(CBTF_Monitor_dlopen_event);
     }
 }
 
@@ -373,7 +373,7 @@ monitor_pre_dlopen(const char *path, int flags)
 		tls->pid,tls->tid);
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
-	offline_pause_sampling(CBTF_Monitor_pre_dlopen_event);
+	cbtf_offline_pause_sampling(CBTF_Monitor_pre_dlopen_event);
     }
 }
 
@@ -399,7 +399,7 @@ monitor_dlclose(void *handle)
 		    tls->pid,tls->tid);
             }
 	    tls->sampling_status = CBTF_Monitor_Paused;
-	    offline_pause_sampling(CBTF_Monitor_dlclose_event);
+	    cbtf_offline_pause_sampling(CBTF_Monitor_dlclose_event);
 	}
     }
 }
@@ -425,7 +425,7 @@ monitor_post_dlclose(void *handle, int ret)
 		    tls->pid,tls->tid);
             }
 	    tls->sampling_status = CBTF_Monitor_Resumed;
-	    offline_resume_sampling(CBTF_Monitor_post_dlclose_event);
+	    cbtf_offline_resume_sampling(CBTF_Monitor_post_dlclose_event);
 	}
     }
 }

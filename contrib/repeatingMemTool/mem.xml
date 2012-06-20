@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2010 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+
+  <Type>memNetwork</Type>
+  <Version>1.0.0</Version>
+
+  <Stream>
+      <Name>DownStream</Name>
+      <Tag>10000</Tag>
+  </Stream>
+
+  <Stream>
+      <Name>UpStream</Name>
+      <Tag>10001</Tag>
+  </Stream>
+
+  <Stream>
+      <Name>TermStream</Name>
+      <Tag>10002</Tag>
+  </Stream>
+
+  <Input>
+      <Name>in</Name>
+      <To><Input>system_in</Input></To>
+  </Input>
+
+  <Input>
+      <Name>freq_in</Name>
+      <To><Input>system_freq_in</Input></To>
+  </Input>
+
+  <Output>
+      <Name>elapsed_time_out</Name>
+      <From><Output>system_elapsed_time_out</Output></From>
+  </Output>
+
+  <Output>
+      <Name>term_out</Name>
+      <From><Output>system_term_out</Output></From>
+  </Output>
+
+  <Output>
+      <Name>out</Name>
+      <From><Output>system_out</Output></From>
+  </Output>
+
+  <Frontend>
+    <Network>
+      <Type>memNetwork_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>/usr/projects/packages/tmachado_test_general/rr/opt/share/KrellInstitute/contrib/lib</SearchPath>
+      <Plugin>mrnetPlugin.so</Plugin>
+      <Plugin>memPlugin.so</Plugin>
+
+      <Component>
+        <Name>EndCircut</Name>
+        <Type>EndCircutLogic</Type>
+      </Component>
+
+      <Component>
+        <Name>StartCircut</Name>
+        <Type>BeginCircutLogic</Type>
+      </Component>
+      <!--
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      -->
+      <Input>
+        <Name>Frontend_In</Name>
+        <To>
+          <Name>EndCircut</Name>
+          <Input>MemoryInfoIn</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+            <Name>EndCircut</Name>
+            <Output>RestartOut</Output>
+        </From>
+        <To>
+            <Name>StartCircut</Name>
+            <Input>RestartIn</Input>
+        </To>
+      </Connection>
+
+      <Output>
+         <Name>system_out</Name>
+         <From>
+             <Name>EndCircut</Name>
+             <Output>MemoryInfoOut</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>system_elapsed_time_out</Name>
+         <From>
+             <Name>EndCircut</Name>
+             <Output>ElapsedTimeOut</Output>
+         </From>
+      </Output>
+
+      <Output>
+          <Name>system_term_out</Name>
+          <From>
+              <Name>EndCircut</Name>
+              <Output>TermOut</Output>
+          </From>
+      </Output>
+
+      <Input>
+        <Name>system_freq_in</Name>
+        <To>
+          <Name>StartCircut</Name>
+          <Input>FrequencyIn</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>system_in</Name>
+        <To>
+          <Name>StartCircut</Name>
+          <Input>FilenameIn</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>Term_In</Name>
+        <To>
+          <Name>EndCircut</Name>
+          <Input>TermIn</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+            <Name>StartCircut</Name>
+            <Output>StartTimeOut</Output>
+        </From>
+        <To>
+            <Name>EndCircut</Name>
+            <Input>StartTimeIn</Input>
+        </To>
+    </Connection>
+
+      <Output>
+         <Name>Frontend_Out</Name>
+         <From>
+             <Name>StartCircut</Name>
+             <Output>FilenameOut</Output>
+         </From>
+      </Output>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>UpStream</Name>
+      <To><Input>Frontend_In</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>TermStream</Name>
+      <To><Input>Term_In</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingDownstream>
+        <Name>DownStream</Name>
+        <From><Output>Frontend_Out</Output></From>
+    </OutgoingDownstream>
+
+  </Frontend>
+
+  <Backend>
+    <Network>
+      <Type>memNetwork_Backend</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/usr/projects/packages/tmachado_test_general/rr/opt/share/KrellInstitute/contrib/lib</SearchPath>
+      <Plugin>memPlugin.so</Plugin>
+      <Plugin>mrnetPlugin.so</Plugin>
+
+      <Component>
+        <Name>getPID</Name>
+        <Type>getPID</Type>
+      </Component>
+
+      <Component>
+        <Name>getMem</Name>
+        <Type>memPlugin</Type>
+      </Component>
+      <!--
+      <Component>
+        <Name>PacketToString</Name>
+        <Type>ConvertPacketToString</Type>
+      </Component>
+      <Component>
+        <Name>StringToPacket</Name>
+        <Type>ConvertStringToPacket</Type>
+      </Component>
+      -->
+      <Input>
+        <Name>Backend_In</Name>
+        <To>
+          <Name>getPID</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>Backend_Output</Name>
+        <From>
+          <Name>getMem</Name>
+          <Output>out</Output>
+        </From>
+      </Output>
+
+      <Output>
+          <Name>Term_Signal</Name>
+          <From>
+              <Name>getPID</Name>
+              <Output>TermOut</Output>
+          </From>
+      </Output>
+
+      <Connection>
+        <From>
+          <Name>getPID</Name>
+          <Output>out</Output>
+        </From>
+        <To>
+          <Name>getMem</Name>
+          <Input>in</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+    <IncomingDownstream> 
+      <Name>DownStream</Name>
+      <To><Input>Backend_In</Input></To>
+    </IncomingDownstream>
+    
+    <OutgoingUpstream>
+      <Name>UpStream</Name>
+      <From><Output>Backend_Output</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+        <Name>TermStream</Name>
+        <From><Output>Term_Signal</Output></From>
+    </OutgoingUpstream>
+
+  </Backend>
+
+</MRNet>

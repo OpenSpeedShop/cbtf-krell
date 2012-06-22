@@ -447,6 +447,7 @@ AC_CONFIG_FILES([
     psTool/Makefile
     stack/Makefile
     tbonFS/Makefile
+    repeatingMemTool/Makefile
 ])
 
 AC_OUTPUT

@@ -18,4 +18,4 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = psTool stack tbonFS memTool
+SUBDIRS = psTool stack tbonFS memTool repeatingMemTool

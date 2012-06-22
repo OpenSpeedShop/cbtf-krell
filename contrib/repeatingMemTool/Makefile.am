@@ -20,20 +20,20 @@ contribxmldir = $(datadir)/KrellInstitute/contrib/xml
 contribbindir = $(datadir)/KrellInstitute/contrib/bin
 contribplugindir = $(datadir)/KrellInstitute/contrib/lib
 
-BUILT_FILES = mem.xml
+BUILT_FILES = repeatMem.xml
 
 nobase_dist_contribxml_DATA = \
-        mem.xml
+        repeatMem.xml
 
 ACLOCAL_AMFLAGS = -I m4
 
 
 
 if !BUILD_TARGETED
-contribbin_PROGRAMS = memtool
-memtool_SOURCES = mem_tool.cpp
+contribbin_PROGRAMS = repeatMemtool
+repeatMemtool_SOURCES = repeatMem_tool.cpp
 
-memtool_CXXFLAGS = \
+repeatMemtool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
@@ -43,7 +43,7 @@ memtool_CXXFLAGS = \
 	@LIBXERCES_C_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ 
 
-memtool_LDFLAGS = \
+repeatMemtool_LDFLAGS = \
 	-L$(top_srcdir) \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ @CBTF_XML_LDFLAGS@ \
@@ -51,7 +51,7 @@ memtool_LDFLAGS = \
 	@LIBXERCES_C_LDFLAGS@ \
 	@MRNET_LDFLAGS@ 
 
-memtool_LDADD = \
+repeatMemtool_LDADD = \
 	-lcbtf-xml \
 	-lcbtf-mrnet \
 	-lcbtf-core \
@@ -65,10 +65,10 @@ memtool_LDADD = \
 endif
   	
 if HAVE_TARGET_SHARED
-contribbin_PROGRAMS = memtool
-memtool_SOURCES = mem_tool.cpp
+contribbin_PROGRAMS = repeatMemtool
+repeatMemtool_SOURCES = repeatMem_tool.cpp
 
-memtool_CXXFLAGS = \
+repeatMemtool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
@@ -78,7 +78,7 @@ memtool_CXXFLAGS = \
 	@TARGET_LIBXERCES_C_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@ 
 
-memtool_LDFLAGS = \
+repeatMemtool_LDFLAGS = \
 	-L$(top_srcdir) \
 	@TARGET_BOOST_LDFLAGS@ \
 	@TARGET_CBTF_LDFLAGS@ @TARGET_CBTF_XML_LDFLAGS@ \
@@ -86,7 +86,7 @@ memtool_LDFLAGS = \
 	@TARGET_LIBXERCES_C_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ 
 
-memtool_LDADD = \
+repeatMemtool_LDADD = \
 	-lcbtf-xml \
 	-lcbtf-mrnet \
 	-lcbtf-core \
@@ -100,22 +100,22 @@ memtool_LDADD = \
 endif
   	
 
-contribplugin_LTLIBRARIES = memPlugin.la mrnetPlugin.la
+contribplugin_LTLIBRARIES = repeatMemPlugin.la mrnetPlugin.la
 
 
 if !BUILD_TARGETED
-memPlugin_la_SOURCES = memPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
 
-memPlugin_la_CXXFLAGS = \
+repeatMemPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@
 
-memPlugin_la_LDFLAGS = \
+repeatMemPlugin_la_LDFLAGS = \
 	-L$(top_srcdir) \
 	-module -avoid-version -shared -rpath /ForceShared \
 	@CBTF_LDFLAGS@
 
-memPlugin_la_LIBADD = \
+repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@CBTF_LIBS@
 
@@ -140,18 +140,18 @@ mrnetPlugin_la_LIBADD = \
 else
 
 if HAVE_TARGET_SHARED
-memPlugin_la_SOURCES = memPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
 
-memPlugin_la_CXXFLAGS = \
+repeatMemPlugin_la_CXXFLAGS = \
 	@TARGET_BOOST_CPPFLAGS@ \
 	@TARGET_CBTF_CPPFLAGS@
 
-memPlugin_la_LDFLAGS = \
+repeatMemPlugin_la_LDFLAGS = \
 	-L$(top_srcdir) \
 	-module -avoid-version -shared -rpath /ForceShared \
 	@TARGET_CBTF_LDFLAGS@
 
-memPlugin_la_LIBADD = \
+repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@TARGET_CBTF_LIBS@
 
@@ -176,20 +176,20 @@ mrnetPlugin_la_LIBADD = \
 else
 
 if HAVE_TARGET_STATIC
-memPlugin_la_SOURCES = memPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
 
-memPlugin_la_CXXFLAGS = \
+repeatMemPlugin_la_CXXFLAGS = \
 	-static \
 	@TARGET_BOOST_CPPFLAGS@ \
 	@TARGET_CBTF_CPPFLAGS@
 
-memPlugin_la_LDFLAGS = \
+repeatMemPlugin_la_LDFLAGS = \
 	-static \
 	-L$(top_srcdir) \
 	-module -avoid-version -shared -rpath /ForceShared \
 	@TARGET_CBTF_LDFLAGS@
 
-memPlugin_la_LIBADD = \
+repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@TARGET_CBTF_LIBS@
 
@@ -223,12 +223,12 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-mem.xml: mem.xml.in
+repeatMem.xml: repeatMem.xml.in
 
-	@rm -f mem.xml
+	@rm -f repeatMem.xml
 	@sed \
                 -e 's,@@contriblib_location@@,$(contribplugindir),' \
                 -e 's,@@cbtflib_location@@,$(libdir),' \
-                $(srcdir)/mem.xml.in > mem.xml
+                $(srcdir)/repeatMem.xml.in > repeatMem.xml
 
-EXTRA_DIST = mem.xml.in
+EXTRA_DIST = repeatMem.xml.in

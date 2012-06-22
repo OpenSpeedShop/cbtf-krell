@@ -44,6 +44,9 @@
 #include <unistd.h>
 #include <vector>
 
+  typedef std::vector<std::string> sameVec;
+  typedef std::vector<std::string> diffVec;
+
 using namespace KrellInstitute::CBTF;
 
 /**
@@ -85,11 +88,11 @@ int main(int argc, char *argv[])
   Component::connect(input_value_component, "value", network, "in");
 
   // create the output
-  boost::shared_ptr<ValueSink<std::vector<std::string> > > outSame_value = ValueSink<std::vector<std::string> >::instantiate();
+  boost::shared_ptr<ValueSink<sameVec> > outSame_value = ValueSink<sameVec>::instantiate();
   Component::Instance outSame_value_component = boost::reinterpret_pointer_cast<Component>(outSame_value);
   Component::connect(network, "outSame", outSame_value_component, "value");
 
-boost::shared_ptr<ValueSink<std::vector<std::string> > > outDiff_value = ValueSink<std::vector<std::string> >::instantiate();
+  boost::shared_ptr<ValueSink<diffVec> > outDiff_value = ValueSink<diffVec>::instantiate();
   Component::Instance outDiff_value_component = boost::reinterpret_pointer_cast<Component>(outDiff_value);
   Component::connect(network, "outDiff", outDiff_value_component, "value");
 
@@ -103,26 +106,26 @@ boost::shared_ptr<ValueSink<std::vector<std::string> > > outDiff_value = ValueSi
   // start chain
   *input_value = "start";
   
-  std::vector<std::string> outSame = *outSame_value;
-  std::vector<std::string> outDiff = *outDiff_value;
+  sameVec outSame = *outSame_value;
+  diffVec outDiff = *outDiff_value;
 
   // output same
-  std::cout << "---Same Proc's---\n";
-  for(std::vector<std::string>::const_iterator i = outSame.begin(); 
+  std::cout << "---List of  Same Proc's---" << std::endl;
+  for(sameVec::const_iterator i = outSame.begin(); 
         i != outSame.end(); ++i)
   {
     std::cout << *i;
   }
-  std::cout << "---End Same Proc's---\n";
+  std::cout << "---End Same Proc's---" << std::endl;;
 
   // output diff
-  std::cout << "---Diff Proc's---\n";
-  for(std::vector<std::string>::const_iterator i = outDiff.begin(); 
+  std::cout << "---List of Diff Proc's---" << std::endl;
+  for(diffVec::const_iterator i = outDiff.begin(); 
         i != outDiff.end(); ++i)
   {
     std::cout << *i;
   }
-  std::cout << "---End Diff Proc's---\n";
+  std::cout << "---End Diff Proc's---" << std::endl;
 
   return 0;
 }

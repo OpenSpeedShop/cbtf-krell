@@ -10,10 +10,91 @@
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
 
+typedef std::vector<std::string> sameVec;
+typedef std::vector<std::string> diffVec;
+
 using namespace KrellInstitute::CBTF;
 
+
+class __attribute__ ((visibility ("hidden"))) psFE :
+    public Component
+{
+
+public:
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+          reinterpret_cast<Component*>(new psFE())
+        );
+    }
+
+private:
+    /** Default constructor. */
+    psFE() :
+        Component(Type(typeid(psFE)), Version(1, 0, 0))
+    {
+        declareInput<std::string >(
+            "stringin", boost::bind(&psFE::stringinHandler, this, _1)
+            );
+        declareInput<std::vector<std::string> >(
+            "vstringin", boost::bind(&psFE::vstringinHandler, this, _1)
+            );
+        declareInput<sameVec>(
+            "sameVecIn", boost::bind(&psFE::sameVecInHandler, this, _1)
+            );
+        declareInput<diffVec>(
+            "diffVecIn", boost::bind(&psFE::diffVecInHandler, this, _1)
+            );
+        declareOutput<std::string >("stringout");
+        declareOutput<std::vector<std::string> >("vstringout");
+        declareOutput<sameVec>("sameVecOut");
+        declareOutput<diffVec>("diffVecOut");
+    }
+
+    /** Handler for the "stringin" input.*/
+    // just pass it on..
+    void stringinHandler(const std::string& in)
+    { 
+        emitOutput<std::string >("stringout", in);
+    }
+
+    /** Handler for the "vstringin" input.*/
+    // just pass it on..
+    void vstringinHandler(const std::vector<std::string>& in)
+    { 
+	if (in.size() > 0) {
+            emitOutput<std::vector<std::string> >("vstringout", in);
+	}
+    }
+
+    /** Handler for the "sameVec" input.*/
+    // just pass it on..
+    void sameVecInHandler(const sameVec& in)
+    { 
+	if (in.size() > 0) {
+	    //std::cerr << "psFE::sameVecInHandler emits "
+	    //    << in.size() << " values" << std::endl;
+            emitOutput<sameVec>("sameVecOut", in);
+	}
+    }
+
+    /** Handler for the "diffVec" input.*/
+    // just pass it on..
+    void diffVecInHandler(const diffVec& in)
+    { 
+	if (in.size() > 0) {
+	    //std::cerr << "psFE::diffVecInHandler emits "
+	    //    << in.size() << " values" << std::endl;
+            emitOutput<diffVec>("diffVecOut", in);
+	}
+    }
+}; // end class psFE
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(psFE)
+
 /**
- *  * Filter to fine the same proc's
+ *  * Filter to find the same proc's
  *   */
 class __attribute__ ((visibility ("hidden"))) psSame :
     public Component
@@ -32,7 +113,7 @@ private:
     // variables
     int runNum;
     int nodes;
-    std::vector<std::string> outVec;
+    sameVec outVec;
     std::vector<std::vector<std::string> > inVec;
 
     /** Default constructor. */
@@ -42,7 +123,7 @@ private:
         declareInput<std::vector <std::string> >(
             "in", boost::bind(&psSame::inHandler, this, _1)
             );
-        declareOutput<std::vector <std::string> >("out");
+        declareOutput<sameVec>("out");
 
         // variables
         runNum = 0;
@@ -54,6 +135,7 @@ private:
     /** Handler for the "in" input.*/
     void inHandler(const std::vector<std::string>& in)
     { 
+      //std::cerr << "HANDLING PSSAME" << std::endl;
       //reset the outVec on the first run
       //can't reset it after you emitoutput because because it is bound to it
       if(runNum == 0) {
@@ -72,7 +154,10 @@ private:
         // check if a proc on one node is running on any other
         // grab each vector of procs
         int found;
-        for(std::vector<std::vector<std::string> >::const_iterator procVec = inVec.begin(); procVec != inVec.end(); ++procVec)
+        for(std::vector<std::vector<std::string> >::const_iterator
+               procVec = inVec.begin();
+               procVec != inVec.end();
+               ++procVec)
         {
           // take one proc
           for(std::vector<std::string>::const_iterator proc = procVec->begin(); 
@@ -80,14 +165,20 @@ private:
           {
             found = 0;
             // for all the other vector of procs
-            for(std::vector<std::vector<std::string> >::const_iterator procVecOther = inVec.begin(); procVecOther != inVec.end(); ++procVecOther)
+            for(std::vector<std::vector<std::string> >::const_iterator
+                    procVecOther = inVec.begin();
+                    procVecOther != inVec.end();
+                    ++procVecOther)
             {
               // don't check itself
               if(procVecOther != procVec)
               {
                 found = 0;
                 // look at each of the procs in the other vectors
-                for(std::vector<std::string>::const_iterator procOther = procVecOther->begin(); procOther != procVecOther->end(); ++procOther)
+                for(std::vector<std::string>::const_iterator
+                        procOther = procVecOther->begin();
+                        procOther != procVecOther->end();
+                        ++procOther)
                 {
                 // check to see if the original proc is the same as any other
                 // if it is stop looking
@@ -114,7 +205,8 @@ private:
             {
               // this proc was found on every node so save it
               // but don't save it twice
-              for(std::vector<std::string>::const_iterator outProc = outVec.begin(); outProc != outVec.end(); ++outProc) 
+              for(sameVec::const_iterator outProc = outVec.begin();
+                      outProc != outVec.end(); ++outProc) 
               {
                 // if the proc is already in the list don't save it
                 if(*outProc == *proc)
@@ -134,7 +226,11 @@ private:
         } //procVec
 
         // output the outVec
-        emitOutput<std::vector<std::string> >("out", outVec);
+	if (outVec.size() > 0 ) {
+	    //std::cerr << "PSSAME found " << outVec.size()
+	    //    << " same procs." << std::endl;
+            emitOutput<sameVec>("out", outVec);
+	}
         //reset the counter
         runNum = 0;
       }
@@ -164,7 +260,7 @@ private:
     // variables
     int runNum;
     int nodes;
-    std::vector<std::string> outVec;
+    diffVec outVec;
     std::vector<std::vector<std::string> > inVec;
 
     /** Default constructor. */
@@ -174,7 +270,7 @@ private:
         declareInput<std::vector <std::string> >(
             "in", boost::bind(&psDiff::inHandler, this, _1)
             );
-        declareOutput<std::vector <std::string> >("out");
+        declareOutput<diffVec>("out");
 
         // variables
         runNum = 0;
@@ -186,6 +282,7 @@ private:
     /** Handler for the "in" input.*/
     void inHandler(const std::vector<std::string>& in)
     { 
+      //std::cerr << "HANDLING PSDIFF" << std::endl;
       //reset the outVec on the first run
       //can't reset it after you emitoutput because because it is bound to it
       if(runNum == 0) {
@@ -204,7 +301,10 @@ private:
         // check if a proc on one node is running on any other
         // grab each vector of procs
         int found;
-        for(std::vector<std::vector<std::string> >::const_iterator procVec = inVec.begin(); procVec != inVec.end(); ++procVec)
+        for(std::vector<std::vector<std::string> >::const_iterator
+                procVec = inVec.begin();
+                procVec != inVec.end();
+                ++procVec)
         {
           // take one proc
           for(std::vector<std::string>::const_iterator proc = procVec->begin(); 
@@ -212,14 +312,20 @@ private:
           {
             found = 0;
             // for all the other vector of procs
-            for(std::vector<std::vector<std::string> >::const_iterator procVecOther = inVec.begin(); procVecOther != inVec.end(); ++procVecOther)
+            for(std::vector<std::vector<std::string> >::const_iterator
+	           procVecOther = inVec.begin();
+                   procVecOther != inVec.end();
+                   ++procVecOther)
             {
               // don't check itself
               if (procVecOther != procVec)
               { 
                 found = 0;
                 // look at each of the procs in the other vectors
-                for(std::vector<std::string>::const_iterator procOther = procVecOther->begin(); procOther != procVecOther->end(); ++procOther)
+                for(std::vector<std::string>::const_iterator
+                    procOther = procVecOther->begin();
+                    procOther != procVecOther->end();
+		    ++procOther)
                 {
                   // check to see if the original proc is the same as any other
                   // if it is stop looking
@@ -250,13 +356,21 @@ private:
             if(found == 0) 
             {
               // this proc was found on only one node so save it
+              //std::cerr << "PSDIFF proc only on one node: " << *proc << std::endl;
               outVec.push_back(*proc);
             }
           } // proc
         } //procVec
 
         // output the outVec
-        emitOutput<std::vector<std::string> >("out", outVec);
+        if (outVec.size() > 0) {
+	    //std::cerr << "PSDIFF found " << outVec.size()
+	    //    << " differing procs." << std::endl;
+            emitOutput<diffVec>("out", outVec);
+	} else {
+	    outVec.push_back("NO different procs across nodes.\n");
+            emitOutput<diffVec>("out", outVec);
+	}
         //reset the counter
         runNum = 0;
       }
@@ -294,6 +408,8 @@ private:
     }
 
     /** Handler for the "in" input.*/
+    // Apparently the FE client sends a std::string "start"
+    // to this input.
     void inHandler(const std::string& in)
     { 
       char buffer[100];

@@ -1,26 +1,5 @@
-memTool - a tool to see the memory usage for each MPI proc across many nodes.
+repeatingMemtool - a tool to see the memory usage for each MPI proc across many nodes.
 
-Run memtool with the number of backend nodes and the name of an application to see the memory usage for that application.  If the name is an MPI application the tool will find all the running procedures on every node.  Below is an example using an MPI application called mpi_malloc-tu running on two nodes:
-
-[mmason@tua003 memTool]$ ./memtool -be 2 mpi_malloc-tu
-tua009.localdomain
-            total       used       free     shared    buffers     cached
-Mem:         32188      15947      16241          0          0        985
-pid 	%mem 	mem(MB)
-3520 	28.6 	9205.7685(MB)
-3521 	16.6 	5343.2084(MB)
-----------------------
-tua008.localdomain
-            total       used       free     shared    buffers     cached
-Mem:         32188      21291      10897          0          0        956
-pid 	%mem 	mem(MB)
-5033 	16.6 	5343.2084(MB)
-5034 	28.6 	9205.7685(MB)
-5035 	16.6 	5343.2084(MB)
-----------------------
-
-Currently the topology file used is the default ~/.cbtf/cbtf_topology it must be in the form of:
-rr-dev-fe.lanl.gov:0 => 
-  rra012a.rr.lanl.gov:0 ;
+Run repeatingMemtool with the number of backend nodes, the name of an application, and the time step associated with each delay between repititions (in seconds) to see the memory usage for that application.  If the name is an MPI application the tool will find all the running procedures on every backend node.  Below is an example using an MPI application called mpi_malloc-tu running on two nodes:
 
 You can add any number of backends just specify the number with the -be option.

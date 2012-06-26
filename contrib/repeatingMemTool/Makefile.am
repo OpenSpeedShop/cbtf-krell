@@ -31,7 +31,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 if !BUILD_TARGETED
 contribbin_PROGRAMS = repeatMemtool
-repeatMemtool_SOURCES = repeatMem_tool.cpp
+repeatMemtool_SOURCES = repeatMem_tool.cpp \
+			Memory.cpp
 
 repeatMemtool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
@@ -66,7 +67,8 @@ endif
   	
 if HAVE_TARGET_SHARED
 contribbin_PROGRAMS = repeatMemtool
-repeatMemtool_SOURCES = repeatMem_tool.cpp
+repeatMemtool_SOURCES = repeatMem_tool.cpp \
+			Memory.cpp
 
 repeatMemtool_CXXFLAGS = \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
@@ -100,11 +102,12 @@ repeatMemtool_LDADD = \
 endif
   	
 
-contribplugin_LTLIBRARIES = repeatMemPlugin.la mrnetPlugin.la
+contribplugin_LTLIBRARIES = repeatMemPlugin.la mrnetPlugin.la statisticsPlugin.la
 
 
 if !BUILD_TARGETED
-repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp \
+			     Memory.cpp
 
 repeatMemPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
@@ -119,7 +122,8 @@ repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@CBTF_LIBS@
 
-mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp \
+			 Memory.cpp
 
 mrnetPlugin_la_CXXFLAGS = \
 	@BOOST_CPPFLAGS@ \
@@ -137,10 +141,31 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@CBTF_LIBS@ \
 	@MRNET_LIBS@
+
+statisticsPlugin_la_SOURCES = statisticsPlugin.cpp \
+			 Memory.cpp
+
+statisticsPlugin_la_CXXFLAGS = \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+statisticsPlugin_la_LDFLAGS = \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+statisticsPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@CBTF_LIBS@ \
+	@MRNET_LIBS@
 else
 
 if HAVE_TARGET_SHARED
-repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp \
+			     Memory.cpp
 
 repeatMemPlugin_la_CXXFLAGS = \
 	@TARGET_BOOST_CPPFLAGS@ \
@@ -155,7 +180,8 @@ repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@TARGET_CBTF_LIBS@
 
-mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp \
+			 Memory.cpp
 
 mrnetPlugin_la_CXXFLAGS = \
 	@TARGET_BOOST_CPPFLAGS@ \
@@ -173,10 +199,31 @@ mrnetPlugin_la_LIBADD = \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_MRNET_LIBS@
+
+statisticsPlugin_la_SOURCES = statisticsPlugin.cpp \
+			 Memory.cpp
+
+statisticsPlugin_la_CXXFLAGS = \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+statisticsPlugin_la_LDFLAGS = \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+statisticsPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
 else
 
 if HAVE_TARGET_STATIC
-repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp
+repeatMemPlugin_la_SOURCES = repeatMemPlugin.cpp \
+			     Memory.cpp
 
 repeatMemPlugin_la_CXXFLAGS = \
 	-static \
@@ -193,7 +240,8 @@ repeatMemPlugin_la_LIBADD = \
 	-lcbtf-core \
 	@TARGET_CBTF_LIBS@
 
-mrnetPlugin_la_SOURCES = mrnetPlugin.cpp
+mrnetPlugin_la_SOURCES = mrnetPlugin.cpp \
+			 Memory.cpp
 
 mrnetPlugin_la_CXXFLAGS = \
 	-static \
@@ -209,6 +257,28 @@ mrnetPlugin_la_LDFLAGS = \
 	@TARGET_MRNET_LDFLAGS@
 
 mrnetPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-mrnet \
+	@TARGET_CBTF_LIBS@ \
+	@TARGET_MRNET_LIBS@
+
+statisticsPlugin_la_SOURCES = statisticsPlugin.cpp \
+			 Memory.cpp
+
+statisticsPlugin_la_CXXFLAGS = \
+	-static \
+	@TARGET_BOOST_CPPFLAGS@ \
+	@TARGET_CBTF_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@
+
+statisticsPlugin_la_LDFLAGS = \
+	-static \
+        -L$(top_srcdir) \
+	-module -avoid-version -shared -rpath /ForceShared \
+        @TARGET_CBTF_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@
+
+statisticsPlugin_la_LIBADD = \
 	-lcbtf-core \
 	-lcbtf-mrnet \
 	@TARGET_CBTF_LIBS@ \

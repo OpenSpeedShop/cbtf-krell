@@ -43,11 +43,14 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "Memory.h"
+#include "../components/filters/statistics/statisticsPlugin.hpp"
+
 using namespace boost;
 using namespace KrellInstitute::CBTF;
 
 void printUsageExample() {
-    std::cout << "  example >./memtool -be 2 mpi_hang 45" << std::endl;
+    std::cout << "  example >./repeatMemtool -be 2 mpi_hang 45" << std::endl;
 }
 
 /**
@@ -55,158 +58,209 @@ void printUsageExample() {
  */
 int main(int argc,  char *argv[ ])
 {
-  if(argc != 5)
-  {
-    std::cout << "Error argc = " << argc 
-      << " memtool must be run with the number of backends and the name of an application\n";
-    printUsageExample();
-    return 0; 
-  }
+    if(argc != 5)
+    {
+        std::cout << "Error argc = " << argc 
+            << " repeatMemtool must be run with the number of backends and the name of an application\n";
+        printUsageExample();
+        return 0; 
+    }
 
-  // parse argv
-  std::string be = "";
-  int numBE = 0;
-  int freq = 30;
-  std::string cmd = "";
-  std::string tmparg = "";
-  tmparg += argv[1];
-  tmparg += " ";
-  tmparg += argv[2];
-  tmparg += " ";
-  tmparg += argv[3];
-  tmparg += " ";
-  tmparg += argv[4];
-  std::stringstream argstream(tmparg);
-  
-  argstream >> be;
-  argstream >> numBE;
-  argstream >> cmd;
-  argstream >> freq;
+    // parse argv
+    std::string be = "";
+    int numBE = 0;
+    int freq = 30;
+    std::string cmd = "";
+    std::string tmparg = "";
+    tmparg += argv[1];
+    tmparg += " ";
+    tmparg += argv[2];
+    tmparg += " ";
+    tmparg += argv[3];
+    tmparg += " ";
+    tmparg += argv[4];
+    std::stringstream argstream(tmparg);
 
-  if( be != "-be" )
-  {
-    std::cout << "Error must specify number of backends with -be" << std::endl;
-    printUsageExample();
-  }
-  else if( numBE <= 0 )
-  {
-    std::cout << "Error number of backends must be greater then 0" << std::endl;
-    printUsageExample();
-  }
-  else if( cmd == "" )
-  {
-    std::cout << "Error must include vaild proc name" << std::endl;
-    printUsageExample();
-  }
-  else if ( freq <= 0)
-  {
-    std::cout << "Error frequency must be greater than 0" << std::endl;
-    printUsageExample();
-  }
+    argstream >> be;
+    argstream >> numBE;
+    argstream >> cmd;
+    argstream >> freq;
 
-  char const* home = getenv("HOME");
-  std::string default_topology(home);
-  default_topology += "/.cbtf/cbtf_topology";
+    if( be != "-be" )
+    {
+        std::cout << "Error must specify number of backends with -be" << std::endl;
+        printUsageExample();
+    }
+    else if( numBE <= 0 )
+    {
+        std::cout << "Error number of backends must be greater then 0" << std::endl;
+        printUsageExample();
+    }
+    else if( cmd == "" )
+    {
+        std::cout << "Error must include vaild proc name" << std::endl;
+        printUsageExample();
+    }
+    else if ( freq <= 0)
+    {
+        std::cout << "Error frequency must be greater than 0" << std::endl;
+        printUsageExample();
+    }
 
-  // XML
-  registerXML(filesystem::path(XMLDIR) / "mem.xml");
+    char const* home = getenv("HOME");
+    std::string default_topology(home);
+    default_topology += "/.cbtf/cbtf_topology";
 
-  // Setup MRNet
-  Component::registerPlugin(
+    // XML
+    registerXML(filesystem::path(XMLDIR) / "repeatMem.xml");
+
+    // Setup MRNet
+    Component::registerPlugin(
             filesystem::path(LIBDIR) / "KrellInstitute/CBTF/BasicMRNetLaunchers.so"
             );
-  
-  Component::Instance launcher = Component::instantiate(
-    Type("BasicMRNetLauncherUsingBackendCreate")  );
 
-  // Setup the Network
-  Component::Instance network;
-  network = Component::instantiate(Type("memNetwork"));
+    Component::Instance launcher = Component::instantiate(
+            Type("BasicMRNetLauncherUsingBackendCreate")  );
 
-  Component::connect(launcher, "Network", network, "Network");
+    // Setup the Network
+    Component::Instance network;
+    network = Component::instantiate(Type("repeatMemNetwork"));
 
-  // Setup Topology file
-  boost::shared_ptr<ValueSource<boost::filesystem::path> > topology_file =
+    Component::connect(launcher, "Network", network, "Network");
+
+    // Setup Topology file
+    boost::shared_ptr<ValueSource<boost::filesystem::path> > topology_file =
         ValueSource<boost::filesystem::path>::instantiate();
 
- Component::Instance topology_file_component = boost::reinterpret_pointer_cast<Component>(topology_file);
+    Component::Instance topology_file_component = boost::reinterpret_pointer_cast<Component>(topology_file);
 
-  Component::connect(
-        topology_file_component, "value", launcher, "TopologyFile"
-        );
+    Component::connect(
+            topology_file_component, "value", launcher, "TopologyFile"
+            );
 
-  // create the input
-  boost::shared_ptr<ValueSource<std::string> > input_value = ValueSource<std::string>::instantiate();
-  Component::Instance input_value_component = boost::reinterpret_pointer_cast<Component>(input_value);
-  Component::connect(input_value_component, "value", network, "in");
+    // create the input
+    boost::shared_ptr<ValueSource<std::string> > input_value = ValueSource<std::string>::instantiate();
+    Component::Instance input_value_component = boost::reinterpret_pointer_cast<Component>(input_value);
+    Component::connect(input_value_component, "value", network, "in");
 
-  boost::shared_ptr<ValueSource<struct timespec> > freq_input_value 
-    = ValueSource<struct timespec>::instantiate();
-  Component::Instance freq_input_component 
-    = boost::reinterpret_pointer_cast<Component>(freq_input_value);
-  Component::connect(freq_input_component, "value", network, "freq_in");
+    boost::shared_ptr<ValueSource<struct timespec> > freq_input_value 
+        = ValueSource<struct timespec>::instantiate();
+    Component::Instance freq_input_component 
+        = boost::reinterpret_pointer_cast<Component>(freq_input_value);
+    Component::connect(freq_input_component, "value", network, "freq_in");
 
-  // create the output
-  boost::shared_ptr<ValueSink<std::vector<std::string> > > output_value = ValueSink<std::vector<std::string> >::instantiate();
-  Component::Instance output_value_component = boost::reinterpret_pointer_cast<Component>(output_value);
-  Component::connect(network, "out", output_value_component, "value");
+    // create the output
+    boost::shared_ptr<ValueSink<std::vector<std::string> > > output_value = ValueSink<std::vector<std::string> >::instantiate();
+    Component::Instance output_value_component = boost::reinterpret_pointer_cast<Component>(output_value);
+    Component::connect(network, "out", output_value_component, "value");
 
-  boost::shared_ptr<ValueSink<struct timeval> > elapsed_time_output_value 
-    = ValueSink<struct timeval>::instantiate();
-  Component::Instance elapsed_time_output_component 
-    = boost::reinterpret_pointer_cast<Component>(elapsed_time_output_value);
-  Component::connect(network,
-        "elapsed_time_out",
-        elapsed_time_output_component,
-        "value");
+    boost::shared_ptr<ValueSink<struct timeval> > elapsed_time_output_value 
+        = ValueSink<struct timeval>::instantiate();
+    Component::Instance elapsed_time_output_component 
+        = boost::reinterpret_pointer_cast<Component>(elapsed_time_output_value);
+    Component::connect(network,
+            "elapsed_time_out",
+            elapsed_time_output_component,
+            "value");
 
-  boost::shared_ptr<ValueSink<bool> > term_output_value 
-    = ValueSink<bool>::instantiate();
-  Component::Instance term_output_component 
-    = boost::reinterpret_pointer_cast<Component>(term_output_value);
-  Component::connect(network,
-        "term_out",
-        term_output_component,
-        "value");
+    boost::shared_ptr<ValueSink<bool> > term_output_value 
+        = ValueSink<bool>::instantiate();
+    Component::Instance term_output_component 
+        = boost::reinterpret_pointer_cast<Component>(term_output_value);
+    Component::connect(network,
+            "term_out",
+            term_output_component,
+            "value");
 
-  // start mrnet network
-  *topology_file = default_topology;
+    boost::shared_ptr<ValueSink<std::vector<NodeMemory> > > mem_output_value 
+        = ValueSink<std::vector<NodeMemory> >::instantiate();
+    Component::Instance mem_output_component 
+        = boost::reinterpret_pointer_cast<Component>(mem_output_value);
+    Component::connect(network,
+            "mem_out",
+            mem_output_component,
+            "value");
 
-  // send the app name down the mrnet tree
-  *input_value = cmd;
+    boost::shared_ptr<ValueSink<int*> > bin_output_value 
+        = ValueSink<int*>::instantiate();
+    Component::Instance bin_output_component 
+        = boost::reinterpret_pointer_cast<Component>(bin_output_value);
+    Component::connect(network,
+            "bin_out",
+            bin_output_component,
+            "value");
 
-  struct timespec frequency;
-  frequency.tv_sec = (time_t) freq;
-  frequency.tv_nsec = 0.0;
+    boost::shared_ptr<ValueSink<Statistics<float> > > stat_output_value 
+        = ValueSink<Statistics<float> >::instantiate();
+    Component::Instance stat_output_component 
+        = boost::reinterpret_pointer_cast<Component>(stat_output_value);
+    Component::connect(network,
+            "stat_out",
+            stat_output_component,
+            "value");
 
-  *freq_input_value = frequency;
+    // start mrnet network
+    *topology_file = default_topology;
 
-  std::vector<std::string> output;
-  bool terminate;
-  struct timeval elapsed_time_output;
-  // get the output from each backend
+    // send the app name down the mrnet tree
+    *input_value = cmd;
+
+    struct timespec frequency;
+    frequency.tv_sec = (time_t) freq;
+    frequency.tv_nsec = 0.0;
+
+    *freq_input_value = frequency;
+
+    std::vector<std::string> output;
+    bool terminate;
+    struct timeval elapsed_time_output;
+    std::vector<NodeMemory> mem_output;
+    int * bin_output;
+    Statistics<float> stat_output;
+    // get the output from each backend
     // wait for output
     terminate = *term_output_value;
     while(!terminate) {
 
-    elapsed_time_output = *elapsed_time_output_value;
-    output = *output_value;
-    // print each line in the output vector
-    for(std::vector<std::string>::const_iterator i = output.begin(); 
-          i != output.end(); ++i)
-    {
-      std::cout << *i << std::endl;
-    }
-    std::cout << "----------------------" << std::endl;
-    std::cout << "Elapsed time: "
-        << elapsed_time_output.tv_sec
-        << "sec "
-        << elapsed_time_output.tv_usec
-        << "microsec"
-        << std::endl;
+        mem_output = *mem_output_value;
+        bin_output = *bin_output_value;
+        stat_output = *stat_output_value;
 
-    terminate = *term_output_value;
+        std::cout << "Application Stats:\n"
+            << stat_output.toString()
+            << std::endl;
+        for (int i = 0; i < 100; i++) {
+            std::cout 
+                << "bin[" << i << "]: " 
+                << bin_output[i]
+                << std::endl;
+        }
+        for (int i = 0; i < mem_output.size(); i++) {
+            std::cout << "Memory Info: \n"
+                << mem_output[i].toString()
+                << std::endl;
+        }
+        elapsed_time_output = *elapsed_time_output_value;
+        output = *output_value;
+        // print each line in the output vector
+        for(std::vector<std::string>::const_iterator i = output.begin(); 
+                i != output.end(); ++i)
+        {
+            std::cout << *i << std::endl;
+        }
+        std::cout << "----------------------" << std::endl;
+        std::cout << "Elapsed time: "
+            << elapsed_time_output.tv_sec
+            << "sec "
+            << elapsed_time_output.tv_usec
+            << "microsec"
+            << std::endl;
+
+        terminate = *term_output_value;
+        if (terminate) {
+            std::cout << "Recieved Terminate Signal" << std::endl;
+        }
     }
-  return 0;
+    return 0;
 }
 

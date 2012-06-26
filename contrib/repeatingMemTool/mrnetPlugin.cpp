@@ -4,6 +4,7 @@
 #include <mrnet/MRNet.h>
 #include <typeinfo>
 #include <string>
+#include "Memory.h"
 
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
@@ -271,3 +272,207 @@ private:
 }; // class ConvertPacketToBool
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToBool)
+
+/**
+ * Component that converts a MRNet packet into an string value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertNodeMemoryToPacket :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertNodeMemoryToPacket())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertNodeMemoryToPacket() :
+        Component(Type(typeid(ConvertNodeMemoryToPacket)), Version(1, 0, 0))
+    {
+        declareInput<NodeMemory>(
+            "NodeMemoryIn", boost::bind(&ConvertNodeMemoryToPacket::inHandler1, 
+                this, _1)
+            );
+        declareOutput<MRN::PacketPtr>("PacketOut");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler1(const NodeMemory& nm)
+    {
+
+        emitOutput<MRN::PacketPtr>(
+                "PacketOut",
+                MRN::PacketPtr(new MRN::Packet(0, 0, "%f %f %s", 
+                        nm.getTotal(), nm.getApplication(), nm.getId().c_str()))
+                );
+    }
+}; // class ConvertNodeMemoryToPacket
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertNodeMemoryToPacket)
+
+/**
+ * Component that converts a MRNet packet into an string value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertPacketToNodeMemory :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertPacketToNodeMemory())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertPacketToNodeMemory() :
+        Component(Type(typeid(ConvertPacketToNodeMemory)), Version(1, 0, 0))
+    {
+        declareInput<MRN::PacketPtr>(
+            "PacketIn", boost::bind(&ConvertPacketToNodeMemory::inHandler1, 
+                this, _1)
+            );
+        declareOutput<NodeMemory>("NodeMemoryOut");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler1(const MRN::PacketPtr& packetIn)
+    {
+        NodeMemory nmOut;
+        float tmpTotal;
+        float tmpAppl;
+        std::string tmpId;
+        packetIn->unpack("%f %f %s", &tmpTotal, &tmpAppl, &tmpId);
+        nmOut.setTotal(tmpTotal);
+        nmOut.setApplication(tmpAppl);
+        nmOut.setId(tmpId);
+        emitOutput<NodeMemory>("NodeMemoryOut", nmOut);
+    }
+}; // class ConvertPacketToNodeMemory
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToNodeMemory)
+
+/**
+ * Component that converts a MRNet packet into an string value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertNodeMemoryVectToPacket :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertNodeMemoryVectToPacket())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertNodeMemoryVectToPacket() :
+        Component(Type(typeid(ConvertNodeMemoryVectToPacket)), Version(1, 0, 0))
+    {
+        declareInput< std::vector<NodeMemory> >(
+            "NodeMemoryVectIn", boost::bind(
+                &ConvertNodeMemoryVectToPacket::inHandler1, this, _1)
+            );
+        declareOutput<MRN::PacketPtr>("PacketOut");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler1(const std::vector<NodeMemory>& nm)
+    {
+        int arrySize = nm.size();
+        float * tmpTotalArry = (float *) calloc(arrySize, sizeof(float));
+        float * tmpApplicationArry = (float *) calloc(arrySize, sizeof(float));
+        char ** tmpIdArry = (char **) calloc(arrySize, sizeof(char *));
+
+        for (int i = 0; i < arrySize; i++) {
+            tmpTotalArry[i] = nm[i].getTotal();
+            tmpApplicationArry[i] = nm[i].getApplication();
+            std::string id = nm[i].getId();
+            tmpIdArry[i] = (char *) calloc(id.size() + 1, sizeof(char));
+            strncpy(tmpIdArry[i], id.c_str(), id.size() + 1);
+        }
+
+        emitOutput<MRN::PacketPtr>(
+                "PacketOut",
+                MRN::PacketPtr(new MRN::Packet(0, 0, "%af %af %as", 
+                        tmpTotalArry, arrySize,
+                        tmpApplicationArry, arrySize,
+                        tmpIdArry, arrySize))
+                );
+    }
+}; // class ConvertNodeMemoryVectToPacket
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertNodeMemoryVectToPacket)
+
+/**
+ * Component that converts a MRNet packet into an string value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertPacketToNodeMemoryVect :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertPacketToNodeMemoryVect())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertPacketToNodeMemoryVect() :
+        Component(Type(typeid(ConvertPacketToNodeMemoryVect)), Version(1, 0, 0))
+    {
+        declareInput<MRN::PacketPtr>(
+            "PacketIn", boost::bind(&ConvertPacketToNodeMemoryVect::inHandler1, 
+                this, _1)
+            );
+        declareOutput< std::vector<NodeMemory> >("NodeMemoryOut");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler1(const MRN::PacketPtr& packetIn)
+    {
+        std::vector<NodeMemory> nmOut;
+        int arrySize;
+        float * tmpTotalArry;
+        float * tmpApplArry;
+        char ** tmpIdArry;
+        packetIn->unpack("%af %af %as", 
+                &tmpTotalArry, &arrySize,
+                &tmpApplArry, &arrySize,
+                &tmpIdArry, &arrySize);
+        for (int i = 0; i < arrySize; i++) {
+            NodeMemory tmp;
+            tmp.setTotal(tmpTotalArry[i]);
+            tmp.setApplication(tmpApplArry[i]);
+            tmp.setId(tmpIdArry[i]);
+            nmOut.push_back(tmp);
+        }
+        emitOutput< std::vector<NodeMemory> >("NodeMemoryOut", nmOut);
+    }
+}; // class ConvertPacketToNodeMemoryVect
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToNodeMemoryVect)

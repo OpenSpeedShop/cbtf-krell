@@ -1,3 +1,5 @@
+// Again as in any C++ file we start by including the libraries we will 
+// need.  We load our boost, Krell and normal helper libraries.
 #include <boost/bind.hpp>
 #include <typeinfo>
 #include <iostream>
@@ -10,15 +12,22 @@
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
 
+// We are still working in the KrellInstitute::CBTF namespace.
 using namespace KrellInstitute::CBTF;
 
-/**
- *  * Component type used by the unit test for the Component class.
- *   */
+// This is the C++ class definition for the component called getPID.
+// This component will take the name of an MPI application as a string 
+// and output a list, as a vector of strings, of all PIDs on the node 
+// that have that name.  The stack tool then feeds this to the input of 
+// a component that takes a list of PIDs and outputs a stack trace for 
+// each of those PIDs.
 class __attribute__ ((visibility ("hidden"))) getPID :
     public Component
 {
 
+// Remember most of this code is the same for each component so the 
+// only thing you need to change for a new component so far is the name 
+// getPID above and below.
 public:
     /** Factory function for this component type. */
     static Component::Instance factoryFunction()
@@ -28,6 +37,17 @@ public:
         );
     }
 
+// This part is important, here is where you define the inputs and 
+// outputs to this component.  You use the functions declareInput 
+// or declareOutput to define a new input/output.  You include they 
+// C++ type for that input/output in the <>.  Then you name that 
+// input/output in "", that name will be used in the XML file.  
+// They should be unique with in a component but you can have multiple
+//  component with an input called "in".  Although it may be helpful 
+//  to be a little more descriptive when dealing with more complicated 
+//  components.  At the moment there is no naming convention in CBTF. 
+//  For the input you then need to bind the input to a function (a 
+//  method of this class).
 private:
     /** Default constructor. */
     getPID() :
@@ -39,19 +59,35 @@ private:
         declareOutput<std::vector<std::string> >("out");
     }
 
+// This is the function we have bound to the input for this component.  
+// Notice that it takes one argument with the type defined in declareInput 
+// above.  These input handler functions are where you add your code, 
+// this is the part the tells the component what to do with the input.
     /** Handler for the "in" input.*/
     void inHandler(const std::string& in)
     { 
+// Remember that instances of this component that will be run on all of 
+// the backend nodes but any single component will only be running on 
+// one node.  So you just need to write your code as if you are dealing 
+// with one node and CBTF will handle dealing with the many nodes your 
+// tool will run on.  Below we setup some variables used for this component.
       char buffer[100];
       memset(&buffer,0,sizeof(buffer));
       FILE *p = NULL;
       std::string outline = "";
+
+// Here we setup the output variable with the same type as we stated in 
+// the declareOutput function above.  This is the variable we send as output 
+// at the end of this function.  We also prepare a command line that will get 
+// a list of PIDs with the name that was sent down the tree.  Remember this 
+// component only needs to get the PID list from the node it is running on.
       std::vector<std::string> output;
       std::string cmd = "ps -u $USER -o pid= -o comm= | grep ";
       cmd += in; 
-//      cmd += " | cut -f 1 -d \" \"";
       cmd += " | awk -F \" \" '{print $1}'";
 
+// Here we use the normal C popen function to run the command on the node 
+// and store the output PIDs in the output variable.
       // get cmd
       p = popen(cmd.c_str(), "r");
       if(p != NULL) {
@@ -64,10 +100,13 @@ private:
         pclose(p);
       } //end if p
 
+// Once we have the PID list in the output variable we use the CBTF 
+// function emitOutput to send the output to where ever "out" is connected to.
       emitOutput<std::vector <std::string> >("out", output ); 
     }
 }; // end class getPID
 
+// This macro is needed to end the definition of the component.
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(getPID)
 
 

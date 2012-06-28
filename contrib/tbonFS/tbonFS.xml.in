@@ -63,31 +63,31 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <Component>
         <Name>PacketToString</Name>
-        <Type>ConvertPacketToString</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Ptop</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Pgrep</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Ptail</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Pread</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Pwrite</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>S2Pcp</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Type>PassThrough</Type>
       </Component>
 
       <Input>
@@ -238,14 +238,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Plugin>tbonFSFilter.so</Plugin>
       
       <Component>
-        <Name>PacketToString</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>StringToPacket</Name>
-        <Type>ConvertStringToPacket</Type>
-      </Component>
-      <Component>
         <Name>catVec</Name>
         <Type>tbonFScatVec</Type>
       </Component>
@@ -253,39 +245,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>Filter_In</Name>
         <To>
-          <Name>PacketToString</Name>
-          <Input>in2</Input>
+          <Name>catVec</Name>
+          <Input>in</Input>
         </To>
       </Input>
 
       <Output>
         <Name>Filter_Output</Name>
         <From>
-          <Name>StringToPacket</Name>
-          <Output>out2</Output>
-        </From>
-      </Output>
-
-      <Connection>
-        <From>
-          <Name>PacketToString</Name>
-          <Output>out2</Output>
-        </From>
-        <To>
-          <Name>catVec</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
           <Name>catVec</Name>
           <Output>out</Output>
         </From>
-        <To>
-          <Name>StringToPacket</Name>
-          <Input>in2</Input>
-        </To>
-      </Connection>
+      </Output>
 
     </Network>
 
@@ -312,32 +283,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Plugin>tbonFSPlugin.so</Plugin>
 
       <Component>
-        <Name>P2Stop</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>P2Sgrep</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>P2Stail</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>P2Sread</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>P2Swrite</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>P2Scp</Name>
-        <Type>ConvertPacketToString</Type>
-      </Component>
-      <Component>
-        <Name>StringToPacket</Name>
-        <Type>ConvertStringToPacket</Type>
+        <Name>PassThrough</Name>
+        <Type>PassThrough</Type>
       </Component>
       <Component>
         <Name>gTop</Name>
@@ -371,66 +318,56 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>Backend_InTop</Name>
         <To>
-          <Name>P2Stop</Name>
-          <Input>in1</Input>
+          <Name>gTopToggle</Name>
+          <Input>in</Input>
         </To>
       </Input>
       <Input>
         <Name>Backend_InGrep</Name>
         <To>
-          <Name>P2Sgrep</Name>
-          <Input>in2</Input>
+          <Name>gGrep</Name>
+          <Input>in</Input>
         </To>
       </Input>
       <Input>
         <Name>Backend_InTail</Name>
         <To>
-          <Name>P2Stail</Name>
-          <Input>in1</Input>
+          <Name>gTail</Name>
+          <Input>in</Input>
         </To>
       </Input>
       <Input>
         <Name>Backend_InRead</Name>
         <To>
-          <Name>P2Sread</Name>
-          <Input>in1</Input>
+          <Name>gRead</Name>
+          <Input>in</Input>
         </To>
       </Input>
       <Input>
         <Name>Backend_InWrite</Name>
         <To>
-          <Name>P2Swrite</Name>
-          <Input>in2</Input>
+          <Name>gWrite</Name>
+          <Input>in</Input>
         </To>
       </Input>
       <Input>
         <Name>Backend_InCp</Name>
         <To>
-          <Name>P2Scp</Name>
-          <Input>in2</Input>
+          <Name>gCp</Name>
+          <Input>in</Input>
         </To>
       </Input>
 
       <Output>
         <Name>Backend_Output</Name>
         <From>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Output>out2</Output>
         </From>
       </Output>
 
       <Connection>
         <From>
-          <Name>P2Stop</Name>
-          <Output>out1</Output>
-        </From>
-        <To>
-          <Name>gTopToggle</Name>
-          <Input>in</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
           <Name>gTopToggle</Name>
           <Output>out</Output>
         </From>
@@ -445,18 +382,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
-          <Name>P2Sgrep</Name>
-          <Output>out2</Output>
-        </From>
-        <To>
-          <Name>gGrep</Name>
-          <Input>in</Input>
         </To>
       </Connection>
       <Connection>
@@ -465,18 +392,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
-          <Name>P2Stail</Name>
-          <Output>out1</Output>
-        </From>
-        <To>
-          <Name>gTail</Name>
-          <Input>in</Input>
         </To>
       </Connection>
       <Connection>
@@ -485,18 +402,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
-          <Name>P2Sread</Name>
-          <Output>out1</Output>
-        </From>
-        <To>
-          <Name>gRead</Name>
-          <Input>in</Input>
         </To>
       </Connection>
       <Connection>
@@ -505,18 +412,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
-          <Name>P2Swrite</Name>
-          <Output>out2</Output>
-        </From>
-        <To>
-          <Name>gWrite</Name>
-          <Input>in</Input>
         </To>
       </Connection>
       <Connection>
@@ -525,18 +422,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
-        </To>
-      </Connection>
-      <Connection>
-        <From>
-          <Name>P2Scp</Name>
-          <Output>out2</Output>
-        </From>
-        <To>
-          <Name>gCp</Name>
-          <Input>in</Input>
         </To>
       </Connection>
       <Connection>
@@ -545,7 +432,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>out</Output>
         </From>
         <To>
-          <Name>StringToPacket</Name>
+          <Name>PassThrough</Name>
           <Input>in2</Input>
         </To>
       </Connection>

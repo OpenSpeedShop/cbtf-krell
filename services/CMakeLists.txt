@@ -16,36 +16,4 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-include(FindPackageHandleStandardArgs)
-
-find_library(CBTF_LIBRARY NAMES libcbtf.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(CBTF_XML_LIBRARY NAMES libcbtf-xml.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(CBTF_MRNET_LIBRARY NAMES libcbtf-mrnet.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_path(CBTF_INCLUDE_DIR KrellInstitute/CBTF/Component.hpp
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES include
-    )
-
-find_package_handle_standard_args(
-    CBTF DEFAULT_MSG
-    CBTF_LIBRARY CBTF_XML_LIBRARY CBTF_MRNET_LIBRARY CBTF_INCLUDE_DIR
-    )
-
-set(CBTF_LIBRARIES ${CBTF_LIBRARY} ${CBTF_XML_LIBRARY} ${CBTF_MRNET_LIBRARY})
-set(CBTF_INCLUDE_DIRS ${CBTF_INCLUDE_DIR})
-
-mark_as_advanced(
-    CBTF_LIBRARY CBTF_XML_LIBRARY CBTF_MRNET_LIBRARY CBTF_INCLUDE_DIR
-    )
+add_subdirectory(collector)

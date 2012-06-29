@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,25 +16,30 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_library(cuda-collector-monitor-mrnet SHARED main.c)
-add_library(cuda-collector-monitor-mrnet-mpi SHARED main.c)
+set(SOURCES  collector.c)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CBTF_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/services/collector
+    ${CBTF_TOOLS_INCLUDE_DIR}
     ${CUPTI_INCLUDE_DIRS}
     ${PAPI_INCLUDE_DIRS}
     )
+
+link_directories(${CBTF_TOOLS_LIBRARY_DIR})
   
+add_library(cuda-collector-monitor-mrnet SHARED ${SOURCES})
+add_library(cuda-collector-monitor-mrnet-mpi SHARED ${SOURCES})
+
 target_link_libraries(cuda-collector-monitor-mrnet
+    cbtf-services-collector-monitor-mrnet-shared
     ${CUPTI_LIBRARIES}
-    ${MRNet_LW_SHARED_LIBRARIES}
     ${PAPI_LIBRARIES}
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
+    cbtf-services-collector-monitor-mrnet-mpi-shared
     ${CUPTI_LIBRARIES}
-    ${MRNet_LW_SHARED_LIBRARIES}
     ${PAPI_LIBRARIES}
     )
 

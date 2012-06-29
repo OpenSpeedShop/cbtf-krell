@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -28,4 +28,23 @@ find_package(CUPTI 2)
 find_package(MRNet 4.0.0)
 find_package(PAPI 3.0.0)
 
+find_path(CBTF_TOOLS_INCLUDE_DIR KrellInstitute/Core/Assert.hpp
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES include
+    )
+
+message(STATUS 
+    "CBTF non-CMake tools include directory: " ${CBTF_TOOLS_INCLUDE_DIR}
+    )
+
+find_path(CBTF_TOOLS_LIBRARY_DIR libcbtf-core.so
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES lib lib64
+    )
+
+message(STATUS 
+    "CBTF non-CMake tools library directory: " ${CBTF_TOOLS_LIBRARY_DIR}
+    )
+
 add_subdirectory(core)
+add_subdirectory(services)

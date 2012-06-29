@@ -208,6 +208,13 @@ AC_ARG_WITH(target-os,
 
 AM_CONDITIONAL(BUILD_TARGETED, false)
 case "$TARGET_OS" in
+    cray-xe)
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_CRAYXE, 1, [Do not define if not building for targeted cray-xe.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xe,
+			[Name targeted OS])
+	;;
     cray-xt5)
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])

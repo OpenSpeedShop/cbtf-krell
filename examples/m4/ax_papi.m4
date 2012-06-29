@@ -144,6 +144,9 @@ AC_DEFUN([AC_PKG_TARGET_PAPI], [
       fi
 
       case "$target_os" in
+	cray-xe)
+	    TARGET_PAPI_LIBS="-lpapi -lpfm"
+            ;;
 	cray-xt5)
 	    TARGET_PAPI_LIBS="-lpapi -lpfm"
             ;;

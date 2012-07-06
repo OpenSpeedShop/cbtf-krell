@@ -55,6 +55,7 @@ stack_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
         @BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ @CBTF_XML_LIBS@ \
@@ -90,6 +91,7 @@ stack_LDADD = \
 	-lcbtf-mrnet \
 	-lcbtf-core \
         @TARGET_BOOST_PROGRAM_OPTIONS_LIB@ \
+	@TARGET_BOOST_FILESYSTEM_LIB@ \
 	@TARGET_BOOST_SYSTEM_LIB@ \
 	@TARGET_BOOST_THREAD_LIB@ \
 	@TARGET_CBTF_LIBS@ @TARGET_CBTF_XML_LIBS@ \

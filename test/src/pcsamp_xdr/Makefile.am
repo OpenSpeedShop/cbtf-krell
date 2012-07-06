@@ -39,6 +39,7 @@ testXDR_LDFLAGS = \
 	-L$(top_srcdir)/../../tools/core/src/.libs \
 	-L$(top_srcdir)/../../framework/build/libcbtf-xml \
 	@BOOST_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@BINUTILS_LDFLAGS@ \
 	@MRNET_LDFLAGS@
@@ -52,6 +53,8 @@ testXDR_LDADD = \
 	@BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
+	@LIBXERCES_C@ \
 	@CBTF_LIBS@ \
 	@BINUTILS_BFD_LIB@ \
 	@MRNET_LIBS@

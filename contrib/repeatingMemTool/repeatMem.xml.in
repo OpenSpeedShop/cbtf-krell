@@ -408,16 +408,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 <Name>ValToStat</Name>
                 <Type>KrellInstitute::CBTF::ValueToStatistics&lt;float&gt;</Type>
             </Component>
-            <!--
+
             <Component>
-                <Name>PacketToString</Name>
-                <Type>ConvertPacketToString</Type>
+                <Name>ValToPair</Name>
+                <Type>KrellInstitute::CBTF::CreateValIdPair&lt;float&gt;</Type>
             </Component>
-            <Component>
-                <Name>StringToPacket</Name>
-                <Type>ConvertStringToPacket</Type>
-            </Component>
-            -->
+
             <Input>
                 <Name>Backend_In</Name>
                 <To>
@@ -486,8 +482,30 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                     <Output>ApplicationOut</Output>
                 </From>
                 <To>
-                    <Name>ValToStat</Name>
+                    <Name>ValToPair</Name>
                     <Input>ValueIn</Input>
+                </To>
+            </Connection>
+
+            <Connection>
+                <From>
+                    <Name>getMem</Name>
+                    <Output>IdOut</Output>
+                </From>
+                <To>
+                    <Name>ValToPair</Name>
+                    <Input>IdIn</Input>
+                </To>
+            </Connection>
+
+            <Connection>
+                <From>
+                    <Name>ValToPair</Name>
+                    <Output>PairOut</Output>
+                </From>
+                <To>
+                    <Name>ValToStat</Name>
+                    <Input>PairIn</Input>
                 </To>
             </Connection>
 

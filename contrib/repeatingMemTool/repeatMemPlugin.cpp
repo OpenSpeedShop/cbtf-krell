@@ -52,6 +52,7 @@ public Component
         declareOutput<NodeMemory>("NodeMemoryOut");
         declareOutput<bool>("TermOut");
         declareOutput<float>("ApplicationOut");
+        declareOutput<std::string>("IdOut");
     }
 
         /** Handler for the "in" input.*/
@@ -163,6 +164,7 @@ public Component
             emitOutput<std::vector<std::string> >("out", output ); 
             emitOutput<NodeMemory>("NodeMemoryOut", nm);
             emitOutput<float>("ApplicationOut", nm.getApplication());
+            emitOutput<std::string>("IdOut", nm.getId());
         }
 }; // end class memPlugin
 

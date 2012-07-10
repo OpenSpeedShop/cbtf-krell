@@ -121,11 +121,11 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_PROGRAM_OPTIONS], [
     AC_MSG_CHECKING([for Targetted Boost Program Options support])
 
     found_target_boost_program_options=0
-    if test -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.a -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options-mt.so -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options-mt.a; then
+    if test -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.a -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$abi_libdir/libboost_program_options.a; then
        found_target_boost_program_options=1
        TARGET_BOOST_PROGRAM_OPTIONS_LDFLAGS="-L$target_boost_program_options_dir/$abi_libdir"
        TARGET_BOOST_PROGRAM_OPTIONS_LIB="$target_boost_program_options_dir/$abi_libdir"
-    elif test -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.a -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options-mt.so -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options-mt.a; then
+    elif test -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.a -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.so -o -f $target_boost_program_options_dir/$alt_abi_libdir/libboost_program_options.a; then
        found_target_boost_program_options=1
        TARGET_BOOST_PROGRAM_OPTIONS_LDFLAGS="-L$target_boost_program_options_dir/$alt_abi_libdir"
        TARGET_BOOST_PROGRAM_OPTIONS_LIB="$target_boost_program_options_dir/$abi_libdir"
@@ -144,8 +144,8 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_PROGRAM_OPTIONS], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_PROGRAM_OPTIONS, true)
       AC_DEFINE(HAVE_TARGET_BOOST_PROGRAM_OPTIONS, 1, [Define to 1 if you have a target version of BOOST_PROGRAM_OPTIONS.])
       TARGET_BOOST_PROGRAM_OPTIONS_CPPFLAGS="-I$target_boost_program_options_dir/include/boost"
-      TARGET_BOOST_PROGRAM_OPTIONS_LIBS="-lboost_program_options-mt"
-      TARGET_BOOST_PROGRAM_OPTIONS_LIB="-lboost_program_options-mt"
+      TARGET_BOOST_PROGRAM_OPTIONS_LIBS="-lboost_program_options"
+      TARGET_BOOST_PROGRAM_OPTIONS_LIB="-lboost_program_options"
       TARGET_BOOST_DIR="$target_boost_program_options_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_BOOST_PROGRAM_OPTIONS, false)

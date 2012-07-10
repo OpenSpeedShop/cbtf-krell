@@ -210,6 +210,15 @@ AM_CONDITIONAL(BUILD_TARGETED, false)
 AM_CONDITIONAL(HAVE_TARGET_STATIC, false)
 
 case "$TARGET_OS" in
+    cray-xk)
+        AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
+        AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_CRAYXK, 1, [Do not define if not building for targeted cray-xk.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xk,
+			[Name targeted OS])
+	;;
     cray-xe)
         AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
         AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])

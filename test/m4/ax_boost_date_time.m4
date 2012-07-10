@@ -147,8 +147,8 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_DATE_TIME], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_DATE_TIME, true)
       AC_DEFINE(HAVE_TARGET_BOOST_DATE_TIME, 1, [Define to 1 if you have a target version of BOOST_DATE_TIME.])
       TARGET_BOOST_DATE_TIME_CPPFLAGS="-I$target_boost_date_time_dir/include/boost"
-      TARGET_BOOST_DATE_TIME_LIBS="-lboost_date_time-mt"
-      TARGET_BOOST_DATE_TIME_LIB="-lboost_date_time-mt"
+      TARGET_BOOST_DATE_TIME_LIBS="-lboost_date_time"
+      TARGET_BOOST_DATE_TIME_LIB="-lboost_date_time"
       TARGET_BOOST_DIR="$target_boost_date_time_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_BOOST_DATE_TIME, false)

@@ -25,12 +25,13 @@ AC_DEFUN([AX_MRNET], [
                                [mrnet-version installation @<:@4.0.0@:>@]),
                 mrnet_vers=$withval, mrnet_vers="4.0.0")
 
+
     AC_ARG_WITH(mrnet,
                 AC_HELP_STRING([--with-mrnet=DIR],
                                [MRNet installation @<:@/usr@:>@]),
                 mrnet_dir=$withval, mrnet_dir="/usr")
 
-    if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+   if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
     elif test -f $mrnet_dir/$abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir -Dos_linux"
@@ -44,8 +45,10 @@ AC_DEFUN([AX_MRNET], [
     MRNET_LIBS="$MRNET_LIBS -lpthread -ldl"
     MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     MRNET_LW_LIBS="$MRNET_LW_LIBS -lpthread -ldl"
+
     MRNET_LWR_LIBS="-Wl,--whole-archive -lmrnet_lightweight_r -lxplat_lightweight_r -Wl,--no-whole-archive"
     MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lpthread -ldl"
+
     MRNET_DIR="$mrnet_dir"
 
     AC_LANG_PUSH(C++)
@@ -108,9 +111,18 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
                                [MRNet target architecture installation @<:@/opt@:>@]),
                 target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
 
+    AC_ARG_WITH(mrnet-version,
+                AC_HELP_STRING([--with-mrnet-version=VERS],
+                               [mrnet-version installation @<:@4.0.0@:>@]),
+                mrnet_vers=$withval, mrnet_vers="4.0.0")
+
+
+
     AC_MSG_CHECKING([for Targetted MRNet support])
 
     found_target_mrnet=0
+
+
     if test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
@@ -133,13 +145,16 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
       AC_MSG_RESULT(yes)
       AM_CONDITIONAL(HAVE_TARGET_MRNET, true)
       AC_DEFINE(HAVE_TARGET_MRNET, 1, [Define to 1 if you have a target version of MRNET.])
-      if test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
+      if test -f $target_mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $target_mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$target_mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+      elif test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
          TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir -Dos_linux"
       elif test -f $target_mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
          TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$alt_abi_libdir -Dos_linux"
       else
          TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -Dos_linux"
       fi
+
       TARGET_MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
       TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lpthread -ldl"
       TARGET_MRNET_LIBS="$TARGET_MRNET_LIBS -lalpslli -lalpsutil"
@@ -149,6 +164,7 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
       TARGET_MRNET_LWR_LIBS="-Wl,--whole-archive -lmrnet_lightweight_r -lxplat_lightweight_r -Wl,--no-whole-archive"
       TARGET_MRNET_LWR_LIBS="$TARGET_MRNET_LWR_LIBS -lpthread -ldl"
       TARGET_MRNET_LWR_LIBS="$TARGET_MRNET_LWR_LIBS -lalpslli -lalpsutil"
+
       TARGET_MRNET_DIR="$target_mrnet_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
@@ -156,6 +172,7 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
       TARGET_MRNET_LDFLAGS=""
       TARGET_MRNET_LIBS=""
       TARGET_MRNET_LW_LIBS=""
+      TARGET_MRNET_LWR_LIBS=""
       TARGET_MRNET_DIR=""
       AC_MSG_RESULT(no)
     fi

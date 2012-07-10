@@ -131,11 +131,11 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_SYSTEM], [
     AC_MSG_CHECKING([for Targetted Boost System support])
 
     found_target_boost_system=0
-    if test -f $target_boost_system_dir/$abi_libdir/libboost_system.so -o -f $target_boost_system_dir/$abi_libdir/libboost_system.a -o -f $target_boost_system_dir/$abi_libdir/libboost_system-mt.so -o -f $target_boost_system_dir/$abi_libdir/libboost_system-mt.a; then
+    if test -f $target_boost_system_dir/$abi_libdir/libboost_system.so -o -f $target_boost_system_dir/$abi_libdir/libboost_system.a ; then
        found_target_boost_system=1
        TARGET_BOOST_SYSTEM_LDFLAGS="-L$target_boost_system_dir/$abi_libdir"
        TARGET_BOOST_SYSTEM_LIB="$target_boost_system_dir/$abi_libdir"
-    elif test -f $target_boost_system_dir/$alt_abi_libdir/libboost_system.so -o -f $target_boost_system_dir/$alt_abi_libdir/libboost_system.a -o -f $target_boost_system_dir/$alt_abi_libdir/libboost_system-mt.so -o -f $target_boost_system_dir/$alt_abi_libdir/libboost_system-mt.a; then
+    elif test -f $target_boost_system_dir/$alt_abi_libdir/libboost_system.so -o -f $target_boost_system_dir/$alt_abi_libdir/libboost_system.a ; then
        found_target_boost_system=1
        TARGET_BOOST_SYSTEM_LDFLAGS="-L$target_boost_system_dir/$alt_abi_libdir"
        TARGET_BOOST_SYSTEM_LIB="$target_boost_system_dir/$abi_libdir"
@@ -154,8 +154,8 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_SYSTEM], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_SYSTEM, true)
       AC_DEFINE(HAVE_TARGET_BOOST_SYSTEM, 1, [Define to 1 if you have a target version of BOOST_SYSTEM.])
       TARGET_BOOST_SYSTEM_CPPFLAGS="-I$target_boost_system_dir/include/boost"
-      TARGET_BOOST_SYSTEM_LIBS="-lboost_system-mt"
-      TARGET_BOOST_SYSTEM_LIB="-lboost_system-mt"
+      TARGET_BOOST_SYSTEM_LIBS="-lboost_system"
+      TARGET_BOOST_SYSTEM_LIB="-lboost_system"
       TARGET_BOOST_DIR="$target_boost_system_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_BOOST_SYSTEM, false)

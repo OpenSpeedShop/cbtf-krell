@@ -208,6 +208,13 @@ AC_ARG_WITH(target-os,
 
 AM_CONDITIONAL(BUILD_TARGETED, false)
 case "$TARGET_OS" in
+    cray-xk)
+	AM_CONDITIONAL(BUILD_TARGETED, true)
+	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
+	AC_DEFINE(TARGET_OS_CRAYXK, 1, [Do not define if not building for targeted cray-xk.])
+	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xk,
+			[Name targeted OS])
+	;;
     cray-xe)
 	AM_CONDITIONAL(BUILD_TARGETED, true)
 	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
@@ -421,6 +428,7 @@ AX_CORE()
 
 AC_PKG_TARGET_BOOST()
 AC_PKG_TARGET_BOOST_SYSTEM()
+AC_PKG_TARGET_BOOST_FILESYSTEM()
 AC_PKG_TARGET_BOOST_THREAD()
 AC_PKG_TARGET_BOOST_UNIT_TEST_FRAMEWORK()
 AC_PKG_TARGET_MRNET()

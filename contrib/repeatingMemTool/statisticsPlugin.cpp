@@ -1,0 +1,6 @@
+#include "../components/filters/statistics/statisticsPlugin.hpp"
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ValueToStatistics<float>)
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(StatisticsAggregator<float>)
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertStatisticsToPacket<float>)
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToStatistics<float>)

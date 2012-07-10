@@ -99,7 +99,15 @@ AC_DEFUN([AX_TARGET_LW_MRNET], [
                                [MRNet installation @<:@/opt@:>@]),
                 target_mrnet_dir=$withval, target_mrnet_dir="/zzz")
 
-    if test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
+
+    AC_ARG_WITH(mrnet-version,
+                AC_HELP_STRING([--with-mrnet-version=VERS],
+                               [mrnet-version installation @<:@4.0.0@:>@]),
+                mrnet_vers=$withval, mrnet_vers="4.0.0")
+
+    if test -f $target_mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $target_mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+         TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$target_mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+    elif test -f $target_mrnet_dir/$abi_libdir/mrnet_config.h ; then
          TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$abi_libdir -Dos_linux"
     elif test -f $target_mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
          TARGET_MRNET_CPPFLAGS="-I$target_mrnet_dir/include -I$target_mrnet_dir/$alt_abi_libdir -Dos_linux"

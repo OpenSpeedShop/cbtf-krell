@@ -170,8 +170,8 @@ AC_DEFUN([AC_PKG_TARGET_BOOST_UNIT_TEST_FRAMEWORK], [
       AM_CONDITIONAL(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, true)
       AC_DEFINE(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, 1, [Define to 1 if you have a target version of BOOST_UNIT_TEST_FRAMEWORK.])
       TARGET_BOOST_UNIT_TEST_FRAMEWORK_CPPFLAGS="-I$target_boost_unit_test_framework_dir/include/boost"
-      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS="-lboost_unit_test_framework-mt"
-      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB="-lboost_unit_test_framework-mt"
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIBS="-lboost_unit_test_framework"
+      TARGET_BOOST_UNIT_TEST_FRAMEWORK_LIB="-lboost_unit_test_framework"
       TARGET_BOOST_DIR="$target_boost_unit_test_framework_dir"
     else 
       AM_CONDITIONAL(HAVE_TARGET_BOOST_UNIT_TEST_FRAMEWORK, false)

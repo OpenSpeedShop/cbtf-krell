@@ -16,7 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-set(SOURCES  collector.c)
+set(SOURCES collector.c)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -33,12 +33,14 @@ add_library(cuda-collector-monitor-mrnet-mpi SHARED ${SOURCES})
 
 target_link_libraries(cuda-collector-monitor-mrnet
     cbtf-services-collector-monitor-mrnet-shared
+    ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
     ${PAPI_LIBRARIES}
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
     cbtf-services-collector-monitor-mrnet-mpi-shared
+    ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
     ${PAPI_LIBRARIES}
     )

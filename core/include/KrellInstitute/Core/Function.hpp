@@ -32,6 +32,11 @@
 #endif
 
 
+#include "KrellInstitute/Core/Address.hpp"
+#include "KrellInstitute/Core/AddressRange.hpp"
+#include "KrellInstitute/Core/Path.hpp"
+
+#include <vector>
 #include <set>
 #include <string>
 
@@ -39,45 +44,29 @@
 
 namespace KrellInstitute { namespace Core {
 
-    class FunctionCache;
-    class LinkedObject;
-    class Statement;
-    
+    class AddressRange;
+    class Path;
+
     /**
-     * Source code function.
      *
-     * Representation of a source code function. Provides member functions for
-     * requesting information about this function, where it is contained, and
-     * what it contains.
-     *
-     * @ingroup CollectorAPI ToolAPI
      */
     class Function
     {
-	friend class FunctionCache;
-	friend class LinkedObject;
-	friend class Statement;
-	
     public:
 	
-	LinkedObject getLinkedObject() const;
 
-	// Used by Experiment::compressDB to prune an KrellInstitute database of
-	// any entries not found in the experiments sampled addresses.
 	AddressRange getAddressRange() const;
 	
+        Path getSourceFile() const;
 	std::string getName() const;
 	std::string getMangledName() const;
-	std::string getDemangledName(const bool& = true) const;
 	
-	std::set<Statement> getDefinitions() const;
-	std::set<Statement> getStatements() const;
-
     private:
 
-	static FunctionCache TheCache;
-	
-	Function();
+	Path _sourceFile;
+	AddressRange _range;
+	std::string _name;
+	std::string _mangledname;
 	
     };
     

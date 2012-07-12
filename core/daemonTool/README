@@ -14,7 +14,7 @@ filters at specific levels of the MRNet tree.
 
 An example usage for a tool name myTool.
 
-daemonTool --tool mtTool --numBE 512
+daemonTool --tool myTool --numBE 512
 
 The tool myTool would be implemented as a collection of component
 plugin libraries and an xml file that contains the tools implementation.

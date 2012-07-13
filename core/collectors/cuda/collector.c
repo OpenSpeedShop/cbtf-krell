@@ -16,6 +16,8 @@
 ** 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *******************************************************************************/
 
+/** @file Implementation of the CUDA collector. */
+
 #include <cupti.h>
 #include <inttypes.h>
 #include <pthread.h>
@@ -25,7 +27,10 @@
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Collector.h"
+#include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
+
+#include "CUDA_data.h"
 
 
 
@@ -98,13 +103,20 @@ static struct {
 /** Boolean flag indicating if debugging is enabled. */
 static int debug = 0;
 
-/** CUPTI subscriber handle for this data collector. */
-//static CUpti_SubscriberHandle cupti_subscriber_handle;
+/** CUPTI subscriber handle for this collector. */
+static CUpti_SubscriberHandle cupti_subscriber_handle;
 
 
 
 /** Type defining the data stored in thread-local storage. */
 typedef struct {
+
+    /**
+     * Performance data header applied to all of this thread's data. The fields
+     * time_begin, time_end, addr_begin, and addr_end are overwritten at will by
+     * the various collection routines.
+     */
+    CBTF_DataHeader data_header;
     
     /* ... */
     
@@ -127,8 +139,20 @@ static __thread TLS the_tls;
 
 
 
+#include "cuLaunchKernel.h"
+#include "cuModuleGetFunction.h"
+#include "cuModuleLoad.h"
+#include "cuModuleLoadData.h"
+#include "cuModuleLoadDataEx.h"
+#include "cuModuleLoadFatBinary.h"
+#include "cuModuleUnload.h"
+
+
+
 /**
- * ...
+ * Callback invoked by CUPTI every time a CUDA event occurs for which we have
+ * a subscription. Subscriptions are setup within cbtf_collector_start(), and
+ * are setup once for the entire process.
  *
  * @param userdata    User data supplied at subscription of the callback.
  * @param domain      Domain of the callback.
@@ -140,15 +164,144 @@ static void cupti_callback(void* userdata,
                            CUpti_CallbackId id,
                            const void* data)
 {
-    /* ... */
+    /* Determine the CUDA event that has occurred and handle it */
+    switch (domain)
+    {
+
+    case CUPTI_CB_DOMAIN_DRIVER_API:
+        {
+            const CUpti_CallbackData* const cbdata = (CUpti_CallbackData*)data;
+            
+            switch (id)
+            {
+
+            case CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel :
+                {
+                    const cuLaunchKernel_params* const params =
+                        (cuLaunchKernel_params*)cbdata->functionParams;
+
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuLaunchKernel_enter_callback(params);
+                    }
+                    else if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuLaunchKernel_exit_callback(params);
+                    }
+                }
+                break;
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleGetFunction :
+                {
+                    const cuModuleGetFunction_params* const params =
+                        (cuModuleGetFunction_params*)cbdata->functionParams;
+                    
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleGetFunction_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleGetFunction_exit_callback(params);
+                    }
+                }
+                break;
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoad :
+                {
+                    const cuModuleLoad_params* const params =
+                        (cuModuleLoad_params*)cbdata->functionParams;
+
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleLoad_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleLoad_exit_callback(params);
+                    }
+                }
+                break;
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadData :
+                {
+                    const cuModuleLoadData_params* const params =
+                        (cuModuleLoadData_params*)cbdata->functionParams;
+
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleLoadData_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleLoadData_exit_callback(params);
+                    }
+                }
+                break;
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadDataEx :
+                {
+                    const cuModuleLoadDataEx_params* const params =
+                        (cuModuleLoadDataEx_params*)cbdata->functionParams;
+
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleLoadDataEx_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleLoadDataEx_exit_callback(params);
+                    }
+                }
+                break;
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadFatBinary :
+                {
+                    const cuModuleLoadFatBinary_params* const params =
+                        (cuModuleLoadFatBinary_params*)cbdata->functionParams;
+
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleLoadFatBinary_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleLoadFatBinary_exit_callback(params);
+                    }
+                }
+                break;
+                
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleUnload :
+                {
+                    const cuModuleUnload_params* const params =
+                        (cuModuleUnload_params*)cbdata->functionParams;
+                    
+                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    {
+                        cuModuleUnload_enter_callback(params);
+                    }
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        cuModuleUnload_exit_callback(params);
+                    }
+                }
+                break;
+
+            }
+        }
+        break;
+
+    default:
+        break;        
+    }
 }
 
 
 
 /**
- * ...
+ * Parse the configuration string that was passed into this collector.
  *
- * @param configuration    ...
+ * @param configuration    Configuration string passed into this collector.
  */
 static void parse_configuration(const char* const configuration)
 {
@@ -200,26 +353,60 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
             printf("[CBTF/CUDA] cbtf_collector_start()\n");
         }
 #endif
-        
-        /* Parse the CUDA collector's configuration string */
+
+        /** Obtain our configuration string from the environment and parse it */
         const char* const configuration = getenv("CBTF_CUDA_CONFIG");
         if (configuration != NULL)
         {
             parse_configuration(configuration);
         }
 
-        /** Subscribe to the CUPTI callbacks of interest */
+        /* Subscribe to the CUPTI callbacks of interest */
         
         CUPTI_CHECK(cuptiSubscribe(&cupti_subscriber_handle,
                                    cupti_callback, NULL));
-        
+
         CUPTI_CHECK(cuptiEnableCallback(
-                        1, &cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_RUNTIME_API,
-                        CUPTI_RUNTIME_TRACE_CBID_cudaLaunch_v3020
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel
                         ));
-        
-        /* ... */        
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleGetFunction
+                        ));
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoad
+                        ));
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadData
+                        ));
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadDataEx
+                        ));
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadFatBinary
+                        ));
+
+        CUPTI_CHECK(cuptiEnableCallback(
+                        1, cupti_subscriber_handle,
+                        CUPTI_CB_DOMAIN_DRIVER_API,
+                        CUPTI_DRIVER_TRACE_CBID_cuModuleUnload
+                        ));
     }
 
     thread_count.value++;
@@ -236,8 +423,9 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
     memset(tls, 0, sizeof(TLS));
-    
-    /* ... */
+
+    /* Copy the header into our thread-local storage for future use */
+    memcpy(&tls->data_header, header, sizeof(CBTF_DataHeader));
 }
 
 
@@ -337,10 +525,8 @@ void cbtf_collector_stop()
 
     if (thread_count.value == 0)
     {
-        /** Unsubscribe from all CUPTI callbacks */
-        CUPTI_CHECK(cuptiUnsubscribe(&cupti_subscriber_handle));
-        
-        /* ... */
+        /* Unsubscribe from all CUPTI callbacks */
+        CUPTI_CHECK(cuptiUnsubscribe(cupti_subscriber_handle));
     }
     
     PTHREAD_CHECK(pthread_mutex_unlock(&thread_count.mutex));

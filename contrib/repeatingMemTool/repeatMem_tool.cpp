@@ -149,6 +149,12 @@ int main(int argc,  char *argv[ ])
         = boost::reinterpret_pointer_cast<Component>(freq_input_value);
     Component::connect(freq_input_component, "value", network, "freq_in");
 
+    boost::shared_ptr<ValueSource<int> > numBE_input_value
+        = ValueSource<int>::instantiate();
+    Component::Instance numBE_input_component
+        = boost::reinterpret_pointer_cast<Component>(numBE_input_value);
+    Component::connect(numBE_input_component, "value", network, "numBE_in");
+
     // create the output
     boost::shared_ptr<ValueSink<std::vector<std::string> > > output_value = ValueSink<std::vector<std::string> >::instantiate();
     Component::Instance output_value_component = boost::reinterpret_pointer_cast<Component>(output_value);
@@ -190,8 +196,8 @@ int main(int argc,  char *argv[ ])
             bin_output_component,
             "value");
 
-    boost::shared_ptr<ValueSink<Statistics<float> > > stat_output_value 
-        = ValueSink<Statistics<float> >::instantiate();
+    boost::shared_ptr<ValueSink<Statistics<long double> > > stat_output_value 
+        = ValueSink<Statistics<long double> >::instantiate();
     Component::Instance stat_output_component 
         = boost::reinterpret_pointer_cast<Component>(stat_output_value);
     Component::connect(network,
@@ -210,38 +216,36 @@ int main(int argc,  char *argv[ ])
     frequency.tv_nsec = 0.0;
 
     *freq_input_value = frequency;
+    *numBE_input_value = numBE;
 
     std::vector<std::string> output;
-    bool terminate;
+    bool terminate = false;
     struct timeval elapsed_time_output;
     std::vector<NodeMemory> mem_output;
     int * bin_output;
-    Statistics<float> stat_output;
+    Statistics<long double> stat_output;
     // get the output from each backend
     // wait for output
-    terminate = *term_output_value;
-    while(!terminate) {
-
-        mem_output = *mem_output_value;
-        bin_output = *bin_output_value;
-        stat_output = *stat_output_value;
-
-        std::cout << "Application Stats:\n"
-            << stat_output.toString()
-            << std::endl;
-        for (int i = 0; i < 100; i++) {
-            std::cout 
-                << "bin[" << i << "]: " 
-                << bin_output[i]
+    do {
+        if (mem_output_value == NULL
+                || stat_output_value == NULL
+                || output_value == NULL) {
+            std::cout << "One of the big three is null"
                 << std::endl;
         }
+        mem_output = *mem_output_value;
+        stat_output = *stat_output_value;
+        output = *output_value;
+        elapsed_time_output = *elapsed_time_output_value;
+        terminate = *term_output_value;
+        std::cout << "Application Stats:\n"
+            << stat_output
+            << std::endl;
         for (int i = 0; i < mem_output.size(); i++) {
             std::cout << "Memory Info: \n"
                 << mem_output[i].toString()
                 << std::endl;
         }
-        elapsed_time_output = *elapsed_time_output_value;
-        output = *output_value;
         // print each line in the output vector
         for(std::vector<std::string>::const_iterator i = output.begin(); 
                 i != output.end(); ++i)
@@ -251,16 +255,33 @@ int main(int argc,  char *argv[ ])
         std::cout << "----------------------" << std::endl;
         std::cout << "Elapsed time: "
             << elapsed_time_output.tv_sec
-            << "sec "
+            << " sec "
             << elapsed_time_output.tv_usec
-            << "microsec"
+            << " microsec"
             << std::endl;
 
-        terminate = *term_output_value;
         if (terminate) {
             std::cout << "Recieved Terminate Signal" << std::endl;
+        } else {
+            std::cout << "Did not recieve terminate signal" << std::endl;
         }
+
+    } while (!terminate);
+
+    //mem_output = *mem_output_value;
+    //stat_output = *stat_output_value;
+    //output = *output_value;
+    //elapsed_time_output = *elapsed_time_output_value;
+    /*
+    bin_output = *bin_output_value;
+    for (int i = 0; i < 100; i++) {
+        std::cout << "BIN["
+            << i
+            << "] = "
+            << bin_output[i]
+            << std::endl;
     }
+    */
     return 0;
 }
 

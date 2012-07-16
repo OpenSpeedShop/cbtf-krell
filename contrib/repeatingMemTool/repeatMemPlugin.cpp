@@ -51,7 +51,7 @@ public Component
         declareOutput<std::vector<std::string> >("out");
         declareOutput<NodeMemory>("NodeMemoryOut");
         declareOutput<bool>("TermOut");
-        declareOutput<float>("ApplicationOut");
+        declareOutput<long double>("ApplicationOut");
         declareOutput<std::string>("IdOut");
     }
 
@@ -65,12 +65,12 @@ public Component
             std::string tmpstr = "";
             std::vector<std::string> output;
             std::string cmd = "";
-            float totalmem = 0.0;
-            float percentmem = 0.0;
+            long double totalmem = 0.0;
+            long double percentmem = 0.0;
             float pidmem = 0.0;
             char buf[10];
             int result = 0;
-            float totalPercentMem = 0.0;
+            long double totalPercentMem = 0.0;
             NodeMemory nm;
 
             // get hostname
@@ -141,9 +141,17 @@ public Component
                         std::stringstream percentStream(outline);
                         percentStream >> percentmem;
                         totalPercentMem += percentmem;
-                        //std::cout << "outline=" << outline << " percentmem=" << percentmem << std::endl;
+                        //std::cout 
+                        //<< "outline=" 
+                        //<< outline 
+                        //<< " percentmem=" 
+                        //<< percentmem 
+                        //<< std::endl;
                         percentmem = percentmem / 100;
-                        //std::cout << "percentmem/100=" << percentmem << std::endl;
+                        //std::cout 
+                        //<< "percentmem/100=" 
+                        //<< percentmem 
+                        //<< std::endl;
                     }
                     nm.setApplicationPercent(totalPercentMem);
                     pclose(p);
@@ -163,382 +171,422 @@ public Component
 
             emitOutput<std::vector<std::string> >("out", output ); 
             emitOutput<NodeMemory>("NodeMemoryOut", nm);
-            emitOutput<float>("ApplicationOut", nm.getApplication());
+            emitOutput<long double>("ApplicationOut", nm.getApplication());
             emitOutput<std::string>("IdOut", nm.getId());
         }
 }; // end class memPlugin
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(memPlugin)
 
-/**
- * Component type used by the unit test for the Component class.
- */
-class __attribute__ ((visibility ("hidden"))) getPID :
-public Component
+    /**
+     * Component type used by the unit test for the Component class.
+     */
+    class __attribute__ ((visibility ("hidden"))) getPID :
+    public Component
 {
 
-public:
-    /** Factory function for this component type. */
-    static Component::Instance factoryFunction()
-    {
-        return Component::Instance(
-                reinterpret_cast<Component*>(new getPID())
-                );
-    }
-
-private:
-    /** Default constructor. */
-    getPID() :
-        Component(Type(typeid(getPID)), Version(1, 0, 0))
-{
-    declareInput<std::string>(
-            "in", boost::bind(&getPID::inHandler, this, _1)
-            );
-    declareOutput<std::vector<std::string> >("out");
-    declareOutput<bool> ("TermOut");
-}
-
-    /** Handler for the "in" input.*/
-    void inHandler(const std::string& in)
-    { 
-        bool terminate;
-        char buffer[100];
-        //memset(&buffer,0,sizeof(buffer));
-        FILE *p = NULL;
-        FILE *f = NULL;
-        std::string outline = "";
-        std::vector<std::string> output;
-        std::string cmd = "ps -u $USER -o pid= -o comm= | grep ";
-        cmd += in; 
-        //      cmd += " | cut -f 1 -d \" \"";
-        cmd += " | awk -F \" \" '{print $1}'";   
-
-        //std::cout << cmd.c_str() << std::endl;
-
-        // get cmd
-        p = popen(cmd.c_str(), "r");
-        if(p != NULL) {
-            //std::cout << "opened cmd" << std::endl;   
-            while(fgets(buffer, sizeof(buffer), p) != NULL)
-            {
-                outline.assign(buffer);
-                outline = outline.substr(0,outline.rfind("\n"));
-                output.push_back(outline);
-                //std::cout << "outline=" << outline << std::endl;
-            }
-            //std::cout << "closing p buffer = " << buffer << std::endl;
-            pclose(p);
-        } //end if p
-        else
+    public:
+        /** Factory function for this component type. */
+        static Component::Instance factoryFunction()
         {
-            std::cout << "cannot run cmd = " << cmd << std::endl;
+            return Component::Instance(
+                    reinterpret_cast<Component*>(new getPID())
+                    );
         }
 
-        emitOutput<std::vector <std::string> >("out", output ); 
-        if(output.size() == 0) {
-            terminate = true;
-        } else {
-            terminate = false;
-        }
-        emitOutput<bool>("TermOut", terminate);
+    private:
+        /** Default constructor. */
+        getPID() :
+            Component(Type(typeid(getPID)), Version(1, 0, 0))
+    {
+        declareInput<std::string>(
+                "in", boost::bind(&getPID::inHandler, this, _1)
+                );
+        declareOutput<std::vector<std::string> >("out");
+        declareOutput<bool> ("TermOut");
     }
+
+        /** Handler for the "in" input.*/
+        void inHandler(const std::string& in)
+        { 
+            bool terminate;
+            char buffer[100];
+            //memset(&buffer,0,sizeof(buffer));
+            FILE *p = NULL;
+            FILE *f = NULL;
+            std::string outline = "";
+            std::vector<std::string> output;
+            std::string cmd = "ps -u $USER -o pid= -o comm= | grep ";
+            cmd += in; 
+            //      cmd += " | cut -f 1 -d \" \"";
+            cmd += " | awk -F \" \" '{print $1}'";   
+
+            //std::cout << cmd.c_str() << std::endl;
+
+            // get cmd
+            p = popen(cmd.c_str(), "r");
+            if(p != NULL) {
+                //std::cout << "opened cmd" << std::endl;   
+                while(fgets(buffer, sizeof(buffer), p) != NULL)
+                {
+                    outline.assign(buffer);
+                    outline = outline.substr(0,outline.rfind("\n"));
+                    output.push_back(outline);
+                    //std::cout << "outline=" << outline << std::endl;
+                }
+                //std::cout << "closing p buffer = " << buffer << std::endl;
+                pclose(p);
+            } //end if p
+            else
+            {
+                std::cout << "cannot run cmd = " << cmd << std::endl;
+            }
+
+            emitOutput<std::vector <std::string> >("out", output ); 
+            if(output.size() == 0) {
+                terminate = true;
+            } else {
+                terminate = false;
+            }
+            emitOutput<bool>("TermOut", terminate);
+        }
 }; // end class getPID
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(getPID)
 
-class __attribute__((visibility("hidden"))) BeginCircutLogic:
-public Component { 
-    public:
-        /** Factory function for this component type. */
-        static Component::Instance factoryFunction() {
-            return Component::Instance(
-                    reinterpret_cast<Component*>(new BeginCircutLogic())
-                    );
-        }
-
-    private:
-        struct timespec frequency;
-        std::string filename;
-        /** Default constructor. */
-        BeginCircutLogic() :
-            Component(Type(typeid(BeginCircutLogic)), Version(1, 0, 0)) {
-                frequency.tv_sec = 0;
-                frequency.tv_nsec = 0;
-                filename = "";
-                declareInput<std::string>(
-                        "FilenameIn",
-                        boost::bind(&BeginCircutLogic::inFilenameHandler,
-                                this,
-                                _1)
+    class __attribute__((visibility("hidden"))) BeginCircutLogic:
+    public Component { 
+        public:
+            /** Factory function for this component type. */
+            static Component::Instance factoryFunction() {
+                return Component::Instance(
+                        reinterpret_cast<Component*>(new BeginCircutLogic())
                         );
-                declareInput<struct timespec>(
-                        "FrequencyIn",
-                        boost::bind(&BeginCircutLogic::inFrequencyHandler,
-                                this,
-                                _1)
-                        );
-                declareInput<bool>(
-                        "RestartIn",
-                        boost::bind(&BeginCircutLogic::inRestartHandler,
-                                this,
-                                _1)
-                        );
-                declareOutput<std::string>("FilenameOut");
-                declareOutput<timevalue>("StartTimeOut");
             }
 
-        void inFilenameHandler(const std::string & fn) {
-            filename = fn;
-            if (frequency.tv_sec != 0 || frequency.tv_nsec !=0)
-                start_circut();
-        }
+        private:
+            struct timespec frequency;
+            std::string filename;
+            /** Default constructor. */
+            BeginCircutLogic() :
+                Component(Type(typeid(BeginCircutLogic)), Version(1, 0, 0)) {
+                    frequency.tv_sec = 0;
+                    frequency.tv_nsec = 0;
+                    filename = "";
+                    declareInput<std::string>(
+                            "FilenameIn",
+                            boost::bind(&BeginCircutLogic::inFilenameHandler,
+                                this,
+                                _1)
+                            );
+                    declareInput<struct timespec>(
+                            "FrequencyIn",
+                            boost::bind(&BeginCircutLogic::inFrequencyHandler,
+                                this,
+                                _1)
+                            );
+                    declareInput<bool>(
+                            "RestartIn",
+                            boost::bind(&BeginCircutLogic::inRestartHandler,
+                                this,
+                                _1)
+                            );
+                    declareOutput<std::string>("FilenameOut");
+                    declareOutput<timevalue>("StartTimeOut");
+                }
 
-        void inRestartHandler(const bool & restart) {
-            if (restart)
-                start_circut();
-        }
+            void inFilenameHandler(const std::string & fn) {
+                filename = fn;
+                if (frequency.tv_sec != 0 || frequency.tv_nsec !=0)
+                    start_circut();
+            }
 
-        void inFrequencyHandler(const struct timespec & freq) {
-            frequency.tv_sec = freq.tv_sec;
-            frequency.tv_nsec = freq.tv_nsec;
-            if (filename != "")
-                start_circut();
-        }
+            void inRestartHandler(const bool & restart) {
+                if (restart) {
+                    start_circut();
+                }
+            }
 
-        void start_circut() {
-            timevalue start_time;
-            gettimeofday(&start_time, NULL);
-            emitOutput<timevalue>("StartTimeOut", start_time);
-            nanosleep(&frequency, NULL);
-            emitOutput<std::string>("FilenameOut", filename);
-        }
-};
+            void inFrequencyHandler(const struct timespec & freq) {
+                frequency.tv_sec = freq.tv_sec;
+                frequency.tv_nsec = freq.tv_nsec;
+                if (filename != "")
+                    start_circut();
+            }
+
+            void start_circut() {
+                timevalue start_time;
+                gettimeofday(&start_time, NULL);
+                emitOutput<timevalue>("StartTimeOut", start_time);
+                nanosleep(&frequency, NULL);
+                emitOutput<std::string>("FilenameOut", filename);
+            }
+    };
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(BeginCircutLogic)
 
-class __attribute__((visibility("hidden"))) EndCircutLogic:
-public Component {
-    public:
-        static Component::Instance factoryFunction() {
-            return Component::Instance(
-                    reinterpret_cast<Component*>(new EndCircutLogic())
-                    );
-        }
+    class __attribute__((visibility("hidden"))) EndCircutLogic:
+    public Component {
+        public:
+            static Component::Instance factoryFunction() {
+                return Component::Instance(
+                        reinterpret_cast<Component*>(new EndCircutLogic())
+                        );
+            }
 
-    private:
-        timevalue start_time;
-        bool terminate;
-        EndCircutLogic() :
-            Component(Type(typeid(EndCircutLogic)), Version(1, 0, 0)) {
-                terminate = false;
-                declareInput<timevalue>(
-                        "StartTimeIn",
-                        boost::bind(&EndCircutLogic::inStartTimeHandler,
+        private:
+            timevalue start_time;
+            bool terminate;
+            int backends;
+            int backendCount;
+            EndCircutLogic() :
+                Component(Type(typeid(EndCircutLogic)), Version(1, 0, 0)) {
+                    backendCount = 0;
+                    terminate = false;
+                    declareInput<timevalue>(
+                            "StartTimeIn",
+                            boost::bind(&EndCircutLogic::inStartTimeHandler,
                                 this,
                                 _1)
-                        );
-                declareInput<std::vector <std::string> >(
-                        "MemoryInfoIn",
-                        boost::bind(&EndCircutLogic::inMemoryInfo, this, _1)
-                        );
-                declareInput<bool> (
-                        "TermIn",
-                        boost::bind(&EndCircutLogic::inTerm, this, _1)
-                        );
-                declareOutput<std::vector <std::string> >("MemoryInfoOut");
-                declareOutput<timevalue>("ElapsedTimeOut");
-                declareOutput<bool>("RestartOut");
-                declareOutput<bool>("TermOut");
-            }
-
-        void inStartTimeHandler(const timevalue & start) {
-            start_time.tv_sec = start.tv_sec;
-            start_time.tv_usec = start.tv_usec;
-        }
-
-        void inMemoryInfo(const std::vector<std::string> & mem_info) {
-            timevalue elapsed_time = getElapsedTime();
-            emitOutput<timevalue>("ElapsedTimeOut", elapsed_time);
-            if (!terminate)
-                emitOutput<bool>("RestartOut", true);
-            emitOutput<std::vector <std::string> >("MemoryInfoOut", mem_info);
-        }
-
-        void inTerm(const bool & term_signal) {
-            terminate = term_signal;
-            emitOutput<bool>("TermOut", terminate);
-        }
-
-        timevalue getElapsedTime() {
-            long sec;
-            long usec;
-            timevalue elapsed_time;
-            timevalue end_time;
-            gettimeofday(&end_time, NULL);
-            sec = end_time.tv_sec - start_time.tv_sec;
-            if ((usec = end_time.tv_usec - start_time.tv_usec) < 0) {
-                usec += 1000000;
-                sec -= 1;
-                if(sec < 0) {
-                    std::cerr << "Elapsed time is negative." << std::endl;
-                    sec = 0;
-                    usec = 0;
+                            );
+                    declareInput<std::vector <std::string> >(
+                            "MemoryInfoIn",
+                            boost::bind(&EndCircutLogic::inMemoryInfo, this, _1)
+                            );
+                    declareInput<bool> (
+                            "TermIn",
+                            boost::bind(&EndCircutLogic::inTerm, this, _1)
+                            );
+                    declareInput<int> (
+                            "NumBEIn",
+                            boost::bind(
+                                &EndCircutLogic::inNumBEHandler, this, _1
+                                )
+                            );
+                    declareOutput<std::vector <std::string> >("MemoryInfoOut");
+                    declareOutput<timevalue>("ElapsedTimeOut");
+                    declareOutput<bool>("RestartOut");
+                    declareOutput<bool>("TermOut");
                 }
+
+            void inStartTimeHandler(const timevalue & start) {
+                start_time.tv_sec = start.tv_sec;
+                start_time.tv_usec = start.tv_usec;
             }
-            elapsed_time.tv_sec = sec;
-            elapsed_time.tv_usec = usec;
-            return elapsed_time;
-        }
-};
+
+            void inMemoryInfo(const std::vector<std::string> & mem_info) {
+                backendCount++;
+                if (backendCount >= backends) {
+                    timevalue elapsed_time = getElapsedTime();
+                    emitOutput<timevalue>("ElapsedTimeOut", elapsed_time);
+                    emitOutput<bool>("RestartOut", !terminate);
+                    backendCount = 0;
+                }
+                emitOutput<std::vector <std::string> >("MemoryInfoOut",
+                        mem_info);
+
+            }
+
+            void inTerm(const bool & term_signal) {
+                terminate = term_signal;
+                emitOutput<bool>("TermOut", terminate);
+            }
+
+            void inNumBEHandler(const int & numBE) {
+                backends = numBE;
+            }
+
+            timevalue getElapsedTime() {
+                long sec;
+                long usec;
+                timevalue elapsed_time;
+                timevalue end_time;
+                gettimeofday(&end_time, NULL);
+                sec = end_time.tv_sec - start_time.tv_sec;
+                if ((usec = end_time.tv_usec - start_time.tv_usec) < 0) {
+                    usec += 1000000;
+                    sec -= 1;
+                    if(sec < 0) {
+                        std::cerr << "Elapsed time is negative." << std::endl;
+                        sec = 0;
+                        usec = 0;
+                    }
+                }
+                elapsed_time.tv_sec = sec;
+                elapsed_time.tv_usec = usec;
+                return elapsed_time;
+            }
+    };
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(EndCircutLogic)
 
-class __attribute__((visibility("hidden"))) AggregateMemory:
-public Component {
-    public:
-        static Component::Instance factoryFunction() {
-            return Component::Instance(
-                    reinterpret_cast<Component*>(new AggregateMemory())
-                    );
-        }
+    class __attribute__((visibility("hidden"))) AggregateMemory:
+    public Component {
+        public:
+            static Component::Instance factoryFunction() {
+                return Component::Instance(
+                        reinterpret_cast<Component*>(new AggregateMemory())
+                        );
+            }
 
-    private:
-        std::vector<NodeMemory> memVector;
-        bool terminate;
-        int children;
-        AggregateMemory() :
-            Component(Type(typeid(AggregateMemory)), Version(1, 0, 0)) {
-                terminate = false;
-                children = 0;
-                declareInput<NodeMemory>(
-                        "NodeMemoryIn",
-                        boost::bind(&AggregateMemory::inNodeMemoryHandler,
+        private:
+            std::vector<NodeMemory> memVector;
+            bool terminate;
+            int children;
+            AggregateMemory() :
+                Component(Type(typeid(AggregateMemory)), Version(1, 0, 0)) {
+                    terminate = false;
+                    children = 0;
+                    declareInput<NodeMemory>(
+                            "NodeMemoryIn",
+                            boost::bind(&AggregateMemory::inNodeMemoryHandler,
                                 this,
                                 _1)
-                        );
-                declareInput<std::vector <NodeMemory> >(
-                        "NodeMemoryVectorIn",
-                        boost::bind(&AggregateMemory::inNodeMemoryVectorHandler,
-                            this,
-                            _1)
-                        );
-                declareInput<bool> (
-                        "TermIn",
-                        boost::bind(&AggregateMemory::inTermHandler, this, _1)
-                        );
-                declareOutput<std::vector<NodeMemory> > (
-                        "NodeMemoryVectorOut");
-                declareOutput<bool>("TermOut");
+                            );
+                    declareInput<std::vector <NodeMemory> >(
+                            "NodeMemoryVectorIn",
+                            boost::bind(
+                                &AggregateMemory::inNodeMemoryVectorHandler,
+                                this,
+                                _1)
+                            );
+                    declareInput<bool> (
+                            "TermIn",
+                            boost::bind(&AggregateMemory::inTermHandler,
+                                this,
+                                _1)
+                            );
+                    declareOutput<std::vector<NodeMemory> > (
+                            "NodeMemoryVectorOut");
+                    declareOutput<bool>("TermOut");
+                }
+
+            void inNodeMemoryHandler(const NodeMemory & nm) {
+                children++;
+                memVector.push_back(nm);
+                sortMemory();
             }
 
-        void inNodeMemoryHandler(const NodeMemory & nm) {
-            children++;
-            memVector.push_back(nm);
-            sortMemory();
-        }
-
-        void inNodeMemoryVectorHandler(
-                const std::vector<NodeMemory> & nm) {
-            children++;
-            memVector.insert(memVector.end(), nm.begin(), nm.end());
-            sortMemory();
-        }
-
-        void inTermHandler(const bool & term_signal) {
-            terminate = term_signal;
-            if(terminate) {
-                emitOutput< std::vector<NodeMemory> > (
-                        "NodeMemoryVectorOut", memVector);
-            }
-            emitOutput<bool>("TermOut", terminate);
-        }
-
-        void sortMemory() {
-            sort(memVector.begin(), memVector.end());
-            if (children >= TOTAL_CHILDREN) {
-                emitOutput< std::vector<NodeMemory> > (
-                        "NodeMemoryVectorOut", memVector);
-                memVector.clear();
-                children = 0;
-            }
-        }
-            
-};
-
-KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(AggregateMemory)
-
-class __attribute__((visibility("hidden"))) BinMemory:
-public Component {
-    public:
-        static Component::Instance factoryFunction() {
-            return Component::Instance(
-                    reinterpret_cast<Component*>(new BinMemory())
-                    );
-        }
-
-    private:
-        bool terminate;
-        int numBins;
-        int * bins;
-        BinMemory() :
-            Component(Type(typeid(BinMemory)), Version(1, 0, 0)) {
-                terminate = false;
-                numBins = 100;  //Arbitrary initialization
-                bins = (int *) calloc(numBins, sizeof(int));
-                declareInput<int>(
-                        "NumBinsIn",
-                        boost::bind(&BinMemory::inNumBinHandler,
-                            this,
-                            _1)
-                        );
-                declareInput<std::vector <NodeMemory> >(
-                        "NodeMemoryVectorIn",
-                        boost::bind(&BinMemory::inNodeMemoryVectorHandler,
-                            this,
-                            _1)
-                        );
-                declareInput<bool> (
-                        "TermIn",
-                        boost::bind(&BinMemory::inTermHandler, this, _1)
-                        );
-                declareOutput<int*>(
-                        "BinsOut");
-                declareOutput<bool>("TermOut");
+            void inNodeMemoryVectorHandler(
+                    const std::vector<NodeMemory> & nm) {
+                children++;
+                memVector.insert(memVector.end(), nm.begin(), nm.end());
+                sortMemory();
             }
 
-        void inNumBinHandler(const int & nb) {
-            numBins = nb;
-            bins = (int *) calloc(numBins, sizeof(int));
-        }
+            void inTermHandler(const bool & term_signal) {
+                terminate = term_signal;
+                if(terminate) {
+                    emitOutput< std::vector<NodeMemory> > (
+                            "NodeMemoryVectorOut", memVector);
+                    memVector.clear();
+                    children = 0;
+                }
+                emitOutput<bool>("TermOut", terminate);
+            }
 
-        //This assumes the incoming vector is sorted via the previous components
-        void inNodeMemoryVectorHandler(
-                const std::vector<NodeMemory> & nm) {
-            int i = 0;
-            int j = 0;
-            float binSize = nm[0].getTotal()/(float) numBins;
-            while (i < numBins && j < nm.size()) {
-                if(nm[j].getApplication() <= (i +1) * binSize) {
-                    bins[i]++;
-                    j++;
-                } else {
-                    i++;
+            void sortMemory() {
+                sort(memVector.begin(), memVector.end());
+                if (children >= TOTAL_CHILDREN) {
+                    emitOutput< std::vector<NodeMemory> > (
+                            "NodeMemoryVectorOut", memVector);
+                    memVector.clear();
+                    children = 0;
                 }
             }
 
-            emitOutput<int*>("BinsOut", bins);
-            bins = (int *) calloc(numBins, sizeof(int));
-        }
+    };
 
-        void inTermHandler(const bool & term_signal) {
-            terminate = term_signal;
-            if(terminate) {
-                emitOutput<int*> (
-                        "BinsOut", bins);
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(AggregateMemory)
+
+    class __attribute__((visibility("hidden"))) BinMemory:
+    public Component {
+        public:
+            static Component::Instance factoryFunction() {
+                return Component::Instance(
+                        reinterpret_cast<Component*>(new BinMemory())
+                        );
+            }
+
+        private:
+            bool terminate;
+            int numBins;
+            int * bins;
+            BinMemory() :
+                Component(Type(typeid(BinMemory)), Version(1, 0, 0)) {
+                    terminate = false;
+                    numBins = 100;  //Arbitrary initialization
+                    bins = (int *) calloc(numBins, sizeof(int));
+                    declareInput<int>(
+                            "NumBinsIn",
+                            boost::bind(&BinMemory::inNumBinHandler,
+                                this,
+                                _1)
+                            );
+                    declareInput<std::vector <NodeMemory> >(
+                            "NodeMemoryVectorIn",
+                            boost::bind(&BinMemory::inNodeMemoryVectorHandler,
+                                this,
+                                _1)
+                            );
+                    declareInput<bool> (
+                            "TermIn",
+                            boost::bind(&BinMemory::inTermHandler, this, _1)
+                            );
+                    declareOutput<int*>(
+                            "BinsOut");
+                    declareOutput<bool>("TermOut");
+                }
+
+            void inNumBinHandler(const int & nb) {
+                numBins = nb;
+                free(bins);
                 bins = (int *) calloc(numBins, sizeof(int));
             }
-            emitOutput<bool>("TermOut", terminate);
-        }
-};
+
+            //This assumes the incoming vector
+            //is sorted via the previous components
+            void inNodeMemoryVectorHandler(
+                    const std::vector<NodeMemory> & nm) {
+                std::cout << "In inNodeMemoryVectorHandler" << std::endl;
+                if (&nm == NULL)
+                    std::cout << "nm is NULL!" << std::endl;
+                std::cout << "nm is size: " << nm.size() << std::endl;
+                if (nm.size() > 0) {
+                    int i = 0;
+                    int j = 0;
+                    long double binSize = nm[0].getTotal()/(long double) numBins;
+                    while (i < numBins && j < nm.size()) {
+                        if(nm[j].getApplication() <= (i +1) * binSize) {
+                            bins[i]++;
+                            j++;
+                        } else {
+                            i++;
+                        }
+                    }
+
+                    emitOutput<int*>("BinsOut", bins);
+                    free(bins);
+                    bins = (int *) calloc(numBins, sizeof(int));
+                }
+            }
+
+            void inTermHandler(const bool & term_signal) {
+                std::cout << "In inTermHandler" << std::endl;
+                terminate = term_signal;
+                if(terminate) {
+                    emitOutput<int*> (
+                            "BinsOut", bins);
+                    for (int i = 0; i < numBins; i++) {
+                        std::cout << "bin[" << i << "]="
+                            << bins[i]
+                            << std::endl; 
+                    }
+                    free(bins);
+                    bins = (int *) calloc(numBins, sizeof(int));
+                }
+                emitOutput<bool>("TermOut", terminate);
+            }
+    };
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(BinMemory)

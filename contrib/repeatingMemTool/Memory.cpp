@@ -6,7 +6,7 @@ NodeMemory::NodeMemory() {
     this->id = std::string("Unknown");
 }
 
-int NodeMemory::setApplicationPercent(float percent) {
+int NodeMemory::setApplicationPercent(long double percent) {
     if (this->total != 0) {
         this->application = percent/100.0 * this->total;
         return 0;
@@ -16,19 +16,19 @@ int NodeMemory::setApplicationPercent(float percent) {
     return 1;
 }
 
-void NodeMemory::setTotal(float total) {
+void NodeMemory::setTotal(long double total) {
     this->total = total;
 }
 
-float NodeMemory::getTotal() const {
+long double NodeMemory::getTotal() const {
     return(this->total);
 }
 
-void NodeMemory::setApplication(float application) {
+void NodeMemory::setApplication(long double application) {
     this->application = application;
 }
 
-float NodeMemory::getApplication() const {
+long double NodeMemory::getApplication() const {
     return(this->application);
 }
 
@@ -75,7 +75,7 @@ NodeMemory NodeMemory::operator * (NodeMemory nm) const {
 long double NodeMemory::operator / (long long int pop) const {
     long double result;
 
-    result = (long double) this->application/(float) pop;
+    result = (long double) this->application/(long double) pop;
 
     return result;
 }
@@ -90,4 +90,9 @@ std::string NodeMemory::toString() const {
         << this->total
         << "\n";
     return ss.str();
+}
+
+std::ostream& operator << (std::ostream& out, const NodeMemory nm) {
+    out << nm.toString();
+    return out;
 }

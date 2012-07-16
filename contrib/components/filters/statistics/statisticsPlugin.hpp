@@ -198,7 +198,6 @@ namespace KrellInstitute { namespace CBTF {
                     //Adds the incoming stats to the aggregate stats
                     aggregateStatistics.mergeStatistics(statsIn);
                     numChildren++;
-
                     /* When the number of children collected from is equal to
                      * total number of children for the node we emit an output
                      */
@@ -298,8 +297,8 @@ namespace KrellInstitute { namespace CBTF {
                     char * lowWMId = (char *) lwm.getId().c_str();
 
                     int sizes = ByteTransform<T>::getSize();
-                    int hwmIdSize = hwm.getId().size();
-                    int lwmIdSize = lwm.getId().size();
+                    int hwmIdSize = hwm.getId().size() + 1;
+                    int lwmIdSize = lwm.getId().size() + 1;
                     emitOutput<MRN::PacketPtr>(
                             "PacketOut",
                             MRN::PacketPtr(
@@ -368,14 +367,10 @@ namespace KrellInstitute { namespace CBTF {
 
                     //Unpack our packet into the buffers
                     packetIn->unpack("%auc %auc %auc %auc %uld %s %s",
-                            &sumBuff,
-                            &sumBuffSize,
-                            &sumSqBuff,
-                            &sumSqBuffSize,
-                            &highWMValBuff,
-                            &highWMValBuffSize,
-                            &lowWMValBuff,
-                            &lowWMValBuffSize,
+                            &sumBuff, &sumBuffSize,
+                            &sumSqBuff, &sumSqBuffSize,
+                            &highWMValBuff, &highWMValBuffSize,
+                            &lowWMValBuff, &lowWMValBuffSize,
                             &popBuff,
                             &highWMIdBuff,
                             &lowWMIdBuff);

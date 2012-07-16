@@ -1,6 +1,16 @@
 #! /bin/bash
 # Some of this code is inspired by the libmonitor package (monitor-link).
-#set -x
+set -x
+
+debug_flag=0
+
+if [ -z "$CBTF_DEBUG_CBTFLINK" ]
+then
+  echo ""
+else
+  debug_flag=1
+  echo "DEBUG: turning DEBUG flag on because CBTF_DEBUG_CBTFLINK is set"
+fi
 
 mach_type=`uname -m`
 
@@ -38,6 +48,9 @@ elif test -d ${libpapi_prefix}/${altmachlibdir} ; then
 fi
 
 libpapi="${libpapi_libdir}/libpapi.a"
+
+libmrnet_prefix=@@libmrnetdir@@
+libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 
 # monitor always has these
 
@@ -255,7 +268,7 @@ papi_service=${cbtf_libdir}/libcbtf-services-papi.a
 timer_service=${cbtf_libdir}/libcbtf-services-timer.a
 unwind_service=${cbtf_libdir}/libcbtf-services-unwind.a
 
-monitor_callbacks=${cbtf_plugins}/offline_monitor.o
+monitor_callbacks=${cbtf_plugins}/cbtf_monitor.o
 
 #
 # Must have a compiler command and at least one argument.
@@ -281,6 +294,34 @@ monitor_has_pthreads=`nm ${libmonitor} | grep -i __wrap_pthread_create`
 monitor_has_dlopen=`nm ${libmonitor} | grep -i __wrap_dlopen`
 monitor_has_mpi=`nm ${libmonitor} | grep -i __wrap_mpi_init`
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  if [ -n "$monitor_has_fork" ]
+  then
+    echo "DEBUG: cbtflink monitor_has_fork is non-null"
+  fi
+  if [ -n "$monitor_has_signals" ]
+  then
+    echo "DEBUG: cbtflink monitor_has_signals is non-null"
+  fi
+  if [ -n "$monitor_has_pthreads" ]
+  then
+    echo "DEBUG: cbtflink monitor_has_pthreads is non-null"
+  fi
+  if [ -n "$monitor_has_dlopen" ]
+  then
+    echo "DEBUG: cbtflink monitor_has_dlopen is non-null"
+  fi
+  if [ -n "$monitor_has_mpi" ]
+  then
+    echo "DEBUG: cbtflink monitor_has_mpi = $monitor_has_mpi"
+  fi
+  echo
+fi
+
+                                             
+
 collector_libs=""
 
 if [[ $command == *mpix* ]]
@@ -290,11 +331,24 @@ else
   static_args=" -static "
 fi
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink static_args = $static_args"
+fi
+
+
 wrap_args=
 for name in $monitor_wrap_base_names $wrap_names
 do
     wrap_args="${wrap_args} -Wl,--wrap,${name}"
 done
+
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_base_names = $wrap_args"
+fi
 
 if [ -n "$monitor_has_fork" ]
 then
@@ -304,12 +358,24 @@ then
     done
 fi
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_fork_names = $wrap_args"
+fi
+
 if [ -n "$monitor_has_signals" ]
 then
     for name in $monitor_wrap_signal_names
     do
 	wrap_args="${wrap_args} -Wl,--wrap,${name}"
     done
+fi
+
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_signal_names = $wrap_args"
 fi
 
 if [ -n "$monitor_has_pthreads" ]
@@ -321,6 +387,13 @@ then
     collector_libs="${collector_libs} -lpthread"
 fi
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_pthread_names = $wrap_args"
+  echo "DEBUG: cbtflink collector_libs for monitor_wrap_pthread_names = $collector_libs"
+fi
+
 if [ -n "$monitor_has_dlopen" ]
 then
     for name in $monitor_wrap_dlopen_names
@@ -330,12 +403,26 @@ then
     collector_libs="${collector_libs} -ldl"
 fi
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_dlopen_names = $wrap_args"
+  echo "DEBUG: cbtflink collector_libs for monitor_wrap_dlopen_names = $collector_libs"
+fi
+
+
 if [ -n "$monitor_has_mpi" ]
 then
     for name in $monitor_wrap_mpibase_names
     do
 	wrap_args="${wrap_args} -Wl,--wrap,${name}"
     done
+fi
+
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink wrap_args for monitor_wrap_mpibase_names = $wrap_args"
 fi
 
 undef_args=
@@ -360,6 +447,20 @@ for name in $pthread_undefines
 do
     undef_args="${undef_args} -Wl,-u,__wrap_${name}"
 done
+
+
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink cbtf_target = $cbtf_target"
+fi
+
+# Need to undefine system for cray-xk
+if [ ${cbtf_target} = cray-xk ]
+then
+   undef_args="${undef_args} -Wl,-u,__wrap_fork"
+   undef_args="${undef_args} -Wl,-u,__wrap_pthread_create"
+fi
 
 # Need to undefine system for cray-xt5
 if [ ${cbtf_target} = cray-xt5 ]
@@ -390,6 +491,11 @@ then
    undef_args="${undef_args} -Wl,-u,__wrap_open"
 fi
 
+if [ $debug_flag == 1 ]
+then
+  echo
+  echo "DEBUG: cbtflink collector = $collector"
+fi
 
 case "$collector" in
     mpi|mpit|mpiotf )
@@ -399,7 +505,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-unwind -lcbtf-service-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
 
     if [ -n "$monitor_has_mpi" ]
     then
@@ -417,7 +523,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-unwind -lcbtf-service-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
 
     if [ -n "$monitor_has_mpi" ]
     then
@@ -440,7 +546,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-monitor"
+    collector_libs="${collector_libs} -lrt $common_service $offline_service $mrnet_service $data_service $timer_service -L ${cbtf_libdir} -lcbtf-services-monitor -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-base -lcbtf-messages-perfdata -lcbtf-messages-collector -L ${libmrnet_libdir} -lmrnet_lightweight_r -lxplat_lightweight_r"
     ;;
 
     usertime)
@@ -450,7 +556,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-unwind -lcbtf-service-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
     ;;
     hwc)
 #    static_collector=${cbtf_plugins}/lib${collector}-offline.a
@@ -459,7 +565,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-papi -lcbtf-service-monitor -L ${libpapi_libdir} -lpapi"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
     ;;
     hwctime)
 #    static_collector=${cbtf_plugins}/lib${collector}-offline.a
@@ -468,11 +574,11 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-papi -lcbtf-service-unwind -lcbtf-service-monitor -L ${libpapi_libdir} -lpapi -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-unwind -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi -L ${libunwind_libdir} -lunwind"
     ;;
     hwcsamp)
     static_collector=${cbtf_plugins}/lib${collector}-offline.a
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-papi -lcbtf-service-monitor -L ${libpapi_libdir} -lpapi"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
     ;;
     io | iot)
 #    static_collector=${cbtf_plugins}/lib${collector}-offline.a
@@ -481,7 +587,7 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-unwind -lcbtf-service-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
     for name in $monitor_wrap_io_names
     do
 	wrap_args="${wrap_args} -Wl,--wrap,${name}"
@@ -506,9 +612,18 @@ case "$collector" in
        mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
        sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-service-unwind -lcbtf-service-binutils -lcbtf-service-monitor -L ${libunwind_libdir} -lunwind -lbfd -liberty -lopcodes -lz -lm"
+    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-binutils -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind -lbfd -liberty -lopcodes -lz -lm"
     ;;
 esac
+
+    if [ $debug_flag == 1 ]
+    then
+      echo
+      echo "DEBUG: cbtflink (after collector setup) collector collector=$collector"
+      echo "DEBUG: cbtflink (after collector setup) collector static_collector=$static_collector"
+      echo "DEBUG: cbtflink (after collector setup) collector collector_libs=$collector_libs"
+    fi
+
 
 insert_files="$monitor_callbacks $static_collector $static_offline"
 mon_args="${insert_files} ${libmonitor} ${appl_libs} ${library_names}"

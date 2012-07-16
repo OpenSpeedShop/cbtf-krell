@@ -16,10 +16,20 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-set(SOURCES collector.c)
+set(SOURCES
+    collector.c
+    cuLaunchKernel.h
+    cuModuleGetFunction.h
+    cuModuleLoad.h
+    cuModuleLoadData.h
+    cuModuleLoadDataEx.h
+    cuModuleLoadFatBinary.h
+    cuModuleUnload.h
+    )
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}/messages/cuda
     ${PROJECT_SOURCE_DIR}/services/collector
     ${CBTF_TOOLS_INCLUDE_DIR}
     ${CUPTI_INCLUDE_DIRS}
@@ -32,6 +42,7 @@ add_library(cuda-collector-monitor-mrnet SHARED ${SOURCES})
 add_library(cuda-collector-monitor-mrnet-mpi SHARED ${SOURCES})
 
 target_link_libraries(cuda-collector-monitor-mrnet
+    cbtf-messages-cuda-shared
     cbtf-services-collector-monitor-mrnet-shared
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
@@ -39,6 +50,7 @@ target_link_libraries(cuda-collector-monitor-mrnet
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
+    cbtf-messages-cuda-shared
     cbtf-services-collector-monitor-mrnet-mpi-shared
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}

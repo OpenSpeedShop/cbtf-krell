@@ -1,0 +1,28 @@
+The intent of this client is to allow running daemonTools defined entirely
+by their xml and plugin component libraries.  i.e. the daemonTool client
+does not provide command line options specific to any needs of a tool
+specified in the xml.  The tool's xml must define a Frontend component
+network (run in the deamonTool client process) and a Backend component
+network (run in the libcbtf-mrnet-backend process).  While it it possible
+in CBTF to run filters on the client and backend processes, the daemonTool
+client would use the Filter network of the xml (if provided) to run in
+the MRNet communication processes (CP's). These CP processes are actually
+mrnet_commnode executables running at the intermediate levels of the
+MRNet tree and loading filter libraries as specified in the xml.
+The Filter <Depth> </Depth> specification controls the placement of
+filters at specific levels of the MRNet tree.
+
+An example usage for a tool name myTool.
+
+daemonTool --tool myTool --numBE 512
+
+The tool myTool would be implemented as a collection of component
+plugin libraries and an xml file that contains the tools implementation.
+
+The xml and component plugin library naming conventions are (where myTool
+represents the tool name):
+myTool.xml
+myToolFE.so
+myToolFilter.so
+myToolBE.so
+

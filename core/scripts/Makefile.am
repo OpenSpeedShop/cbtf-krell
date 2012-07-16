@@ -76,6 +76,7 @@ cbtflink: cbtflink.in
 		-e 's,@@default_mpi_impl@@,$(DEFAULT_MPI_IMPL),' \
 		-e 's,@@cbtfinstalldir@@,$(prefix),' \
 		-e 's,@@libmonitordir@@,$(monitor_dir),' \
+		-e 's,@@libmrnetdir@@,$(mrnet_dir),' \
 		-e 's,@@libunwinddir@@,$(unwind_dir),' \
 		-e 's,@@cbtftargetos@@,$(TARGET_OS),' \
 		-e 's,@@papidir@@,$(papi_dir),' \

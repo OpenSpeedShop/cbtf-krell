@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
 // Copyright (c) 2011 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
@@ -32,46 +30,42 @@
 #endif
 
 
+#include "KrellInstitute/Core/Address.hpp"
+#include "KrellInstitute/Core/AddressRange.hpp"
+#include "KrellInstitute/Core/Path.hpp"
+
+#include <vector>
 #include <set>
+#include <string>
 
 
 
 namespace KrellInstitute { namespace Core {
 
-    class Function;
-    class LinkedObject;
+    class AddressRange;
     class Path;
-    class StatementCache;
     
     /**
-     * Source code statement.
      *
-     * Representation of a source code statement. Provides member functions for
-     * requesting information about this statement, where it is contained, and
-     * what it contains.
-     *
-     * @ingroup CollectorAPI ToolAPI
      */
     class Statement
     {
-	friend class Function;
-	friend class LinkedObject;
-	friend class StatementCache;
 	
     public:
 
-	LinkedObject getLinkedObject() const;
-	std::set<Function> getFunctions() const;
-	
-	Path getPath() const;
+	AddressRange getAddressRange() const;
+	Path getSourceFile() const;
 	int getLine() const;
 	int getColumn() const;
 
     private:
 
-	static StatementCache TheCache;
-
 	Statement();
+
+        Path _sourceFile;
+        AddressRange _range;
+	int _lineNum;
+	int _column;
 	
     };
     

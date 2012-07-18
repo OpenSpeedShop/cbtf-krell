@@ -27,10 +27,25 @@
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Collector.h"
+#include "KrellInstitute/Services/Data.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
 
 #include "CUDA_data.h"
+
+
+
+/**
+ * Maximum number of individual (CBTF_cuda_message) messages contained within
+ * each (CBTF_cuda_data) performance data blob. 
+ */
+#define MAX_MESSAGES_PER_BLOB  128
+
+/**
+ * Maximum number of (CBTF_Protocol_Address) addresses contained within each
+ * (CBTF_cuda_data) performance data blob.
+ */
+#define MAX_ADDRESSES_PER_BLOB  1024
 
 
 
@@ -111,14 +126,35 @@ static CUpti_SubscriberHandle cupti_subscriber_handle;
 /** Type defining the data stored in thread-local storage. */
 typedef struct {
 
+    /** Boolean flag indicating if data collection is paused. */
+    int paused;
+
     /**
-     * Performance data header applied to all of this thread's data. The fields
-     * time_begin, time_end, addr_begin, and addr_end are overwritten at will by
-     * the various collection routines.
+     * Performance data header to be applied to this thread's performance data.
+     * All of the fields except [addr|time]_[begin|end] are constant throughout
+     * data collection. These exceptions are updated dynamically by the various
+     * collection routines.
      */
     CBTF_DataHeader data_header;
-    
-    /* ... */
+
+    /**
+     * Current performance data blob for this thread. Messages are added by the
+     * various collection routines. It is sent when full, or upon completion of
+     * data collection.
+     */
+    CBTF_cuda_data data;
+
+    /**
+     * Individual messages containing data gathered by this collector. Pointed
+     * to by the performance data blob above.
+     */
+    CBTF_cuda_message messages[MAX_MESSAGES_PER_BLOB];
+
+    /**
+     * Unique, null-terminated, stack traces referenced by the messages. Pointed
+     * to by the performance data blob above.
+     */
+    CBTF_Protocol_Address stack_traces[MAX_ADDRESSES_PER_BLOB];
     
 } TLS;
 
@@ -128,7 +164,7 @@ typedef struct {
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
-static const uint32_t TLSKey = 0xBAD0C0DA;
+static const uint32_t TLSKey = 0xBADC00DA;
 
 #else
 
@@ -139,13 +175,140 @@ static __thread TLS the_tls;
 
 
 
-#include "cuLaunchKernel.h"
-#include "cuModuleGetFunction.h"
-#include "cuModuleLoad.h"
-#include "cuModuleLoadData.h"
-#include "cuModuleLoadDataEx.h"
-#include "cuModuleLoadFatBinary.h"
-#include "cuModuleUnload.h"
+/**
+ * Initialize the performance data header and blob contained within the given
+ * thread-local storage. This function <em>must</em> be called before any of
+ * the collection routines attempts to add a message.
+ *
+ * @param tls    Thread-local storage to be initialized.
+ */
+static void initialize_data(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    tls->data_header.time_begin = ~0;
+    tls->data_header.time_end = 0;
+    tls->data_header.addr_begin = ~0;
+    tls->data_header.addr_end = 0;
+    
+    tls->data.messages.messages_len = 0;
+    tls->data.messages.messages_val = tls->messages;
+    
+    tls->data.stack_traces.stack_traces_len = 0;
+    tls->data.stack_traces.stack_traces_val = tls->stack_traces;
+    
+    memset(tls->stack_traces, 0, sizeof(tls->stack_traces));
+}
+
+
+
+/**
+ * Send the performance data blob contained within the given thread-local
+ * storage. The blob is re-initialized (cleared) after being sent. Nothing
+ * is sent if the blob is empty.
+ *
+ * @param tls    Thread-local storage containing data to be sent.
+ */
+static void send_data(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    if (tls->data.messages.messages_len > 0)
+    {
+        cbtf_collector_send(
+            &tls->data_header, (xdrproc_t)xdr_CBTF_cuda_data, &tls->data
+            );
+        initialize_data(tls);
+    }
+}
+
+
+
+/**
+ * Add a new message to the performance data blob contained within the given
+ * thread-local storage. The current blob is sent and re-initialized (cleared)
+ * if it is already full.
+ *
+ * @param tls    Thread-local storage to which a message is to be added.
+ * @return       Pointer to the new message to be filled in by the caller.
+ */
+static CBTF_cuda_message* add_message(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    if (tls->data.messages.messages_len == MAX_MESSAGES_PER_BLOB)
+    {
+        send_data(tls);
+    }
+    
+    return &(tls->messages[tls->data.messages.messages_len++]);
+}
+
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified time. Insures that the time interval defined by
+ * time_begin and time_end contain the specified time.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param time    Time with which to update.
+ */
+inline void update_header_with_time(TLS* tls, CBTF_Protocol_Time time)
+{
+    Assert(tls != NULL);
+
+    if (time < tls->data_header.time_begin)
+    {
+        tls->data_header.time_begin = time;
+    }
+    if (time >= tls->data_header.time_end)
+    {
+        tls->data_header.time_end = time + 1;
+    }
+}
+
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified address. Insures that the address range defined
+ * by addr_begin and addr_end contain the specified address.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param addr    Address with which to update.
+ */
+inline void update_header_with_address(TLS* tls, CBTF_Protocol_Address addr)
+{
+    Assert(tls != NULL);
+
+    if (addr < tls->data_header.addr_begin)
+    {
+        tls->data_header.addr_begin = addr;
+    }
+    if (addr >= tls->data_header.addr_end)
+    {
+        tls->data_header.addr_end = addr + 1;
+    }
+}
+
+
+
+/**
+ * Add a new stack trace for the current call site to the performance data
+ * blob contained within the given thread-local storage.
+ *
+ * @param tls    Thread-local storage to which the stack trace is to be added.
+ * @return       Index of this call site within the performance data blob.
+ */
+static uint32_t add_current_call_site(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    /* ... implement! ... */
+
+    return 0;
+}
 
 
 
@@ -164,6 +327,20 @@ static void cupti_callback(void* userdata,
                            CUpti_CallbackId id,
                            const void* data)
 {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+
+    /* Do nothing if data collection is paused for this thread */
+    if (tls->paused)
+    {
+        return;
+    }
+
     /* Determine the CUDA event that has occurred and handle it */
     switch (domain)
     {
@@ -175,117 +352,250 @@ static void cupti_callback(void* userdata,
             switch (id)
             {
 
+
+
             case CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel :
+                if (cbdata->callbackSite == CUPTI_API_ENTER)
                 {
                     const cuLaunchKernel_params* const params =
                         (cuLaunchKernel_params*)cbdata->functionParams;
 
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+#if !defined(NDEBUG)
+                    if (debug)
                     {
-                        cuLaunchKernel_enter_callback(params);
+                        printf("[CBTF/CUDA] enter cuLaunchKernel()\n");
                     }
-                    else if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuLaunchKernel_exit_callback(params);
-                    }
+#endif
+                    
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = EnqueueRequest;
+                    
+                    CUDA_EnqueueRequest* message = 
+                        &raw_message->CBTF_cuda_message_u.enqueue_request;
+                    
+                    message->type = LaunchKernel;
+                    message->time = CBTF_GetTime();
+
+                    CUPTI_CHECK(cuptiGetStreamId(cbdata->context,
+                                                 params->hStream,
+                                                 &message->stream));
+
+                    message->call_site = add_current_call_site(tls);
+                    
+                    update_header_with_time(tls, message->time);
                 }
                 break;
+                
+
 
             case CUPTI_DRIVER_TRACE_CBID_cuModuleGetFunction :
+                if (cbdata->callbackSite == CUPTI_API_EXIT)
                 {
                     const cuModuleGetFunction_params* const params =
                         (cuModuleGetFunction_params*)cbdata->functionParams;
                     
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+#if !defined(NDEBUG)
+                    if (debug)
                     {
-                        cuModuleGetFunction_enter_callback(params);
+                        printf("[CBTF/CUDA] exit cuModuleGetFunction()\n");
                     }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleGetFunction_exit_callback(params);
-                    }
+#endif
+                    
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = ResolvedFunction;
+                    
+                    CUDA_ResolvedFunction* message = 
+                        &raw_message->CBTF_cuda_message_u.resolved_function;
+                    
+                    message->time = CBTF_GetTime();
+                    message->module_handle = 
+                        (CBTF_Protocol_Address)params->hmod;
+                    message->function = (char*)params->name;
+                    message->handle = (CBTF_Protocol_Address)*(params->hfunc);
+                    
+                    update_header_with_time(tls, message->time);
                 }
                 break;
 
+
+
             case CUPTI_DRIVER_TRACE_CBID_cuModuleLoad :
+                if (cbdata->callbackSite == CUPTI_API_EXIT)
                 {
                     const cuModuleLoad_params* const params =
                         (cuModuleLoad_params*)cbdata->functionParams;
-
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    
+#if !defined(NDEBUG)
+                    if (debug)
                     {
-                        cuModuleLoad_enter_callback(params);
+                        printf("[CBTF/CUDA] exit cuModuleLoad()\n");
                     }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleLoad_exit_callback(params);
-                    }
+#endif
+                    
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = LoadedModule;
+                    
+                    CUDA_LoadedModule* message =  
+                        &raw_message->CBTF_cuda_message_u.loaded_module;
+                    
+                    message->time = CBTF_GetTime();
+                    message->module.path = (char*)(params->fname);
+                    message->module.checksum = 0;
+                    message->handle = (CBTF_Protocol_Address)*(params->module);
+                    
+                    update_header_with_time(tls, message->time);
                 }
                 break;
 
+
+
             case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadData :
+                if (cbdata->callbackSite == CUPTI_API_EXIT)
                 {
                     const cuModuleLoadData_params* const params =
                         (cuModuleLoadData_params*)cbdata->functionParams;
-
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+                    
+#if !defined(NDEBUG)
+                    if (debug)
                     {
-                        cuModuleLoadData_enter_callback(params);
+                        printf("[CBTF/CUDA] exit cuModuleLoadData()\n");
                     }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleLoadData_exit_callback(params);
-                    }
-                }
-                break;
-
-            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadDataEx :
-                {
-                    const cuModuleLoadDataEx_params* const params =
-                        (cuModuleLoadDataEx_params*)cbdata->functionParams;
-
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
-                    {
-                        cuModuleLoadDataEx_enter_callback(params);
-                    }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleLoadDataEx_exit_callback(params);
-                    }
-                }
-                break;
-
-            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadFatBinary :
-                {
-                    const cuModuleLoadFatBinary_params* const params =
-                        (cuModuleLoadFatBinary_params*)cbdata->functionParams;
-
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
-                    {
-                        cuModuleLoadFatBinary_enter_callback(params);
-                    }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleLoadFatBinary_exit_callback(params);
-                    }
+#endif
+                        
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = LoadedModule;
+                    
+                    CUDA_LoadedModule* message =  
+                        &raw_message->CBTF_cuda_message_u.loaded_module;
+                    
+                    static char* const kModulePath = 
+                        "<Module from Embedded Data>";
+                    
+                    message->time = CBTF_GetTime();
+                    message->module.path = kModulePath;
+                    message->module.checksum = 0;
+                    message->handle = (CBTF_Protocol_Address)*(params->module);
+                        
+                    update_header_with_time(tls, message->time);
                 }
                 break;
                 
-            case CUPTI_DRIVER_TRACE_CBID_cuModuleUnload :
+                
+                
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadDataEx :
+                if (cbdata->callbackSite == CUPTI_API_EXIT)
                 {
-                    const cuModuleUnload_params* const params =
-                        (cuModuleUnload_params*)cbdata->functionParams;
+                    const cuModuleLoadDataEx_params* const params =
+                        (cuModuleLoadDataEx_params*)cbdata->functionParams;
                     
-                    if (cbdata->callbackSite == CUPTI_API_ENTER)
+#if !defined(NDEBUG)
+                    if (debug)
                     {
-                        cuModuleUnload_enter_callback(params);
+                        printf("[CBTF/CUDA] exit cuModuleLoadDataEx()\n");
                     }
-                    if (cbdata->callbackSite == CUPTI_API_EXIT)
-                    {
-                        cuModuleUnload_exit_callback(params);
-                    }
+#endif
+                    
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = LoadedModule;
+                    
+                    CUDA_LoadedModule* message =  
+                        &raw_message->CBTF_cuda_message_u.loaded_module;
+                    
+                    static char* const kModulePath = 
+                        "<Module from Embedded Data>";
+  
+                    message->time = CBTF_GetTime();
+                    message->module.path = kModulePath;
+                    message->module.checksum = 0;
+                    message->handle = (CBTF_Protocol_Address)*(params->module);
+                        
+                    update_header_with_time(tls, message->time);
                 }
                 break;
+                
+                
+
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleLoadFatBinary :
+                if (cbdata->callbackSite == CUPTI_API_EXIT)
+                {
+                    const cuModuleLoadFatBinary_params* const params =
+                        (cuModuleLoadFatBinary_params*)cbdata->functionParams;
+                    
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] exit cuModuleLoadFatBinary()\n");
+                    }
+#endif
+                    
+                    /* Add a message for this event */
+                    
+                    CBTF_cuda_message* raw_message = add_message(tls);
+                    Assert(raw_message != NULL);
+                    raw_message->type = LoadedModule;
+                    
+                    CUDA_LoadedModule* message =  
+                        &raw_message->CBTF_cuda_message_u.loaded_module;
+                        
+                    static char* const kModulePath = "<Module from Fat Binary>";
+                        
+                    message->time = CBTF_GetTime();
+                    message->module.path = kModulePath;
+                    message->module.checksum = 0;
+                    message->handle = (CBTF_Protocol_Address)*(params->module);
+                        
+                    update_header_with_time(tls, message->time);
+                }
+                break;
+                
+                
+                
+            case CUPTI_DRIVER_TRACE_CBID_cuModuleUnload :
+                {
+                    if (cbdata->callbackSite == CUPTI_API_EXIT)
+                    {
+                        const cuModuleUnload_params* const params =
+                            (cuModuleUnload_params*)cbdata->functionParams;
+                        
+#if !defined(NDEBUG)
+                        if (debug)
+                        {
+                            printf("[CBTF/CUDA] exit cuModuleUnload()\n");
+                        }
+#endif
+                        
+                        /* Add a message for this event */
+                        
+                        CBTF_cuda_message* raw_message = add_message(tls);
+                        Assert(raw_message != NULL);
+                        raw_message->type = UnloadedModule;
+                        
+                        CUDA_UnloadedModule* message =  
+                            &raw_message->CBTF_cuda_message_u.unloaded_module;
+                        
+                        message->time = CBTF_GetTime();
+                        message->handle = (CBTF_Protocol_Address)params->hmod;
+                        
+                        update_header_with_time(tls, message->time);                                 }
+                }
+                break;
+                
+
 
             }
         }
@@ -311,8 +621,8 @@ static void parse_configuration(const char* const configuration)
         printf("[CBTF/CUDA] parse_configuration(\"%s\")\n", configuration);
     }
 #endif
-    
-    /* ... */            
+
+    /* ... parse options for future CPU/GPU hardware counter sampling ... */
 }
 
 
@@ -426,6 +736,14 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 
     /* Copy the header into our thread-local storage for future use */
     memcpy(&tls->data_header, header, sizeof(CBTF_DataHeader));
+
+    /* Initialize our performance data header and blob */
+    initialize_data(tls);
+
+    /* ... enable future CPU/GPU hardware counter sampling ... */
+    
+    /* Resume (start) data collection for this thread */
+    tls->paused = 0;
 }
 
 
@@ -450,7 +768,10 @@ void cbtf_collector_pause()
 #endif
     Assert(tls != NULL);
 
-    /* ... */
+    /* ... disable future CPU/GPU hardware counter sampling ... */
+
+    /* Pause data collection for this thread */
+    tls->paused = 1;
 }
 
 
@@ -475,7 +796,10 @@ void cbtf_collector_resume()
 #endif
     Assert(tls != NULL);
 
-    /* ... */
+    /* ... enable future CPU/GPU hardware counter sampling ... */
+
+    /* Resume data collection for this thread */
+    tls->paused = 0;
 }
 
 
@@ -499,8 +823,14 @@ void cbtf_collector_stop()
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    
-    /* ... */
+
+    /* ... disable future CPU/GPU hardware counter sampling ... */
+
+    /* Pause (stop) data collection for this thread */
+    tls->paused = 1;
+
+    /* Send any remaining performance data for this thread */
+    send_data(tls);
     
     /* Destroy our thread-local storage */
 #ifdef USE_EXPLICIT_TLS

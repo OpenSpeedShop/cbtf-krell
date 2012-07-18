@@ -16,16 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-set(SOURCES
-    collector.c
-    cuLaunchKernel.h
-    cuModuleGetFunction.h
-    cuModuleLoad.h
-    cuModuleLoadData.h
-    cuModuleLoadDataEx.h
-    cuModuleLoadFatBinary.h
-    cuModuleUnload.h
-    )
+set(SOURCES collector.c)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

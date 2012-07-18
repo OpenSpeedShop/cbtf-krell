@@ -217,11 +217,19 @@ void Statistics<T>::addValueVector(std::vector<ValIdPair<T> > values) {
 //Takes an input stat and adds its values to the current stats
 template <typename T>
 void Statistics<T>::mergeStatistics(Statistics<T> stats) {
-    sum += stats.getSum();
-    sumSq += stats.getSumSq();
-    highWM = findHighWM(stats);
-    lowWM = findLowWM(stats);
-    popSize += stats.getPopSize();
+    if (popSize > 0) {
+        sum = sum + stats.getSum();
+        sumSq = sumSq + stats.getSumSq();
+        highWM = findHighWM(stats);
+        lowWM = findLowWM(stats);
+        popSize = popSize + stats.getPopSize();
+    } else {
+        sum = stats.getSum();
+        sumSq = stats.getSumSq();
+        highWM = stats.getHighWM();
+        lowWM = stats.getLowWM();
+        popSize = stats.popSize;
+    }
 }
 
 //This will return the high water mark between

@@ -63,6 +63,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <To><Input>system_freq_in</Input></To>
     </Input>
 
+    <Input>
+        <Name>numBE_in</Name>
+        <To><Input>system_numBE_in</Input></To>
+    </Input>
+
     <Output>
         <Name>elapsed_time_out</Name>
         <From><Output>system_elapsed_time_out</Output></From>
@@ -125,8 +130,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
             <Component>
                 <Name>AggStats</Name>
-                <Type>KrellInstitute::CBTF::StatisticsAggregator&lt;float&gt;</Type>
+                <Type>KrellInstitute::CBTF::StatisticsAggregator&lt;long double&gt;</Type>
             </Component>
+
             <!--
             <Component>
                 <Name>PacketToString</Name>
@@ -206,6 +212,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
             </Input>
 
             <Input>
+                <Name>system_numBE_in</Name>
+                <To>
+                    <Name>EndCircut</Name>
+                    <Input>NumBEIn</Input>
+                </To>
+            </Input>
+
+            <Input>
                 <Name>Term_In</Name>
                 <To>
                     <Name>EndCircut</Name>
@@ -237,6 +251,17 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 <To>
                     <Name>Bin</Name>
                     <Input>NodeMemoryVectorIn</Input>
+                </To>
+            </Connection>
+
+            <Connection>
+                <From>
+                    <Name>Sort</Name>
+                    <Output>TermOut</Output>
+                </From>
+                <To>
+                    <Name>Bin</Name>
+                    <Input>TermIn</Input>
                 </To>
             </Connection>
 
@@ -305,7 +330,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     </Frontend>
 
     <Filter>
-        <Depth><AllOther/></Depth>
+        <Depth>
+            <RootRelative>
+                <Offset>1</Offset>
+            </RootRelative>
+        </Depth>
         <Network>
             <Type>repeatMemNetwork_Filter</Type>
             <Version>1.0.0</Version>
@@ -321,7 +350,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
             <Component>
                 <Name>AggStats</Name>
-                <Type>KrellInstitute::CBTF::StatisticsAggregator&lt;float&gt;</Type>
+                <Type>KrellInstitute::CBTF::StatisticsAggregator&lt;long double&gt;</Type>
             </Component>
 
             <Input>
@@ -337,6 +366,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 <To>
                     <Name>AggStats</Name>
                     <Input>StatisticsIn</Input>
+                </To>
+            </Input>
+
+            <Input>
+                <Name>Terminate_In</Name>
+                <To>
+                    <Name>Sort</Name>
+                    <Input>TermIn</Input>
                 </To>
             </Input>
 
@@ -356,16 +393,23 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 </From>
             </Output>
 
+            <Output>
+                <Name>Terminate_Out</Name>
+                <From>
+                    <Name>Sort</Name>
+                    <Output>TermOut</Output>
+                </From>
+            </Output>
         </Network>
 
         <IncomingUpstream>
             <Name>StatStream</Name>
-            <To><Input>Statsistics_In</Input></To>
+            <To><Input>Statistics_In</Input></To>
         </IncomingUpstream>
 
         <OutgoingUpstream>
             <Name>StatStream</Name>
-            <From><Output>StatisticsOut</Output></From>
+            <From><Output>Statistics_Out</Output></From>
         </OutgoingUpstream>
 
         <IncomingUpstream>
@@ -376,6 +420,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <OutgoingUpstream>
             <Name>NodeMemoryVectStream</Name>
             <From><Output>SortedVect_Out</Output></From>
+        </OutgoingUpstream>
+
+        <IncomingUpstream>
+            <Name>TermStream</Name>
+            <To><Input>Terminate_In</Input></To>
+        </IncomingUpstream>
+
+        <OutgoingUpstream>
+            <Name>TermStream</Name>
+            <From><Output>Terminate_Out</Output></From>
         </OutgoingUpstream>
 
     </Filter>
@@ -406,12 +460,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
             <Component>
                 <Name>ValToStat</Name>
-                <Type>KrellInstitute::CBTF::ValueToStatistics&lt;float&gt;</Type>
+                <Type>KrellInstitute::CBTF::ValueToStatistics&lt;long double&gt;</Type>
             </Component>
 
             <Component>
                 <Name>ValToPair</Name>
-                <Type>KrellInstitute::CBTF::CreateValIdPair&lt;float&gt;</Type>
+                <Type>KrellInstitute::CBTF::CreateValIdPair&lt;long double&gt;</Type>
             </Component>
 
             <Input>

@@ -335,6 +335,7 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(BeginCircutLogic)
             }
 
         private:
+            std::vector<std::string> memory_info;
             timevalue start_time;
             bool terminate;
             int backends;
@@ -376,20 +377,22 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(BeginCircutLogic)
 
             void inMemoryInfo(const std::vector<std::string> & mem_info) {
                 backendCount++;
+                memory_info.insert(memory_info.end(),
+                        mem_info.begin(), mem_info.end());
                 if (backendCount >= backends) {
                     timevalue elapsed_time = getElapsedTime();
                     emitOutput<timevalue>("ElapsedTimeOut", elapsed_time);
                     emitOutput<bool>("RestartOut", !terminate);
+                    emitOutput<std::vector <std::string> >("MemoryInfoOut",
+                            memory_info);
+                    emitOutput<bool>("TermOut", terminate);
+                    memory_info.clear();
                     backendCount = 0;
                 }
-                emitOutput<std::vector <std::string> >("MemoryInfoOut",
-                        mem_info);
-
             }
 
             void inTerm(const bool & term_signal) {
                 terminate = term_signal;
-                emitOutput<bool>("TermOut", terminate);
             }
 
             void inNumBEHandler(const int & numBE) {
@@ -476,13 +479,20 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(EndCircutLogic)
 
             void inTermHandler(const bool & term_signal) {
                 terminate = term_signal;
-                if(terminate) {
-                    emitOutput< std::vector<NodeMemory> > (
-                            "NodeMemoryVectorOut", memVector);
-                    memVector.clear();
-                    children = 0;
+                /*
+                std::cout << "Children = " << children << std::endl;
+                if (children >= TOTAL_CHILDREN) {
+                    if(terminate) {
+                        std::cout << "AggregateMemory recv terminate=true"
+                            << std::endl;
+                        emitOutput< std::vector<NodeMemory> > (
+                                "NodeMemoryVectorOut", memVector);
+                        memVector.clear();
+                        children = 0;
+                    }
                 }
-                emitOutput<bool>("TermOut", terminate);
+                    emitOutput<bool>("TermOut", terminate);
+                    */
             }
 
             void sortMemory() {
@@ -490,6 +500,7 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(EndCircutLogic)
                 if (children >= TOTAL_CHILDREN) {
                     emitOutput< std::vector<NodeMemory> > (
                             "NodeMemoryVectorOut", memVector);
+                    emitOutput<bool>("TermOut", terminate);
                     memVector.clear();
                     children = 0;
                 }
@@ -548,14 +559,13 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(AggregateMemory)
             //is sorted via the previous components
             void inNodeMemoryVectorHandler(
                     const std::vector<NodeMemory> & nm) {
-                std::cout << "In inNodeMemoryVectorHandler" << std::endl;
-                if (&nm == NULL)
-                    std::cout << "nm is NULL!" << std::endl;
-                std::cout << "nm is size: " << nm.size() << std::endl;
                 if (nm.size() > 0) {
                     int i = 0;
                     int j = 0;
-                    long double binSize = nm[0].getTotal()/(long double) numBins;
+                    for (int i = 0; i < numBins; i++) {
+                        bins[i] = 0;
+                    }
+                    long double binSize = nm[0].getTotal()/(long double)numBins;
                     while (i < numBins && j < nm.size()) {
                         if(nm[j].getApplication() <= (i +1) * binSize) {
                             bins[i]++;
@@ -564,28 +574,26 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(AggregateMemory)
                             i++;
                         }
                     }
-
+                } else {
                     emitOutput<int*>("BinsOut", bins);
-                    free(bins);
-                    bins = (int *) calloc(numBins, sizeof(int));
                 }
+                emitOutput<bool>("TermOut", terminate);
             }
 
             void inTermHandler(const bool & term_signal) {
                 std::cout << "In inTermHandler" << std::endl;
                 terminate = term_signal;
+                /*
                 if(terminate) {
+                    std::cout << "terminate is true" << std::endl; 
                     emitOutput<int*> (
                             "BinsOut", bins);
                     for (int i = 0; i < numBins; i++) {
-                        std::cout << "bin[" << i << "]="
-                            << bins[i]
-                            << std::endl; 
+                        bins[i] = 0;
                     }
-                    free(bins);
-                    bins = (int *) calloc(numBins, sizeof(int));
                 }
                 emitOutput<bool>("TermOut", terminate);
+                */
             }
     };
 

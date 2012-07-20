@@ -152,49 +152,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 </To>
             </Input>
 
-            <Connection>
-                <From>
-                    <Name>EndCircut</Name>
-                    <Output>RestartOut</Output>
-                </From>
-                <To>
-                    <Name>StartCircut</Name>
-                    <Input>RestartIn</Input>
-                </To>
-            </Connection>
-
-            <Output>
-                <Name>system_out</Name>
-                <From>
-                    <Name>EndCircut</Name>
-                    <Output>MemoryInfoOut</Output>
-                </From>
-            </Output>
-
-            <Output>
-                <Name>system_elapsed_time_out</Name>
-                <From>
-                    <Name>EndCircut</Name>
-                    <Output>ElapsedTimeOut</Output>
-                </From>
-            </Output>
-
-            <Output>
-                <Name>system_term_out</Name>
-                <From>
-                    <Name>EndCircut</Name>
-                    <Output>TermOut</Output>
-                </From>
-            </Output>
-
-            <Output>
-                <Name>system_stat_out</Name>
-                <From>
-                    <Name>AggStats</Name>
-                    <Output>StatisticsOut</Output>
-                </From>
-            </Output>
-
             <Input>
                 <Name>system_freq_in</Name>
                 <To>
@@ -245,6 +202,28 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
             <Connection>
                 <From>
+                    <Name>EndCircut</Name>
+                    <Output>RestartOut</Output>
+                </From>
+                <To>
+                    <Name>StartCircut</Name>
+                    <Input>RestartIn</Input>
+                </To>
+            </Connection>
+
+            <Connection>
+                <From>
+                    <Name>EndCircut</Name>
+                    <Output>TermOut</Output>
+                </From>
+                <To>
+                    <Name>Sort</Name>
+                    <Input>TermIn</Input>
+                </To>
+            </Connection>
+
+            <Connection>
+                <From>
                     <Name>Sort</Name>
                     <Output>NodeMemoryVectorOut</Output>
                 </From>
@@ -265,6 +244,41 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 </To>
             </Connection>
 
+            <Connection>
+                <From>
+                    <Name>StartCircut</Name>
+                    <Output>StartTimeOut</Output>
+                </From>
+                <To>
+                    <Name>EndCircut</Name>
+                    <Input>StartTimeIn</Input>
+                </To>
+            </Connection>
+
+            <Output>
+                <Name>system_out</Name>
+                <From>
+                    <Name>EndCircut</Name>
+                    <Output>MemoryInfoOut</Output>
+                </From>
+            </Output>
+
+            <Output>
+                <Name>system_elapsed_time_out</Name>
+                <From>
+                    <Name>EndCircut</Name>
+                    <Output>ElapsedTimeOut</Output>
+                </From>
+            </Output>
+
+            <Output>
+                <Name>system_stat_out</Name>
+                <From>
+                    <Name>AggStats</Name>
+                    <Output>StatisticsOut</Output>
+                </From>
+            </Output>
+
             <Output>
                 <Name>system_bin_out</Name>
                 <From>
@@ -281,22 +295,19 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
                 </From>
             </Output>
 
-            <Connection>
-                <From>
-                    <Name>StartCircut</Name>
-                    <Output>StartTimeOut</Output>
-                </From>
-                <To>
-                    <Name>EndCircut</Name>
-                    <Input>StartTimeIn</Input>
-                </To>
-            </Connection>
-
             <Output>
                 <Name>Frontend_Out</Name>
                 <From>
                     <Name>StartCircut</Name>
                     <Output>FilenameOut</Output>
+                </From>
+            </Output>
+
+            <Output>
+                <Name>system_term_out</Name>
+                <From>
+                    <Name>Sort</Name>
+                    <Output>TermOut</Output>
                 </From>
             </Output>
 

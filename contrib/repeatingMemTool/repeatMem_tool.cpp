@@ -261,6 +261,7 @@ int main(int argc,  char *argv[ ])
             << std::endl;
 
         if (terminate) {
+            bin_output = *bin_output_value;
             std::cout << "Recieved Terminate Signal" << std::endl;
         } else {
             std::cout << "Did not recieve terminate signal" << std::endl;
@@ -272,8 +273,6 @@ int main(int argc,  char *argv[ ])
     //stat_output = *stat_output_value;
     //output = *output_value;
     //elapsed_time_output = *elapsed_time_output_value;
-    /*
-    bin_output = *bin_output_value;
     for (int i = 0; i < 100; i++) {
         std::cout << "BIN["
             << i
@@ -281,7 +280,6 @@ int main(int argc,  char *argv[ ])
             << bin_output[i]
             << std::endl;
     }
-    */
     return 0;
 }
 

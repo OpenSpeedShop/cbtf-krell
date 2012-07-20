@@ -222,8 +222,10 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToString)
         void inBoolHandler(const bool & b) {
             int conversion;
             if (b) {
+                std::cout << "recv \"true\" sending 1" << std::endl;
                 conversion = 1;
             } else {
+                std::cout << "recv \"false\" sending 0" << std::endl;
                 conversion = 0;
             }
             emitOutput<MRN::PacketPtr>(
@@ -272,8 +274,14 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertBoolToPacket)
             int tempVal;
             in->unpack("%d", &tempVal);
             if(tempVal == 0) {
+                std::cout << "recv " << tempVal
+                    << " sending \"false\""
+                    << std::endl;
                 boolOut = false;
             } else {
+                std::cout << "recv " << tempVal
+                    << " sending \"true\""
+                    << std::endl;
                 boolOut = true;
             }
             emitOutput<bool>("BoolOut", boolOut);

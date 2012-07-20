@@ -21,15 +21,18 @@
 #include <cupti.h>
 #include <inttypes.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Collector.h"
+#include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "KrellInstitute/Services/Unwind.h"
 
 #include "CUDA_data.h"
 
@@ -38,12 +41,22 @@
 /**
  * Maximum number of individual (CBTF_cuda_message) messages contained within
  * each (CBTF_cuda_data) performance data blob. 
+ *
+ * @note    Currently there is no specific basis for the selection of this
+ *          value other than a vague notion that is seems about right. In
+ *          the future, performance testing should be done to determine an
+ *          optimal value.
  */
 #define MAX_MESSAGES_PER_BLOB  128
 
 /**
  * Maximum number of (CBTF_Protocol_Address) addresses contained within each
  * (CBTF_cuda_data) performance data blob.
+ *
+ * @note    Currently there is no specific basis for the selection of this
+ *          value other than a vague notion that is seems about right. In
+ *          the future, performance testing should be done to determine an
+ *          optimal value.
  */
 #define MAX_ADDRESSES_PER_BLOB  1024
 
@@ -115,8 +128,8 @@ static struct {
     pthread_mutex_t mutex;
 } thread_count = { 0, PTHREAD_MUTEX_INITIALIZER };
 
-/** Boolean flag indicating if debugging is enabled. */
-static int debug = 0;
+/** Flag indicating if debugging is enabled. */
+static bool debug = FALSE;
 
 /** CUPTI subscriber handle for this collector. */
 static CUpti_SubscriberHandle cupti_subscriber_handle;
@@ -126,8 +139,8 @@ static CUpti_SubscriberHandle cupti_subscriber_handle;
 /** Type defining the data stored in thread-local storage. */
 typedef struct {
 
-    /** Boolean flag indicating if data collection is paused. */
-    int paused;
+    /** Flag indicating if data collection is paused. */
+    bool paused;
 
     /**
      * Performance data header to be applied to this thread's performance data.
@@ -305,9 +318,85 @@ static uint32_t add_current_call_site(TLS* tls)
 {
     Assert(tls != NULL);
 
-    /* ... implement! ... */
+    /* Get the stack trace for the current call site */
 
-    return 0;
+    ucontext_t context;
+    int frame_count = 0;
+    uint64_t frame_buffer[CBTF_ST_MAXFRAMES];
+    
+    CBTF_GetContext(&context);
+
+    CBTF_GetStackTraceFromContext(
+        &context, FALSE, 1, CBTF_ST_MAXFRAMES, &frame_count, frame_buffer
+        );
+    
+    /* Search for this stack trace amongst the existing stack traces */
+    
+    int i, j;
+    
+    /* Iterate over the addresses in the existing stack traces */
+    for (i = 0, j = 0; i < MAX_ADDRESSES_PER_BLOB; ++i)
+    {
+        /* Is this the terminating null of an existing stack trace? */
+        if (tls->stack_traces[i] == 0)
+        {
+            /*
+             * Terminate the search if a complete match has been found between
+             * this stack trace and the existing stack trace. Otherwise check
+             * for a null in the first or last entry, or for consecutive nulls,
+             * all of which indicate the end of the existing stack traces, and
+             * the need to add this stack trace to the existing stack traces.
+             */
+            if (j == frame_count)
+            {
+                break;
+            }
+            else if ((i == 0) || 
+                     (i == (MAX_ADDRESSES_PER_BLOB - 1)) ||
+                     (tls->stack_traces[i - 1] == 0))
+            {
+                /*
+                 * Send performance data for this thread if there isn't enough
+                 * room in the existing stack traces to add this stack trace.
+                 * Doing so frees up enough space for this stack trace.
+                 */
+                if ((i + frame_count) >= MAX_ADDRESSES_PER_BLOB)
+                {
+                    send_data(tls);
+                    i = 0;
+                }
+
+                /* Add this stack trace to the existing stack traces */
+                for (j = 0; j < frame_count; ++j, ++i)
+                {
+                    tls->stack_traces[i] = frame_buffer[j];
+                }
+                tls->stack_traces[i++] = 0;
+                
+                break;
+            }
+        }
+        else
+        {
+            /*
+             * Advance the pointer within this stack trace if the current
+             * address within this stack trace matches the current address
+             * within the existing stack trace. Otherwise reset the pointer
+             * to zero.
+             */
+            if (frame_buffer[j] == tls->stack_traces[i])
+            {
+                ++j;
+            }
+            else
+            {
+                j = 0;
+            } 
+        }
+    }
+
+    /* Return the index of this stack trace within the existing stack traces */
+    return i - frame_count;
 }
 
 
@@ -743,7 +832,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* ... enable future CPU/GPU hardware counter sampling ... */
     
     /* Resume (start) data collection for this thread */
-    tls->paused = 0;
+    tls->paused = FALSE;
 }
 
 
@@ -771,7 +860,7 @@ void cbtf_collector_pause()
     /* ... disable future CPU/GPU hardware counter sampling ... */
 
     /* Pause data collection for this thread */
-    tls->paused = 1;
+    tls->paused = TRUE;
 }
 
 
@@ -799,7 +888,7 @@ void cbtf_collector_resume()
     /* ... enable future CPU/GPU hardware counter sampling ... */
 
     /* Resume data collection for this thread */
-    tls->paused = 0;
+    tls->paused = FALSE;
 }
 
 
@@ -827,7 +916,7 @@ void cbtf_collector_stop()
     /* ... disable future CPU/GPU hardware counter sampling ... */
 
     /* Pause (stop) data collection for this thread */
-    tls->paused = 1;
+    tls->paused = TRUE;
 
     /* Send any remaining performance data for this thread */
     send_data(tls);

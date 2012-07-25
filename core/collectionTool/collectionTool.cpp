@@ -32,10 +32,12 @@
 #include <KrellInstitute/CBTF/ValueSink.hpp>
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
+#include "KrellInstitute/Core/SymtabAPISymbols.hpp"
 #include <mrnet/MRNet.h>
 
 using namespace boost;
 using namespace KrellInstitute::CBTF;
+using namespace KrellInstitute::Core;
 
 
 /**
@@ -229,6 +231,15 @@ int main(int argc, char** argv)
     } else if(child == 0){
         if (!mpiexecutable.empty()) {
 	    size_t pos = program.find(mpiexecutable);
+
+	    SymtabAPISymbols stapi_symbols;
+	    std::vector<std::string> liblist;
+	    stapi_symbols.getDepenentLibs(mpiexecutable,liblist);
+
+	    std::vector<std::string>::iterator i;
+	    for (i = liblist.begin(); i != liblist.end(); ++i) {
+		//std::cerr << "LIB " << *i << std::endl;
+	    }
 
 	    program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
 	    program.append("\"");

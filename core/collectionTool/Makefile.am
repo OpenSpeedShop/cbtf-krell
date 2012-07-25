@@ -46,6 +46,7 @@ collectionTool_LDADD = \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@\
+	-lcbtf-core \
 	@MRNET_LIBS@
 
 collectionTool_SOURCES = \
@@ -83,6 +84,7 @@ collectionTool_LDADD = \
 	@TARGET_CBTF_LIBS@ \
 	@TARGET_LIBXERCES_C@ \
 	@TARGET_CBTF_MRNET_LIBS@\
+	-lcbtf-core \
 	@TARGET_CBTF_XML_LIBS@
 
 collectionTool_SOURCES = \

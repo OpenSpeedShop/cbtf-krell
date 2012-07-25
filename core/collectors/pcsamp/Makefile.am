@@ -35,11 +35,6 @@ staticpkglib_LTLIBRARIES =
 if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
-endif
-
-if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += pcsamp-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libpcsamp-monitor-fileio.la
 
@@ -60,10 +55,10 @@ pcsamp_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_fileio_la_CFLAGS = \
@@ -85,10 +80,10 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libpcsamp_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 if HAVE_MRNET
@@ -117,10 +112,10 @@ pcsamp_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_mrnet_la_CFLAGS = \
@@ -146,10 +141,10 @@ libpcsamp_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 
@@ -179,10 +174,10 @@ pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
@@ -209,10 +204,10 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 # endif for HAVE_MRNET
@@ -221,11 +216,6 @@ endif
 endif
 
 # endif for if not build targeted (below)
-endif
-
-if HAVE_TARGET_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
 endif
 
 if HAVE_TARGET_LIBMONITOR
@@ -252,10 +242,10 @@ pcsamp_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_fileio_la_CFLAGS = \
@@ -277,10 +267,10 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libpcsamp_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -304,10 +294,10 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libpcsamp_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -343,10 +333,10 @@ pcsamp_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_mrnet_la_CFLAGS = \
@@ -372,10 +362,10 @@ libpcsamp_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -403,10 +393,10 @@ libpcsamp_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -443,10 +433,10 @@ pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libpcsamp_monitor_mrnet_mpi_la_CFLAGS = \
@@ -473,10 +463,10 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -505,10 +495,10 @@ libpcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpcsamp_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif

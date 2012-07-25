@@ -440,9 +440,7 @@ AC_CONFIG_FILES([
     src/unwind/Makefile
     src/xdr/Makefile
     test/Makefile
-    collectors/Makefile
-    collectors/pcsamp/Makefile
-    collectors/usertime/Makefile
+    collector/Makefile
 ])
 
 AC_OUTPUT

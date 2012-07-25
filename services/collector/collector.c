@@ -451,6 +451,8 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
 #endif
 
+    tls->header.posix_tid = local_data_header.posix_tid;
+    tls->header.rank = local_data_header.rank;
     /* Begin collection */
     cbtf_collector_start(&tls->header);
 }

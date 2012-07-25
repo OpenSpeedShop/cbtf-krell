@@ -34,11 +34,15 @@ class SymtabAPISymbols {
 	void    getAllSymbols(const LinkedObjectEntry&, SymbolTable&);
 	void    getSymbols(const AddressBuffer&,
 			   const LinkedObjectEntry&, SymbolTable&);
+	void    getSymbols(const std::set<Address>& addresses,
+                             const LinkedObjectEntry& linkedobject,
+                             SymbolTableMap& stm);
 
     private:
 
 #ifndef NDEBUG
     static bool is_debug_symtabapi_symbols_enabled;
+    static bool is_debug_symtabapi_symbols_detailed_enabled;
 #endif
 
 };

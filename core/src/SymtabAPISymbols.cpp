@@ -385,3 +385,14 @@ SymtabAPISymbols::getSymbols(const std::set<Address>& addresses,
 			     SymbolTableMap& stm)
 {
 }
+
+void
+SymtabAPISymbols::getDepenentLibs(const std::string& objname,
+	   std::vector<std::string>& dependencies)
+{
+    Symtab *symtab;
+    bool err = Symtab::openFile(symtab, objname);
+    if (symtab) {
+	dependencies = symtab->getDependencies();
+    }
+}

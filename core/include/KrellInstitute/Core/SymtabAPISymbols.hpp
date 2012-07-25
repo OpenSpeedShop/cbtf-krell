@@ -34,9 +34,11 @@ class SymtabAPISymbols {
 	void    getAllSymbols(const LinkedObjectEntry&, SymbolTable&);
 	void    getSymbols(const AddressBuffer&,
 			   const LinkedObjectEntry&, SymbolTable&);
-	void    getSymbols(const std::set<Address>& addresses,
-                             const LinkedObjectEntry& linkedobject,
+	void    getSymbols(const std::set<Address>& ,
+                             const LinkedObjectEntry& ,
                              SymbolTableMap& stm);
+	void    getDepenentLibs(const std::string& ,
+				std::vector<std::string>& );
 
     private:
 

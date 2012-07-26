@@ -242,9 +242,21 @@ int main(int argc, char** argv)
             bool found_mpi_lib = stapi_symbols.foundLibrary(mpiexecutable,"libmpi");
 
             if (found_mpi_lib) {
-               program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
+
+              if (!cbtfrunpath.empty()) {
+                program.insert(pos, cbtfrunpath + " --mrnet --mpi -c " + collector + " \"");
+              } else {
+                program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
+              }
+
             } else {
-               program.insert(pos, " cbtfrun --mrnet -c " + collector + " \"");
+
+              if (!cbtfrunpath.empty()) {
+                program.insert(pos, cbtfrunpath + " --mrnet -c " + collector + " \"");
+              } else {
+                program.insert(pos, " cbtfrun --mrnet -c " + collector + " \"");
+              }
+
             }
             program.append("\"");
             std::cerr << "executing mpi program: " << program << std::endl;

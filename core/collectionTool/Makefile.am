@@ -26,6 +26,7 @@ bin_PROGRAMS = collectionTool
 collectionTool_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
+	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
@@ -33,6 +34,7 @@ collectionTool_CXXFLAGS = \
 	@MRNET_CPPFLAGS@
 
 collectionTool_LDFLAGS = \
+	-L$(top_srcdir)/src \
 	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \

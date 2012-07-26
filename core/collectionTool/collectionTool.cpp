@@ -244,7 +244,7 @@ int main(int argc, char** argv)
             if (found_mpi_lib) {
 
               if (!cbtfrunpath.empty()) {
-                program.insert(pos, cbtfrunpath + " --mrnet --mpi -c " + collector + " \"");
+                program.insert(pos, " " + cbtfrunpath + " --mrnet --mpi -c " + collector + " \"");
               } else {
                 program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
               }
@@ -252,7 +252,7 @@ int main(int argc, char** argv)
             } else {
 
               if (!cbtfrunpath.empty()) {
-                program.insert(pos, cbtfrunpath + " --mrnet -c " + collector + " \"");
+                program.insert(pos, " " + cbtfrunpath + " --mrnet -c " + collector + " \"");
               } else {
                 program.insert(pos, " cbtfrun --mrnet -c " + collector + " \"");
               }
@@ -265,6 +265,9 @@ int main(int argc, char** argv)
 
 	} else {
     	    const char * command = "cbtfrun";
+            if (!cbtfrunpath.empty()) {
+                command = cbtfrunpath.c_str() ;
+            } 
 
             std::cerr << "executing sequential program: "
 		<< command << " -m -c " << collector << " " << program << std::endl;

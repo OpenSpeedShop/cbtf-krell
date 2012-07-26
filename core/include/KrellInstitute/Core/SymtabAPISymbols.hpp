@@ -40,6 +40,8 @@ class SymtabAPISymbols {
 	void    getDepenentLibs(const std::string& ,
 				std::vector<std::string>& );
 
+        bool    foundLibrary(std::string exename, std::string libname);
+
     private:
 
 #ifndef NDEBUG

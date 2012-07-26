@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 {
     unsigned int numBE;
     bool isMPI;
-    std::string topology, connections, collector, program, mpiexecutable;
+    std::string topology, connections, collector, program, mpiexecutable, cbtfrunpath;
 
     // create a default for topology file.
     char const* home = getenv("HOME");
@@ -166,6 +166,9 @@ int main(int argc, char** argv)
         ("program",
 	    boost::program_options::value<std::string>(&program)->default_value(""),
 	    "Program to collect data from, Program with arguments needs double quotes.  If program is not specified this client will start the mrnet tree and wait for the user to manually attach backends in another window via cbtfrun.")
+        ("cbtfrunpath",
+            boost::program_options::value<std::string>(&cbtfrunpath)->default_value(""),
+            "Path to cbtfrun to collect data from, If target is cray or bluegene, use this to point to the targeted client.")
         ("mpiexecutable",
 	    boost::program_options::value<std::string>(&mpiexecutable)->default_value(""),
 	    "Name of the mpi executable. This must match the name of the mpi exectuable used in the program argument and implies the collection is being done on an mpi job if it is set.")
@@ -230,20 +233,21 @@ int main(int argc, char** argv)
         std::cout << "fork failed";
     } else if(child == 0){
         if (!mpiexecutable.empty()) {
+
 	    size_t pos = program.find(mpiexecutable);
+            SymtabAPISymbols stapi_symbols;
 
-	    SymtabAPISymbols stapi_symbols;
-	    std::vector<std::string> liblist;
-	    stapi_symbols.getDepenentLibs(mpiexecutable,liblist);
+            // Determine if libmpi is present in the application in order to call out the proper
+            // collector runtime library.
+            bool found_mpi_lib = stapi_symbols.foundLibrary(mpiexecutable,"libmpi");
 
-	    std::vector<std::string>::iterator i;
-	    for (i = liblist.begin(); i != liblist.end(); ++i) {
-		//std::cerr << "LIB " << *i << std::endl;
-	    }
-
-	    program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
-	    program.append("\"");
-	    std::cerr << "executing mpi program: " << program << std::endl;
+            if (found_mpi_lib) {
+               program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
+            } else {
+               program.insert(pos, " cbtfrun --mrnet -c " + collector + " \"");
+            }
+            program.append("\"");
+            std::cerr << "executing mpi program: " << program << std::endl;
 	    
             ::system(program.c_str());
 

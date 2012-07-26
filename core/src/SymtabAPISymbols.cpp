@@ -396,3 +396,17 @@ SymtabAPISymbols::getDepenentLibs(const std::string& objname,
 	dependencies = symtab->getDependencies();
     }
 }
+
+bool SymtabAPISymbols::foundLibrary(std::string exename, std::string libname)
+{
+
+            std::vector<std::string> depends;
+            getDepenentLibs(exename,depends);
+            for (std::vector<std::string>::iterator curDep = depends.begin(); curDep != depends.end(); curDep++) {
+              if (curDep->find(libname) != std::string::npos)
+              {
+                 return true;
+              }
+            }
+}
+

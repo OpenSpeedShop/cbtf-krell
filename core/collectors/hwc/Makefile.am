@@ -35,12 +35,6 @@ staticpkglib_LTLIBRARIES =
 if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
-
-endif
-
-if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += hwc-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libhwc-monitor-fileio.la
 
@@ -61,10 +55,10 @@ hwc_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 hwc_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_fileio_la_CFLAGS = \
@@ -86,15 +80,17 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libhwc_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 if HAVE_MRNET
+
 pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet.la
 staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet.la
+
 hwc_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -111,15 +107,15 @@ hwc_collector_monitor_mrnet_la_LDFLAGS = \
 
 hwc_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 hwc_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_mrnet_la_CFLAGS = \
@@ -140,20 +136,21 @@ libhwc_monitor_mrnet_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 
 pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet-mpi.la
+
 hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -171,16 +168,16 @@ hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 
 hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 hwc_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_mrnet_mpi_la_CFLAGS = \
@@ -202,15 +199,15 @@ libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 # endif for HAVE_MRNET
@@ -218,12 +215,7 @@ endif
 # endif for HAVE_LIBMONITOR
 endif
 
-# endif for if not build targeted 
-endif
-
-if HAVE_TARGET_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
+# endif for if not build targeted (below)
 endif
 
 if HAVE_TARGET_LIBMONITOR
@@ -250,10 +242,10 @@ hwc_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 hwc_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_fileio_la_CFLAGS = \
@@ -275,10 +267,10 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libhwc_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -302,10 +294,10 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libhwc_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -336,15 +328,15 @@ hwc_collector_monitor_mrnet_la_LDFLAGS = \
 
 hwc_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 hwc_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_mrnet_la_CFLAGS = \
@@ -365,15 +357,15 @@ libhwc_monitor_mrnet_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -396,15 +388,15 @@ libhwc_monitor_mrnet_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -435,16 +427,16 @@ hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 
 hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 hwc_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libhwc_monitor_mrnet_mpi_la_CFLAGS = \
@@ -466,15 +458,15 @@ libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -498,15 +490,15 @@ libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
 
 libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libhwc_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif

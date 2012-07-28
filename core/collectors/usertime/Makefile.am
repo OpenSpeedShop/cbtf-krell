@@ -28,25 +28,22 @@ BUILT_FILES = usertime.xml
 nobase_dist_xml_DATA = \
         usertime.xml
 
+
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
 
 if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
-endif
-
-if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += usertime-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libusertime-monitor-fileio.la
+
 usertime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@ \
-	@LIBUNWIND_CPPFLAGS@
+	@LIBUNWIND_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@
 
 usertime_collector_monitor_fileio_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
@@ -60,12 +57,12 @@ usertime_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 usertime_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_fileio_la_CFLAGS = \
@@ -73,9 +70,9 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
-	@MESSAGES_CPPFLAGS@
+	@MESSAGES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@
 
 libusertime_monitor_fileio_la_LDFLAGS = \
 	-static \
@@ -90,17 +87,19 @@ libusertime_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libusertime_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 if HAVE_MRNET
+
 pkglib_LTLIBRARIES += usertime-collector-monitor-mrnet.la
 staticpkglib_LTLIBRARIES += libusertime-monitor-mrnet.la
+
 usertime_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -120,16 +119,16 @@ usertime_collector_monitor_mrnet_la_LDFLAGS = \
 usertime_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_mrnet_la_CFLAGS = \
@@ -153,21 +152,22 @@ libusertime_monitor_mrnet_la_LDFLAGS = \
 libusertime_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 
 pkglib_LTLIBRARIES += usertime-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libusertime-monitor-mrnet-mpi.la
+
 usertime_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -188,17 +188,17 @@ usertime_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 usertime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_mrnet_mpi_la_CFLAGS = \
@@ -223,16 +223,16 @@ libusertime_monitor_mrnet_mpi_la_LDFLAGS = \
 libusertime_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 # endif for HAVE_MRNET
@@ -241,11 +241,6 @@ endif
 endif
 
 # endif for if not build targeted (below)
-endif
-
-if HAVE_TARGET_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
 endif
 
 if HAVE_TARGET_LIBMONITOR
@@ -259,8 +254,8 @@ usertime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	@TARGET_LIBUNWIND_CPPFLAGS@
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
 usertime_collector_monitor_fileio_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
@@ -274,12 +269,12 @@ usertime_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 usertime_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_fileio_la_CFLAGS = \
@@ -287,9 +282,9 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_MESSAGES_CPPFLAGS@
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
 libusertime_monitor_fileio_la_LDFLAGS = \
 	-static \
@@ -304,12 +299,12 @@ libusertime_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libusertime_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -319,9 +314,9 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_MESSAGES_CPPFLAGS@
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
 libusertime_monitor_fileio_la_LDFLAGS = \
 	-static \
@@ -336,12 +331,12 @@ libusertime_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libusertime_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -375,16 +370,16 @@ usertime_collector_monitor_mrnet_la_LDFLAGS = \
 usertime_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_mrnet_la_CFLAGS = \
@@ -408,16 +403,16 @@ libusertime_monitor_mrnet_la_LDFLAGS = \
 libusertime_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 # not target shared case (else clause)
@@ -443,16 +438,16 @@ libusertime_monitor_mrnet_la_LDFLAGS = \
 libusertime_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -486,17 +481,17 @@ usertime_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 usertime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
-	-lcbtf-services-unwind \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 
 libusertime_monitor_mrnet_mpi_la_CFLAGS = \
@@ -521,16 +516,16 @@ libusertime_monitor_mrnet_mpi_la_LDFLAGS = \
 libusertime_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 else
 
@@ -557,16 +552,16 @@ libusertime_monitor_mrnet_mpi_la_LDFLAGS = \
 libusertime_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libusertime_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
 	collector.c
 # endif TARGET_STATIC
 endif

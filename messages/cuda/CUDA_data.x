@@ -26,6 +26,69 @@
 
 
 /**
+ * Enumeration of the different memory copy kinds.
+ */
+enum CUDA_CopyKind
+{
+    InvalidCopyKind = 0,
+    UnknownCopyKind = 1,
+    HostToDevice = 2,
+    DeviceToHost = 3,
+    HostToArray = 4,
+    ArrayToHost = 5,
+    ArrayToArray = 6,
+    ArrayToDevice = 7,
+    DeviceToArray = 8,
+    DeviceToDevice = 9,
+    HostToHost = 10
+};
+
+/**
+ * Enumeration of the different memory kinds.
+ */
+enum CUDA_MemoryKind
+{     
+    InvalidMemoryKind = 0,
+    UnknownMemoryKind = 1,
+    Pageable = 2,
+    Pinned = 3,
+    Device = 4,
+    Array = 5
+};
+
+/**
+ * Message emitted when the CUDA driver copied memory.
+ */
+struct CUDA_CopiedMemory
+{
+    /** CUDA stream for which memory was copied. */
+    uint32_t stream;
+
+    /** Time at which the memory copy began. */
+    CBTF_Protocol_Time time_begin;
+
+    /** Time at which the memory copy ended. */
+    CBTF_Protocol_Time time_end;
+
+    /** Number of bytes being copied. */
+    uint64_t size;
+
+    /** Kind of copy performed. */
+    CUDA_CopyKind kind;
+
+    /** Kind of memory from which the copy was performed. */
+    CUDA_MemoryKind source_kind;
+
+    /** Kind of memory to which the copy was performed. */
+    CUDA_MemoryKind destination_kind;
+
+    /** Was the copy asynchronous? */
+    bool asynchronous;  
+};
+
+
+
+/**
  * Enumeration of the different request types enqueue by the CUDA driver.
  */
 enum CUDA_RequestTypes
@@ -54,6 +117,59 @@ struct CUDA_EnqueueRequest
      * of the CBTF_cuda_data containing this message.
      */
     uint32_t call_site;
+};
+
+
+
+/**
+ * Enumeration of the different cache preferences.
+ */
+enum CUDA_CachePreference
+{
+    InvalidCachePreference = 0,
+    NoPreference = 1,
+    PreferShared = 2,
+    PreferCache = 3,
+    PreferEqual = 4
+};
+
+/**
+ * Message emitted when the CUDA driver executed a kernel.
+ */
+struct CUDA_ExecutedKernel
+{
+    /** CUDA stream for which a kernel was executed. */
+    uint32_t stream;
+
+    /** Time at which the kernel execution began. */
+    CBTF_Protocol_Time time_begin;
+
+    /** Time at which the kernel execution ended. */
+    CBTF_Protocol_Time time_end;
+
+    /** Name of the kernel function being executed. */
+    string function<>;
+
+    /** Dimensions of the grid. */
+    int32_t grid[3];
+    
+    /** Dimensions of each block. */
+    int32_t block[3];
+
+    /** Cache preference used. */
+    CUDA_CachePreference cache_preference;
+
+    /** Registers required for each thread. */
+    uint16_t registers_per_thread;
+
+    /** Total amount (in bytes) of static shared memory reserved. */
+    int32_t static_shared_memory;
+
+    /** Total amount (in bytes) of dynamic shared memory reserved. */
+    int32_t dynamic_shared_memory;
+
+    /** Total amount (in bytes) of local memory reserved. */
+    int32_t local_memory;
 };
 
 
@@ -96,6 +212,26 @@ struct CUDA_ResolvedFunction
 
 
 /**
+ * Message emitted when the CUDA driver set memory.
+ */
+struct CUDA_SetMemory
+{
+    /** CUDA stream for which memory was set. */
+    uint32_t stream;
+
+    /** Time at which the memory set began. */
+    CBTF_Protocol_Time time_begin;
+
+    /** Time at which the memory set ended. */
+    CBTF_Protocol_Time time_end;
+
+    /** Number of bytes being set. */
+    uint64_t size;
+};
+
+
+
+/**
  * Message emitted when the CUDA driver unloads a module.
  */
 struct CUDA_UnloadedModule
@@ -115,10 +251,13 @@ struct CUDA_UnloadedModule
  */
 enum CUDA_MessageTypes
 {
-    EnqueueRequest = 0,
-    LoadedModule = 1,
-    ResolvedFunction = 2,
-    UnloadedModule = 3
+    CopiedMemory = 0,
+    EnqueueRequest = 1,
+    ExecutedKernel = 2,
+    LoadedModule = 3,
+    ResolvedFunction = 4,
+    SetMemory = 5,
+    UnloadedModule = 6
 };
 
 
@@ -129,9 +268,12 @@ enum CUDA_MessageTypes
  */
 union CBTF_cuda_message switch (unsigned type)
 {
+    case     CopiedMemory:     CUDA_CopiedMemory copied_memory;
     case   EnqueueRequest:   CUDA_EnqueueRequest enqueue_request;
+    case   ExecutedKernel:   CUDA_ExecutedKernel executed_kernel;
     case     LoadedModule:     CUDA_LoadedModule loaded_module;
     case ResolvedFunction: CUDA_ResolvedFunction resolved_function;
+    case        SetMemory:        CUDA_SetMemory set_memory;
     case   UnloadedModule:   CUDA_UnloadedModule unloaded_module;
 
     default: void;

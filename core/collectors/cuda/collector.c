@@ -20,6 +20,7 @@
 
 #include <cupti.h>
 #include <inttypes.h>
+#include <malloc.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -37,6 +38,21 @@
 #include "CUDA_data.h"
 
 
+
+/**
+ * Alignment (in bytes) of each allocated CUPTI activity buffer. This value
+ * is specified in the documentation for cuptiActivityEnqueueBuffer() within
+ * the "cupti_activity.h" header file.
+ */
+#define CUPTI_ACTIVITY_BUFFER_ALIGNMENT  8
+
+/**
+ * Size (in bytes) of each allocated CUPTI activity buffer.
+ *
+ * @note    Currently the only basis for the selection of this value is that
+ *          the CUPTI "activity_trace.cpp" example uses 2 buffers of 32 KB each.
+ */
+#define CUPTI_ACTIVITY_BUFFER_SIZE  (2 * 32 * 1024 /* 64 KB */)
 
 /**
  * Maximum number of individual (CBTF_cuda_message) messages contained within
@@ -133,6 +149,13 @@ static bool debug = FALSE;
 
 /** CUPTI subscriber handle for this collector. */
 static CUpti_SubscriberHandle cupti_subscriber_handle;
+
+/**
+ * The offset that must be added to all CUPTI-provided time values in order to
+ * translate them to the same time "origin" provided by CBTF_GetTime(). Computed
+ * by the process-wide initialization in cbtf_collector_start().
+ */
+static int64_t cupti_time_offset = 0;
 
 
 
@@ -397,6 +420,307 @@ static uint32_t add_current_call_site(TLS* tls)
 
     /* Return the index of this stack trace within the existing stack traces */
     return i - frame_count;
+}
+
+
+
+/**
+ * Convert a CUpti_ActivityMemcpyKind enumerant to a CUDA_CopyKind enumerant.
+ *
+ * @param value    Value to be converted from CUpti_ActivityMemcpyKind.
+ * @return         Corresponding CUDA_CopyKind enumerant.
+ */
+inline CUDA_CopyKind toCopyKind(CUpti_ActivityMemcpyKind value)
+{
+    switch (value)
+    {
+    case CUPTI_ACTIVITY_MEMCPY_KIND_UNKNOWN:
+        return UnknownCopyKind;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_HTOD:
+        return HostToDevice;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_DTOH:
+        return DeviceToHost;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_HTOA:
+        return HostToArray;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_ATOH:
+        return ArrayToHost;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_ATOA:
+        return ArrayToArray;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_ATOD:
+        return ArrayToDevice;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_DTOA:
+        return DeviceToArray;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_DTOD:
+        return DeviceToDevice;
+    case CUPTI_ACTIVITY_MEMCPY_KIND_HTOH:
+        return HostToHost;
+    default:
+        return InvalidCopyKind;
+    }
+}
+
+
+
+/**
+ * Convert a CUpti_ActivityMemoryKind enumerant to a CUDA_MemoryKind enumerant.
+ *
+ * @param value    Value to be converted from CUpti_ActivityMemoryKind.
+ * @return         Corresponding CUDA_MemoryKind enumerant.
+ */
+inline CUDA_MemoryKind toMemoryKind(CUpti_ActivityMemoryKind value)
+{
+    switch (value)
+    {
+    case CUPTI_ACTIVITY_MEMORY_KIND_UNKNOWN:
+        return UnknownMemoryKind;
+    case CUPTI_ACTIVITY_MEMORY_KIND_PAGEABLE:
+        return Pageable;
+    case CUPTI_ACTIVITY_MEMORY_KIND_PINNED:
+        return Pinned;
+    case CUPTI_ACTIVITY_MEMORY_KIND_DEVICE:
+        return Device;
+    case CUPTI_ACTIVITY_MEMORY_KIND_ARRAY:
+        return Array;
+    default:
+        return InvalidMemoryKind;
+    }
+}
+
+
+
+/**
+ * Convert a CUfunc_cache enumerant to a CUDA_CachePerference enumerant.
+ *
+ * @param value    Value to be converted from CUfunc_cache.
+ * @return         Corresponding CUDA_CachePreference enumerant.
+ */
+inline CUDA_CachePreference toCachePreference(CUfunc_cache value)
+{
+    switch (value)
+    {
+    case CU_FUNC_CACHE_PREFER_NONE:
+        return NoPreference;
+    case CU_FUNC_CACHE_PREFER_SHARED:
+        return PreferShared;
+    case CU_FUNC_CACHE_PREFER_L1:
+        return PreferCache;
+    case CU_FUNC_CACHE_PREFER_EQUAL:
+        return PreferEqual;
+    default:
+        return InvalidCachePreference;
+    }
+}
+
+
+
+/**
+ * Add the activities for the specified CUDA context/stream to the performance
+ * data blob contained within the given thread-local storage.
+ *
+ * @param tls         Thread-local storage to which activities are to be added.
+ * @param context     CUDA context for the activities to be added.
+ * @param streamId    CUDA stream for the activities to be added.
+ */
+static void add_activities(TLS* tls, CUcontext context, uint32_t streamId)
+{
+    Assert(tls != NULL);
+
+    /* Warn if any activity records were dropped */
+    size_t dropped = 0;
+    CUPTI_CHECK(cuptiActivityGetNumDroppedRecords(context, streamId, &dropped));
+    if (dropped > 0)
+    {
+        printf("[CBTF/CUDA] add_activities(): "
+               "dropped %u activity records for stream %u in context %p\n",
+               (unsigned int)dropped, streamId, context);
+    }
+    
+    /* Dequeue the buffer of activities */
+    
+    uint8_t* buffer = NULL;
+    size_t size = 0;
+    
+    CUptiResult retval = cuptiActivityDequeueBuffer(
+        context, streamId, &buffer, &size
+        );
+    
+    if (retval == CUPTI_ERROR_QUEUE_EMPTY)
+    {
+        return;
+    }
+    
+    CUPTI_CHECK(retval);
+
+    /* Iterate over each activity record */
+    
+    CUpti_Activity* raw_activity = NULL;
+
+    size_t added;
+    for (added = 0; true; ++added)
+    {
+        retval = cuptiActivityGetNextRecord(buffer, size, &raw_activity);
+
+        if (retval == CUPTI_ERROR_MAX_LIMIT_REACHED)
+        {
+            break;
+        }
+        
+        CUPTI_CHECK(retval);
+        
+        /* Determine the activity type and handle it */
+        switch (raw_activity->kind)
+        {
+            
+
+
+        case CUPTI_ACTIVITY_KIND_CONTEXT:
+            {
+                const CUpti_ActivityContext* const activity =
+                    (CUpti_ActivityContext*)raw_activity;
+                
+                /* ... */
+            }
+            break;
+
+
+
+        case CUPTI_ACTIVITY_KIND_DEVICE:
+            {
+                const CUpti_ActivityDevice* const activity =
+                    (CUpti_ActivityDevice*)raw_activity;
+
+                /* ... */
+            }
+            break;
+
+
+
+        case CUPTI_ACTIVITY_KIND_MEMCPY:
+            {
+                const CUpti_ActivityMemcpy* const activity =
+                    (CUpti_ActivityMemcpy*)raw_activity;
+
+                /* Add a message for this activity */
+
+                CBTF_cuda_message* raw_message = add_message(tls);
+                Assert(raw_message != NULL);
+                raw_message->type = CopiedMemory;
+                
+                CUDA_CopiedMemory* message =
+                    &raw_message->CBTF_cuda_message_u.copied_memory;
+
+                message->stream = streamId;
+
+                message->time_begin = activity->start + cupti_time_offset;
+                message->time_end = activity->end + cupti_time_offset;
+
+                message->size = activity->bytes;
+
+                message->kind = toCopyKind(activity->copyKind);
+                message->source_kind = toMemoryKind(activity->srcKind);
+                message->destination_kind = toMemoryKind(activity->dstKind);
+
+                message->asynchronous = 
+                    (activity->flags & CUPTI_ACTIVITY_FLAG_MEMCPY_ASYNC) ?
+                    true : false;
+                
+                update_header_with_time(tls, message->time_begin);
+                update_header_with_time(tls, message->time_end);
+            }
+            break;
+
+
+
+        case CUPTI_ACTIVITY_KIND_MEMSET:
+            {
+                const CUpti_ActivityMemset* const activity =
+                    (CUpti_ActivityMemset*)raw_activity;
+
+                /* Add a message for this activity */
+
+                CBTF_cuda_message* raw_message = add_message(tls);
+                Assert(raw_message != NULL);
+                raw_message->type = SetMemory;
+                
+                CUDA_SetMemory* message =
+                    &raw_message->CBTF_cuda_message_u.set_memory;
+
+                message->stream = streamId;
+
+                message->time_begin = activity->start + cupti_time_offset;
+                message->time_end = activity->end + cupti_time_offset;
+
+                message->size = activity->bytes;
+                
+                update_header_with_time(tls, message->time_begin);
+                update_header_with_time(tls, message->time_end);
+            }
+            break;
+
+
+
+        case CUPTI_ACTIVITY_KIND_KERNEL:
+            {
+                const CUpti_ActivityKernel* const activity =
+                    (CUpti_ActivityKernel*)raw_activity;
+
+                /* Add a message for this activity */
+
+                CBTF_cuda_message* raw_message = add_message(tls);
+                Assert(raw_message != NULL);
+                raw_message->type = ExecutedKernel;
+
+                CUDA_ExecutedKernel* message =
+                    &raw_message->CBTF_cuda_message_u.executed_kernel;
+
+                message->stream = streamId;
+
+                message->time_begin = activity->start + cupti_time_offset;
+                message->time_end = activity->end + cupti_time_offset;
+
+                message->function = (char*)activity->name;
+
+                message->grid[0] = activity->gridX;
+                message->grid[1] = activity->gridY;
+                message->grid[2] = activity->gridZ;
+
+                message->block[0] = activity->blockX;
+                message->block[1] = activity->blockY;
+                message->block[2] = activity->blockZ;
+
+                message->cache_preference = 
+                    toCachePreference(activity->cacheConfigExecuted);
+
+                message->registers_per_thread = activity->registersPerThread;
+                message->static_shared_memory = activity->staticSharedMemory;
+                message->dynamic_shared_memory = activity->dynamicSharedMemory;
+                message->local_memory = activity->localMemoryTotal;
+
+                update_header_with_time(tls, message->time_begin);
+                update_header_with_time(tls, message->time_end);
+            }
+            break;
+
+
+
+        default:
+            break;
+        }
+    }
+
+#if !defined(NDEBUG)
+    if (debug)
+    {
+        printf("[CBTF/CUDA] add_activities(): "
+               "added %u activity records for stream %u in context %p\n",
+               (unsigned int)added, streamId, context);
+    }
+#endif
+    
+    /* Re-enqueue this buffer of activities */
+    CUPTI_CHECK(cuptiActivityEnqueueBuffer(
+                    context, streamId, buffer, CUPTI_ACTIVITY_BUFFER_SIZE
+                    ));
 }
 
 
@@ -690,6 +1014,178 @@ static void cupti_callback(void* userdata,
         }
         break;
 
+    case CUPTI_CB_DOMAIN_RESOURCE:
+        {
+            const CUpti_ResourceData* const rdata = (CUpti_ResourceData*)data;
+
+            switch (id)
+            {
+
+
+
+            case CUPTI_CBID_RESOURCE_CONTEXT_CREATED:
+                {
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] created context %p\n",
+                               rdata->context);
+                    }
+#endif
+
+                    /* Enqueue a buffer for context-specific activities */
+                    CUPTI_CHECK(cuptiActivityEnqueueBuffer(
+                                    rdata->context, 0,
+                                    memalign(CUPTI_ACTIVITY_BUFFER_ALIGNMENT,
+                                             CUPTI_ACTIVITY_BUFFER_SIZE),
+                                    CUPTI_ACTIVITY_BUFFER_SIZE
+                                    ));
+                }
+                break;
+
+
+
+            case CUPTI_CBID_RESOURCE_CONTEXT_DESTROY_STARTING:
+                {
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] destroying context %p\n",
+                               rdata->context);
+                    }
+#endif
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, 0);
+                    
+                    /* Add messages for this context's activities */
+                    add_activities(tls, rdata->context, 0);
+                }
+                break;
+
+
+
+            case CUPTI_CBID_RESOURCE_STREAM_CREATED:
+                {
+                    uint32_t streamId = 0;
+                    CUPTI_CHECK(cuptiGetStreamId(rdata->context,
+                                                 rdata->resourceHandle.stream,
+                                                 &streamId));
+                    
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] created stream %u in context %p\n",
+                               streamId, rdata->context);
+                    }
+#endif
+                    
+                    /* Enqueue a buffer for stream-specific activities */
+                    CUPTI_CHECK(cuptiActivityEnqueueBuffer(
+                                    rdata->context, streamId,
+                                    memalign(CUPTI_ACTIVITY_BUFFER_ALIGNMENT,
+                                             CUPTI_ACTIVITY_BUFFER_SIZE),
+                                    CUPTI_ACTIVITY_BUFFER_SIZE
+                                    ));
+                }
+                break;
+                
+
+
+            case CUPTI_CBID_RESOURCE_STREAM_DESTROY_STARTING:
+                {
+                    uint32_t streamId = 0;
+                    CUPTI_CHECK(cuptiGetStreamId(rdata->context,
+                                                 rdata->resourceHandle.stream,
+                                                 &streamId));
+
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] "
+                               "destroying stream %u in context %p\n",
+                               streamId, rdata->context);
+                    }
+#endif
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, 0);
+                    
+                    /* Add messages for this stream's activities */
+                    add_activities(tls, rdata->context, streamId);
+                }
+                break;
+                
+
+
+            }
+        }
+        break;
+
+
+
+    case CUPTI_CB_DOMAIN_SYNCHRONIZE:
+        {
+            const CUpti_SynchronizeData* const sdata = 
+                (CUpti_SynchronizeData*)data;
+
+            switch (id)
+            {
+
+
+
+            case CUPTI_CBID_SYNCHRONIZE_CONTEXT_SYNCHRONIZED:
+                {
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] synchronized context %p\n",
+                               sdata->context);
+                    }
+#endif
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, 0);
+                    
+                    /* Add messages for this context's activities */
+                    add_activities(tls, sdata->context, 0);
+                }
+                break;
+
+
+
+            case CUPTI_CBID_SYNCHRONIZE_STREAM_SYNCHRONIZED:
+                {
+                    uint32_t streamId = 0;
+                    CUPTI_CHECK(cuptiGetStreamId(sdata->context,
+                                                 sdata->stream,
+                                                 &streamId));
+                    
+#if !defined(NDEBUG)
+                    if (debug)
+                    {
+                        printf("[CBTF/CUDA] "
+                               "synchronized stream %u in context %p\n",
+                               streamId, sdata->context);
+                    }
+#endif
+                    
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, 0);
+                    
+                    /* Add messages for this stream's activities */
+                    add_activities(tls, sdata->context, streamId);
+                }
+                break;
+
+
+
+            }
+        }
+        break;
+        
+        
+        
     default:
         break;        
     }
@@ -760,52 +1256,58 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
             parse_configuration(configuration);
         }
 
-        /* Subscribe to the CUPTI callbacks of interest */
+        /* Enqueue a buffer for CUPTI global activities */
+        CUPTI_CHECK(cuptiActivityEnqueueBuffer(
+                        NULL, 0,
+                        memalign(CUPTI_ACTIVITY_BUFFER_ALIGNMENT,
+                                 CUPTI_ACTIVITY_BUFFER_SIZE),
+                        CUPTI_ACTIVITY_BUFFER_SIZE
+                        ));
         
+        /* Enable the CUPTI activities of interest */
+        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_CONTEXT));
+        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_DEVICE));
+        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_MEMCPY));
+        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_MEMSET));
+        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_KERNEL));
+
+        /* Subscribe to the CUPTI callbacks of interest */
+
         CUPTI_CHECK(cuptiSubscribe(&cupti_subscriber_handle,
                                    cupti_callback, NULL));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleGetFunction
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoad
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadData
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadDataEx
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleLoadFatBinary
-                        ));
-
-        CUPTI_CHECK(cuptiEnableCallback(
-                        1, cupti_subscriber_handle,
-                        CUPTI_CB_DOMAIN_DRIVER_API,
-                        CUPTI_DRIVER_TRACE_CBID_cuModuleUnload
-                        ));
+        
+        CUPTI_CHECK(cuptiEnableDomain(1, cupti_subscriber_handle,
+                                      CUPTI_CB_DOMAIN_DRIVER_API));
+        
+        CUPTI_CHECK(cuptiEnableDomain(1, cupti_subscriber_handle,
+                                      CUPTI_CB_DOMAIN_RESOURCE));
+        
+        CUPTI_CHECK(cuptiEnableDomain(1, cupti_subscriber_handle,
+                                      CUPTI_CB_DOMAIN_SYNCHRONIZE));
+        
+        /*
+         * Estimate the offset that must be added to all CUPTI-provided time
+         * values in order to translate them to the same time "origin" provided
+         * by CBTF_GetTime().
+         */
+        
+        uint64_t cbtf_now = CBTF_GetTime();
+        
+        uint64_t cupti_now = 0;
+        CUPTI_CHECK(cuptiGetTimestamp(&cupti_now));
+        
+        if (cbtf_now > cupti_now)
+        {
+            cupti_time_offset = cbtf_now - cupti_now;
+        }
+        else if (cbtf_now < cupti_now)
+        {
+            cupti_time_offset = -(cupti_now - cbtf_now);
+        }
+        else
+        {
+            cupti_time_offset = 0;
+        }
     }
 
     thread_count.value++;
@@ -926,7 +1428,7 @@ void cbtf_collector_stop()
     free(tls);
     OpenSS_SetTLS(TLSKey, NULL);
 #endif
-    
+
     /* Atomically decrement the active thread count */
     
     PTHREAD_CHECK(pthread_mutex_lock(&thread_count.mutex));
@@ -944,6 +1446,13 @@ void cbtf_collector_stop()
 
     if (thread_count.value == 0)
     {
+        /* Disable all CUPTI activities */
+        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_CONTEXT));
+        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_DEVICE));
+        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_MEMCPY));
+        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_MEMSET));
+        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_KERNEL));
+        
         /* Unsubscribe from all CUPTI callbacks */
         CUPTI_CHECK(cuptiUnsubscribe(cupti_subscriber_handle));
     }

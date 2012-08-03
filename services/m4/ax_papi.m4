@@ -28,8 +28,14 @@ AC_DEFUN([AC_PKG_PAPI], [
                                [PAPI installation @<:@/usr@:>@]),
                 papi_dir=$withval, papi_dir="/usr")
 
+    if test -d $papi_dir/$abi_libdir ; then
+	use_abi_libdir=$papi_dir/$abi_libdir
+    else
+	use_abi_libdir=$papi_dir/$alt_abi_libdir
+    fi
+
     PAPI_CPPFLAGS="-I$papi_dir/include"
-    PAPI_LDFLAGS="-L$papi_dir/$abi_libdir"
+    PAPI_LDFLAGS="-L$use_abi_libdir"
     PAPI_DIR="$papi_dir"
 
     case "$host" in
@@ -45,10 +51,10 @@ AC_DEFUN([AC_PKG_PAPI], [
 	    PAPI_LIBS="-lpapi -lpfm"
             ;;
 	*)
-            if test -f $papi_dir/$abi_libdir/libperfctr.so -o -f /usr/$abi_libdir/libperfctr.so; then
+            if test -f $use_abi_libdir/libperfctr.so ; then
               PAPI_LIBS="-lpapi -lperfctr -lpfm"
-            elif test -f $papi_dir/$abi_libdir/libpfm.so -o -f /usr/$abi_libdir/libpfm.so \
-                   -o -f $papi_dir/$abi_libdir/libpfm.a -o -f /usr/$abi_libdir/libpfm.a; then
+            elif test -f $use_abi_libdir/libpfm.so \
+                   -o -f $use_abi_libdir/libpfm.a ; then
               PAPI_LIBS="-lpapi -lpfm"
             else
               PAPI_LIBS="-lpapi"

@@ -639,7 +639,7 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
 
                 message->device = activity->id;
 
-                message->name = activity->name;
+                message->name = (char*)activity->name;
 
                 message->compute_capability[0] = 
                     activity->computeCapabilityMajor;

@@ -26,6 +26,23 @@
 
 
 /**
+ * Message containing information about a CUDA context.
+ */
+struct CUDA_ContextInfo
+{
+    /** CUDA context for which this is information. */
+    CBTF_Protocol_Address context;
+
+    /** CUDA device for this context. */
+    uint32_t device;
+
+    /** Compute API (CUDA or OpenCL) being used in this context. */
+    string compute_api<>;
+};
+
+
+
+/**
  * Enumeration of the different memory copy kinds.
  */
 enum CUDA_CopyKind
@@ -61,6 +78,9 @@ enum CUDA_MemoryKind
  */
 struct CUDA_CopiedMemory
 {
+    /** CUDA context for which the request was enqueued. */
+    CBTF_Protocol_Address context;
+
     /** CUDA stream for which memory was copied. */
     uint32_t stream;
 
@@ -89,6 +109,71 @@ struct CUDA_CopiedMemory
 
 
 /**
+ * Message containing information about a CUDA device.
+ */
+struct CUDA_DeviceInfo
+{
+    /** CUDA device for which this is information. */
+    uint32_t device;
+
+    /** Name of this device. */
+    string name<>;
+
+    /** Compute capability (major/minor) of this device. */
+    uint32_t compute_capability[2];
+
+    /** Maximum allowed dimensions of grids with this device. */
+    uint32_t max_grid[3];
+
+    /** Maximum allowed dimensions of blocks with this device. */
+    uint32_t max_block[3];
+
+    /** Global memory bandwidth of this device (in KBytes/sec). */
+    uint64_t global_memory_bandwidth;
+    
+    /** Global memory size of this device (in bytes). */
+    uint64_t global_memory_size;
+
+    /** Constant memory size of this device (in bytes). */
+    uint32_t constant_memory_size;
+
+    /** L2 cache size of this device (in bytes). */
+    uint32_t l2_cache_size;
+
+    /** Number of threads per warp for this device. */
+    uint32_t threads_per_warp;
+
+    /** Core clock rate of this device (in KHz). */
+    uint32_t core_clock_rate;
+
+    /** Number of memory copy engines on this device. */
+    uint32_t memcpy_engines;
+
+    /** Number of multiprocessors on this device. */
+    uint32_t multiprocessors;
+
+    /** Maximum instructions/cycle possible on this device's multiprocessors. */
+    uint32_t max_ipc;
+
+    /** Maximum warps/multiprocessor for this device. */
+    uint32_t max_warps_per_multiprocessor;
+
+    /** Maximum blocks/multiprocessor for this device. */
+    uint32_t max_blocks_per_multiprocessor;
+
+    /** Maximum registers/block for this device. */
+    uint32_t max_registers_per_block;
+    
+    /** Maximium shared memory / block for this device. */
+    uint32_t max_shared_memory_per_block;
+
+    /** Maximum threads/block for this device. */
+    uint32_t max_threads_per_block;
+};
+
+
+
+/**
  * Enumeration of the different request types enqueue by the CUDA driver.
  */
 enum CUDA_RequestTypes
@@ -108,6 +193,9 @@ struct CUDA_EnqueueRequest
 
     /** Time at which the request was enqueued. */
     CBTF_Protocol_Time time;
+
+    /** CUDA context for which the request was enqueued. */
+    CBTF_Protocol_Address context;
 
     /** CUDA stream for which the request was enqueued. */
     uint32_t stream;
@@ -138,6 +226,9 @@ enum CUDA_CachePreference
  */
 struct CUDA_ExecutedKernel
 {
+    /** CUDA context for which the request was enqueued. */
+    CBTF_Protocol_Address context;
+
     /** CUDA stream for which a kernel was executed. */
     uint32_t stream;
 
@@ -205,7 +296,7 @@ struct CUDA_ResolvedFunction
     /** Name of the function being resolved. */
     string function<>;
     
-    /** Handle within the CUDA Drvier of the resolved function. */
+    /** Handle within the CUDA driver of the resolved function. */
     CBTF_Protocol_Address handle;    
 };
 
@@ -216,6 +307,9 @@ struct CUDA_ResolvedFunction
  */
 struct CUDA_SetMemory
 {
+    /** CUDA context for which the request was enqueued. */
+    CBTF_Protocol_Address context;
+
     /** CUDA stream for which memory was set. */
     uint32_t stream;
 
@@ -251,13 +345,15 @@ struct CUDA_UnloadedModule
  */
 enum CUDA_MessageTypes
 {
-    CopiedMemory = 0,
-    EnqueueRequest = 1,
-    ExecutedKernel = 2,
-    LoadedModule = 3,
-    ResolvedFunction = 4,
-    SetMemory = 5,
-    UnloadedModule = 6
+    ContextInfo = 0,
+    CopiedMemory = 1,
+    DeviceInfo = 2,
+    EnqueueRequest = 3,
+    ExecutedKernel = 4,
+    LoadedModule = 5,
+    ResolvedFunction = 6,
+    SetMemory = 7,
+    UnloadedModule = 8
 };
 
 
@@ -268,7 +364,9 @@ enum CUDA_MessageTypes
  */
 union CBTF_cuda_message switch (unsigned type)
 {
+    case      ContextInfo:      CUDA_ContextInfo context_info;
     case     CopiedMemory:     CUDA_CopiedMemory copied_memory;
+    case       DeviceInfo:       CUDA_DeviceInfo device_info;
     case   EnqueueRequest:   CUDA_EnqueueRequest enqueue_request;
     case   ExecutedKernel:   CUDA_ExecutedKernel executed_kernel;
     case     LoadedModule:     CUDA_LoadedModule loaded_module;

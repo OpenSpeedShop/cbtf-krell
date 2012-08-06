@@ -26,4 +26,6 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
+
 int CBTF_GetInstrLength(uint64_t);

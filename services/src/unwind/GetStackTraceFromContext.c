@@ -27,6 +27,7 @@
 #include "KrellInstitute/Services/Context.h"
 
 #include <stdbool.h>
+#include <string.h>
 #include <libunwind.h>
 
 

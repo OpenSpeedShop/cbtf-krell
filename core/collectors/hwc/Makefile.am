@@ -42,6 +42,7 @@ hwc_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
 
 hwc_collector_monitor_fileio_la_LDFLAGS = \
@@ -66,6 +67,7 @@ libhwc_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
 
 libhwc_monitor_fileio_la_LDFLAGS = \
@@ -93,10 +95,12 @@ staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet.la
 
 hwc_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
+	@PAPI_CPPFLAGS@ \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 hwc_collector_monitor_mrnet_la_LDFLAGS = \
@@ -125,6 +129,7 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_la_LDFLAGS = \
@@ -158,6 +163,7 @@ hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
@@ -188,6 +194,7 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
@@ -318,6 +325,7 @@ hwc_collector_monitor_mrnet_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 hwc_collector_monitor_mrnet_la_LDFLAGS = \
@@ -346,6 +354,7 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_la_LDFLAGS = \
@@ -377,6 +386,7 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_la_LDFLAGS = \
@@ -417,6 +427,7 @@ hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
@@ -447,6 +458,7 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
@@ -479,6 +491,7 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
 libhwc_monitor_mrnet_mpi_la_LDFLAGS = \

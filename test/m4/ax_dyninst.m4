@@ -31,7 +31,7 @@ AC_DEFUN([AX_DYNINST], [
     AC_ARG_WITH(dyninst-version,
                 AC_HELP_STRING([--with-dyninst-version=VERS],
                                [dyninst-version installation @<:@7.0.1@:>@]),
-                dyninst_vers=$withval, dyninst_vers="7.0.1")
+                dyninst_vers=$withval, dyninst_vers="8.0.0")
 
     DYNINST_CPPFLAGS="-I$dyninst_dir/include/dyninst"
     DYNINST_LDFLAGS="-L$dyninst_dir/$abi_libdir"
@@ -67,11 +67,11 @@ AC_DEFUN([AX_DYNINST], [
             ;;
 	"8.0.0")
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
-            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI" 
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol" 
             ;;
 	*)
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
-            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI" 
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol" 
             ;;
     esac
 

@@ -61,8 +61,8 @@ AC_PROG_LN_S
 ################################################################################
 AC_ARG_WITH(ppc64_bitmode,
             AC_HELP_STRING([--with-ppc64-bitmode=<32,64>],
-                           [Specify ppc64 library bit mode @<:@32@:>@]),
-            ppc64_bitmode=$withval, ppc64_bitmode="32")
+                           [Specify ppc64 library bit mode @<:@64@:>@]),
+            ppc64_bitmode=$withval, ppc64_bitmode="64")
 
 AC_MSG_CHECKING([Configuring for host = $host  with ppc64_bitmode = $ppc64_bitmode])
 

@@ -16,5 +16,31 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_subdirectory(collectors)
-add_subdirectory(components)
+add_library(CUDA SHARED
+    CUDAToIO.cpp
+    )
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}/messages/cuda
+    ${PROJECT_SOURCE_DIR}/messages/src/base
+    ${PROJECT_SOURCE_DIR}/messages/src/events
+    ${PROJECT_SOURCE_DIR}/messages/src/perfdata
+    ${PROJECT_SOURCE_DIR}/messages/src/symtab
+    ${CBTF_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${MRNet_INCLUDE_DIRS}
+    )
+
+target_link_libraries(CUDA
+    ${CBTF_LIBRARIES}
+    ${MRNet_LIBRARIES}
+    )
+
+set_target_properties(CUDA PROPERTIES PREFIX "")
+
+install(TARGETS CUDA
+    RUNTIME DESTINATION bin/KrellInstitute/Components
+    LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
+    ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
+    )

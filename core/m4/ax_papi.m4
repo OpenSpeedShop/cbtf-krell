@@ -161,12 +161,32 @@ AC_DEFUN([AC_PKG_TARGET_PAPI], [
             ;;
 	*)
             if test -f $target_papi_dir/$abi_libdir/libperfctr.so; then
-              TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+              TARGET_PAPI_LIBS="-lpapi -lperfctr"
+              if test -f $target_papi_dir/$abi_libdir/libpfm.so ; then
+                TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+              elif test -f $target_papi_dir/$abi_libdir/libpfm.a ; then
+                TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+              fi
             elif test -f $target_papi_dir/$alt_abi_libdir/libperfctr.so; then
-              TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+                TARGET_PAPI_LIBS="-lpapi -lperfctr"
+              if test -f $target_papi_dir/$alt_abi_libdir/libpfm.so ; then
+                TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+              elif test -f $target_papi_dir/$alt_abi_libdir/libpfm.a ; then
+                TARGET_PAPI_LIBS="-lpapi -lperfctr -lpfm"
+              fi
             else
-              TARGET_PAPI_LIBS="-lpapi -lpfm"
-            fi 
+              if test -f $target_papi_dir/$abi_libdir/libpfm.so; then
+                TARGET_PAPI_LIBS="-lpapi -lpfm"
+              elif test -f $target_papi_dir/$abi_libdir/libpfm.a ; then
+                TARGET_PAPI_LIBS="-lpapi -lpfm"
+              elif test -f $target_papi_dir/$alt_abi_libdir/libpfm.so; then
+                TARGET_PAPI_LIBS="-lpapi -lpfm"
+              elif test -f $target_papi_dir/$alt_abi_libdir/libpfm.a ; then
+                TARGET_PAPI_LIBS="-lpapi -lpfm"
+              else
+                TARGET_PAPI_LIBS="-lpapi"
+              fi
+            fi
             ;;
       esac
 

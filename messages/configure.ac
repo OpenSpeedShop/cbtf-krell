@@ -184,6 +184,7 @@ AC_ARG_WITH(target-os,
 
 AM_CONDITIONAL(HAVE_TARGET_STATIC, false)
 AM_CONDITIONAL(BUILD_TARGETED, false)
+build_targeted=0
 case "$TARGET_OS" in
     cray-xk)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -193,6 +194,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_CRAYXK, 1, [Do not define if not building for targeted cray-xk.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xk,
 			[Name targeted OS])
+	build_targeted=1
 	;;
     cray-xe)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -202,6 +204,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_CRAYXE, 1, [Do not define if not building for targeted cray-xe.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xe,
 			[Name targeted OS])
+	build_targeted=1
 	;;
     cray-xt5)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -211,6 +214,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_CRAYXT5, 1, [Do not define if not building for targeted cray-xt5.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt5,
 			[Name targeted OS])
+	build_targeted=1
 	;;
     cray-xt4)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -220,6 +224,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_CRAYXT4, 1, [Do not define if not building for targeted cray-xt4.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt4,
 			[Name targeted OS])
+	build_targeted=1
 	;;
     bgl)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -229,6 +234,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_BGL, 1, [Do not define if not building for targeted bgl.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,bgl,
 			[Name targeted OS])
+	build_targeted=1
 	;;
     bgp)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -238,6 +244,7 @@ case "$TARGET_OS" in
 	AC_DEFINE(TARGET_OS_BGP, 1, [Do not define if not building for targeted bgp.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,bgp,
 			   [Name targeted OS])
+	build_targeted=1
 	;; 
     bgq)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
@@ -255,11 +262,17 @@ case "$TARGET_OS" in
 	AC_DEFINE(BUILD_TARGETED, 0, [Define to 1 if building a targeted runtime.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,$host,
 			   [Name targeted OS])
+	build_targeted=0
 	;; 
 esac
 
 AC_SUBST(BUILD_TARGETED)
 AC_SUBST(TARGET_OS)
+
+AM_CONDITIONAL(HAVE_XERCES, false)
+AM_CONDITIONAL(HAVE_MRNET, false)
+
+if test "$build_targeted" = 0 ; then
 
 AX_BOOST_BASE([1.35.0])
 AX_BOOST_SYSTEM()
@@ -275,11 +288,15 @@ AX_CBTF_XML()
 AX_MRNET()
 AX_CBTF_MRNET()
 
+fi
+
 AC_PKG_TARGET_MRNET()
 AC_PKG_TARGET_BOOST()
 
+AC_PKG_TARGET_XERCESC()
 AX_TARGET_CBTF()
 AX_TARGET_CBTF_MRNET()
+
 
 AC_CONFIG_FILES([
     Makefile

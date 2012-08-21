@@ -16,7 +16,7 @@
 // 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Componenet for converting CUDA data to pseudo I/O data. */
+/** @file Component for converting CUDA data to pseudo I/O data. */
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>

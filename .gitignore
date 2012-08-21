@@ -1,3 +1,4 @@
+contrib/CUDA/build/*
 contrib/repeatingMemTool/repeatMem.xml
 contrib/repeatingMemTool/repeatMemtool
 core/scripts/cbtf_libcbtf_mrnet_backend

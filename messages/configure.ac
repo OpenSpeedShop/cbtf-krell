@@ -254,6 +254,7 @@ case "$TARGET_OS" in
         AC_DEFINE(TARGET_OS_BGQ, 1, [Do not define if not building for targeted bgq.])
         AC_DEFINE_UNQUOTED(TARGET_OS,bgq,
                            [Name targeted OS])
+	build_targeted=1
         ;;
     *)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, false)

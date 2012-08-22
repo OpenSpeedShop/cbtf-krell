@@ -53,6 +53,15 @@ struct TopologyNode
     }
 };
 
+struct SlurmEnvInfo
+{
+    std::string job_id;
+    std::string num_nodes;
+    std::string node_list;
+    std::string max_cpus_per_node;
+
+};
+
 #define CBTF_MAX_FANOUT 64
 
 typedef enum {
@@ -75,10 +84,9 @@ class CBTFTopology {
 	    void BuildFlattenedTopology( unsigned int,
                         int , std::set<std::string>& );
 
-	    void setCommNodeList(const char *);
+	    void setNodeList(const char *);
 
-	    void createTopology(char *topologyFileName, CBTFTopologyType topologyType,
-                                 char *topologySpecification, char *nodeList);
+	    void createTopology();
 
 	    void parseSlurmEnv();
 
@@ -122,6 +130,42 @@ class CBTFTopology {
 		return dm_max_procs;
 	    };
 
+	    void setNumProcsPerNode(const int& val) {
+		dm_procs_per_node = val;
+	    };
+
+	    int  getNumProcsPerNode() {
+		return dm_procs_per_node;
+	    };
+
+	    void setNumAppNodes(const int& val) {
+		dm_num_app_nodes = val;
+	    };
+
+	    int  getNumAppNodes() {
+		return dm_num_app_nodes;
+	    };
+
+	    void setNumCPNodes(const int& val) {
+		dm_num_cp_nodes = val;
+	    };
+
+	    int  getNumCPNodes() {
+		return dm_num_cp_nodes;
+	    };
+
+	    bool isSlurmValid() {
+		return is_slurm_valid;
+	    };
+
+	    void setAttachBEMode(const bool& val) {
+		attach_be_mode = val;
+	    };
+
+	    bool isAttachBEMode() {
+		return attach_be_mode;
+	    };
+
 	    typedef enum {
 		BALANCED,
 		KNOMIAL,
@@ -133,11 +177,15 @@ class CBTFTopology {
 	    std::string dm_topology_filename;
 	    std::string dm_topology;
 	    std::string dm_fe_node;
+	    int top_depth, top_fanout;
 	    MRN::Tree * dm_tree;
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
-	    long dm_slurm_jobid;
+	    bool is_slurm_valid;
+	    bool attach_be_mode;
+	    long dm_slurm_jobid, dm_slurm_num_nodes;
 	    std::list<std::string> dm_cp_nodelist;
+	    std::list<std::string> dm_nodelist;
 
 };
 

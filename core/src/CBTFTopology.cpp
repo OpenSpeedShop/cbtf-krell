@@ -43,9 +43,10 @@ using namespace KrellInstitute::Core;
 
 CBTFTopology::CBTFTopology()
 {
-    top_depth = 0;
-    top_fanout = 64;
-    dm_topology_filename = "./cbtfTopology";
+    dm_top_depth = 0;
+    dm_top_fanout = 64;
+    dm_topology_spec = "";
+    dm_topology_filename = "./cbtfAutoTopology";
 }
 
 CBTFTopology::~CBTFTopology()
@@ -195,9 +196,9 @@ CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
 
 // set a list of nodes.  Can handle a nodeList string that
 // is in slurm format. Based on STAT example.
-void CBTFTopology::setNodeList(const char *nodeList)
+void CBTFTopology::setNodeList(const std::string& nodeList)
 {
-    char numString[BUFSIZE], nodeName[BUFSIZE], *nodeRange;
+    char numString[BUFSIZE];
     unsigned int num1 = 0, num2, startPos, endPos, i, j;
     bool isRange = false;
     std::string baseNodeName, nodes, list;
@@ -224,12 +225,11 @@ void CBTFTopology::setNodeList(const char *nodeList)
 
         if (openBracketPos == std::string::npos && closeBracketPos == std::string::npos) {
             /* This is a single node */
-            strncpy(nodeName, nodes.c_str(), BUFSIZE);
-            dm_nodelist.push_back(nodeName);
+            dm_nodelist.push_back(nodes);
         } else {
             /* This is a list of nodes */
             /* Parse the node list string string e.g.: xxx[0-15,12,23,26-35] */
-            nodeRange = strdup(nodes.substr(openBracketPos + 1, closeBracketPos -
+            char *nodeRange = strdup(nodes.substr(openBracketPos + 1, closeBracketPos -
 				(openBracketPos + 1)).c_str());
             if (nodeRange == NULL) {
                 return;
@@ -261,8 +261,9 @@ void CBTFTopology::setNodeList(const char *nodeList)
                     isRange = false;
                     num2 = atoi(numString);
                     for (j = num1; j <= num2; j++) {
-                        snprintf(nodeName, BUFSIZE, "%s%u", baseNodeName.c_str(), j);
-                        dm_nodelist.push_back(nodeName);
+			std::ostringstream ostr;
+                        ostr << baseNodeName << j;
+                        dm_nodelist.push_back(ostr.str());
                     }
                 } else {
                     num1 = atoi(numString);
@@ -272,8 +273,9 @@ void CBTFTopology::setNodeList(const char *nodeList)
                             continue;
                         }
                     }
-                    snprintf(nodeName, BUFSIZE, "%s%u", baseNodeName.c_str(), num1);
-                    dm_nodelist.push_back(nodeName);
+		    std::ostringstream ostr;
+                    ostr << baseNodeName << num1;
+                    dm_nodelist.push_back(ostr.str());
                 }
                 i = i - 1;
             }
@@ -347,6 +349,7 @@ void CBTFTopology::parseSlurmEnv()
     if (envval == NULL) {
 	has_slurm = false;
     } else {
+	std::string listval(envval);
 	setNodeList(envval);
     }
 
@@ -370,19 +373,61 @@ void CBTFTopology::parseSlurmEnv()
     }
 }
 
+void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
+{
+    bool is_cray = false;
+
+    if (mode == BE_ATTACH) {
+	setAttachBEMode(true);
+    } else if (mode == BE_CRAY_ATTACH) {
+	setAttachBEMode(true);
+	is_cray = true;
+    }
+
+    std::string fehostname;
+    if (is_cray) {
+    } else {
+	fehostname = getLocalHostName();
+    }
+    setFENodeStr(fehostname);
+
+    parseSlurmEnv();
+    if (isSlurmValid()) {
+        //std::cerr << "Creating topology for slurm job" << std::endl;
+	std::cerr << "Creating topology for slurm FE " << fehostname << std::endl;
+        //setFENodeStr("localhost");
+    } else {
+	// default to the localhost simple toplogy.
+	std::cerr << "Creating topology for localhost " << fehostname << std::endl;
+	setNodeList(fehostname);
+	setCPNodeList(getNodeList());
+	setNumCPProcs(1);
+	setNumAppNodes(1);
+	setDepth(1);
+	setFanout(1);
+	setNumProcsPerNode(2);
+    }
+
+    createTopology();
+}
 
 // The basis of this code was inspired by the STAT tool FE.
 void CBTFTopology::createTopology()
 {
     FILE *file;
-    std::string topologyspec;
-    topologyspec = "2-4-8";
     unsigned int i, j, layer;
     unsigned int depth = 0, fanout = 0;
     std::string topoIter, current;
     std::string::size_type dashPos, lastPos;
 
-    //  top_depth will determine the tree depth.  This is different for a
+    // The format of the topologyspec is a string representing the number
+    // of mrnet CPs at each level. levels of the tree are separated by -. e.g:
+    // 2  (1 level with 2 CPs)
+    // 2-4-8 (first level2 CPs, second level 4 CPs, third level 8 CPs).
+    std::string topologyspec;
+    topologyspec = dm_topology_spec;
+
+    //  dm_top_depth will determine the tree depth.  This is different for a
     //  client that launches BE's directly via mrnet rather than allows
     //  for BE's that attach.  i.e. in the attach case, the topology nodes
     //  below the mrnet FE level are CP nodes.
@@ -399,8 +444,8 @@ void CBTFTopology::createTopology()
     //  imply no CP's. A flat 1 to N tree in this case is 1 FE communicating
     //  directly with the BEs.
     //
-    int desiredDepth = top_depth;
-    int desiredMaxFanout = CBTF_MAX_FANOUT;
+    int desiredDepth = dm_top_depth;
+    int desiredMaxFanout = dm_top_fanout;
     int procsNeeded = 0;
 
     // Set topology format and compute depth and fanout.
@@ -418,6 +463,7 @@ void CBTFTopology::createTopology()
 
 #if 0
 	std::cerr << "computed desiredDepth  " << desiredDepth
+		<< " dm_num_app_nodes  " << dm_num_app_nodes
 		<< " computed fanout  " << fanout << std::endl;
 #endif
 
@@ -435,21 +481,22 @@ void CBTFTopology::createTopology()
 
 	topologyspec = ostr.str();
 
-#if 0
-	std::cerr << "computed procsNeeded  " << procsNeeded
-	    << " topologyspec " << topologyspec << std::endl;
-#endif
-
         if (procsNeeded <= dm_cp_nodelist.size() * dm_procs_per_node) {
             //  We have enough CPs, so we can have our desired depth
             depth = desiredDepth;
-	    //std::cerr << "USING desiredDepth = " << desiredDepth << std::endl;
         } else {
             // There aren't enough CPs, so make a 2-deep tree with as many CPs as we have
             std::ostringstream nstr;
 	    nstr << (dm_cp_nodelist.size() * dm_procs_per_node);
 	    topologyspec = ostr.str();
         }
+
+#if 0
+	std::cerr << "computed procsNeeded:" << procsNeeded
+	    << "desiredDepth:" << desiredDepth
+	    << " topologyspec:" << topologyspec << std::endl;
+#endif
+
     } else {
         topoIter = topologyspec;
         while(true) {
@@ -479,9 +526,9 @@ void CBTFTopology::createTopology()
     std::ostringstream festr;
 #ifdef BGL
     // On BlueGene systems use the network interface with the IO nodes
-    festr << dm_fe_node.c_str() << "-io";
+    festr << dm_fe_node.c_str() << "-io:0";
 #else
-    festr << dm_fe_node.c_str();
+    festr << dm_fe_node.c_str() << ":0";
 #endif
 
     std::vector<std::string> treeList;
@@ -523,7 +570,9 @@ void CBTFTopology::createTopology()
     // Initialized vector iterators
     unsigned int parentIter = 0, childIter = 1;
 
-    if (topologyspec.empty()) { /* Flat topology */
+    if (topologyspec.empty()) {
+	// Flat topology with no CP.  Just an FE that can be attached
+	// to by a BE (or BEs) later.  i.e. FE -> BE.
         fprintf(file, "%s;\n", treeList[0].c_str());
     } else {
         // Create the topology file from specification
@@ -570,5 +619,4 @@ void CBTFTopology::createTopology()
     }
     
     fclose(file);
-    return ;
 }

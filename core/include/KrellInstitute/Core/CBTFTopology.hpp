@@ -106,6 +106,22 @@ class CBTFTopology {
 	    void autoCreateTopology(const MRNetStartMode&);
 	    void createTopology();
 
+	    int getCrayFENid( void );
+
+	    void setIsCray( const bool& flag) {
+		dm_is_cray = flag;
+	    }
+
+	    bool getIsCray(void) {
+		return dm_is_cray;
+	    }
+
+	    std::string formatCrayNid(const std::string& nidstr, const int& nid) {
+	        std::ostringstream ostr;
+		ostr << nidstr << std::setw( 5 ) << std::setfill('0') << nid;
+		return ostr.str();
+	    };
+
 	    void parseSlurmEnv();
 
 	    void setTopologyStr(const std::string& topology) {
@@ -238,7 +254,7 @@ class CBTFTopology {
 	    MRN::Tree * dm_tree;
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
-	    bool is_slurm_valid;
+	    bool is_slurm_valid, dm_is_cray;
 	    bool attach_be_mode;
 	    long dm_slurm_jobid, dm_slurm_num_nodes;
 	    std::list<std::string> dm_cp_nodelist;

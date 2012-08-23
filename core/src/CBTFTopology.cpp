@@ -35,6 +35,10 @@
 #include <typeinfo>
 #include <limits.h>
 
+#if 0
+#include <alps/alps.h>
+#endif
+
 #include <mrnet/MRNet.h>
 #include <mrnet/Tree.h>
 #include "KrellInstitute/Core/CBTFTopology.hpp"
@@ -51,6 +55,26 @@ CBTFTopology::CBTFTopology()
 
 CBTFTopology::~CBTFTopology()
 {
+}
+
+
+
+int CBTFTopology::getCrayFENid( void )
+{
+    int nid = -1;
+
+#if 0
+    // alps.h defines ALPS_XT_NID to be the file containing the nid.
+    // it's /proc/cray_xt/nid for the machines we've seen so far
+    std::ifstream ifs( ALPS_XT_NID );
+    if( ifs.is_open() ) {
+        ifs >> nid;
+        ifs.close();
+    }
+#else
+    nid = 100;
+#endif
+    return nid;
 }
 
 // based on cray example from mrnet src.
@@ -261,9 +285,13 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                     isRange = false;
                     num2 = atoi(numString);
                     for (j = num1; j <= num2; j++) {
-			std::ostringstream ostr;
-                        ostr << baseNodeName << j;
-                        dm_nodelist.push_back(ostr.str());
+			if (getIsCray()) {
+                            dm_nodelist.push_back(formatCrayNid(baseNodeName,j));
+			} else {
+			    std::ostringstream ostr;
+                            ostr << baseNodeName << j;
+                            dm_nodelist.push_back(ostr.str());
+			}
                     }
                 } else {
                     num1 = atoi(numString);
@@ -273,9 +301,14 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                             continue;
                         }
                     }
-		    std::ostringstream ostr;
-                    ostr << baseNodeName << num1;
-                    dm_nodelist.push_back(ostr.str());
+
+		    if (getIsCray()) {
+                        dm_nodelist.push_back(formatCrayNid(baseNodeName,num1));
+		    } else {
+		        std::ostringstream ostr;
+                        ostr << baseNodeName << num1;
+                        dm_nodelist.push_back(ostr.str());
+		    }
                 }
                 i = i - 1;
             }
@@ -375,17 +408,20 @@ void CBTFTopology::parseSlurmEnv()
 
 void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 {
-    bool is_cray = false;
-
+    // need to handle cray and bluegene separately...
     if (mode == BE_ATTACH) {
 	setAttachBEMode(true);
     } else if (mode == BE_CRAY_ATTACH) {
 	setAttachBEMode(true);
-	is_cray = true;
+	setIsCray(true);
     }
 
     std::string fehostname;
-    if (is_cray) {
+    if (getIsCray()) {
+	// On a cray, the node names are always "nid".
+	// The method getCrayFENid() should get the correct nid
+	// based on the /proc/cray_xt/nid contents.
+	fehostname = formatCrayNid("nid",getCrayFENid());
     } else {
 	fehostname = getLocalHostName();
     }

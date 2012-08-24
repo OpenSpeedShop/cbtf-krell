@@ -33,7 +33,7 @@
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
 #include "KrellInstitute/Core/SymtabAPISymbols.hpp"
-#include <mrnet/MRNet.h>
+#include "KrellInstitute/Core/CBTFTopology.hpp"
 
 using namespace boost;
 using namespace KrellInstitute::CBTF;
@@ -139,13 +139,16 @@ int main(int argc, char** argv)
     bool isMPI;
     std::string topology, connections, collector, program, mpiexecutable, cbtfrunpath;
 
+
     // create a default for topology file.
     char const* home = getenv("HOME");
     std::string default_topology(home);
     default_topology += "/.cbtf/cbtf_topology";
+
     // create a default for connections file.
     std::string default_connections(home);
     default_connections += "/.cbtf/attachBE_connections";
+
     // create a default for the collection type.
     std::string default_collector("pcsamp");
 
@@ -155,14 +158,14 @@ int main(int argc, char** argv)
         ("numBE", boost::program_options::value<unsigned int>(&numBE)->default_value(1),
 	    "Number of lightweight mrnet backends. Default is 1, For an mpi job this must match the number of mpi ranks specififed in the mpi launcher arguments.")
         ("topology",
-	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
-	    "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen),")
+	    boost::program_options::value<std::string>(&topology)->default_value(""),
+	    "By default the tool will create a topology for you.  Use this option to pass a path name to a valid mrnet topology file. (i.e. from mrnet_topgen). Use this options with care.")
         ("connections",
 	    boost::program_options::value<std::string>(&connections)->default_value(default_connections),
 	    "Path name to a valid backend connections file. The connections file is created by the mrnet backends based on the mrnet topology file. The default is sufficient for most cases.")
         ("collector",
 	    boost::program_options::value<std::string>(&collector)->default_value(default_collector),
-	    "Name of collector to use [pcsamp | usertime]. Default is pcsamp.")
+	    "Name of collector to use [pcsamp | usertime | hwc]. Default is pcsamp.")
         ("program",
 	    boost::program_options::value<std::string>(&program)->default_value(""),
 	    "Program to collect data from, Program with arguments needs double quotes.  If program is not specified this client will start the mrnet tree and wait for the user to manually attach backends in another window via cbtfrun.")
@@ -192,6 +195,17 @@ int main(int argc, char** argv)
     }
 
     bool finished = false;
+
+    // TODO: pass numBE to CBTFTopology and record as the number
+    // of application processes.
+    if (topology.empty()) {
+      CBTFTopology cbtftopology;
+      cbtftopology.autoCreateTopology(BE_ATTACH);
+      topology = cbtftopology.getTopologyFileName();
+      std::cerr << "Generated topology file: " << topology << std::endl;
+    } else {
+      topology = default_topology;
+    }
 
     // verify valid numBE.
     if (numBE == 0) {

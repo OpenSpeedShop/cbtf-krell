@@ -25,6 +25,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/Assert.hpp \
 	KrellInstitute/Core/BFDSymbols.hpp \
 	KrellInstitute/Core/Blob.hpp \
+	KrellInstitute/Core/CBTFTopology.hpp \
 	KrellInstitute/Core/Exception.hpp \
 	KrellInstitute/Core/ExtentGroup.hpp \
 	KrellInstitute/Core/Extent.hpp \

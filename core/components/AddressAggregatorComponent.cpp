@@ -274,7 +274,7 @@ private:
     {
         CBTF_hwc_data *data = in.get();
 
-        std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
+        //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -412,7 +412,7 @@ private:
 	    << std::endl;
 	}
 #endif
-        if (handled_threads == threadnames.size() /*|| is_finished*/ ) {
+        if (handled_threads == threadnames.size()) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
  	        std::cerr << "AddressAggregator::addressBufferHandler "

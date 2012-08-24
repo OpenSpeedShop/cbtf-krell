@@ -52,6 +52,8 @@ CBTFTopology::CBTFTopology()
     dm_topology_spec = "";
     dm_topology_filename = "./cbtfAutoTopology";
     dm_colocate_mrnet_procs = true;
+    dm_is_cray = false;
+    is_slurm_valid = false;
 }
 
 CBTFTopology::~CBTFTopology()
@@ -392,7 +394,7 @@ void CBTFTopology::parseSlurmEnv()
     if (is_slurm_valid && dm_slurm_num_nodes > 1) {
 	long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
 	long needed_cps = maxsize / dm_top_fanout;
-#if 1
+#if 0
 	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
 	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
 	 std::cerr << "maxsize " << maxsize << " needed_cps "
@@ -447,11 +449,11 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 
     parseSlurmEnv();
     if (isSlurmValid()) {
-	std::cerr << "Creating topology for slurm FE " << fehostname << std::endl;
+	std::cerr << "Creating topology file for slurm frontend node " << fehostname << std::endl;
 	setDepth(2);
     } else {
 	// default to the localhost simple toplogy.
-	std::cerr << "Creating topology for localhost " << fehostname << std::endl;
+	std::cerr << "Creating topology file for frontend host " << fehostname << std::endl;
 	setNodeList(fehostname);
 	setCPNodeList(getNodeList());
 	setNumCPProcs(1);
@@ -514,7 +516,7 @@ void CBTFTopology::createTopology()
             fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
 	}
 
-#if 1
+#if 0
 	std::cerr << "computed desiredDepth  " << desiredDepth
 		<< " dm_num_app_nodes  " << dm_num_app_nodes
 		<< " computed fanout  " << fanout << std::endl;
@@ -537,16 +539,16 @@ void CBTFTopology::createTopology()
         if (procsNeeded <= dm_cp_nodelist.size() * dm_procs_per_node) {
             //  We have enough CPs, so we can have our desired depth
             depth = desiredDepth;
-	    std::cerr << "depth OK" << std::endl;
+	    // std::cerr << "depth OK" << std::endl;
         } else {
             // There aren't enough CPs, so make a 2-deep tree with as many CPs as we have
             std::ostringstream nstr;
 	    nstr << (dm_cp_nodelist.size() * dm_procs_per_node);
 	    topologyspec = nstr.str();
-	    std::cerr << "depth not ok" << std::endl;
+	    // std::cerr << "depth not ok" << std::endl;
         }
 
-#if 1
+#if 0
 	std::cerr << "computed procsNeeded: " << procsNeeded
 	    << " desiredDepth: " << desiredDepth
 	    << " topologyspec: " << topologyspec << std::endl;
@@ -625,7 +627,7 @@ void CBTFTopology::createTopology()
     // Initialized vector iterators
     unsigned int parentIter = 0, childIter = 1;
 
-    std::cerr << "using topologyspec " << topologyspec << std::endl;
+    //std::cerr << "using topologyspec " << topologyspec << std::endl;
 
     if (topologyspec.empty()) {
 	// Flat topology with no CP.  Just an FE that can be attached

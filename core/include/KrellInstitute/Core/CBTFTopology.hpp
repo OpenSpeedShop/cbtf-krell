@@ -24,6 +24,8 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <unistd.h> 
+#include <sys/param.h>
 #include "mrnet/Tree.h"
 
 #define BUFSIZE 1024
@@ -53,7 +55,22 @@ struct TopologyNode
     }
 };
 
+struct SlurmEnvInfo
+{
+    std::string job_id;
+    std::string num_nodes;
+    std::string node_list;
+    std::string max_cpus_per_node;
+
+};
+
 #define CBTF_MAX_FANOUT 64
+
+typedef enum {
+    BE_ATTACH = 0,
+    BE_START,
+    BE_CRAY_ATTACH
+} MRNetStartMode;
 
 typedef enum {
     CBTF_TOPOLOGY_DEPTH = 0,
@@ -75,10 +92,35 @@ class CBTFTopology {
 	    void BuildFlattenedTopology( unsigned int,
                         int , std::set<std::string>& );
 
-	    void setCommNodeList(const char *);
+	    void setNodeList(const std::string&);
 
-	    void createTopology(char *topologyFileName, CBTFTopologyType topologyType,
-                                 char *topologySpecification, char *nodeList);
+	    std::list<std::string> getNodeList() {
+		return dm_nodelist;
+	    };
+
+	    void setCPNodeList(const std::list<std::string>& l) {
+		dm_cp_nodelist = l;
+	    };
+
+
+	    void autoCreateTopology(const MRNetStartMode&);
+	    void createTopology();
+
+	    int getCrayFENid( void );
+
+	    void setIsCray( const bool& flag) {
+		dm_is_cray = flag;
+	    }
+
+	    bool getIsCray(void) {
+		return dm_is_cray;
+	    }
+
+	    std::string formatCrayNid(const std::string& nidstr, const int& nid) {
+	        std::ostringstream ostr;
+		ostr << nidstr << std::setw( 5 ) << std::setfill('0') << nid;
+		return ostr.str();
+	    };
 
 	    void parseSlurmEnv();
 
@@ -88,6 +130,28 @@ class CBTFTopology {
 
 	    std::string  getTopologyStr() {
 		return dm_topology;
+	    };
+
+	    void setTopologyFileName(const std::string& tname) {
+		dm_topology_filename = tname;
+	    };
+
+	    std::string  getTopologyFileName() {
+		return dm_topology_filename;
+	    };
+
+	    void setTopologySpec(const std::string& spec) {
+		dm_topology_spec = spec;
+	    };
+
+	    std::string  getTopologySpec() {
+		return dm_topology_spec;
+	    };
+
+	    std::string getLocalHostName() {
+		char lhostname[MAXHOSTNAMELEN];
+		gethostname(lhostname, MAXHOSTNAMELEN);
+		return lhostname;
 	    };
 
 	    void setFENodeStr(const std::string& node) {
@@ -122,6 +186,66 @@ class CBTFTopology {
 		return dm_max_procs;
 	    };
 
+	    void setNumProcsPerNode(const int& val) {
+		dm_procs_per_node = val;
+	    };
+
+	    int  getNumProcsPerNode() {
+		return dm_procs_per_node;
+	    };
+
+	    void setNumAppNodes(const int& val) {
+		dm_num_app_nodes = val;
+	    };
+
+	    int  getNumAppNodes() {
+		return dm_num_app_nodes;
+	    };
+
+	    void setDepth(const int& val) {
+		dm_top_depth = val;
+	    };
+
+	    int  getDepth() {
+		return dm_top_depth;
+	    };
+
+	    void setFanout(const int& val) {
+		dm_top_fanout = val;
+	    };
+
+	    int  getFanout() {
+		return dm_top_fanout;
+	    };
+
+	    void setNumCPNodes(const int& val) {
+		dm_num_cp_nodes = val;
+	    };
+
+	    int  getNumCPNodes() {
+		return dm_num_cp_nodes;
+	    };
+
+	    bool isSlurmValid() {
+		return is_slurm_valid;
+	    };
+
+	    void setAttachBEMode(const bool& val) {
+		attach_be_mode = val;
+	    };
+
+	    bool isAttachBEMode() {
+		return attach_be_mode;
+	    };
+
+	    void setColocateMRNetProcs(const bool& val) {
+		dm_colocate_mrnet_procs = val;
+	    };
+
+	    bool colocateMRNetProcs() {
+		return dm_colocate_mrnet_procs;
+	    };
+
 	    typedef enum {
 		BALANCED,
 		KNOMIAL,
@@ -131,13 +255,19 @@ class CBTFTopology {
 	private:
 	    std::set<std::string> * dm_nodes;
 	    std::string dm_topology_filename;
+	    std::string dm_topology_spec;
 	    std::string dm_topology;
 	    std::string dm_fe_node;
+	    int dm_top_depth, dm_top_fanout;
 	    MRN::Tree * dm_tree;
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
-	    long dm_slurm_jobid;
+	    bool is_slurm_valid, dm_is_cray;
+	    bool attach_be_mode, dm_colocate_mrnet_procs;
+	    long dm_slurm_jobid, dm_slurm_num_nodes;
 	    std::list<std::string> dm_cp_nodelist;
+	    std::list<std::string> dm_app_nodelist;
+	    std::list<std::string> dm_nodelist;
 
 };
 

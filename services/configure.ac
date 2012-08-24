@@ -412,7 +412,10 @@ AC_SUBST(BUILD_RUNTIME)
 # Check for Additional Packages
 ################################################################################
 
-if test "$build_targeted" = 0 ; then
+#AM_CONDITIONAL(HAVE_BINUTILS, false)
+
+
+#if test "$build_targeted" = 0 ; then
 
 AC_PKG_BINUTILS()
 AC_PKG_LIBMONITOR()
@@ -421,7 +424,7 @@ AC_PKG_PAPI()
 AX_LW_MRNET()
 AX_MESSAGES()
 
-fi
+#fi
 
 AC_PKG_TARGET_BINUTILS()
 AC_PKG_TARGET_LIBMONITOR()

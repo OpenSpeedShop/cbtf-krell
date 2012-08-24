@@ -118,10 +118,10 @@ OFFLINE_SOURCES = \
 endif
 
 if HAVE_TARGET_LIBMONITOR
-if HAVE_TARGET_SHARED
 lib_LTLIBRARIES += libcbtf-services-collector-monitor-fileio.la
 endif
 
+if HAVE_TARGET_LIBMONITOR
 if HAVE_TARGET_SHARED
 libcbtf_services_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -142,7 +142,8 @@ libcbtf_services_collector_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
 
-else
+# end HAVE_TARGET_SHARED
+endif
 
 if HAVE_TARGET_STATIC
 libcbtf_services_collector_monitor_fileio_la_CFLAGS = \
@@ -168,15 +169,12 @@ libcbtf_services_collector_monitor_fileio_la_SOURCES = \
 # endif TARGET_STATIC
 endif
 
-# endif for else for not TARGET_SHARED
+if HAVE_TARGET_MRNET
+lib_LTLIBRARIES += libcbtf-services-collector-monitor-mrnet.la
 endif
 
 if HAVE_TARGET_MRNET
 if HAVE_TARGET_SHARED
-lib_LTLIBRARIES += libcbtf-services-collector-monitor-mrnet.la
-endif
-
-if HAVE_TARGET_SHARED
 libcbtf_services_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -200,7 +198,8 @@ libcbtf_services_collector_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
 
-else
+# end HAVE_TARGET_SHARED
+endif
 
 if HAVE_TARGET_STATIC
 libcbtf_services_collector_monitor_mrnet_la_CFLAGS = \
@@ -228,14 +227,16 @@ libcbtf_services_collector_monitor_mrnet_la_SOURCES = \
 	collector.c
 # endif TARGET_STATIC
 endif
-# endif for else for not TARGET_SHARED
+# endif TARGET_MRNET
 endif
 
 
-if HAVE_TARGET_SHARED
+if HAVE_TARGET_MRNET
 lib_LTLIBRARIES += libcbtf-services-collector-monitor-mrnet-mpi.la
 endif
 
+if HAVE_TARGET_MRNET
+
 if HAVE_TARGET_SHARED
 libcbtf_services_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -260,7 +261,7 @@ libcbtf_services_collector_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c
 
-else
+endif
 
 if HAVE_TARGET_STATIC
 libcbtf_services_collector_monitor_mrnet_mpi_la_CFLAGS = \
@@ -289,10 +290,9 @@ libcbtf_services_collector_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 # endif TARGET_STATIC
 endif
-# endif for else for not TARGET_SHARED
+
+# endif TARGET_MRNET
 endif
 
-# endif for else for not TARGET_MRNET
-endif
-# endif for else for not TARGET_LIBMONITOR
+# endif TARGET_LIBMONITOR
 endif

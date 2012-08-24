@@ -1,4 +1,4 @@
-################################################################################
+##############################################################################
 # Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
@@ -271,7 +271,6 @@ usertime_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 usertime_collector_monitor_fileio_la_SOURCES = \
@@ -376,7 +375,6 @@ usertime_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_la_SOURCES = \
@@ -486,9 +484,7 @@ usertime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lcbtf-services-data \
-	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_mpi_la_SOURCES = \

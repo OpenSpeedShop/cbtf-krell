@@ -238,6 +238,14 @@ class CBTFTopology {
 		return attach_be_mode;
 	    };
 
+	    void setColocateMRNetProcs(const bool& val) {
+		dm_colocate_mrnet_procs = val;
+	    };
+
+	    bool colocateMRNetProcs() {
+		return dm_colocate_mrnet_procs;
+	    };
+
 	    typedef enum {
 		BALANCED,
 		KNOMIAL,
@@ -255,9 +263,10 @@ class CBTFTopology {
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
 	    bool is_slurm_valid, dm_is_cray;
-	    bool attach_be_mode;
+	    bool attach_be_mode, dm_colocate_mrnet_procs;
 	    long dm_slurm_jobid, dm_slurm_num_nodes;
 	    std::list<std::string> dm_cp_nodelist;
+	    std::list<std::string> dm_app_nodelist;
 	    std::list<std::string> dm_nodelist;
 
 };

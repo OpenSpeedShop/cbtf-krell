@@ -51,6 +51,7 @@ CBTFTopology::CBTFTopology()
     dm_top_fanout = 64;
     dm_topology_spec = "";
     dm_topology_filename = "./cbtfAutoTopology";
+    dm_colocate_mrnet_procs = true;
 }
 
 CBTFTopology::~CBTFTopology()
@@ -390,18 +391,33 @@ void CBTFTopology::parseSlurmEnv()
     
     if (is_slurm_valid && dm_slurm_num_nodes > 1) {
 	long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
-	long needed_cps = maxsize / CBTF_MAX_FANOUT;
-	// std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
-	//     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	// std::cerr << "maxsize " << maxsize << " needed_cps "
-	//     << needed_cps << std::endl;
+	long needed_cps = maxsize / dm_top_fanout;
+#if 1
+	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
+	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	 std::cerr << "maxsize " << maxsize << " needed_cps "
+	     << needed_cps << std::endl;
+#endif
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
+	bool need_cp = true;
         for (NodeListIter = dm_nodelist.begin();
 	     NodeListIter != dm_nodelist.end(); NodeListIter++) {
-            dm_cp_nodelist.push_back(*NodeListIter);
+
+	    if (need_cp || dm_colocate_mrnet_procs) {
+                dm_cp_nodelist.push_back(*NodeListIter);
+std::cerr << "dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
+	    } else {
+                dm_app_nodelist.push_back(*NodeListIter);
+std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
+	    }
+
 	    counter++;
-	    if (counter == needed_cps) break;
+	    if (counter == needed_cps ||
+		(!dm_colocate_mrnet_procs && needed_cps < dm_procs_per_node) ) {
+		//break;
+		need_cp = false;
+	    }
 	}
     }
 }
@@ -414,6 +430,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     } else if (mode == BE_CRAY_ATTACH) {
 	setAttachBEMode(true);
 	setIsCray(true);
+	setColocateMRNetProcs(false);
+	setFanout(32);
     }
 
     std::string fehostname;
@@ -429,9 +447,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 
     parseSlurmEnv();
     if (isSlurmValid()) {
-        //std::cerr << "Creating topology for slurm job" << std::endl;
 	std::cerr << "Creating topology for slurm FE " << fehostname << std::endl;
-        //setFENodeStr("localhost");
+	setDepth(2);
     } else {
 	// default to the localhost simple toplogy.
 	std::cerr << "Creating topology for localhost " << fehostname << std::endl;
@@ -497,7 +514,7 @@ void CBTFTopology::createTopology()
             fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
 	}
 
-#if 0
+#if 1
 	std::cerr << "computed desiredDepth  " << desiredDepth
 		<< " dm_num_app_nodes  " << dm_num_app_nodes
 		<< " computed fanout  " << fanout << std::endl;
@@ -520,17 +537,19 @@ void CBTFTopology::createTopology()
         if (procsNeeded <= dm_cp_nodelist.size() * dm_procs_per_node) {
             //  We have enough CPs, so we can have our desired depth
             depth = desiredDepth;
+	    std::cerr << "depth OK" << std::endl;
         } else {
             // There aren't enough CPs, so make a 2-deep tree with as many CPs as we have
             std::ostringstream nstr;
 	    nstr << (dm_cp_nodelist.size() * dm_procs_per_node);
-	    topologyspec = ostr.str();
+	    topologyspec = nstr.str();
+	    std::cerr << "depth not ok" << std::endl;
         }
 
-#if 0
-	std::cerr << "computed procsNeeded:" << procsNeeded
-	    << "desiredDepth:" << desiredDepth
-	    << " topologyspec:" << topologyspec << std::endl;
+#if 1
+	std::cerr << "computed procsNeeded: " << procsNeeded
+	    << " desiredDepth: " << desiredDepth
+	    << " topologyspec: " << topologyspec << std::endl;
 #endif
 
     } else {
@@ -605,6 +624,8 @@ void CBTFTopology::createTopology()
    
     // Initialized vector iterators
     unsigned int parentIter = 0, childIter = 1;
+
+    std::cerr << "using topologyspec " << topologyspec << std::endl;
 
     if (topologyspec.empty()) {
 	// Flat topology with no CP.  Just an FE that can be attached

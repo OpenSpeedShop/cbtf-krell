@@ -28,10 +28,6 @@
 #include "config.h"
 #endif
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Usertime.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
@@ -48,20 +44,27 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 
-#define true 1
-#define false 0
-
-#if !defined (TRUE)
-#define TRUE true
-#endif
-
-#if !defined (FALSE)
-#define FALSE false
-#endif
-
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "usertime";
 
+#if UNW_TARGET_X86 || UNW_TARGET_X86_64
+# define STACK_SIZE     (128*1024)      /* On x86, SIGSTKSZ is too small */
+#else
+# define STACK_SIZE     SIGSTKSZ
+#endif
+
+/*
+ * NOTE: For some reason GCC doesn't like it when the following two macros are
+ *       replaced with constant unsigned integers. It complains about the arrays
+ *       in the tls structure being "variable-size type declared outside of any
+ *       function" even though the size IS constant... Maybe this can be fixed?
+ */
+
+/** Number of entries in the sample buffer. */
+#define CBTF_USERTIME_BUFFERSIZE  1024
+
+/** Man number of frames for callstack collection */
+#define CBTF_USERTIME_MAXFRAMES 100
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -69,7 +72,14 @@ typedef struct {
     CBTF_DataHeader header;  /**< Header for following data blob. */
     CBTF_usertime_data data;        /**< Actual data blob. */
 
-    CBTF_StackTraceData buffer;      /**< Stacktrace sampling data buffer. */
+    /** Sample buffer. */
+    struct {
+        uint64_t bt[CBTF_USERTIME_BUFFERSIZE];    /**< Stack trace (PC) addresses. */
+        uint8_t  count[CBTF_USERTIME_BUFFERSIZE]; /**< count value greater than 0 is top */
+                                    /**< of stack. A count of 255 indicates */
+                                    /**< another instance of this stack may */
+                                    /**< exist in buffer bt. */
+    } buffer;
 
     bool_t defer_sampling;
 } TLS;
@@ -89,42 +99,27 @@ static __thread TLS the_tls;
 
 #endif
 
-static void send_samples ()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
 
+/**
+ * Initialize the performance data header and blob contained within the given
+ * thread-local storage. This function <em>must</em> be called before any of
+ * the collection routines attempts to add a message.
+ *
+ * @param tls    Thread-local storage to be initialized.
+ */
+static void initialize_data(TLS* tls)
+{
     Assert(tls != NULL);
 
-    tls->header.id = strdup("usertime");
-    tls->header.time_end = CBTF_GetTime();
-    tls->header.addr_begin = tls->buffer.addr_begin;
-    tls->header.addr_end = tls->buffer.addr_end;
-
-#ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "cbtf_timer_service_stop_sampling:\n");
-	    fprintf(stderr, "time_end(%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
-		tls->header.time_end,tls->header.addr_begin,
-		tls->header.addr_end,tls->data.stacktraces.stacktraces_len,
-		tls->data.count.count_len);
-	}
-#endif
-
-    cbtf_collector_send(&tls->header, (xdrproc_t)xdr_CBTF_usertime_data, &tls->data);
-
-    /* Re-initialize the data blob's header */
-    tls->header.time_begin = tls->header.time_end;
+    tls->header.time_begin = CBTF_GetTime();
     tls->header.time_end = 0;
     tls->header.addr_begin = ~0;
     tls->header.addr_end = 0;
-
+    
     /* Re-initialize the actual data blob */
-    tls->data.stacktraces.stacktraces_len = 0;
+    tls->data.bt.bt_val = tls->buffer.bt;
+    tls->data.bt.bt_len = 0;
+    tls->data.count.count_val = tls->buffer.count;
     tls->data.count.count_len = 0;
 
     /* Re-initialize the sampling buffer */
@@ -134,11 +129,86 @@ static void send_samples ()
 
 
 /**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified time. Insures that the time interval defined by
+ * time_begin and time_end contain the specified time.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param time    Time with which to update.
+ */
+inline void update_header_with_time(TLS* tls, uint64_t time)
+{
+    Assert(tls != NULL);
+
+    if (time < tls->header.time_begin)
+    {
+        tls->header.time_begin = time;
+    }
+    if (time >= tls->header.time_end)
+    {
+        tls->header.time_end = time + 1;
+    }
+}
+
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified address. Insures that the address range defined
+ * by addr_begin and addr_end contain the specified address.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param addr    Address with which to update.
+ */
+inline void update_header_with_address(TLS* tls, uint64_t addr)
+{
+    Assert(tls != NULL);
+
+    if (addr < tls->header.addr_begin)
+    {
+        tls->header.addr_begin = addr;
+    }
+    if (addr >= tls->header.addr_end)
+    {
+        tls->header.addr_end = addr + 1;
+    }
+}
+
+static void send_samples (TLS* tls)
+{
+    Assert(tls != NULL);
+
+    tls->header.id = strdup("usertime");
+    tls->header.time_end = CBTF_GetTime();
+
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr, "usertime send_samples:\n");
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] bt_len(%d) count_len(%d)\n",
+		tls->header.time_begin,tls->header.time_end,
+		tls->header.addr_begin,tls->header.addr_end,
+		tls->data.bt.bt_len,
+		tls->data.count.count_len);
+	}
+#endif
+
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_usertime_data, &(tls->data));
+
+    /* Re-initialize the data blob's header */
+    initialize_data(tls);
+}
+
+/**
  * Timer event handler.
  *
- * Called by the timer handler each time a sample is to be taken. Extracts a
- * stacktrace from the signal context and places it into the
- * sample buffer. When the sample buffer is full, it is sent.
+ * Called by the timer handler each time a sample is to be taken. 
+ * Extract the PC address for each frame in the current stack trace and store
+ * them into the sample buffer. For each address that represents the
+ * top of a unique stack update it's count in the count buffer.
+ * If a stack count reaches 255 in the count buffer, start a new stack
+ * entry in the sample buffer.
+ * When the sample buffer is full, it is sent to the framework
+ * for storage in the experiment's database.
  *
  * @note    
  * 
@@ -160,14 +230,26 @@ static void serviceTimerHandler(const ucontext_t* context)
 
     int framecount = 0;
     int stackindex = 0;
-    uint64_t framebuf[CBTF_ST_MAXFRAMES];
+    uint64_t framebuf[CBTF_USERTIME_MAXFRAMES];
 
     memset(framebuf,0, sizeof(framebuf));
 
     /* get stack address for current context and store them into framebuf. */
 
+#if defined(__linux) && defined(__x86_64)
+
+#if defined(USE_FASTTRACE)
+    CBTF_GetStackTrace(TRUE, 0,
+                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
+#else
     CBTF_GetStackTraceFromContext (context, TRUE, 0,
-                        CBTF_ST_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
+                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
+#endif
+
+#else
+    CBTF_GetStackTraceFromContext (context, TRUE, 0,
+                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
+#endif
 
     bool_t stack_already_exists = FALSE;
 
@@ -177,6 +259,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     {
 	/* a count > 0 indexes the top of stack in the data buffer. */
 	/* a count == 255 indicates this stack is at the count limit. */
+
 	if (tls->buffer.count[i] == 0) {
 	    continue;
 	}
@@ -208,8 +291,8 @@ static void serviceTimerHandler(const ucontext_t* context)
     }
 
     /* sample buffer has no room for these stack frames.*/
-    int buflen = tls->data.stacktraces.stacktraces_len + framecount;
-    if ( buflen > CBTF_ST_BufferSize) {
+    int buflen = tls->data.bt.bt_len + framecount;
+    if ( buflen > CBTF_USERTIME_BUFFERSIZE) {
 	/* send the current sample buffer. (will init a new buffer) */
 	send_samples(tls);
     }
@@ -218,7 +301,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     for (i = 0; i < framecount ; i++)
     {
 	/* always add address to buffer bt */
-	tls->buffer.bt[tls->data.stacktraces.stacktraces_len] = framebuf[i];
+	tls->buffer.bt[tls->data.bt.bt_len] = framebuf[i];
 
 	/* top of stack indicated by a positive count. */
 	/* all other elements are 0 */
@@ -228,13 +311,13 @@ static void serviceTimerHandler(const ucontext_t* context)
 	    tls->buffer.count[tls->data.count.count_len] = 1;
 	}
 
-	if (framebuf[i] < tls->buffer.addr_begin ) {
-	    tls->buffer.addr_begin = framebuf[i];
+	if (framebuf[i] < tls->header.addr_begin ) {
+	    tls->header.addr_begin = framebuf[i];
 	}
-	if (framebuf[i] > tls->buffer.addr_end ) {
-	    tls->buffer.addr_end = framebuf[i];
+	if (framebuf[i] > tls->header.addr_end ) {
+	    tls->header.addr_end = framebuf[i];
 	}
-	tls->data.stacktraces.stacktraces_len++;
+	tls->data.bt.bt_len++;
 	tls->data.count.count_len++;
     }
 }
@@ -271,6 +354,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     CBTF_usertime_start_sampling_args args;
     memset(&args, 0, sizeof(args));
     args.sampling_rate = 35;
+
 #if 0
     CBTF_DecodeParameters(arguments,
 			    (xdrproc_t)xdr_CBTF_usertime_start_sampling_args,
@@ -284,18 +368,10 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     tls->data.interval = 
 	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);
-    tls->data.stacktraces.stacktraces_val = tls->buffer.bt;
-    tls->data.count.count_val = tls->buffer.count;
 
-    /* Initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    memset(tls->buffer.bt, 0, sizeof(tls->buffer.bt));
-    memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
- 
-    /* Begin sampling */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
-    tls->header.time_begin = CBTF_GetTime();
+    initialize_data(tls);
+
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
 
@@ -338,6 +414,17 @@ void cbtf_collector_resume()
 }
 
 
+#ifdef USE_EXPLICIT_TLS
+void destroy_explicit_tls() {
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    /* Destroy our thread-local storage */
+    if (tls) {
+        free(tls);
+    }
+    CBTF_SetTLS(TLSKey, NULL);
+}
+#endif
+
 
 /**
  * Called by the CBTF collector service in order to stop data collection.
@@ -358,15 +445,14 @@ void cbtf_collector_stop()
     tls->header.time_end = CBTF_GetTime();
 
     /* Are there any unsent samples? */
-    if(tls->data.stacktraces.stacktraces_len > 0) {
+    if(tls->data.bt.bt_len > 0) {
 	/* Send these samples */
-	send_samples();
+	send_samples(tls);
     }
 
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS
-    free(tls);
-    CBTF_SetTLS(TLSKey, NULL);
+    destroy_explicit_tls();
 #endif
 }
 
@@ -390,16 +476,5 @@ void cbtf_offline_service_start_timer()
 void cbtf_offline_service_stop_timer()
 {
     CBTF_Timer(0, NULL);
-}
-#endif
-
-#ifdef USE_EXPLICIT_TLS
-void destroy_explicit_tls() {
-    TLS* tls = CBTF_GetTLS(TLSKey);
-    /* Destroy our thread-local storage */
-    if (tls) {
-        free(tls);
-    }
-    CBTF_SetTLS(TLSKey, NULL);
 }
 #endif

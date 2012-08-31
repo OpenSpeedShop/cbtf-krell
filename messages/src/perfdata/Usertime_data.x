@@ -30,7 +30,7 @@
 struct CBTF_usertime_data {
     uint64_t interval;    /**< Sampling interval in nanoseconds. */
 
-    uint64_t stacktraces<>;        /**< Stack traces. */
+    uint64_t bt<>;        /**< Stack traces. */
 
     uint8_t count<>;      /**< Count for stack trace. Entries with a positive */
 			  /**< count value represent the top of stack for a */

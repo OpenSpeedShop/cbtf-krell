@@ -108,9 +108,9 @@ bool is_debug_aggregator_events_enabled =
             CBTF_usertime_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_val = data.bt.bt_val;
 	    count_val = data.count.count_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    stacktraces_len = data.bt.bt_len;
 	    interval = data.interval;
 	} else {
 	    return;
@@ -291,8 +291,8 @@ private:
         CBTF_usertime_data *data = in.get();
 
 	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
+	stdata.aggregateAddressCounts(data->bt.bt_len,
+				data->bt.bt_val,
 				data->count.count_val,
 				abuffer);
 

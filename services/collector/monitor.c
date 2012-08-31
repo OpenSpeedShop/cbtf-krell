@@ -608,8 +608,12 @@ void cbtf_offline_record_dso(const char* dsoname,
      */ 
     CBTF_Protocol_LinkedObject objects;
 
-    objects.time_begin = CBTF_GetTime();
-    objects.time_end = -1ULL;
+    if (is_dlopen) {
+	objects.time_begin = CBTF_GetTime();
+    } else {
+	objects.time_begin = tls->time_started;
+    }
+    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
 
     CBTF_Protocol_FileName dsoFilename;
     dsoFilename.path = strdup(dsoname);

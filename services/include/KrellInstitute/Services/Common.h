@@ -33,6 +33,8 @@
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
+#include <rpc/rpc.h>
+
 
 #define CBTF_BlobSizeFactor 15
 

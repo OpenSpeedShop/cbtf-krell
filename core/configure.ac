@@ -490,6 +490,7 @@ AC_CONFIG_FILES([
     collectors/usertime/Makefile
     collectors/io/Makefile
     collectors/hwc/Makefile
+    collectors/hwctime/Makefile
     collectors/mem/Makefile
     components/Makefile
     scripts/Makefile

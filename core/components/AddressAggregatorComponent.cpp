@@ -42,6 +42,7 @@
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
 #include "KrellInstitute/Messages/Hwc_data.h"
+#include "KrellInstitute/Messages/Hwctime_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
 
@@ -108,9 +109,17 @@ bool is_debug_aggregator_events_enabled =
             CBTF_usertime_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
-	    stacktraces_val = data.bt.bt_val;
+	    stacktraces_val = data.stacktraces.stacktraces_val;
 	    count_val = data.count.count_val;
-	    stacktraces_len = data.bt.bt_len;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    interval = data.interval;
+	} else if (id == "hwctime") {
+            CBTF_hwctime_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    count_val = data.count.count_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
 	    interval = data.interval;
 	} else {
 	    return;
@@ -291,8 +300,8 @@ private:
         CBTF_usertime_data *data = in.get();
 
 	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->bt.bt_len,
-				data->bt.bt_val,
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
 				data->count.count_val,
 				abuffer);
 

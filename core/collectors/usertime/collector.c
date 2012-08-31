@@ -72,14 +72,18 @@ typedef struct {
     CBTF_DataHeader header;  /**< Header for following data blob. */
     CBTF_usertime_data data;        /**< Actual data blob. */
 
+#if 0
     /** Sample buffer. */
     struct {
         uint64_t bt[CBTF_USERTIME_BUFFERSIZE];    /**< Stack trace (PC) addresses. */
         uint8_t  count[CBTF_USERTIME_BUFFERSIZE]; /**< count value greater than 0 is top */
                                     /**< of stack. A count of 255 indicates */
                                     /**< another instance of this stack may */
-                                    /**< exist in buffer bt. */
+                                    /**< exist in buffer stacktraces. */
     } buffer;
+#else
+    CBTF_StackTraceData buffer;
+#endif
 
     bool_t defer_sampling;
 } TLS;
@@ -117,13 +121,13 @@ static void initialize_data(TLS* tls)
     tls->header.addr_end = 0;
     
     /* Re-initialize the actual data blob */
-    tls->data.bt.bt_val = tls->buffer.bt;
-    tls->data.bt.bt_len = 0;
+    tls->data.stacktraces.stacktraces_val = tls->buffer.stacktraces;
+    tls->data.stacktraces.stacktraces_len = 0;
     tls->data.count.count_val = tls->buffer.count;
     tls->data.count.count_len = 0;
 
     /* Re-initialize the sampling buffer */
-    memset(tls->buffer.bt, 0, sizeof(tls->buffer.bt));
+    memset(tls->buffer.stacktraces, 0, sizeof(tls->buffer.stacktraces));
     memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
 }
 
@@ -184,10 +188,10 @@ static void send_samples (TLS* tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "usertime send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] bt_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
-		tls->data.bt.bt_len,
+		tls->data.stacktraces.stacktraces_len,
 		tls->data.count.count_len);
 	}
 #endif
@@ -270,7 +274,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 	/* see if the stack addresses match */
 	for (j = 0; j < framecount ; j++ )
 	{
-	    if ( tls->buffer.bt[i+j] != framebuf[j] ) {
+	    if ( tls->buffer.stacktraces[i+j] != framebuf[j] ) {
 		   break;
 	    }
 	}
@@ -291,7 +295,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     }
 
     /* sample buffer has no room for these stack frames.*/
-    int buflen = tls->data.bt.bt_len + framecount;
+    int buflen = tls->data.stacktraces.stacktraces_len + framecount;
     if ( buflen > CBTF_USERTIME_BUFFERSIZE) {
 	/* send the current sample buffer. (will init a new buffer) */
 	send_samples(tls);
@@ -301,7 +305,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     for (i = 0; i < framecount ; i++)
     {
 	/* always add address to buffer bt */
-	tls->buffer.bt[tls->data.bt.bt_len] = framebuf[i];
+	tls->buffer.stacktraces[tls->data.stacktraces.stacktraces_len] = framebuf[i];
 
 	/* top of stack indicated by a positive count. */
 	/* all other elements are 0 */
@@ -317,7 +321,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 	if (framebuf[i] > tls->header.addr_end ) {
 	    tls->header.addr_end = framebuf[i];
 	}
-	tls->data.bt.bt_len++;
+	tls->data.stacktraces.stacktraces_len++;
 	tls->data.count.count_len++;
     }
 }
@@ -445,7 +449,7 @@ void cbtf_collector_stop()
     tls->header.time_end = CBTF_GetTime();
 
     /* Are there any unsent samples? */
-    if(tls->data.bt.bt_len > 0) {
+    if(tls->data.stacktraces.stacktraces_len > 0) {
 	/* Send these samples */
 	send_samples(tls);
     }

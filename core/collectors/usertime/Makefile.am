@@ -72,9 +72,9 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_FILEIO \
 	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
-	@MESSAGES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@
+	@MESSAGES_CPPFLAGS@
 
 libusertime_monitor_fileio_la_LDFLAGS = \
 	-static \
@@ -497,6 +497,7 @@ usertime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
+	-lcbtf-services-unwind \
 	-lcbtf-services-data \
 	-lpthread -lrt
 

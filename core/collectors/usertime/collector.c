@@ -72,18 +72,8 @@ typedef struct {
     CBTF_DataHeader header;  /**< Header for following data blob. */
     CBTF_usertime_data data;        /**< Actual data blob. */
 
-#if 0
     /** Sample buffer. */
-    struct {
-        uint64_t bt[CBTF_USERTIME_BUFFERSIZE];    /**< Stack trace (PC) addresses. */
-        uint8_t  count[CBTF_USERTIME_BUFFERSIZE]; /**< count value greater than 0 is top */
-                                    /**< of stack. A count of 255 indicates */
-                                    /**< another instance of this stack may */
-                                    /**< exist in buffer stacktraces. */
-    } buffer;
-#else
     CBTF_StackTraceData buffer;
-#endif
 
     bool_t defer_sampling;
 } TLS;
@@ -178,7 +168,12 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
     }
 }
 
-static void send_samples (TLS* tls)
+
+/**
+ * Send events.
+ *
+ */
+static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
 

@@ -32,13 +32,6 @@ staticpkglib_LTLIBRARIES =
 WRAPPER_SOURCES = wrappers.c
 
 if !BUILD_TARGETED
-
-if HAVE_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
-
-endif
-
 if HAVE_LIBMONITOR
 pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
 staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
@@ -62,8 +55,9 @@ io_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 io_collector_monitor_fileio_la_SOURCES = \
@@ -93,8 +87,9 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libio_monitor_fileio_la_SOURCES = \
@@ -125,12 +120,13 @@ io_collector_monitor_mrnet_la_LDFLAGS = \
 io_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 io_collector_monitor_mrnet_la_SOURCES = \
@@ -159,12 +155,13 @@ libio_monitor_mrnet_la_LDFLAGS = \
 libio_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libio_monitor_mrnet_la_SOURCES = \
@@ -196,13 +193,14 @@ io_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 io_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 io_collector_monitor_mrnet_mpi_la_SOURCES = \
@@ -232,12 +230,13 @@ libio_monitor_mrnet_mpi_la_LDFLAGS = \
 libio_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libio_monitor_mrnet_mpi_la_SOURCES = \
@@ -252,10 +251,6 @@ endif
 # endif for if not build targeted (below)
 endif
 
-if HAVE_TARGET_LIBMONITOR
-OFFLINE_SOURCES = \
-	monitor.c
-endif
 
 if HAVE_TARGET_LIBMONITOR
 if HAVE_TARGET_SHARED
@@ -269,8 +264,8 @@ io_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	@TARGET_LIBUNWIND_CPPFLAGS@
+	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
 io_collector_monitor_fileio_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
@@ -284,8 +279,8 @@ io_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lpthread -lrt
 
 io_collector_monitor_fileio_la_SOURCES = \
@@ -315,8 +310,9 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libio_monitor_fileio_la_SOURCES = \
@@ -348,8 +344,9 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libio_monitor_fileio_la_SOURCES = \
@@ -392,8 +389,8 @@ io_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lpthread -lrt
 
 io_collector_monitor_mrnet_la_SOURCES = \
@@ -426,8 +423,9 @@ libio_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libio_monitor_mrnet_la_SOURCES = \
@@ -463,8 +461,9 @@ libio_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libio_monitor_mrnet_la_SOURCES = \
@@ -543,8 +542,9 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libio_monitor_mrnet_mpi_la_SOURCES = \
@@ -580,8 +580,9 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libio_monitor_mrnet_mpi_la_SOURCES = \

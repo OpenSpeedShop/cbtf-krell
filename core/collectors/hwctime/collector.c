@@ -28,6 +28,10 @@
 #include "config.h"
 #endif
 
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Hwctime.h"
 #include "KrellInstitute/Messages/Hwctime_data.h"
@@ -358,52 +362,38 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
+    tls->defer_sampling=FALSE;
+
+    /* Decode the passed function arguments */
     CBTF_hwctime_start_sampling_args args;
     memset(&args, 0, sizeof(args));
+ 
 
     /* set defaults */ 
     int hwctime_papithreshold = THRESHOLD*2;
     char* hwctime_papi_event = "PAPI_TOT_CYC";
 
-    /* Initialize the actual data blob */
-    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
-    initialize_data(tls);
-    tls->header.time_begin = CBTF_GetTime();
-
-    /* Decode the passed function arguments */
-#if defined (CBTF_OFFLINE)
     char* hwctime_event_param = getenv("CBTF_HWCTIME_EVENT");
     if (hwctime_event_param != NULL) {
         hwctime_papi_event=hwctime_event_param;
-    } else {
-	hwctime_papi_event="PAPI_TOT_CYC";
     }
 
     const char* sampling_rate = getenv("CBTF_HWCTIME_THRESHOLD");
     if (sampling_rate != NULL) {
         hwctime_papithreshold=atoi(sampling_rate);
     }
-    args.collector = 1;
-    args.experiment = 0;
     tls->data.interval = hwctime_papithreshold;
-#else
-#if 0
-    CBTF_DecodeParameters(arguments,
-			    (xdrproc_t)xdr_CBTF_hwctime_start_sampling_args,
-			    &args);
-    hwctime_papithreshold = (uint64_t)(args.sampling_rate);
-    hwctime_papi_event = args.hwctime_event;
-    tls->data.interval = (uint64_t)(args.sampling_rate);
-#endif
-#endif
-    
+
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile("hwctime", "cbtf-data");
 #endif
 
-    /* Begin sampling */
+    /* Initialize the actual data blob */
+    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
+    initialize_data(tls);
     tls->header.time_begin = CBTF_GetTime();
 
+    /* Begin sampling */
     if(hwctime_papi_init_done == 0) {
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
@@ -484,7 +474,7 @@ void cbtf_collector_stop()
     Assert(tls != NULL);
 
     if (tls->EventSet == PAPI_NULL) {
-	/*fprintf(stderr,"hwc_stop_sampling RETURNS - NO EVENTSET!\n");*/
+	/*fprintf(stderr,"hwctime_stop_sampling RETURNS - NO EVENTSET!\n");*/
 	/* we are called before eny events are set in papi. just return */
         return;
     }

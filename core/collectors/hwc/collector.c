@@ -104,7 +104,7 @@ static void initialize_data(TLS* tls)
 
     /* Re-initialize the actual data blob */
     tls->data.pc.pc_len = 0;
-    tls->data.count.count_len = 0:
+    tls->data.count.count_len = 0;
 
     /* Re-initialize the sampling buffer */
     tls->buffer.addr_begin = ~0;

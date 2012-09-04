@@ -35,7 +35,17 @@
 #endif
 #include <rpc/rpc.h>
 
+#include <ucontext.h>
+
 
 #define CBTF_BlobSizeFactor 15
+
+
+uint64_t CBTF_GetAddressOfFunction(const void*);
+const char* CBTF_GetExecutablePath();
+uint64_t CBTF_GetPCFromContext(const ucontext_t*);
+void CBTF_SetPCInContext(uint64_t, ucontext_t*);
+int CBTF_GetInstrLength(uint64_t);
+uint64_t CBTF_GetTime();
 
 #endif

@@ -53,7 +53,7 @@ const char* const cbtf_collector_unique_id = "io";
 
 /** Number of overhead frames in each stack frame to be skipped. */
 #if defined(CBTF_SERVICE_USE_OFFLINE)
-const unsigned OverheadFrameCount = 2;
+const unsigned OverheadFrameCount = 1;
 #else
 #if defined(__linux) && defined(__ia64)
 const unsigned OverheadFrameCount = 2 /*3*/;
@@ -101,7 +101,7 @@ typedef struct {
     
     /** Nesting depth within the IO function wrappers. */
     unsigned nesting_depth;
-    int do_trace;
+    bool_t do_trace;
     bool_t defer_sampling;
 } TLS;
 
@@ -228,7 +228,7 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "io send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -296,7 +296,7 @@ void io_record_event(const CBTF_io_event* event, uint64_t function)
 #endif
     Assert(tls != NULL);
 
-    tls->do_trace = false;
+    tls->do_trace = FALSE;
 
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
@@ -427,7 +427,7 @@ fprintf(stderr,"Event Buffer is full, call send_samples\n");
 	send_samples(tls);
     }
 
-    tls->do_trace = true;
+    tls->do_trace = TRUE;
 }
 
 
@@ -491,6 +491,8 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     }
 #endif
 
+    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
+
     /* Initialize the actual data blob */
     initialize_data(tls);
 
@@ -499,7 +501,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
  
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    tls->do_trace = true;
+    tls->do_trace = TRUE;
 }
 
 
@@ -523,11 +525,13 @@ void cbtf_collector_stop()
 
     Assert(tls != NULL);
 
+    tls->header.time_end = CBTF_GetTime();
+
     /* Stop sampling */
     defer_trace(0);
 
     /* Are there any unsent samples? */
-    if(tls->data.events.events_len > 0) {
+    if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
 
@@ -555,7 +559,7 @@ bool_t io_do_trace(const char* traced_func)
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
-    if (tls->do_trace == 0) {
+    if (tls->do_trace == FALSE) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
 	return FALSE;
@@ -590,7 +594,7 @@ bool_t io_do_trace(const char* traced_func)
      * can be passed a list of traced functions for use with executeInPlaceOf.
      */
 
-    if (tls->do_trace == 0) {
+    if (tls->do_trace == FALSE) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
 	return FALSE;

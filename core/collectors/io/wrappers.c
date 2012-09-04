@@ -22,16 +22,23 @@
 #define __USE_GNU /* XXX for RTLD_NEXT on Linux */ 
 #endif /* !__USE_GNU */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "KrellInstitute/Messages/IO_data.h"
+#include "KrellInstitute/Services/Assert.h"
+#include "KrellInstitute/Services/Common.h"
+#include "KrellInstitute/Services/Time.h"
 
 #include <dlfcn.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 
-//extern void io_start_event(io_event*);
-//extern void io_record_event(const io_event*, uint64_t);
-//extern bool_t io_do_trace(const char*);
+extern void io_start_event(CBTF_io_event*);
+extern void io_record_event(const CBTF_io_event*, uint64_t);
+extern bool_t io_do_trace(const char*);
 
 /*
  * IO Wrapper Functions

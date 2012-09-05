@@ -505,6 +505,56 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 }
 
 
+/**
+ * Called by the CBTF collector service in order to pause data collection.
+ */
+void cbtf_collector_pause()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=TRUE;
+    tls->do_trace = FALSE;
+}
+
+
+
+/**
+ * Called by the CBTF collector service in order to resume data collection.
+ */
+void cbtf_collector_resume()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=FALSE;
+    tls->do_trace = TRUE;
+}
+
+
+#ifdef USE_EXPLICIT_TLS
+void destroy_explicit_tls() {
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    /* Destroy our thread-local storage */
+    if (tls) {
+        free(tls);
+    }
+    CBTF_SetTLS(TLSKey, NULL);
+}
+#endif
+
 
 /**
  * Stop tracing.

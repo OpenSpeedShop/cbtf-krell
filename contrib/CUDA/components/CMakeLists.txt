@@ -16,24 +16,21 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_library(CUDA SHARED
-    CUDAToIO.cpp
-    )
+add_library(CUDA SHARED CUDAToIO.cpp)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_BINARY_DIR}/messages/cuda
-    ${PROJECT_SOURCE_DIR}/messages/src/base
-    ${PROJECT_SOURCE_DIR}/messages/src/events
-    ${PROJECT_SOURCE_DIR}/messages/src/perfdata
-    ${PROJECT_SOURCE_DIR}/messages/src/symtab
-    ${CBTF_INCLUDE_DIRS}
+    ${PROJECT_BINARY_DIR}/messages
     ${Boost_INCLUDE_DIRS}
+    ${CBTF_INCLUDE_DIRS}
+    ${CBTF_MESSAGES_INCLUDE_DIRS}
     ${MRNet_INCLUDE_DIRS}
     )
 
 target_link_libraries(CUDA
+    cbtf-messages-cuda
     ${CBTF_LIBRARIES}
+    ${CBTF_MESSAGE_LIBRARIES}
     ${MRNet_LIBRARIES}
     )
 

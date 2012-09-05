@@ -18,35 +18,21 @@
 
 cmake_minimum_required(VERSION 2.8.0)
 
-project(CBTF-Tools)
+project(CBTF_CUDA_Collector)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/../framework)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/../../../framework
+    )
 
 find_package(CBTF REQUIRED)
+find_package(CBTF-Messages REQUIRED)
+find_package(CBTF-Services REQUIRED)
 find_package(CUPTI 2)
 find_package(MRNet 4.0.0)
 find_package(PAPI 3.0.0)
 find_package(Threads)
 
-find_path(CBTF_TOOLS_INCLUDE_DIR KrellInstitute/Core/Assert.hpp
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES include
-    )
-
-message(STATUS 
-    "CBTF non-CMake tools include directory: " ${CBTF_TOOLS_INCLUDE_DIR}
-    )
-
-find_path(CBTF_TOOLS_LIBRARY_DIR libcbtf-core.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
-    PATH_SUFFIXES lib lib64
-    )
-
-message(STATUS 
-    "CBTF non-CMake tools library directory: " ${CBTF_TOOLS_LIBRARY_DIR}
-    )
-
-add_subdirectory(core)
+add_subdirectory(collector)
+add_subdirectory(components)
 add_subdirectory(messages)
-add_subdirectory(services)

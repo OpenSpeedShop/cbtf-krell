@@ -26,17 +26,16 @@
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
 #include <KrellInstitute/CBTF/XDR.hpp>
-
-#include "Address.h"
-#include "Blob.h"
-#include "File.h"
-#include "Thread.h"
-#include "Time.h"
+#include <KrellInstitute/Messages/Address.h>
+#include <KrellInstitute/Messages/Blob.h>
+#include <KrellInstitute/Messages/File.h>
+#include <KrellInstitute/Messages/IO_data.h>
+#include <KrellInstitute/Messages/LinkedObjectEvents.h>
+#include <KrellInstitute/Messages/Symbol.h>
+#include <KrellInstitute/Messages/Thread.h>
+#include <KrellInstitute/Messages/Time.h>
 
 #include "CUDA_data.h"
-#include "IO_data.h"
-#include "LinkedObjectEvents.h"
-#include "Symbol.h"
 
 using namespace KrellInstitute::CBTF;
 

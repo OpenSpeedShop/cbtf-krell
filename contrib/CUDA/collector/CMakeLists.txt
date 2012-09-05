@@ -18,31 +18,29 @@
 
 set(SOURCES collector.c)
 
+add_library(cuda-collector-monitor-mrnet SHARED ${SOURCES})
+add_library(cuda-collector-monitor-mrnet-mpi SHARED ${SOURCES})
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_BINARY_DIR}/messages/cuda
-    ${PROJECT_SOURCE_DIR}/services/collector
-    ${CBTF_TOOLS_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}/messages
+    ${CBTF_INCLUDE_DIRS}
+    ${CBTF_MESSAGES_INCLUDE_DIRS}
     ${CUPTI_INCLUDE_DIRS}
     ${PAPI_INCLUDE_DIRS}
     )
 
-link_directories(${CBTF_TOOLS_LIBRARY_DIR})
-  
-add_library(cuda-collector-monitor-mrnet SHARED ${SOURCES})
-add_library(cuda-collector-monitor-mrnet-mpi SHARED ${SOURCES})
-
 target_link_libraries(cuda-collector-monitor-mrnet
-    cbtf-messages-cuda-shared
-    cbtf-services-collector-monitor-mrnet-shared
+    cbtf-messages-cuda
+    ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_SHARED_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
     ${PAPI_LIBRARIES}
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
-    cbtf-messages-cuda-shared
-    cbtf-services-collector-monitor-mrnet-mpi-shared
+    cbtf-messages-cuda
+    ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_MPI_SHARED_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
     ${PAPI_LIBRARIES}

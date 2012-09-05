@@ -16,7 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-set(SOURCES CUDA_data.h CUDA_data.c)
+add_library(cbtf-messages-cuda SHARED CUDA_data.h CUDA_data.c)
 
 add_custom_command(
     COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/CUDA_data.h
@@ -31,29 +31,15 @@ add_custom_command(
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CBTF_TOOLS_INCLUDE_DIR}
+    ${CBTF_INCLUDE_DIRS}
+    ${CBTF_MESSAGES_INCLUDE_DIRS}
     )
 
-add_library(cbtf-messages-cuda-static STATIC ${SOURCES})
-add_library(cbtf-messages-cuda-shared SHARED ${SOURCES})
-
-set_target_properties(cbtf-messages-cuda-static
-    PROPERTIES
-        OUTPUT_NAME cbtf-messages-cuda
-    )
-
-set_target_properties(cbtf-messages-cuda-shared
-    PROPERTIES
-        OUTPUT_NAME cbtf-messages-cuda
-        VERSION 0.0.0
-    )
+set_target_properties(cbtf-messages-cuda PROPERTIES VERSION 0.0.0)
 
 install(FILES CUDA_data.h DESTINATION include/KrellInstitute/Messages)
 
-install(
-    TARGETS
-        cbtf-messages-cuda-static
-        cbtf-messages-cuda-shared
+install(TARGETS cbtf-messages-cuda
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib${LIB_SUFFIX}
     ARCHIVE DESTINATION lib${LIB_SUFFIX}

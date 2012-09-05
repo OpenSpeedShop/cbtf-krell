@@ -41,116 +41,6 @@ bool SymtabAPISymbols::is_debug_symtabapi_symbols_detailed_enabled =
     (getenv("CBTF_DEBUG_SYMTABAPI_SYMBOLS_DETAILS") != NULL);
 #endif
 
-// get all function symbols and statements for this linked object.
-void
-SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
-			     SymbolTable& st)
-{
-
-    std::string objname = linkedobject.getPath();
-    AddressRange lrange = linkedobject.getAddressRange();
-
-// DEBUG
-#ifndef NDEBUG
-    if(is_debug_symtabapi_symbols_enabled) {
-	    std::cerr << "Processing linked object "
-	    << objname << " with address range " << lrange << std::endl;
-    }
-#endif
-
-    Symtab *symtab;
-    bool err = Symtab::openFile(symtab, objname);
-
-    KrellInstitute::Core::Address image_offset(symtab->imageOffset());
-    KrellInstitute::Core::Address image_length(symtab->imageLength());
-    AddressRange image_range(image_offset,image_offset+image_length);
-
-    KrellInstitute::Core::Address base(0);
-    if ( (image_range.getBegin() - lrange.getBegin()) < 0 ) {
-	base = lrange.getBegin();
-    }
-
-    std::vector <Symbol *>fsyms;
-
-    if(symtab && !symtab->getAllSymbolsByType(fsyms,Symbol::ST_FUNCTION)) {
-	std::cerr << "getAllSymbolsByType unable to get all Functions "
-	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
-	    << std::endl;
-    }
-
-    for(unsigned i = 0; i< fsyms.size();i++){
-	KrellInstitute::Core::Address begin(fsyms[i]->getAddr());
-
-	if (i + 1 != fsyms.size()) {
-	    KrellInstitute::Core::Address end(fsyms[i+1]->getAddr());
-// DEBUG
-#ifndef NDEBUG
-	    if(is_debug_symtabapi_symbols_enabled) {
-	        std::cerr << "ADDING FUNCTION " << fsyms[i]->getName()
-		<< " RANGE " << begin << "," << end << std::endl;
-	    }
-#endif
-	    st.addFunction(begin + base, end + base,fsyms[i]->getName());
-	}
-    }
-
-    std::vector <Module *>mods;
-    AddressRange module_range;
-    std::string module_name;
-    if(symtab && !symtab->getAllModules(mods)) {
-	std::cerr << "getAllModules unable to get all modules  "
-	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
-	    << std::endl;
-    } else {
-// DEBUG
-#ifndef NDEBUG
-	if(is_debug_symtabapi_symbols_enabled) {
-	    for(unsigned i = 0; i< mods.size();i++){
-	        module_range =
-		   AddressRange(mods[i]->addr(), mods[i]->addr() + symtab->imageLength());
-	        module_name = mods[i]->fullName();
-	        std::cerr << "getAllModules MNAME " << mods[i]->fullName()
-		    << " Range " << module_range << std::endl;
-	    }
-	}
-#endif
-    }
-
-// DEBUG
-#ifndef NDEBUG
-    if(is_debug_symtabapi_symbols_enabled) {
-
-        std::cerr << "symtabAPISymbols: image_offset " << image_offset
-	<< " image_length " << image_length
-	<< " image_range " << image_range << std::endl;
-
-	std::cerr << "USING BASE OFFSET " << base << std::endl;
-    }
-#endif
-
-
-    for(unsigned i = 0; i< mods.size();i++) {
-
-	LineInformation *lineInformation = mods[i]->getLineInformation();
-	if(lineInformation) {
-	    LineInformation::const_iterator iter = lineInformation->begin();
-	    for(;iter!=lineInformation->end();iter++) {
-		const std::pair<Offset, Offset> range = iter->first;
-		LineNoTuple line = iter->second;
-		KrellInstitute::Core::Address b(range.first);
-		KrellInstitute::Core::Address e(range.second);
-// DEBUG
-#ifndef NDEBUG
-		if(is_debug_symtabapi_symbols_enabled) {
-		    std::cerr << "ADDING STATEMENT " << b << ":" << e
-		    <<" " << line.first << ":" << line.second  << std::endl;
-		}
-#endif
-		st.addStatement(b,e,line.first,line.second,line.column);
-	    }
-	}
-    }
-}
 
 // get all function symbols and statements for this linked object
 // that match an address in the passed AddressBuffer.
@@ -206,7 +96,12 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
     }
 
     std::vector <Dyninst::SymtabAPI::Function *>fsyms;
-    std::vector <Function *>::iterator fsit;
+
+    // Make sure we get the full filename
+    if(symtab) {
+       symtab->setTruncateLinePaths(false);
+    }
+
 
     if(symtab && !symtab->getAllFunctions(fsyms)) {
 #ifndef NDEBUG
@@ -220,8 +115,8 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 
     }
 
-
     std::set<KrellInstitute::Core::Address> function_begin_addresses;
+    std::vector <Function *>::iterator fsit;
 
     for(fsit = fsyms.begin(); fsit != fsyms.end(); ++fsit) {
 	int sym_size = (*fsit)->getSize();
@@ -384,6 +279,117 @@ SymtabAPISymbols::getSymbols(const std::set<Address>& addresses,
 			     const LinkedObjectEntry& linkedobject,
 			     SymbolTableMap& stm)
 {
+}
+
+// get all function symbols and statements for this linked object.
+void
+SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
+			     SymbolTable& st)
+{
+
+    std::string objname = linkedobject.getPath();
+    AddressRange lrange = linkedobject.getAddressRange();
+
+// DEBUG
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_enabled) {
+	    std::cerr << "Processing linked object "
+	    << objname << " with address range " << lrange << std::endl;
+    }
+#endif
+
+    Symtab *symtab;
+    bool err = Symtab::openFile(symtab, objname);
+
+    KrellInstitute::Core::Address image_offset(symtab->imageOffset());
+    KrellInstitute::Core::Address image_length(symtab->imageLength());
+    AddressRange image_range(image_offset,image_offset+image_length);
+
+    KrellInstitute::Core::Address base(0);
+    if ( (image_range.getBegin() - lrange.getBegin()) < 0 ) {
+	base = lrange.getBegin();
+    }
+
+    std::vector <Symbol *>fsyms;
+
+    if(symtab && !symtab->getAllSymbolsByType(fsyms,Symbol::ST_FUNCTION)) {
+	std::cerr << "getAllSymbolsByType unable to get all Functions "
+	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
+	    << std::endl;
+    }
+
+    for(unsigned i = 0; i< fsyms.size();i++){
+	KrellInstitute::Core::Address begin(fsyms[i]->getAddr());
+
+	if (i + 1 != fsyms.size()) {
+	    KrellInstitute::Core::Address end(fsyms[i+1]->getAddr());
+// DEBUG
+#ifndef NDEBUG
+	    if(is_debug_symtabapi_symbols_enabled) {
+	        std::cerr << "ADDING FUNCTION " << fsyms[i]->getName()
+		<< " RANGE " << begin << "," << end << std::endl;
+	    }
+#endif
+	    st.addFunction(begin + base, end + base,fsyms[i]->getName());
+	}
+    }
+
+    std::vector <Module *>mods;
+    AddressRange module_range;
+    std::string module_name;
+    if(symtab && !symtab->getAllModules(mods)) {
+	std::cerr << "getAllModules unable to get all modules  "
+	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
+	    << std::endl;
+    } else {
+// DEBUG
+#ifndef NDEBUG
+	if(is_debug_symtabapi_symbols_enabled) {
+	    for(unsigned i = 0; i< mods.size();i++){
+	        module_range =
+		   AddressRange(mods[i]->addr(), mods[i]->addr() + symtab->imageLength());
+	        module_name = mods[i]->fullName();
+	        std::cerr << "getAllModules MNAME " << mods[i]->fullName()
+		    << " Range " << module_range << std::endl;
+	    }
+	}
+#endif
+    }
+
+// DEBUG
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_enabled) {
+
+        std::cerr << "symtabAPISymbols: image_offset " << image_offset
+	<< " image_length " << image_length
+	<< " image_range " << image_range << std::endl;
+
+	std::cerr << "USING BASE OFFSET " << base << std::endl;
+    }
+#endif
+
+
+    for(unsigned i = 0; i< mods.size();i++) {
+
+	LineInformation *lineInformation = mods[i]->getLineInformation();
+	if(lineInformation) {
+	    LineInformation::const_iterator iter = lineInformation->begin();
+	    for(;iter!=lineInformation->end();iter++) {
+		const std::pair<Offset, Offset> range = iter->first;
+		LineNoTuple line = iter->second;
+		KrellInstitute::Core::Address b(range.first);
+		KrellInstitute::Core::Address e(range.second);
+// DEBUG
+#ifndef NDEBUG
+		if(is_debug_symtabapi_symbols_enabled) {
+		    std::cerr << "ADDING STATEMENT " << b << ":" << e
+		    <<" " << line.first << ":" << line.second  << std::endl;
+		}
+#endif
+		st.addStatement(b,e,line.first,line.second,line.column);
+	    }
+	}
+    }
 }
 
 void

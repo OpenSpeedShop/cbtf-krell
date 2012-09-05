@@ -26,6 +26,9 @@
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
 #include <KrellInstitute/CBTF/XDR.hpp>
+
+//#include <KrellInstitute/Core/SymbolTable.hpp>
+
 #include <KrellInstitute/Messages/Address.h>
 #include <KrellInstitute/Messages/Blob.h>
 #include <KrellInstitute/Messages/File.h>

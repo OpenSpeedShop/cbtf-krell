@@ -16,30 +16,26 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_library(CUDA SHARED CUDAToIO.cpp)
+include(FindPackageHandleStandardArgs)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_BINARY_DIR}/messages
-    ${Boost_INCLUDE_DIRS}
-    ${CBTF_INCLUDE_DIRS}
-    ${CBTF_CORE_INCLUDE_DIRS}
-    ${CBTF_MESSAGES_INCLUDE_DIRS}
-    ${MRNet_INCLUDE_DIRS}
+find_library(CBTF_CORE_LIBRARY
+    NAMES libcbtf-core.so
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES lib lib64
     )
 
-target_link_libraries(CUDA
-    cbtf-messages-cuda
-    ${CBTF_LIBRARIES}
-    ${CBTF_CORE_LIBRARIES}
-    ${CBTF_MESSAGE_LIBRARIES}
-    ${MRNet_LIBRARIES}
+find_path(CBTF_CORE_INCLUDE_DIR
+    KrellInstitute/Core/Assert.hpp
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES include
     )
 
-set_target_properties(CUDA PROPERTIES PREFIX "")
-
-install(TARGETS CUDA
-    RUNTIME DESTINATION bin/KrellInstitute/Components
-    LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-    ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
+find_package_handle_standard_args(
+    CBTF-Core DEFAULT_MSG
+    CBTF_CORE_LIBRARY CBTF_CORE_INCLUDE_DIR
     )
+
+set(CBTF_CORE_LIBRARIES ${CBTF_CORE_LIBRARY})
+set(CBTF_CORE_INCLUDE_DIRS ${CBTF_CORE_INCLUDE_DIR})
+
+mark_as_advanced(CBTF_CORE_LIBRARY CBTF_CORE_INCLUDE_DIR)

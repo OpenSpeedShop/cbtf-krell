@@ -26,6 +26,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
     )
 
 find_package(CBTF REQUIRED)
+find_package(CBTF-Core REQUIRED)
 find_package(CBTF-Messages REQUIRED)
 find_package(CBTF-Services REQUIRED)
 find_package(CUPTI 2)

@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
 
-  <Type>io</Type>
+  <Type>hwctime</Type>
   <Version>1.0.0</Version>
 
 <!--
@@ -184,7 +184,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
 
-      <Type>io_Frontend</Type>
+      <Type>hwctime_Frontend</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -569,7 +569,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     </Depth>
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
-      <Type>io_Filter</Type>
+      <Type>hwctime_Filter</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -636,7 +636,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <!--
     Incoming performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For io, the xdr data blob is
+    and an actual xdr data blob.  For hwctime, the xdr data blob is
     the actual sample payload sent from a collection service. 
 -->
     <IncomingUpstream>
@@ -655,7 +655,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <!--
     Outgoing performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For io, the xdr data blob is
+    and an actual xdr data blob.  For hwctime, the xdr data blob is
     the actual sample payload sent from a collection service. 
     This stream essentially passes on the incoming blobs upstream
     where eventually a client can record them to a database if desired.

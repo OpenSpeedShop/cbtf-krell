@@ -18,9 +18,7 @@
 
 xmldir = $(datadir)/KrellInstitute/xml
 
-
 if !BUILD_TARGETED
-
 bin_PROGRAMS = collectionTool
 
 collectionTool_CXXFLAGS = \
@@ -53,46 +51,6 @@ collectionTool_LDADD = \
 
 collectionTool_SOURCES = \
 	collectionTool.cpp
-# else for not build targeted
-else
-
-if HAVE_TARGET_SHARED
-
-bin_PROGRAMS = collectionTool
-
-collectionTool_CXXFLAGS = \
-	-DLIBDIR="\"$(libdir)\"" \
-	-DXMLDIR="\"$(xmldir)\"" \
-	@TARGET_BOOST_CPPFLAGS@ \
-	@TARGET_CBTF_CPPFLAGS@ \
-	@TARGET_CBTF_MRNET_CPPFLAGS@ \
-	@TARGET_CBTF_XML_CPPFLAGS@ \
-	@TARGET_MRNET_CPPFLAGS@
-
-collectionTool_LDFLAGS = \
-	@TARGET_BOOST_LDFLAGS@ \
-	@TARGET_CBTF_LDFLAGS@ \
-	@TARGET_CBTF_MRNET_LDFLAGS@ \
-	@TARGET_LIBXERCES_C_LDFLAGS@ \
-	@TARGET_CBTF_XML_LDFLAGS@ \
-	@TARGET_MRNET_LDFLAGS@
-
-collectionTool_LDADD = \
-	@TARGET_MRNET_LIBS@ \
-	@TARGET_BOOST_PROGRAM_OPTIONS_LIB@ \
-	@TARGET_BOOST_SYSTEM_LIB@ \
-	@TARGET_BOOST_THREAD_LIB@ \
-	@TARGET_BOOST_FILESYSTEM_LIB@ \
-	@TARGET_CBTF_LIBS@ \
-	@TARGET_LIBXERCES_C@ \
-	@TARGET_CBTF_MRNET_LIBS@\
-	-lcbtf-core \
-	@TARGET_CBTF_XML_LIBS@
-
-collectionTool_SOURCES = \
-	collectionTool.cpp
-# endif for targeted shared
 endif
-# endif for targeted else
-endif
+
 

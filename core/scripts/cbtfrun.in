@@ -333,6 +333,21 @@ case "$collector" in
     fi
     ;;
 
+    hwctime)
+    if [ $use_mrnet == "true" ]
+    then
+        if [ $use_mpi == "true" ]
+	then
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	else
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	fi 
+    elif [ $use_fileio == "true" ]
+    then
+      export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+    fi
+    ;;
+
     cuda)
         if [ $use_mrnet == "true" ]
         then

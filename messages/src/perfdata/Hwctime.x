@@ -1,5 +1,7 @@
 /*******************************************************************************
-** Copyright (c) 2010 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
+** Copyright (c) 2007 William Hachfeld. All Rights Reserved.
+** Copyright (c) 2011-2012 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -18,34 +20,24 @@
 
 /** @file
  *
- * Declaration of the Common includes.
+ * Specification of the HwcTime collector's parameter blobs.
  *
  */
 
-#ifndef _CBTF_Runtime_Common_
-#define _CBTF_Runtime_Common_
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "Assert.h"
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-#include <rpc/rpc.h>
-
-#include <ucontext.h>
 
 
-#define CBTF_BlobSizeFactor 15
+/** Structure of the blob containing our parameters. */
+struct CBTF_hwctime_parameters {
+    unsigned sampling_rate;  /**< Threshold, Sampling rate in samples/second. */
+};
 
 
-uint64_t CBTF_GetAddressOfFunction(const void*);
-const char* CBTF_GetExecutablePath();
-uint64_t CBTF_GetPCFromContext(const ucontext_t*);
-void CBTF_SetPCInContext(uint64_t, ucontext_t*);
-int CBTF_GetInstrLength(uint64_t);
-uint64_t CBTF_GetTime();
+/** Structure of the blob containing hwctime_start_sampling()'s arguments. */
+struct CBTF_hwctime_start_sampling_args {
 
-#endif
+    unsigned sampling_rate;  /**< Threshold, Sampling rate in samples/second. */
+    
+    int experiment;  /**< Identifier of experiment to contain the data. */
+    int collector;   /**< Identifier of collector gathering data. */
+    
+};

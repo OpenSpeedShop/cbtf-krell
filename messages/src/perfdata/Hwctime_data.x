@@ -1,5 +1,7 @@
 /*******************************************************************************
-** Copyright (c) 2010 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
+** Copyright (c) 2007 William Hachfeld. All Rights Reserved.
+** Copyright (c) 2011-2012 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -18,34 +20,23 @@
 
 /** @file
  *
- * Declaration of the Common includes.
+ * Specification of the HwcTime data collector's blobs.
  *
  */
 
-#ifndef _CBTF_Runtime_Common_
-#define _CBTF_Runtime_Common_
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "Assert.h"
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-#include <rpc/rpc.h>
-
-#include <ucontext.h>
 
 
-#define CBTF_BlobSizeFactor 15
+/** Structure of the blob containing our performance data. */
+struct CBTF_hwctime_data {
+    uint64_t interval;    /**< Sampling interval in nanoseconds. */
 
+    uint64_t stacktraces<>;        /**< Stack traces. */
 
-uint64_t CBTF_GetAddressOfFunction(const void*);
-const char* CBTF_GetExecutablePath();
-uint64_t CBTF_GetPCFromContext(const ucontext_t*);
-void CBTF_SetPCInContext(uint64_t, ucontext_t*);
-int CBTF_GetInstrLength(uint64_t);
-uint64_t CBTF_GetTime();
-
-#endif
+    uint8_t count<>;      /**< Count for stack trace. Entries with a positive */
+			  /**< count value represent the top of stack for a */
+			  /**< specifc stack. If stack count exceeds 255 */
+			  /**< a new entry is made in the sample buffer. */
+			  /**< Positive entries the count buffer represent */
+			  /**< the index into the address buffer (bt) for a */
+			  /**< specifc stack */
+};

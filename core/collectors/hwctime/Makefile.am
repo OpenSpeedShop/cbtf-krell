@@ -1,4 +1,4 @@
-################################################################################
+##############################################################################
 # Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
@@ -16,40 +16,44 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+CFLAGS = -g -O0
+
 xmldir = $(datadir)/KrellInstitute/xml
 plugindir = $(libdir)/KrellInstitute/Components
 pkglibdir = $(libdir)/KrellInstitute/Collectors
 staticpkglibdir = $(libdir)/KrellInstitute/Collectors/static
 
-BUILT_FILES = io.xml
+BUILT_FILES = hwctime.xml
 
 nobase_dist_xml_DATA = \
-        io.xml
+        hwctime.xml
+
 
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
 
-WRAPPER_SOURCES = wrappers.c
-
 if !BUILD_TARGETED
+
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
-io_collector_monitor_fileio_la_CFLAGS = \
-	-D__USE_GNU \
+pkglib_LTLIBRARIES += hwctime-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-fileio.la
+
+hwctime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@ \
-	@LIBUNWIND_CPPFLAGS@
+	@LIBUNWIND_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@
 
-io_collector_monitor_fileio_la_LDFLAGS = \
+hwctime_collector_monitor_fileio_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_fileio_la_LIBADD = \
+hwctime_collector_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
@@ -60,28 +64,28 @@ io_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-io_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_fileio_la_SOURCES = \
+	collector.c
 
-libio_monitor_fileio_la_CFLAGS = \
+libhwctime_monitor_fileio_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
-	@MESSAGES_CPPFLAGS@
+	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@
 
-libio_monitor_fileio_la_LDFLAGS = \
+libhwctime_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_fileio_la_LIBADD = \
+libhwctime_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
@@ -92,32 +96,33 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libio_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_fileio_la_SOURCES = \
+	collector.c
 
 if HAVE_MRNET
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la
 
-io_collector_monitor_mrnet_la_CFLAGS = \
-	-D__USE_GNU \
+pkglib_LTLIBRARIES += hwctime-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-mrnet.la
+
+hwctime_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-io_collector_monitor_mrnet_la_LDFLAGS = \
+hwctime_collector_monitor_mrnet_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_mrnet_la_LIBADD = \
+hwctime_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	@MRNET_LWR_LIBS@ \
@@ -129,22 +134,22 @@ io_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-io_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_mrnet_la_SOURCES = \
+	collector.c
 
-libio_monitor_mrnet_la_CFLAGS = \
+libhwctime_monitor_mrnet_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_la_LDFLAGS = \
+libhwctime_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
@@ -152,7 +157,7 @@ libio_monitor_mrnet_la_LDFLAGS = \
 	@MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_la_LIBADD = \
+libhwctime_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	@MRNET_LWR_LIBS@ \
@@ -164,33 +169,33 @@ libio_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libio_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_la_SOURCES = \
+	collector.c
 
 
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += hwctime-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-mrnet-mpi.la
 
-io_collector_monitor_mrnet_mpi_la_CFLAGS = \
-	-D__USE_GNU \
+hwctime_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-io_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+hwctime_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_mrnet_mpi_la_LIBADD = \
+hwctime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	@MRNET_LWR_LIBS@ \
@@ -203,23 +208,23 @@ io_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-io_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_mrnet_mpi_la_SOURCES = \
+	collector.c
 
-libio_monitor_mrnet_mpi_la_CFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
@@ -227,7 +232,7 @@ libio_monitor_mrnet_mpi_la_LDFLAGS = \
 	@MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_mpi_la_LIBADD = \
+libhwctime_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	@MRNET_LWR_LIBS@ \
@@ -239,9 +244,8 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libio_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_mpi_la_SOURCES = \
+	collector.c
 
 # endif for HAVE_MRNET
 endif
@@ -251,29 +255,29 @@ endif
 # endif for if not build targeted (below)
 endif
 
-
 if HAVE_TARGET_LIBMONITOR
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
+pkglib_LTLIBRARIES += hwctime-collector-monitor-fileio.la
 endif
-staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
-io_collector_monitor_fileio_la_CFLAGS = \
-	-D__USE_GNU \
+hwctime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
-io_collector_monitor_fileio_la_LDFLAGS = \
+hwctime_collector_monitor_fileio_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_fileio_la_LIBADD = \
+hwctime_collector_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
@@ -283,28 +287,28 @@ io_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-timer \
 	-lpthread -lrt
 
-io_collector_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_fileio_la_SOURCES = \
+	collector.c
 
-libio_monitor_fileio_la_CFLAGS = \
+libhwctime_monitor_fileio_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_MESSAGES_CPPFLAGS@
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
-libio_monitor_fileio_la_LDFLAGS = \
+libhwctime_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_fileio_la_LIBADD = \
+libhwctime_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
@@ -315,30 +319,30 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libio_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_fileio_la_SOURCES = \
+	collector.c
 else
 
 if HAVE_TARGET_STATIC
-libio_monitor_fileio_la_CFLAGS = \
+libhwctime_monitor_fileio_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_MESSAGES_CPPFLAGS@
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
+	@TARGET_LIBMONITOR_CPPFLAGS@
 
-libio_monitor_fileio_la_LDFLAGS = \
+libhwctime_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_fileio_la_LIBADD = \
+libhwctime_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
@@ -349,9 +353,8 @@ libio_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libio_monitor_fileio_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_fileio_la_SOURCES = \
+	collector.c
 # endif TARGET_STATIC
 endif
 
@@ -360,32 +363,33 @@ endif
 
 if HAVE_TARGET_MRNET
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la
+pkglib_LTLIBRARIES += hwctime-collector-monitor-mrnet.la
 endif
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
-io_collector_monitor_mrnet_la_CFLAGS = \
-	-D__USE_GNU \
+hwctime_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-io_collector_monitor_mrnet_la_LDFLAGS = \
+hwctime_collector_monitor_mrnet_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_mrnet_la_LIBADD = \
+hwctime_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -393,22 +397,22 @@ io_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-timer \
 	-lpthread -lrt
 
-io_collector_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_mrnet_la_SOURCES = \
+	collector.c
 
-libio_monitor_mrnet_la_CFLAGS = \
+libhwctime_monitor_mrnet_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_la_LDFLAGS = \
+libhwctime_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
@@ -416,10 +420,10 @@ libio_monitor_mrnet_la_LDFLAGS = \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_la_LIBADD = \
+libhwctime_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -428,25 +432,24 @@ libio_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libio_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_la_SOURCES = \
+	collector.c
 else
-
+# not target shared case (else clause)
 if HAVE_TARGET_STATIC
-
-libio_monitor_mrnet_la_CFLAGS = \
+libhwctime_monitor_mrnet_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_la_LDFLAGS = \
+libhwctime_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
@@ -454,10 +457,10 @@ libio_monitor_mrnet_la_LDFLAGS = \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_la_LIBADD = \
+libhwctime_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -466,9 +469,8 @@ libio_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libio_monitor_mrnet_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_la_SOURCES = \
+	collector.c
 # endif TARGET_STATIC
 endif
 # endif for else for not TARGET_SHARED
@@ -476,58 +478,58 @@ endif
 
 
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += hwctime-collector-monitor-mrnet-mpi.la
 endif
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libhwctime-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED
-io_collector_monitor_mrnet_mpi_la_CFLAGS = \
-	-D__USE_GNU \
+hwctime_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-io_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+hwctime_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-io_collector_monitor_mrnet_mpi_la_LIBADD = \
+hwctime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
-	-lcbtf-services-unwind \
 	-lcbtf-services-data \
 	-lpthread -lrt
 
-io_collector_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+hwctime_collector_monitor_mrnet_mpi_la_SOURCES = \
+	collector.c
 
-libio_monitor_mrnet_mpi_la_CFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
@@ -535,10 +537,10 @@ libio_monitor_mrnet_mpi_la_LDFLAGS = \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_mpi_la_LIBADD = \
+libhwctime_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -547,25 +549,25 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libio_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_mpi_la_SOURCES = \
+	collector.c
 else
 
 if HAVE_TARGET_STATIC
-libio_monitor_mrnet_mpi_la_CFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
-	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libio_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwctime_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
@@ -573,10 +575,10 @@ libio_monitor_mrnet_mpi_la_LDFLAGS = \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libio_monitor_mrnet_mpi_la_LIBADD = \
+libhwctime_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
@@ -585,9 +587,8 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libio_monitor_mrnet_mpi_la_SOURCES = \
-	$(OFFLINE_SOURCES) \
-	collector.c $(WRAPPER_SOURCES)
+libhwctime_monitor_mrnet_mpi_la_SOURCES = \
+	collector.c
 # endif TARGET_STATIC
 endif
 # endif for else for not TARGET_SHARED
@@ -601,12 +602,12 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-io.xml: io.xml.in
+hwctime.xml: hwctime.xml.in
 
-	@rm -f io.xml
+	@rm -f hwctime.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/io.xml.in > io.xml
+		$(srcdir)/hwctime.xml.in > hwctime.xml
 
-EXTRA_DIST = io.xml.in
+EXTRA_DIST = hwctime.xml.in

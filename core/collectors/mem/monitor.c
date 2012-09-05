@@ -37,7 +37,7 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Monitor.h"
 #include "KrellInstitute/Services/Offline.h"
-#include "KrellInstitute/Services/Unwind.h"
+//#include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/Path.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "MemTraceableFunctions.h"

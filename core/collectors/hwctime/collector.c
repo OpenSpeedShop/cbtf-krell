@@ -20,7 +20,7 @@
 
 /** @file
  *
- * Declaration and definition of the UserTime collector's runtime.
+ * Declaration and definition of the HWCTime collector's runtime.
  *
  */
 
@@ -28,9 +28,13 @@
 #include "config.h"
 #endif
 
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "KrellInstitute/Messages/DataHeader.h"
-#include "KrellInstitute/Messages/Usertime.h"
-#include "KrellInstitute/Messages/Usertime_data.h"
+#include "KrellInstitute/Messages/Hwctime.h"
+#include "KrellInstitute/Messages/Hwctime_data.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -39,13 +43,14 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
+#include "KrellInstitute/Services/PapiAPI.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 
 /** String uniquely identifying this collector. */
-const char* const cbtf_collector_unique_id = "usertime";
+const char* const cbtf_collector_unique_id = "hwctime";
 
 #if UNW_TARGET_X86 || UNW_TARGET_X86_64
 # define STACK_SIZE     (128*1024)      /* On x86, SIGSTKSZ is too small */
@@ -70,21 +75,30 @@ const char* const cbtf_collector_unique_id = "usertime";
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_usertime_data data;        /**< Actual data blob. */
+    CBTF_hwctime_data data;        /**< Actual data blob. */
 
     /** Sample buffer. */
+    /**< buffer.stacktraces: Stack trace (PC) addresses. */
+    /**< buffer.count: count value greater than 0 is top */
+    /**< of stack. A count of 255 indicates */
+    /**< another instance of this stack may */
+    /**< exist in buffer stacktraces. */
     CBTF_StackTraceData buffer;
+
+    int EventSet;
 
     bool_t defer_sampling;
 } TLS;
 
-#if defined(USE_EXPLICIT_TLS)
+static int hwctime_papi_init_done = 0;
+
+#ifdef USE_EXPLICIT_TLS
 
 /**
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
-static const uint32_t TLSKey = 0x00001EF4;
+static const uint32_t TLSKey = 0x00001EF6;
 
 #else
 
@@ -168,21 +182,16 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
     }
 }
 
-
-/**
- * Send events.
- *
- */
-static void send_samples(TLS *tls)
+static void send_samples (TLS* tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup("usertime");
+    tls->header.id = strdup("hwctime");
     tls->header.time_end = CBTF_GetTime();
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "usertime send_samples:\n");
+	    fprintf(stderr, "hwctime send_samples:\n");
 	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
@@ -191,29 +200,30 @@ static void send_samples(TLS *tls)
 	}
 #endif
 
-    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_usertime_data, &(tls->data));
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_hwctime_data, &(tls->data));
 
     /* Re-initialize the data blob's header */
     initialize_data(tls);
 }
 
+static int total = 0;
+static int stacktotal = 0;
+
 /**
- * Timer event handler.
+ * PAPI event handler.
  *
- * Called by the timer handler each time a sample is to be taken. 
+ * Called by PAPI_overflow each time a sample is to be taken. 
  * Extract the PC address for each frame in the current stack trace and store
- * them into the sample buffer. For each address that represents the
- * top of a unique stack update it's count in the count buffer.
- * If a stack count reaches 255 in the count buffer, start a new stack
- * entry in the sample buffer.
+ * them into the sample buffer. Terminate each stack trace with a NULL address.
  * When the sample buffer is full, it is sent to the framework
  * for storage in the experiment's database.
  *
  * @note    
  * 
- * @param context    Thread context at timer interrupt.
+ * @param context    Thread context at papi overflow.
  */
-static void serviceTimerHandler(const ucontext_t* context)
+static void
+hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void* context)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -236,9 +246,15 @@ static void serviceTimerHandler(const ucontext_t* context)
     /* get stack address for current context and store them into framebuf. */
 
 #if defined(__linux) && defined(__x86_64)
+    /* The latest version of libunwind provides a fast trace
+     * backtrace function we now use. We need to manually
+     * skip signal frames when using that unwind function.
+     * For PAPI's handler we need to skip 6 frames of
+     * overhead.
+     */
 
 #if defined(USE_FASTTRACE)
-    CBTF_GetStackTrace(TRUE, 0,
+    CBTF_GetStackTrace(FALSE, 6,
                         CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
 #else
     CBTF_GetStackTraceFromContext (context, TRUE, 0,
@@ -330,9 +346,9 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 /**
  * Start sampling.
  *
- * Starts user time sampling for the thread executing this function.
- * Initializes the appropriate thread-local data structures and then enables the
- * sampling timer.
+ * Starts hardware counter (HWC) sampling for the thread executing this
+ * function. Initializes the appropriate thread-local data structures and
+ * then enables the sampling counter.
  *
  * @param arguments    Encoded function arguments.
  */
@@ -349,29 +365,48 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->defer_sampling=FALSE;
 
     /* Decode the passed function arguments */
-    // Need to handle the arguments...
-    CBTF_usertime_start_sampling_args args;
+    CBTF_hwctime_start_sampling_args args;
     memset(&args, 0, sizeof(args));
-    args.sampling_rate = 35;
+ 
 
-#if 0
-    CBTF_DecodeParameters(arguments,
-			    (xdrproc_t)xdr_CBTF_usertime_start_sampling_args,
-			    &args);
-#endif
-    
+    /* set defaults */ 
+    int hwctime_papithreshold = THRESHOLD*2;
+    char* hwctime_papi_event = "PAPI_TOT_CYC";
+
+    char* hwctime_event_param = getenv("CBTF_HWCTIME_EVENT");
+    if (hwctime_event_param != NULL) {
+        hwctime_papi_event=hwctime_event_param;
+    }
+
+    const char* sampling_rate = getenv("CBTF_HWCTIME_THRESHOLD");
+    if (sampling_rate != NULL) {
+        hwctime_papithreshold=atoi(sampling_rate);
+    }
+    tls->data.interval = hwctime_papithreshold;
+
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("usertime", "cbtf-data");
+    CBTF_SetSendToFile("hwctime", "cbtf-data");
 #endif
 
     /* Initialize the actual data blob */
-    tls->data.interval = 
-	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);
-
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
+    tls->header.time_begin = CBTF_GetTime();
 
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+    /* Begin sampling */
+    if(hwctime_papi_init_done == 0) {
+	CBTF_init_papi();
+	tls->EventSet = PAPI_NULL;
+	hwctime_papi_init_done = 1;
+    }
+
+    unsigned papi_event_code = get_papi_eventcode(hwctime_papi_event);
+
+    CBTF_Create_Eventset(&tls->EventSet);
+    CBTF_AddEvent(tls->EventSet, papi_event_code);
+    CBTF_Overflow(tls->EventSet, papi_event_code,
+		    hwctime_papithreshold, hwctimePAPIHandler);
+    CBTF_Start(tls->EventSet);
 }
 
 
@@ -438,8 +473,14 @@ void cbtf_collector_stop()
 #endif
     Assert(tls != NULL);
 
+    if (tls->EventSet == PAPI_NULL) {
+	/*fprintf(stderr,"hwctime_stop_sampling RETURNS - NO EVENTSET!\n");*/
+	/* we are called before eny events are set in papi. just return */
+        return;
+    }
+
     /* Stop sampling */
-    CBTF_Timer(0, NULL);
+    CBTF_Stop(tls->EventSet, NULL);
 
     tls->header.time_end = CBTF_GetTime();
 
@@ -466,14 +507,21 @@ void cbtf_offline_service_start_timer()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (tls == NULL)
+    if (hwctime_papi_init_done == 0 || tls == NULL)
 	return;
-
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
+    CBTF_Start(tls->EventSet);
 }
 
 void cbtf_offline_service_stop_timer()
 {
-    CBTF_Timer(0, NULL);
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (hwctime_papi_init_done == 0 || tls == NULL)
+	return;
+    CBTF_Stop(tls->EventSet, NULL);
 }
 #endif

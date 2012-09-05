@@ -228,6 +228,7 @@ if HAVE_TARGET_SHARED
 pcsamp_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
@@ -241,8 +242,6 @@ pcsamp_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_fileio_la_SOURCES = \
@@ -252,6 +251,7 @@ libpcsamp_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
@@ -266,8 +266,6 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 libpcsamp_monitor_fileio_la_SOURCES = \
@@ -279,6 +277,7 @@ libpcsamp_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
@@ -293,7 +292,6 @@ libpcsamp_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
@@ -332,8 +330,6 @@ pcsamp_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
-	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_la_SOURCES = \
@@ -433,7 +429,6 @@ pcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
 	-lcbtf-services-data \
-	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 pcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \

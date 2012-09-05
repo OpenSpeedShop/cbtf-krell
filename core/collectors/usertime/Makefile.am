@@ -1,4 +1,4 @@
-################################################################################
+##############################################################################
 # Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
@@ -41,6 +41,7 @@ staticpkglib_LTLIBRARIES += libusertime-monitor-fileio.la
 usertime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
@@ -69,10 +70,11 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
-	@MESSAGES_CPPFLAGS@ \
-	@LIBMONITOR_CPPFLAGS@
+	@MESSAGES_CPPFLAGS@
 
 libusertime_monitor_fileio_la_LDFLAGS = \
 	-static \
@@ -103,6 +105,7 @@ staticpkglib_LTLIBRARIES += libusertime-monitor-mrnet.la
 usertime_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
@@ -135,6 +138,7 @@ libusertime_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
@@ -172,6 +176,7 @@ usertime_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
@@ -206,6 +211,7 @@ libusertime_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@ \
@@ -253,6 +259,7 @@ if HAVE_TARGET_SHARED
 usertime_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
@@ -271,7 +278,6 @@ usertime_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
 usertime_collector_monitor_fileio_la_SOURCES = \
@@ -281,6 +287,7 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
@@ -313,6 +320,7 @@ libusertime_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
@@ -354,6 +362,7 @@ if HAVE_TARGET_SHARED
 usertime_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
@@ -376,7 +385,6 @@ usertime_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_la_SOURCES = \
@@ -386,6 +394,7 @@ libusertime_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
@@ -421,6 +430,7 @@ libusertime_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
@@ -465,6 +475,7 @@ usertime_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
@@ -486,9 +497,8 @@ usertime_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-timer \
-	-lcbtf-services-collector-monitor-mrnet-mpi \
+	-lcbtf-services-unwind \
 	-lcbtf-services-data \
-	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 usertime_collector_monitor_mrnet_mpi_la_SOURCES = \
@@ -499,6 +509,7 @@ libusertime_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
@@ -535,6 +546,7 @@ libusertime_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-DUSE_FASTTRACE \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \

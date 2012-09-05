@@ -35,6 +35,8 @@ BUILT_SOURCES = \
 	PCSamp_data.h PCSamp_data.c \
 	Hwc.h Hwc.c \
 	Hwc_data.h Hwc_data.c \
+	Hwctime.h Hwctime.c \
+	Hwctime_data.h Hwctime_data.c \
 	IO.h IO.c \
 	IO_data.h IO_data.c \
 	Mem.h Mem.c \
@@ -57,6 +59,7 @@ libcbtf_messages_perfdata_la_SOURCES = \
 	DataHeader.x \
 	PCSamp.x PCSamp_data.x \
 	Hwc.x Hwc_data.x \
+	Hwctime.x Hwctime_data.x \
 	IO.x IO_data.x \
 	Mem.x Mem_data.x \
 	Usertime.x Usertime_data.x \
@@ -132,6 +135,7 @@ xdr_headers = \
 	PCSamp.h PCSamp_data.h \
 	IO.h IO_data.h \
 	Hwc.h Hwc_data.h \
+	Hwctime.h Hwctime_data.h \
 	Mem.h Mem_data.h \
 	Usertime.h Usertime_data.h
 
@@ -162,6 +166,17 @@ Hwc_data.h Hwc_data.c : Hwc_data.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
 	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+Hwctime.h Hwctime.c : Hwctime.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+Hwctime_data.h Hwctime_data.c : Hwctime_data.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
 
 IO.h IO.c : IO.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)

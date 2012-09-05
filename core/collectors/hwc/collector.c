@@ -48,21 +48,8 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
-#define true 1
-#define false 0
-
-#if !defined (TRUE)
-#define TRUE true
-#endif
-
-#if !defined (FALSE)
-#define FALSE false
-#endif
-
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwc";
-
-static int hwc_papi_init_done = 0;
 
 
 /** Type defining the items stored in thread-local storage. */
@@ -77,6 +64,7 @@ typedef struct {
     bool defer_sampling;
 } TLS;
 
+static int hwc_papi_init_done = 0;
 
 #ifdef USE_EXPLICIT_TLS
 
@@ -93,15 +81,87 @@ static __thread TLS the_tls;
 
 #endif
 
-static void send_samples ()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
 
+/**
+ * Initialize the performance data header and blob contained within the given
+ * thread-local storage. This function <em>must</em> be called before any of
+ * the collection routines attempts to add a message.
+ *
+ * @param tls    Thread-local storage to be initialized.
+ */
+static void initialize_data(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    tls->header.time_begin = CBTF_GetTime();
+    tls->header.time_end = 0;
+    tls->header.addr_begin = ~0;
+    tls->header.addr_end = 0;
+    
+    /* Initialize the actual data blob */
+    tls->data.pc.pc_val = tls->buffer.pc;
+    tls->data.count.count_val = tls->buffer.count;
+
+    /* Re-initialize the actual data blob */
+    tls->data.pc.pc_len = 0;
+    tls->data.count.count_len = 0;
+
+    /* Re-initialize the sampling buffer */
+    tls->buffer.addr_begin = ~0;
+    tls->buffer.addr_end = 0;
+    tls->buffer.length = 0;
+    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
+}
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified time. Insures that the time interval defined by
+ * time_begin and time_end contain the specified time.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param time    Time with which to update.
+ */
+inline void update_header_with_time(TLS* tls, uint64_t time)
+{
+    Assert(tls != NULL);
+
+    if (time < tls->header.time_begin)
+    {
+        tls->header.time_begin = time;
+    }
+    if (time >= tls->header.time_end)
+    {
+        tls->header.time_end = time + 1;
+    }
+}
+
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified address. Insures that the address range defined
+ * by addr_begin and addr_end contain the specified address.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param addr    Address with which to update.
+ */
+inline void update_header_with_address(TLS* tls, uint64_t addr)
+{
+    Assert(tls != NULL);
+
+    if (addr < tls->header.addr_begin)
+    {
+        tls->header.addr_begin = addr;
+    }
+    if (addr >= tls->header.addr_end)
+    {
+        tls->header.addr_end = addr + 1;
+    }
+}
+
+static void send_samples (TLS* tls)
+{
     Assert(tls != NULL);
 
     tls->header.id = strdup("hwc");
@@ -123,20 +183,8 @@ static void send_samples ()
     cbtf_collector_send(&tls->header, (xdrproc_t)xdr_CBTF_hwc_data, &tls->data);
 
     /* Re-initialize the data blob's header */
-    tls->header.time_begin = tls->header.time_end;
-    tls->header.time_end = 0;
-    tls->header.addr_begin = ~0;
-    tls->header.addr_end = 0;
-
-    /* Re-initialize the actual data blob */
-    tls->data.pc.pc_len = 0;
-    tls->data.count.count_len = 0;
-
-    /* Re-initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    tls->buffer.length = 0;
-    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
+    //tls->header.time_begin = tls->header.time_end;
+    initialize_data(tls);
 }
 
 
@@ -171,7 +219,7 @@ hwcPAPIHandler(int EventSet, void* pc, long_long overflow_vector, void* context)
     if(CBTF_UpdatePCData((uint64_t)pc, &tls->buffer)) {
 
 	/* Send these samples */
-	send_samples();
+	send_samples(tls);
     }
 }
 
@@ -226,20 +274,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     CBTF_SetSendToFile("hwc", "cbtf-data");
 #endif
 
-    /* Initialize the actual data blob */
-    tls->data.pc.pc_val = tls->buffer.pc;
-    tls->data.count.count_val = tls->buffer.count;
-
-    /* Initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    tls->buffer.length = 0;
-    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
  
-    /* Begin sampling */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
+    initialize_data(tls);
     tls->header.time_begin = CBTF_GetTime();
 
+    /* Begin sampling */
     if(hwc_papi_init_done == 0) {
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
@@ -334,7 +374,7 @@ void cbtf_collector_stop()
 #endif
 
 	/* Send these samples */
-	send_samples();
+	send_samples(tls);
     }
 
     /* Destroy our thread-local storage */

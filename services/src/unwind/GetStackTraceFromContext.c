@@ -24,6 +24,7 @@
  */
 
 #include "KrellInstitute/Services/Assert.h"
+#include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Context.h"
 
 #include <stdbool.h>
@@ -60,7 +61,7 @@
  * @retval stacktrace           Stack trace obtained from the current context.
  */
 void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
-				     bool skip_signal_frames,
+				     bool_t skip_signal_frames,
 				     unsigned skip_frames,
 				     unsigned max_frames,
 				     unsigned* stacktrace_size,
@@ -77,26 +78,62 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
  * unwind through the signalhandler frames if skip_signal_frames
  * is TRUE. 
  */
-#if defined(__linux) && (defined(__i386) || defined(__x86_64))
+
+    //fprintf(stderr, "Entering CBTF_GetStackTraceFromContext\n");
+
+#if defined(TARGET_OS_BGP) 
+
+    if (signal_context != NULL) {
+       context = *signal_context;
+       skip_signal_frames = FALSE;
+       skip_frames = 0;
+    }
+    else {
+       Assert(unw_getcontext(&context) == 0);
+    }
+    //Work-around to a libunwind bug
+    context.uc_mcontext.regs->link = context.uc_mcontext.regs->nip;
+
+#elif defined(TARGET_OS_BGQ)
+
+    if (signal_context != NULL) {
+       context = *signal_context;
+       skip_signal_frames = FALSE;
+       skip_frames = 0;
+    }
+    else {
+       Assert(unw_getcontext(&context) == 0);
+    }
+
+#elif defined(__linux) && defined(__i386)
 
     if(signal_context != NULL) {
         memmove(&context, signal_context, sizeof(unw_context_t));
-        skip_signal_frames = false;
+        skip_signal_frames = FALSE;
     } else {
 	Assert(unw_getcontext(&context) == 0);
     }
 
+#elif defined(__linux) && defined(__x86_64)
+
+    if(signal_context != NULL) {
+        memmove(&context, signal_context, sizeof(unw_context_t));
+        skip_signal_frames = FALSE;
+    } else {
+	Assert(unw_getcontext(&context) == 0);
+    }
+ 
 #elif defined(__linux) && defined( __powerpc64__ )
 
     Assert(getcontext(&context) == 0);
     skip_frames = 5;
-    skip_signal_frames = false;
+    skip_signal_frames = FALSE;
 
 #elif defined(__linux) && defined( __powerpc__ )
 
     Assert(getcontext(&context) == 0);
     skip_frames = 5;
-    skip_signal_frames = false;
+    skip_signal_frames = FALSE;
 
 
 #elif defined(__linux) && defined(__ia64)
@@ -110,26 +147,56 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 
     /* Initialize the unwind cursor from the context */
     Assert(unw_init_local(&cursor, &context) == 0);
+
+#if defined(__linux) && defined(__ia64)
 	
-    /* unwind past signal frames if present */
-    if(skip_signal_frames) {
-	while (!unw_is_signal_frame (&cursor)) {
-	   if (unw_step (&cursor) < 0) {
-		fprintf(stderr,"No Signal Frames in this context.\n");
-	   }
-	}
-    }
-
     /* Iterate over each frame in the stack trace from this context */
-    while(1) {
+    while(TRUE) {
 
+	/* Are we still unwinding past skipped signal frames? */
+	if(skip_signal_frames) {
+	    
+	    /* Stop skipping signal frames after we've encountered one */
+	    retval = unw_is_signal_frame(&cursor);
+	    Assert(retval >= 0);
+	    if(retval > 0)		
+		skip_signal_frames = FALSE;
+	    
+	}
+	
 	/* Are we still unwinding past skipped additional frames? */
-	if(skip_frames > 0) {
+	else if(skip_frames > 0) {
 	    
 	    /* Decrement the number of fixed additional frames to be skipped */
 	    --skip_frames;
 	    
 	}
+#else
+
+    //fprintf(stderr, "BEFORE SKIP TESTS, skip_signal_frames=%d, skip_frames=%d\n", skip_signal_frames, skip_frames);
+
+    /* unwind past signal frames if present */
+    if(skip_signal_frames) {
+        while (!unw_is_signal_frame (&cursor)) {
+           //fprintf(stderr, "Skipping signal frame-------\n");
+           if (unw_step (&cursor) < 0) {
+                fprintf(stderr,"No Signal Frames in this context.\n");
+           }
+        }
+    }
+
+    /* Iterate over each frame in the stack trace from this context */
+    while(TRUE) {
+
+        /* Are we still unwinding past skipped additional frames? */
+        if(skip_frames > 0) {
+
+            /* Decrement the number of fixed additional frames to be skipped */
+            --skip_frames;
+
+        }
+
+#endif
 	
 	/* Stop unwinding if the stack trace buffer is full */
 	else if(index == max_frames)
@@ -159,11 +226,13 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 	    }
 #else
 	    stacktrace[index++] = (uint64_t)pc;	    
+            //fprintf(stderr, "pc stored into stacktrace[index++] = %lx\n", (uint64_t) pc);
 #endif
 	}
 	
 	/* Unwind to the next frame, stopping after the last frame */
 	retval = unw_step(&cursor);
+        //fprintf(stderr, "After unw_step, retval=%d\n", retval);
 	if(retval <= 0)
 	    break;
 	
@@ -171,4 +240,28 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
     
     /* Return the stack trace size to the caller */
     *stacktrace_size = index;
+    //fprintf(stderr, "Exiting CBTF_GetStackTraceFromContext index = %d\n", index);
+
 }
+
+#if defined(__linux) && defined(__x86_64)
+// use only for dynamic collection on x86_64
+void CBTF_GetStackTrace( bool_t skip_signal_frames,
+			   unsigned skip_frames,
+			   unsigned max_frames,
+			   unsigned* stacktrace_size,
+			   uint64_t* stacktrace)
+{
+    uint64_t framebuf[max_frames];
+    *stacktrace_size = unw_backtrace((void**)framebuf,max_frames);
+    if (skip_frames == 0 && skip_signal_frames)
+	skip_frames = 4; // CBTF has 4 frames of overhead
+
+    int i;
+    for (i = skip_frames; i < *stacktrace_size; i++) {
+	stacktrace[i-skip_frames] = framebuf[i];
+    }
+
+    *stacktrace_size -= skip_frames;
+}
+#endif

@@ -42,6 +42,7 @@
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
 #include "KrellInstitute/Messages/Hwc_data.h"
+#include "KrellInstitute/Messages/Hwctime_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
 
@@ -108,6 +109,14 @@ bool is_debug_aggregator_events_enabled =
             CBTF_usertime_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    count_val = data.count.count_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    interval = data.interval;
+	} else if (id == "hwctime") {
+            CBTF_hwctime_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
 	    stacktraces_val = data.stacktraces.stacktraces_val;
 	    count_val = data.count.count_val;
 	    stacktraces_len = data.stacktraces.stacktraces_len;
@@ -274,7 +283,7 @@ private:
     {
         CBTF_hwc_data *data = in.get();
 
-        std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
+        //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -412,7 +421,7 @@ private:
 	    << std::endl;
 	}
 #endif
-        if (handled_threads == threadnames.size() /*|| is_finished*/ ) {
+        if (handled_threads == threadnames.size()) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
  	        std::cerr << "AddressAggregator::addressBufferHandler "

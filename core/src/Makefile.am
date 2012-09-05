@@ -26,6 +26,7 @@ libcbtf_core_la_CXXFLAGS = \
 	@TARGET_LIBDWARF_CPPFLAGS@ \
 	@TARGET_DYNINST_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_la_LDFLAGS = \
@@ -33,6 +34,7 @@ libcbtf_core_la_LDFLAGS = \
 	@TARGET_LIBDWARF_LDFLAGS@ \
 	@TARGET_DYNINST_LDFLAGS@ \
 	@TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
 	-version-info 0:0:0
 
 
@@ -41,6 +43,7 @@ libcbtf_core_la_LIBADD = \
 	@TARGET_LIBDWARF_LIBS@ \
 	@TARGET_DYNINST_LIBS@ \
 	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
 else
 if HAVE_TARGET_STATIC
@@ -50,6 +53,7 @@ libcbtf_core_la_CXXFLAGS = \
 	@TARGET_LIBDWARF_CPPFLAGS@ \
 	@TARGET_DYNINST_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@ \
+	@TARGET_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_la_LDFLAGS = \
@@ -57,6 +61,7 @@ libcbtf_core_la_LDFLAGS = \
 	@TARGET_LIBDWARF_LDFLAGS@ \
 	@TARGET_DYNINST_LDFLAGS@ \
 	@TARGET_MESSAGES_LDFLAGS@ \
+	@TARGET_MRNET_LDFLAGS@ \
 	-version-info 0:0:0
 
 
@@ -65,6 +70,7 @@ libcbtf_core_la_LIBADD = \
 	@TARGET_LIBDWARF_LIBS@ \
 	@TARGET_DYNINST_LIBS@ \
 	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
 #endif for HAVE_TARGET_STATIC
 endif
@@ -78,6 +84,7 @@ libcbtf_core_la_CXXFLAGS = \
 	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_la_LDFLAGS = \
@@ -85,6 +92,7 @@ libcbtf_core_la_LDFLAGS = \
 	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	@MESSAGES_LDFLAGS@ \
+	@MRNET_LDFLAGS@ \
 	-version-info 0:0:0
 
 
@@ -93,6 +101,7 @@ libcbtf_core_la_LIBADD = \
 	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
+	@MRNET_LIBS@ \
 	@LIBLTDL@
 endif
 
@@ -101,6 +110,7 @@ libcbtf_core_la_SOURCES = \
 	AddressBuffer.cpp \
 	BFDSymbols.cpp \
 	Blob.cpp \
+	CBTFTopology.cpp \
 	Exception.cpp \
 	ExtentGroup.cpp \
 	LinkedObjectEntry.cpp \

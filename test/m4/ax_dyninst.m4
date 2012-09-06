@@ -82,8 +82,8 @@ AC_DEFUN([AX_DYNINST], [
     dyninst_saved_CPPFLAGS=$CPPFLAGS
     dyninst_saved_LDFLAGS=$LDFLAGS
 
-    CPPFLAGS="$CPPFLAGS $DYNINST_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $DYNINST_LDFLAGS $DYNINST_LIBS $BINUTILS_LDFLAGS -liberty $LIBDWARF_LDFLAGS $LIBDWARF_LIBS"
+    CPPFLAGS="$CPPFLAGS $DYNINST_CPPFLAGS $BOOST_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $DYNINST_LDFLAGS $DYNINST_LIBS $BINUTILS_LDFLAGS -liberty $LIBDWARF_LDFLAGS $LIBDWARF_LIBS $BOOST_LDFLAGS"
 
     AC_MSG_CHECKING([for Dyninst API library and headers])
 
@@ -126,8 +126,8 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
 
     AC_ARG_WITH(target-dyninst-version,
                 AC_HELP_STRING([--with-target-dyninst-version=VERS],
-                               [target dyninst version installation @<:@7.0.1@:>@]),
-                target_dyninst_vers=$withval, target_dyninst_vers="7.0.1")
+                               [target dyninst version installation @<:@8.0.0@:>@]),
+                target_dyninst_vers=$withval, target_dyninst_vers="8.0.0")
 
     AC_MSG_CHECKING([for Targetted dyninst support])
 

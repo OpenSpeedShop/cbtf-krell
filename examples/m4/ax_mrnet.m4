@@ -51,6 +51,31 @@ AC_DEFUN([AX_MRNET], [
 
     MRNET_DIR="$mrnet_dir"
 
+    if [ test -z "$SYSROOT_DIR" ]; then
+      # SYSROOT_DIR was not set
+      if [ test -d /usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
+        MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib/alps"
+        MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib64"
+        MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
+        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lxmlrpc-epi"
+        MRNET_LW_LIBS="$MRNET_LW_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LW_LIBS="$MRNET_LW_LIBS -lxmlrpc-epi"
+      fi
+    else
+      if [ test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
+        MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib/alps"
+        MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib64"
+        MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
+        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lxmlrpc-epi"
+        MRNET_LW_LIBS="$MRNET_LW_LIBS -lalps -lalpslli -lalpsutil"
+        MRNET_LW_LIBS="$MRNET_LW_LIBS -lxmlrpc-epi"
+      fi
+    fi
+
     AC_LANG_PUSH(C++)
     AC_REQUIRE_CPP
 
@@ -144,10 +169,6 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
        TARGET_MRNET_LWR_LIBS="$TARGET_MRNET_LWR_LIBS -lalpslli -lalpsutil"
        TARGET_MRNET_LW_LIBS="$TARGET_MRNET_LW_LIBS -lalpslli -lalpsutil"
     elif [ test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a ]; then
-       found_target_mrnet=1
-       TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
-       TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS"
-    elif [ test -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$alt_abi_libdir/libmrnet.a ]; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$alt_abi_libdir"
        TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS"

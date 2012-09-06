@@ -80,6 +80,7 @@ endif
 else
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
 	@BINUTILS_CPPFLAGS@ \
 	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \

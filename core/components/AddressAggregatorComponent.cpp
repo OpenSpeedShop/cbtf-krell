@@ -45,6 +45,7 @@
 #include "KrellInstitute/Messages/Hwctime_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
+#include "KrellInstitute/Messages/Mpi_data.h"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
@@ -148,6 +149,12 @@ bool is_debug_aggregator_events_enabled =
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
 	    stacktraces_val = data.stacktraces.stacktraces_val;
 	    stacktraces_len = data.stacktraces.stacktraces_len;
+	} else if (id == "mpi") {
+            CBTF_mpi_trace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
 	} else {
 	    return;
 	}
@@ -213,6 +220,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
             "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_mpi_trace_data> >(
+            "mpi", boost::bind(&AddressAggregator::mpiHandler, this, _1)
             );
 	declareInput<ThreadNameVec>(
             "threadnames", boost::bind(&AddressAggregator::threadnamesHandler, this, _1)
@@ -322,10 +332,23 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
-    /** Handler for the "io" input.*/
+    /** Handler for the "mem" input.*/
     void memHandler(const boost::shared_ptr<CBTF_mem_exttrace_data>& in)
     {
         CBTF_mem_exttrace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "mpi" input.*/
+    void mpiHandler(const boost::shared_ptr<CBTF_mpi_trace_data>& in)
+    {
+        CBTF_mpi_trace_data *data = in.get();
 
 	StacktraceData stdata;
 	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
@@ -376,7 +399,7 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem") {
+        } else if (collectorID == "io" || collectorID == "mem" || collectorID == "mpi") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
@@ -464,7 +487,7 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem") {
+        } else if (collectorID == "io" || collectorID == "mem" || collectorID == "mpi") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

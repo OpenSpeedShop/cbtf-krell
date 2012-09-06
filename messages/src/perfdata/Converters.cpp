@@ -29,6 +29,8 @@
 #include "IO.h"
 #include "Mem_data.h"
 #include "Mem.h"
+#include "Mpi_data.h"
+#include "Mpi.h"
 #include "Hwc_data.h"
 #include "Hwc.h"
 #include "Hwctime_data.h"
@@ -56,3 +58,7 @@ KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_exttrace_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_profile_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_parameters)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mem_start_sampling_args)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mpi_trace_data)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mpi_profile_data)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mpi_parameters)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_mpi_start_sampling_args)

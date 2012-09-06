@@ -67,7 +67,6 @@ elif test -f ${mvapich2_prefix}/${altmachlibdir}/libfmpich.so; then
   f_mvapich2_libs="${mvapich2_prefix}/${altmachlibdir}/libfmpich.so"
 fi
 
-mpi_plugin=
 output_dir=
 
 default_mpi_impl=@@cbtfdefaultmpi@@
@@ -80,27 +79,6 @@ else
     export CBTF_MPI_IMPLEMENTATION=$mpitouse
 fi
 
-
-for i in $*
-do
-    # test if argument is a file
-    if test -f "$i"
-    then
-	# test if the file is elf binary and has the symbol MPI_Init.
-	# may not be portable!
-	isexecutable=`file $i | grep ELF`
-	if [ -n "$isexecutable" ]
-	then
-	    ismpi=`nm $i | grep -i MPI_Init`
-	fi
-
-	if [ -n "$ismpi" ]
-	then
-            mpi_plugin="${cbtf_plugins}/mpi-${mpitouse}-rt-offline.so"
-	    break
-	fi
-    fi 
-done
 
 die()
 {
@@ -246,16 +224,19 @@ esac
 # 
 
 case "$collector" in
-    # The mpi tracing plugins already collect mpi rank information so
-    # we do not add the preload_file...
-    mpi|mpit|mpiotf )
-    mpicollector=${collector}-${mpitouse}
-    export LD_PRELOAD=${cbtf_plugins}/$mpicollector-rt-offline.so:${extra_mpi_libs}:${libmonitor}
-    ;;
-
-    mpi-*|mpit-*|mpiotf-*)
-    mpicollector=${collector}
-    export LD_PRELOAD=${cbtf_plugins}/$mpicollector-rt-offline.so:${extra_mpi_libs}:${libmonitor}
+    # mpi collection always uses mpi;)
+    mpi|mpit)
+    collector=${collector}-${mpitouse}
+    if [ $use_mrnet == "true" ]
+    then
+        if [ $use_mpi == "true" ]
+	then
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${extra_mpi_libs}:${libmonitor}
+	fi 
+    elif [ $use_fileio == "true" ]
+    then
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${extra_mpi_libs}:${libmonitor}
+    fi
     ;;
 
     pcsamp)

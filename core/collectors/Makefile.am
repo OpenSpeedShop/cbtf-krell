@@ -17,4 +17,4 @@
 ################################################################################
 
 
-SUBDIRS = pcsamp usertime io hwc hwctime mem
+SUBDIRS = pcsamp usertime io hwc hwctime mem mpi

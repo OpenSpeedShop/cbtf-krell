@@ -41,6 +41,8 @@ BUILT_SOURCES = \
 	IO_data.h IO_data.c \
 	Mem.h Mem.c \
 	Mem_data.h Mem_data.c \
+	Mpi.h Mpi.c \
+	Mpi_data.h Mpi_data.c \
 	Usertime.h Usertime.c \
 	Usertime_data.h Usertime_data.c
 
@@ -62,6 +64,7 @@ libcbtf_messages_perfdata_la_SOURCES = \
 	Hwctime.x Hwctime_data.x \
 	IO.x IO_data.x \
 	Mem.x Mem_data.x \
+	Mpi.x Mpi_data.x \
 	Usertime.x Usertime_data.x \
 	$(BUILT_SOURCES)
 
@@ -137,6 +140,7 @@ xdr_headers = \
 	Hwc.h Hwc_data.h \
 	Hwctime.h Hwctime_data.h \
 	Mem.h Mem_data.h \
+	Mpi.h Mpi_data.h \
 	Usertime.h Usertime_data.h
 
 SUFFIXES = .x
@@ -194,6 +198,16 @@ Mem.h Mem.c : Mem.x
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
 
 Mem_data.h Mem_data.c : Mem_data.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+Mpi.h Mpi.c : Mpi.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+Mpi_data.h Mpi_data.c : Mpi_data.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
 	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<

@@ -443,6 +443,7 @@ AX_CBTF_XML()
 AX_CBTF_MRNET()
 AX_LIBDWARF()
 AX_DYNINST()
+AX_PKG_MPI()
 
 
 AX_MESSAGES()
@@ -492,6 +493,7 @@ AC_CONFIG_FILES([
     collectors/hwc/Makefile
     collectors/hwctime/Makefile
     collectors/mem/Makefile
+    collectors/mpi/Makefile
     components/Makefile
     scripts/Makefile
     src/Makefile

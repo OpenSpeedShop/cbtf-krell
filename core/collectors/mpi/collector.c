@@ -222,7 +222,7 @@ static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup("mpi");
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
 
 #ifndef NDEBUG
@@ -466,7 +466,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("mpi", "cbtf-data");
+    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)

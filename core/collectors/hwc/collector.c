@@ -164,7 +164,7 @@ static void send_samples (TLS* tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup("hwc");
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
@@ -271,7 +271,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->data.interval = hwc_papithreshold;
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("hwc", "cbtf-data");
+    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
  

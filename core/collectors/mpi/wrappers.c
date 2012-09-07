@@ -59,7 +59,11 @@ int mpi_PMPI_Irecv
 		    int tag, MPI_Comm comm, MPI_Request* request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Irecv");
 
@@ -102,7 +106,11 @@ int mpi_PMPI_Recv
     MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Recv");
 
@@ -146,7 +154,11 @@ int mpi_PMPI_Recv_init
     MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Recv_init");
 
@@ -187,7 +199,11 @@ int mpi_PMPI_Iprobe
     MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Iprobe");
 
@@ -227,7 +243,11 @@ int mpi_PMPI_Probe
     MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Probe");
 
@@ -258,13 +278,13 @@ int mpi_PMPI_Probe
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Isend(
+int MPI_Isend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Isend(
+int __wrap_MPI_Isend
 #else
-int mpi_PMPI_Isend(
+int mpi_PMPI_Isend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest,
@@ -273,7 +293,11 @@ int mpi_PMPI_Isend(
     MPI_Request* request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Isend");
 
@@ -301,13 +325,13 @@ int mpi_PMPI_Isend(
  * MPI_Bsend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Bsend(
+int MPI_Bsend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Bsend(
+int __wrap_MPI_Bsend
 #else
-int mpi_PMPI_Bsend(
+int mpi_PMPI_Bsend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -315,7 +339,11 @@ int mpi_PMPI_Bsend(
     MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Bsend");
 
@@ -344,13 +372,13 @@ int mpi_PMPI_Bsend(
  * MPI_Bsend_init
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Bsend_init(
+int MPI_Bsend_init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Bsend_init(
+int __wrap_MPI_Bsend_init
 #else
-int mpi_PMPI_Bsend_init(
+int mpi_PMPI_Bsend_init
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -359,7 +387,11 @@ int mpi_PMPI_Bsend_init(
     MPI_Request* request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("Bsend_init");
 
@@ -387,13 +419,13 @@ int mpi_PMPI_Bsend_init(
  * MPI_Ibsend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Ibsend(
+int MPI_Ibsend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Ibsend(
+int __wrap_MPI_Ibsend
 #else
-int mpi_PMPI_Ibsend(
+int mpi_PMPI_Ibsend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -402,7 +434,11 @@ int mpi_PMPI_Ibsend(
     MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ibsend");
 
@@ -430,13 +466,13 @@ int mpi_PMPI_Ibsend(
  * MPI_Irsend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Irsend(    
+int MPI_Irsend    
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Irsend(    
+int __wrap_MPI_Irsend
 #else
-int mpi_PMPI_Irsend(    
+int mpi_PMPI_Irsend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -445,7 +481,11 @@ int mpi_PMPI_Irsend(
     MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Irsend");
 
@@ -473,13 +513,13 @@ int mpi_PMPI_Irsend(
  * MPI_Issend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Issend(
+int MPI_Issend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Issend(
+int __wrap_MPI_Issend
 #else
-int mpi_PMPI_Issend(
+int mpi_PMPI_Issend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -488,7 +528,11 @@ int mpi_PMPI_Issend(
     MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Issend");
 
@@ -516,13 +560,13 @@ int mpi_PMPI_Issend(
  * MPI_Rsend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Rsend(
+int MPI_Rsend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Rsend(
+int __wrap_MPI_Rsend
 #else
-int mpi_PMPI_Rsend(
+int mpi_PMPI_Rsend
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -530,7 +574,11 @@ int mpi_PMPI_Rsend(
     MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Rsend");
 
@@ -559,23 +607,26 @@ int mpi_PMPI_Rsend(
  * MPI_Rsend_init
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Rsend_init(
+int MPI_Rsend_init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Rsend_init(
+int __wrap_MPI_Rsend_init
 #else
-int mpi_PMPI_Rsend_init(
+int mpi_PMPI_Rsend_init
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
     int tag, 
     MPI_Comm comm,
-    MPI_Request* request 
-)
+    MPI_Request* request )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Rsend_init");
 
@@ -603,13 +654,13 @@ int mpi_PMPI_Rsend_init(
  * MPI_Send
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Send(
+int MPI_Send
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Send(
+int __wrap_MPI_Send
 #else
-int mpi_PMPI_Send(
+int mpi_PMPI_Send
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -617,7 +668,11 @@ int mpi_PMPI_Send(
     MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Send");
 
@@ -646,23 +701,26 @@ int mpi_PMPI_Send(
  * MPI_Send_init
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Send_init(
+int MPI_Send_init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Send_init(
+int __wrap_MPI_Send_init
 #else
-int mpi_PMPI_Send_init(
+int mpi_PMPI_Send_init
 #endif
-    void* buf, 
+    (void* buf, 
     int count, 
     MPI_Datatype datatype, 
     int dest, 
     int tag, 
     MPI_Comm comm,
-    MPI_Request* request
-)
+    MPI_Request* request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Send_init");
 
@@ -690,13 +748,13 @@ int mpi_PMPI_Send_init(
  * MPI_Ssend
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Ssend(
+int MPI_Ssend
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Ssend(
+int __wrap_MPI_Ssend
 #else
-int mpi_PMPI_Ssend(
+int mpi_PMPI_Ssend
 #endif
-    void* buf,
+    (void* buf,
     int count, 
     MPI_Datatype datatype, 
     int dest, 
@@ -704,7 +762,11 @@ int mpi_PMPI_Ssend(
     MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ssend");
 
@@ -733,23 +795,26 @@ int mpi_PMPI_Ssend(
  * MPI_Ssend_init
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Ssend_init(
+int MPI_Ssend_init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Ssend_init(
+int __wrap_MPI_Ssend_init
 #else
-int mpi_PMPI_Ssend_init(
+int mpi_PMPI_Ssend_init
 #endif
-    void* buf,
+    (void* buf,
     int count, 
     MPI_Datatype datatype, 
     int dest, 
     int tag, 
     MPI_Comm comm,
-    MPI_Request* request
-)
+    MPI_Request* request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ssend_init");
 
@@ -777,18 +842,22 @@ int mpi_PMPI_Ssend_init(
  * MPI_Waitall
  */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Waitall(
+int MPI_Waitall
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Waitall(
+int __wrap_MPI_Waitall
 #else
-int mpi_PMPI_Waitall(
+int mpi_PMPI_Waitall
 #endif
-    int count, 
+    (int count, 
     MPI_Request *array_of_requests, 
     MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitall");
 
@@ -825,7 +894,11 @@ int mpi_PMPI_Finalize()
 #endif
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Finalize");
 
@@ -858,21 +931,24 @@ int mpi_PMPI_Finalize()
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Waitsome(
+int MPI_Waitsome
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Waitsome(
+int __wrap_MPI_Waitsome
 #else
-int mpi_PMPI_Waitsome(
+int mpi_PMPI_Waitsome
 #endif
-    int incount, 
+    (int incount, 
     MPI_Request *array_of_requests, 
     int *outcount, 
     int *array_of_indices, 
-    MPI_Status *array_of_statuses
-    )
+    MPI_Status *array_of_statuses)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitsome");
 
@@ -906,21 +982,24 @@ int mpi_PMPI_Waitsome(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Testsome(
+int MPI_Testsome
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Testsome(
+int __wrap_MPI_Testsome
 #else
-int mpi_PMPI_Testsome(
+int mpi_PMPI_Testsome
 #endif
-    int incount, 
+    (int incount, 
     MPI_Request *array_of_requests, 
     int *outcount, 
     int *array_of_indices, 
-    MPI_Status *array_of_statuses
-    )
+    MPI_Status *array_of_statuses)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testsome");
 
@@ -951,20 +1030,23 @@ int mpi_PMPI_Testsome(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Waitany(
+int MPI_Waitany
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Waitany(
+int __wrap_MPI_Waitany
 #else
-int mpi_PMPI_Waitany(
+int mpi_PMPI_Waitany
 #endif
-    int count,   
+    (int count,   
     MPI_Request *array_of_requests, 
     int *index, 
-    MPI_Status *status
-    )
+    MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitany");
 
@@ -996,23 +1078,26 @@ int mpi_PMPI_Waitany(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Unpack(
+int MPI_Unpack
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Unpack(
+int __wrap_MPI_Unpack
 #else
-int mpi_PMPI_Unpack(
+int mpi_PMPI_Unpack
 #endif
-    void* inbuf, 
+    (void* inbuf, 
     int insize, 
     int *position, 
     void *outbuf, 
     int outcount, 
     MPI_Datatype datatype, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Unpack");
 
@@ -1042,18 +1127,21 @@ int mpi_PMPI_Unpack(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Wait(
+int MPI_Wait
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Wait(
+int __wrap_MPI_Wait
 #else
-int mpi_PMPI_Wait(
+int mpi_PMPI_Wait
 #endif
-    MPI_Request *request, 
-    MPI_Status *status
-    )
+    (MPI_Request *request, 
+    MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Wait");
 
@@ -1082,21 +1170,24 @@ int mpi_PMPI_Wait(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Testany(
+int MPI_Testany
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Testany(
+int __wrap_MPI_Testany
 #else
-int mpi_PMPI_Testany(
+int mpi_PMPI_Testany
 #endif
-    int count,
+    (int count,
     MPI_Request *array_of_requests,
     int *index,
     int *flag,
-    MPI_Status *status
-    )
+    MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testany");
 
@@ -1125,20 +1216,23 @@ int mpi_PMPI_Testany(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Testall(
+int MPI_Testall
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Testall(
+int __wrap_MPI_Testall
 #else
-int mpi_PMPI_Testall(
+int mpi_PMPI_Testall
 #endif
-    int count,
+    (int count,
     MPI_Request *array_of_requests, 
     int *flag, 
-    MPI_Status *status
-    )
+    MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testall");
 
@@ -1167,19 +1261,22 @@ int mpi_PMPI_Testall(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Test(
+int MPI_Test
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Test(
+int __wrap_MPI_Test
 #else
-int mpi_PMPI_Test(
+int mpi_PMPI_Test
 #endif
-    MPI_Request *request, 
+    (MPI_Request *request, 
     int *flag, 
-    MPI_Status *status
-    )
+    MPI_Status *status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Test");
 
@@ -1208,22 +1305,25 @@ int mpi_PMPI_Test(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Scan(
+int MPI_Scan
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Scan(
+int __wrap_MPI_Scan
 #else
-int mpi_PMPI_Scan(
+int mpi_PMPI_Scan
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     void* recvbuf, 
     int count, 
     MPI_Datatype datatype, 
     MPI_Op op, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scan");
 
@@ -1252,17 +1352,20 @@ int mpi_PMPI_Scan(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Request_free(
+int MPI_Request_free
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Request_free(
+int __wrap_MPI_Request_free
 #else
-int mpi_PMPI_Request_free(
+int mpi_PMPI_Request_free
 #endif
-    MPI_Request *request
-    )
+    (MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Request_free");
 
@@ -1294,22 +1397,25 @@ int mpi_PMPI_Request_free(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Reduce_scatter(
+int MPI_Reduce_scatter
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Reduce_scatter(
+int __wrap_MPI_Reduce_scatter
 #else
-int mpi_PMPI_Reduce_scatter(
+int mpi_PMPI_Reduce_scatter
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     void* recvbuf, 
     int *recvcounts, 
     MPI_Datatype datatype, 
     MPI_Op op, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Reduce_scatter");
 
@@ -1338,23 +1444,26 @@ int mpi_PMPI_Reduce_scatter(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Reduce(
+int MPI_Reduce
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Reduce(
+int __wrap_MPI_Reduce
 #else
-int mpi_PMPI_Reduce(
+int mpi_PMPI_Reduce
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     void* recvbuf, 
     int count, 
     MPI_Datatype datatype, 
     MPI_Op op, 
     int root, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Reduce");
 
@@ -1383,23 +1492,26 @@ int mpi_PMPI_Reduce(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Pack(
+int MPI_Pack
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Pack(
+int __wrap_MPI_Pack
 #else
-int mpi_PMPI_Pack(
+int mpi_PMPI_Pack
 #endif
-    void* inbuf, 
+    (void* inbuf, 
     int incount, 
     MPI_Datatype datatype, 
     void *outbuf, 
     int outsize, 
     int *position, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Pack");
 
@@ -1429,18 +1541,21 @@ int mpi_PMPI_Pack(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Init(
+int MPI_Init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Init(
+int __wrap_MPI_Init
 #else
-int mpi_PMPI_Init(
+int mpi_PMPI_Init
 #endif
-    int *argc, 
-    char ***argv
-    )
+    (int *argc, 
+    char ***argv)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Init");
 
@@ -1475,17 +1590,20 @@ int mpi_PMPI_Init(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Get_count(
+int MPI_Get_count
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Get_count(
+int __wrap_MPI_Get_count
 #else
-int mpi_PMPI_Get_count(
+int mpi_PMPI_Get_count
 #endif
-    MPI_Status *status, MPI_Datatype datatype, int *count
-    )
+    (MPI_Status *status, MPI_Datatype datatype, int *count)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Get_count");
 
@@ -1514,13 +1632,13 @@ int mpi_PMPI_Get_count(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Gatherv(
+int MPI_Gatherv
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Gatherv(
+int __wrap_MPI_Gatherv
 #else
-int mpi_PMPI_Gatherv(
+int mpi_PMPI_Gatherv
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int sendcount, 
     MPI_Datatype sendtype, 
     void* recvbuf, 
@@ -1528,11 +1646,14 @@ int mpi_PMPI_Gatherv(
     int *displs, 
     MPI_Datatype recvtype, 
     int root, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Gatherv");
 
@@ -1562,24 +1683,27 @@ int mpi_PMPI_Gatherv(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Gather(
+int MPI_Gather
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Gather(
+int __wrap_MPI_Gather
 #else
-int mpi_PMPI_Gather(
+int mpi_PMPI_Gather
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int sendcount, 
     MPI_Datatype sendtype, 
     void* recvbuf, 
     int recvcount, 
     MPI_Datatype recvtype, 
     int root, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Gather");
 
@@ -1610,17 +1734,20 @@ int mpi_PMPI_Gather(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Cancel(
+int MPI_Cancel
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Cancel(
+int __wrap_MPI_Cancel
 #else
-int mpi_PMPI_Cancel(
+int mpi_PMPI_Cancel
 #endif
-    MPI_Request *request
-    )
+    (MPI_Request *request)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Cancel");
 
@@ -1649,21 +1776,24 @@ int mpi_PMPI_Cancel(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Bcast(
+int MPI_Bcast
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Bcast(
+int __wrap_MPI_Bcast
 #else
-int mpi_PMPI_Bcast(
+int mpi_PMPI_Bcast
 #endif
-    void* buffer, 
+    (void* buffer, 
     int count, 
     MPI_Datatype datatype, 
     int root, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Bcast");
 
@@ -1692,17 +1822,20 @@ int mpi_PMPI_Bcast(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Barrier(
+int MPI_Barrier
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Barrier(
+int __wrap_MPI_Barrier
 #else
-int mpi_PMPI_Barrier(
+int mpi_PMPI_Barrier
 #endif
-    MPI_Comm comm
-    )
+    (MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Barrier");
 
@@ -1731,13 +1864,13 @@ int mpi_PMPI_Barrier(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Alltoallv(
+int MPI_Alltoallv
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Alltoallv(
+int __wrap_MPI_Alltoallv
 #else
-int mpi_PMPI_Alltoallv(
+int mpi_PMPI_Alltoallv
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int *sendcounts, 
     int *sdispls, 
     MPI_Datatype sendtype, 
@@ -1745,11 +1878,14 @@ int mpi_PMPI_Alltoallv(
     int *recvcounts, 
     int *rdispls, 
     MPI_Datatype recvtype, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Alltoallv");
 
@@ -1780,23 +1916,26 @@ int mpi_PMPI_Alltoallv(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Alltoall(
+int MPI_Alltoall
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Alltoall(
+int __wrap_MPI_Alltoall
 #else
-int mpi_PMPI_Alltoall(
+int mpi_PMPI_Alltoall
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int sendcount, 
     MPI_Datatype sendtype, 
     void* recvbuf, 
     int recvcount, 
     MPI_Datatype recvtype, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Alltoall");
 
@@ -1826,22 +1965,25 @@ int mpi_PMPI_Alltoall(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Allreduce(
+int MPI_Allreduce
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Allreduce(
+int __wrap_MPI_Allreduce
 #else
-int mpi_PMPI_Allreduce(
+int mpi_PMPI_Allreduce
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     void* recvbuf, 
     int count, 
     MPI_Datatype datatype, 
     MPI_Op op, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allreduce");
 
@@ -1870,24 +2012,27 @@ int mpi_PMPI_Allreduce(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Allgatherv(
+int MPI_Allgatherv
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Allgatherv(
+int __wrap_MPI_Allgatherv
 #else
-int mpi_PMPI_Allgatherv(
+int mpi_PMPI_Allgatherv
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int sendcount, 
     MPI_Datatype sendtype, 
     void* recvbuf, 
     int *recvcounts, 
     int *displs, 
     MPI_Datatype recvtype, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allgatherv");
 
@@ -1918,23 +2063,26 @@ int mpi_PMPI_Allgatherv(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Allgather(
+int MPI_Allgather
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Allgather(
+int __wrap_MPI_Allgather
 #else
-int mpi_PMPI_Allgather(
+int mpi_PMPI_Allgather
 #endif
-    void* sendbuf, 
+    (void* sendbuf, 
     int sendcount, 
     MPI_Datatype sendtype, 
     void* recvbuf, 
     int recvcount, 
     MPI_Datatype recvtype, 
-    MPI_Comm comm
-    )
+    MPI_Comm comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allgather");
 
@@ -1964,13 +2112,13 @@ int mpi_PMPI_Allgather(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-MPI_Scatter(
+int MPI_Scatter
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-__wrap_MPI_Scatter(
+int __wrap_MPI_Scatter
 #else
-mpi_PMPI_Scatter(
+int mpi_PMPI_Scatter
 #endif
-    	void*     	sendbuf, 
+    	(void*     	sendbuf, 
     	int 	    	sendcount, 
     	MPI_Datatype	sendtype, 
 
@@ -1982,7 +2130,11 @@ mpi_PMPI_Scatter(
     	MPI_Comm    	comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scatter");
 
@@ -2012,18 +2164,19 @@ mpi_PMPI_Scatter(
 
     return retval;
 }
+
 /*
  * MPI_Scatterv
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-MPI_Scatterv(
+int MPI_Scatterv
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-__wrap_MPI_Scatterv(
+int __wrap_MPI_Scatterv
 #else
-mpi_PMPI_Scatterv(
+int mpi_PMPI_Scatterv
 #endif
-    	void*     	sendbuf, 
+    	(void*     	sendbuf, 
     	int* 	    	sendcounts, 
 	int*	    	displs,
     	MPI_Datatype	sendtype, 
@@ -2036,7 +2189,11 @@ mpi_PMPI_Scatterv(
     	MPI_Comm    	comm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scatterv");
 
@@ -2072,15 +2229,14 @@ mpi_PMPI_Scatterv(
  * MPI_Sendrecv
  */
 
-int 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-MPI_Sendrecv(
+int MPI_Sendrecv
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-__wrap_MPI_Sendrecv(
+int __wrap_MPI_Sendrecv
 #else
-mpi_PMPI_Sendrecv(
+int mpi_PMPI_Sendrecv
 #endif
-    	void*     	sendbuf, 
+    	(void*     	sendbuf, 
     	int 	    	sendcount, 
     	MPI_Datatype	sendtype, 
     	int 	    	dest, 
@@ -2096,7 +2252,11 @@ mpi_PMPI_Sendrecv(
     	MPI_Status* status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Sendrecv");
 
@@ -2132,13 +2292,13 @@ mpi_PMPI_Sendrecv(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Sendrecv_replace(
+int MPI_Sendrecv_replace
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Sendrecv_replace(
+int __wrap_MPI_Sendrecv_replace
 #else
-int mpi_PMPI_Sendrecv_replace(
+int mpi_PMPI_Sendrecv_replace
 #endif
-    	void*     	buf, 
+    	(void*     	buf, 
     	int 	    	count, 
     	MPI_Datatype	datatype, 
     	int 	    	dest, 
@@ -2151,7 +2311,11 @@ int mpi_PMPI_Sendrecv_replace(
     	MPI_Status* 	status)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
     
     bool_t dotrace = mpi_do_trace("MPI_Sendrecv_replace");
 
@@ -2193,13 +2357,13 @@ int mpi_PMPI_Sendrecv_replace(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Cart_create(
+int MPI_Cart_create
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Cart_create(
+int __wrap_MPI_Cart_create
 #else
-int mpi_PMPI_Cart_create(
+int mpi_PMPI_Cart_create
 #endif
-		     MPI_Comm comm_old,
+		     (MPI_Comm comm_old,
                      int ndims,
                      int* dims,
                      int* periodv,
@@ -2208,7 +2372,11 @@ int mpi_PMPI_Cart_create(
 {
 
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Cart_create called, comm_old = %d \n", comm_old);
@@ -2238,19 +2406,23 @@ int mpi_PMPI_Cart_create(
 }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Cart_sub (
+int MPI_Cart_sub
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Cart_sub (
+int __wrap_MPI_Cart_sub
 #else
-int mpi_PMPI_Cart_sub (
+int mpi_PMPI_Cart_sub
 #endif
-		   MPI_Comm comm,
+		   (MPI_Comm comm,
                    int *rem_dims,
                    MPI_Comm *newcomm)
 {
 
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Cart_sub called, comm = %d \n", comm);
@@ -2282,13 +2454,13 @@ int mpi_PMPI_Cart_sub (
 
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Graph_create(
+int MPI_Graph_create
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Graph_create(
+int __wrap_MPI_Graph_create
 #else
-int mpi_PMPI_Graph_create(
+int mpi_PMPI_Graph_create
 #endif
-		      MPI_Comm comm_old,
+		      (MPI_Comm comm_old,
                       int nnodes,
                       int* index,
                       int* edges,
@@ -2296,7 +2468,11 @@ int mpi_PMPI_Graph_create(
                       MPI_Comm* comm_graph)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     bool_t dotrace = mpi_do_trace("MPI_Graph_create");
 
@@ -2326,13 +2502,13 @@ int mpi_PMPI_Graph_create(
 }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Intercomm_create (
+int MPI_Intercomm_create
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Intercomm_create (
+int __wrap_MPI_Intercomm_create
 #else
-int mpi_PMPI_Intercomm_create (
+int mpi_PMPI_Intercomm_create
 #endif
-			  MPI_Comm local_comm,
+			  (MPI_Comm local_comm,
                           int local_leader,
                           MPI_Comm peer_comm,
                           int remote_leader,
@@ -2341,7 +2517,11 @@ int mpi_PMPI_Intercomm_create (
 
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Intercomm_create called, local_comm = %d \n", local_comm);
@@ -2373,18 +2553,22 @@ int mpi_PMPI_Intercomm_create (
 }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Intercomm_merge (
+int MPI_Intercomm_merge
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Intercomm_merge (
+int __wrap_MPI_Intercomm_merge
 #else
-int mpi_PMPI_Intercomm_merge (
+int mpi_PMPI_Intercomm_merge
 #endif
-			 MPI_Comm intercomm,
+			 (MPI_Comm intercomm,
                          int high,
                          MPI_Comm *newcomm)
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Intercomm_merge called, intercomm = %d \n", intercomm);
@@ -2417,16 +2601,20 @@ int mpi_PMPI_Intercomm_merge (
 /* ------- Destructors ------- */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Comm_free(
+int MPI_Comm_free
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Comm_free(
+int __wrap_MPI_Comm_free
 #else
-int mpi_PMPI_Comm_free(
+int mpi_PMPI_Comm_free
 #endif
-			MPI_Comm* comm )
+			(MPI_Comm* comm )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Comm_free called, comm = %d \n", comm);
@@ -2466,17 +2654,21 @@ int mpi_PMPI_Comm_free(
 /* ------- Constructors ------- */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Comm_dup(
+int MPI_Comm_dup
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Comm_dup(
+int __wrap_MPI_Comm_dup
 #else
-int mpi_PMPI_Comm_dup(
+int mpi_PMPI_Comm_dup
 #endif
-			MPI_Comm comm,
+			(MPI_Comm comm,
                         MPI_Comm* newcomm )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Comm_dup called, comm = %d \n", comm);
@@ -2506,18 +2698,22 @@ int mpi_PMPI_Comm_dup(
 }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Comm_create(
+int MPI_Comm_create
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Comm_create(
+int __wrap_MPI_Comm_create
 #else
-int mpi_PMPI_Comm_create(
+int mpi_PMPI_Comm_create
 #endif
-		     MPI_Comm comm,
+		     (MPI_Comm comm,
                      MPI_Group group,
                      MPI_Comm* newcomm )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     bool_t dotrace = mpi_do_trace("MPI_Comm_create");
 
@@ -2547,19 +2743,23 @@ int mpi_PMPI_Comm_create(
 }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_Comm_split(
+int MPI_Comm_split
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Comm_split(
+int __wrap_MPI_Comm_split
 #else
-int mpi_PMPI_Comm_split(
+int mpi_PMPI_Comm_split
 #endif
-			  MPI_Comm comm,
+			  (MPI_Comm comm,
                           int color,
                           int key,
                           MPI_Comm* newcomm )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Comm_split called, comm = %d \n", comm);
@@ -2601,7 +2801,11 @@ int mpi_PMPI_Start
 		( MPI_Request* request )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Start called\n");
@@ -2643,7 +2847,11 @@ int mpi_PMPI_Startall
                         MPI_Request *array_of_requests )
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
     CBTF_mpi_event event;
+#endif
 
     if (debug_trace) {
         fprintf(stderr, "WRAPPER, mpi_PMPI_Startall called, count = %d \n", count);
@@ -2671,4 +2879,3 @@ int mpi_PMPI_Startall
 
     return retval;
 }
-

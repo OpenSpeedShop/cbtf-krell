@@ -222,7 +222,7 @@ static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup("io");
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
 
 #ifndef NDEBUG

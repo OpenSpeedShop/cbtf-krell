@@ -186,7 +186,7 @@ static void send_samples (TLS* tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup("hwctime");
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
 
 #ifndef NDEBUG
@@ -385,7 +385,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->data.interval = hwctime_papithreshold;
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("hwctime", "cbtf-data");
+    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
     /* Initialize the actual data blob */

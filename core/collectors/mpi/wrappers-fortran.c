@@ -27,6 +27,7 @@
  *
  */
 
+#include <stdlib.h>
 #include <mpi.h>
 
 #if defined (SGI_MPT)
@@ -857,7 +858,10 @@ void __wrap_mpi_unpack
     MPI_Fint* comm,
     MPI_Fint* ierr)
 {
-  *ierr = MPI_Unpack(inbuf,*insize,*position,outbuf,*outcount,
+/*FIXME*/
+  //*ierr = MPI_Unpack(inbuf,*insize,*position,outbuf,*outcount,
+//			*datatype,MPI_Comm_f2c(*comm));
+  *ierr = MPI_Unpack(inbuf,*insize, position,outbuf,*outcount,
 			*datatype,MPI_Comm_f2c(*comm));
 }
 OSS_WRAP_FORTRAN(MPI_UNPACK,mpi_unpack,__wrap_mpi_unpack,
@@ -1160,8 +1164,11 @@ void __wrap_mpi_pack
     MPI_Fint* comm,
     MPI_Fint* ierr)
 {
+/*FIXME*/
+  //*ierr = MPI_Pack(inbuf,*incount, MPI_Type_f2c(*datatype),outbuf,
+//		   *outsize,*position, MPI_Comm_f2c(*comm));
   *ierr = MPI_Pack(inbuf,*incount, MPI_Type_f2c(*datatype),outbuf,
-		   *outsize,*position, MPI_Comm_f2c(*comm));
+		   *outsize, position, MPI_Comm_f2c(*comm));
 }
 OSS_WRAP_FORTRAN(MPI_PACK,mpi_pack,__wrap_mpi_pack,
    (char* inbuf, 
@@ -1206,7 +1213,9 @@ int __wrap_mpi_get_count
     MPI_Fint *ierr)
 {
   MPI_Status c_status;
-  *ierr = MPI_Get_count(&c_status,MPI_Type_f2c(*datatype),*count);
+/*FIXME*/
+  //*ierr = MPI_Get_count(&c_status,MPI_Type_f2c(*datatype),*count);
+  *ierr = MPI_Get_count(&c_status,MPI_Type_f2c(*datatype),count);
   if (*ierr == MPI_SUCCESS) MPI_Status_c2f(&c_status, status);
 }
 OSS_WRAP_FORTRAN(MPI_GET_COUNT,mpi_get_count,__wrap_mpi_get_count,
@@ -1375,7 +1384,7 @@ void __wrap_mpi_alltoallv
     MPI_Fint* ierr)
 {
   *ierr = MPI_Alltoallv(sendbuf, sendcounts, sdispls, MPI_Type_f2c(*sendtype),
-                        recvbuf, recvcounts, rdispls, MPI_Type_f2c(*recvtype),
+                        recvbuf, *recvcounts, *rdispls, MPI_Type_f2c(*recvtype),
                         MPI_Comm_f2c(*comm));
 }
 OSS_WRAP_FORTRAN(MPI_ALLTOALLV,mpi_alltoallv,__wrap_mpi_alltoallv,

@@ -155,6 +155,12 @@ bool is_debug_aggregator_events_enabled =
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
 	    stacktraces_val = data.stacktraces.stacktraces_val;
 	    stacktraces_len = data.stacktraces.stacktraces_len;
+	} else if (id == "mpit") {
+            CBTF_mpi_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
 	} else {
 	    return;
 	}
@@ -223,6 +229,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_mpi_trace_data> >(
             "mpi", boost::bind(&AddressAggregator::mpiHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_mpi_exttrace_data> >(
+            "mpit", boost::bind(&AddressAggregator::mpitHandler, this, _1)
             );
 	declareInput<ThreadNameVec>(
             "threadnames", boost::bind(&AddressAggregator::threadnamesHandler, this, _1)
@@ -358,6 +367,19 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
+    /** Handler for the "mpit" input.*/
+    void mpitHandler(const boost::shared_ptr<CBTF_mpi_exttrace_data>& in)
+    {
+        CBTF_mpi_exttrace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
     /** Handler for the "CBTF_Protocol_Blob" input.*/
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
@@ -399,7 +421,8 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem" || collectorID == "mpi") {
+        } else if (collectorID == "io" || collectorID == "mem" ||
+		   collectorID == "mpi" || collectorID == "mpit") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
@@ -487,7 +510,8 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem" || collectorID == "mpi") {
+        } else if (collectorID == "io" || collectorID == "mem" ||
+		   collectorID == "mpi" || collectorID == "mpit") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

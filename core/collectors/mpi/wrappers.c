@@ -61,6 +61,7 @@ int mpi_PMPI_Irecv
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -79,6 +80,23 @@ int mpi_PMPI_Irecv
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+#endif
+
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Irecv));
 
@@ -108,6 +126,7 @@ int mpi_PMPI_Recv
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -126,6 +145,21 @@ int mpi_PMPI_Recv
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Recv));
 
@@ -156,6 +190,7 @@ int mpi_PMPI_Recv_init
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -174,6 +209,21 @@ int mpi_PMPI_Recv_init
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Recv_init));
 
@@ -220,6 +270,20 @@ int mpi_PMPI_Iprobe
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.datatype = 0;
+    event.size = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iprobe));
 
     }
@@ -264,6 +328,20 @@ int mpi_PMPI_Probe
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.datatype = 0;
+    event.size = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Probe));
 
     }
@@ -295,6 +373,7 @@ int mpi_PMPI_Isend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -313,6 +392,18 @@ int mpi_PMPI_Isend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    event.destination = dest;
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Isend));
 
@@ -341,6 +432,7 @@ int mpi_PMPI_Bsend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -359,6 +451,18 @@ int mpi_PMPI_Bsend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Bsend));
 
@@ -389,6 +493,7 @@ int mpi_PMPI_Bsend_init
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -407,6 +512,18 @@ int mpi_PMPI_Bsend_init
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Bsend_init));
 
@@ -436,6 +553,7 @@ int mpi_PMPI_Ibsend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -454,6 +572,18 @@ int mpi_PMPI_Ibsend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ibsend));
 
@@ -483,6 +613,7 @@ int mpi_PMPI_Irsend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -501,6 +632,18 @@ int mpi_PMPI_Irsend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Irsend));
 
@@ -530,6 +673,7 @@ int mpi_PMPI_Issend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -548,6 +692,18 @@ int mpi_PMPI_Issend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Issend));
 
@@ -576,6 +732,7 @@ int mpi_PMPI_Rsend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -594,6 +751,18 @@ int mpi_PMPI_Rsend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Rsend));
 
@@ -624,6 +793,7 @@ int mpi_PMPI_Rsend_init
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -642,6 +812,18 @@ int mpi_PMPI_Rsend_init
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Rsend_init));
 
@@ -670,6 +852,7 @@ int mpi_PMPI_Send
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -688,6 +871,18 @@ int mpi_PMPI_Send
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Send));
 
@@ -718,6 +913,7 @@ int mpi_PMPI_Send_init
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -736,6 +932,18 @@ int mpi_PMPI_Send_init
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Send_init));
 
@@ -764,6 +972,7 @@ int mpi_PMPI_Ssend
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -782,6 +991,18 @@ int mpi_PMPI_Ssend
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ssend));
 
@@ -812,6 +1033,7 @@ int mpi_PMPI_Ssend_init
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -830,6 +1052,18 @@ int mpi_PMPI_Ssend_init
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.tag = tag;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ssend_init));
 
@@ -874,6 +1108,19 @@ int mpi_PMPI_Waitall
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Waitall));
 
     }
@@ -906,6 +1153,10 @@ int mpi_PMPI_Finalize()
 
     mpi_start_event(&event);
 
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+#endif
+
     event.start_time = CBTF_GetTime();
 
     }
@@ -915,6 +1166,18 @@ int mpi_PMPI_Finalize()
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.source = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Finalize));
 
@@ -967,6 +1230,19 @@ int mpi_PMPI_Waitsome
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Waitsome));
 
     }
@@ -1018,6 +1294,19 @@ int mpi_PMPI_Testsome
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Testsome));
 
     }
@@ -1063,6 +1352,19 @@ int mpi_PMPI_Waitany
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Waitany));
 
     }
@@ -1095,6 +1397,7 @@ int mpi_PMPI_Unpack
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1114,6 +1417,20 @@ int mpi_PMPI_Unpack
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = outcount * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.communicator = -1;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Unpack));
 
@@ -1157,6 +1474,19 @@ int mpi_PMPI_Wait
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Wait));
 
@@ -1204,6 +1534,19 @@ int mpi_PMPI_Testany
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Testany));
 
     }
@@ -1249,6 +1592,19 @@ int mpi_PMPI_Testall
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Testall));
 
     }
@@ -1293,6 +1649,19 @@ int mpi_PMPI_Test
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Test));
 
     }
@@ -1321,6 +1690,7 @@ int mpi_PMPI_Scan
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1339,6 +1709,20 @@ int mpi_PMPI_Scan
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Scan));
 
@@ -1382,6 +1766,19 @@ int mpi_PMPI_Request_free
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Request_free));
 
     }
@@ -1413,6 +1810,7 @@ int mpi_PMPI_Reduce_scatter
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1431,6 +1829,20 @@ int mpi_PMPI_Reduce_scatter
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Reduce_scatter));
 
@@ -1461,6 +1873,7 @@ int mpi_PMPI_Reduce
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1479,6 +1892,20 @@ int mpi_PMPI_Reduce
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Reduce));
 
@@ -1509,6 +1936,7 @@ int mpi_PMPI_Pack
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1528,6 +1956,20 @@ int mpi_PMPI_Pack
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = incount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Pack));
 
@@ -1578,6 +2020,19 @@ int mpi_PMPI_Init
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Init));
 
     }
@@ -1601,6 +2056,7 @@ int mpi_PMPI_Get_count
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1619,6 +2075,20 @@ int mpi_PMPI_Get_count
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = *count * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.communicator = -1;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Get_count));
 
@@ -1651,6 +2121,7 @@ int mpi_PMPI_Gatherv
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1670,6 +2141,21 @@ int mpi_PMPI_Gatherv
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.communicator = -1;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Gatherv));
 
@@ -1701,6 +2187,7 @@ int mpi_PMPI_Gather
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1721,6 +2208,20 @@ int mpi_PMPI_Gather
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Gather));
 
@@ -1764,6 +2265,19 @@ int mpi_PMPI_Cancel
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Cancel));
 
     }
@@ -1791,6 +2305,7 @@ int mpi_PMPI_Bcast
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1809,6 +2324,20 @@ int mpi_PMPI_Bcast
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Bcast));
 
@@ -1852,6 +2381,19 @@ int mpi_PMPI_Barrier
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    event.communicator = (int64_t) comm;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Barrier));
 
     }
@@ -1883,6 +2425,7 @@ int mpi_PMPI_Alltoallv
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1903,6 +2446,16 @@ int mpi_PMPI_Alltoallv
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Alltoallv));
 
@@ -1933,6 +2486,7 @@ int mpi_PMPI_Alltoall
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1952,6 +2506,20 @@ int mpi_PMPI_Alltoall
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Alltoall));
 
@@ -1981,6 +2549,7 @@ int mpi_PMPI_Allreduce
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -1999,6 +2568,20 @@ int mpi_PMPI_Allreduce
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Allreduce));
 
@@ -2030,6 +2613,7 @@ int mpi_PMPI_Allgatherv
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2050,6 +2634,20 @@ int mpi_PMPI_Allgatherv
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Allgatherv));
 
@@ -2080,6 +2678,7 @@ int mpi_PMPI_Allgather
     int retval;
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2099,6 +2698,20 @@ int mpi_PMPI_Allgather
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Allgather));
 
@@ -2131,7 +2744,8 @@ int mpi_PMPI_Scatter
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_mpit_event event;
+    CBTF_mpit_event send_event,recv_event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2140,11 +2754,26 @@ int mpi_PMPI_Scatter
 
     if (dotrace) {
 
-    mpi_start_event(&event);
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
     /* Set up the send record */
+    mpi_start_event(&send_event);
+    mpi_start_event(&recv_event);
+    send_event.source = root;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(send_event.source));
+    PMPI_Type_size(sendtype, &datatype_size);
+    send_event.size = sendcount * datatype_size;
+    send_event.datatype = (int64_t) sendtype;
     
+
+    /* Initialize unused arguments */
+    send_event.tag = 0;
+    send_event.start_time = CBTF_GetTime();
+#else
+    mpi_start_event(&event);
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2154,11 +2783,32 @@ int mpi_PMPI_Scatter
 
     if (dotrace) {
 
-    event.stop_time = CBTF_GetTime();
     
-    /* Set up the recv record */
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    send_event.stop_time = CBTF_GetTime();
+    send_event.communicator = (int64_t) comm;
+    send_event.retval = retval;
+    recv_event.start_time = send_event.start_time;
+    recv_event.stop_time = send_event.stop_time;
+    mpi_record_event(&send_event, CBTF_GetAddressOfFunction(PMPI_Scatter));
 
+    /* Set up the recv record */
+    PMPI_Type_size(recvtype, &datatype_size);
+    recv_event.size = recvcount * datatype_size;
+    recv_event.datatype = (int64_t) recvtype;
+
+    recv_event.communicator = (int64_t) comm;
+    recv_event.retval = retval;
+
+    /* Initialize unused arguments */
+    recv_event.tag = 0;
+    mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Scatter));
+#else
+    event.stop_time = CBTF_GetTime();
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Scatter));
+#endif
+
 
     }
 
@@ -2190,7 +2840,8 @@ int mpi_PMPI_Scatterv
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_mpit_event event;
+    CBTF_mpit_event send_event,recv_event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2199,12 +2850,24 @@ int mpi_PMPI_Scatterv
 
     if (dotrace) {
 
-    mpi_start_event(&event);
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
     /* Set up the send record */
+    mpi_start_event(&send_event);
+    mpi_start_event(&recv_event);
+    send_event.source = root;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(send_event.source));
+    PMPI_Type_size(sendtype, &datatype_size);
     /* This is surly wrong */
-    
+    send_event.size = sendcounts[0] * datatype_size;
+    send_event.datatype = (int64_t) sendtype;
+    send_event.start_time = CBTF_GetTime();
+#else
+    mpi_start_event(&event);
     event.start_time = CBTF_GetTime();
+#endif
+    
 
     }
 
@@ -2214,11 +2877,41 @@ int mpi_PMPI_Scatterv
 
     if (dotrace) {
 
-    event.stop_time = CBTF_GetTime();
     
-    /* Set up the recv record */
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    send_event.stop_time = CBTF_GetTime();
+    send_event.communicator = (int64_t) comm;
+    send_event.retval = retval;
+    recv_event.start_time = send_event.start_time;
+    recv_event.stop_time = send_event.stop_time;
 
+    /* Initialize unused arguments */
+    send_event.tag = 0;
+
+    send_event.stop_time = CBTF_GetTime();
+    mpi_record_event(&send_event, CBTF_GetAddressOfFunction(PMPI_Scatterv));
+#else
+    event.stop_time = CBTF_GetTime();
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Scatterv));
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    /* Set up the recv record */
+    PMPI_Type_size(recvtype, &datatype_size);
+    recv_event.size = recvcount * datatype_size;
+    recv_event.datatype = (int64_t) recvtype;
+
+    recv_event.communicator = (int64_t) comm;
+    recv_event.retval = retval;
+
+    /* Initialize unused arguments */
+    recv_event.tag = 0;
+    recv_event.stop_time = CBTF_GetTime();
+    mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Scatterv));
+#endif
+
 
     }
 
@@ -2253,7 +2946,8 @@ int mpi_PMPI_Sendrecv
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_mpit_event event;
+    CBTF_mpit_event send_event,recv_event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2262,11 +2956,23 @@ int mpi_PMPI_Sendrecv
 
     if (dotrace) {
 
-    mpi_start_event(&event);
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
     /* Set up the send record */
-    
+    mpi_start_event(&send_event);
+    mpi_start_event(&recv_event);
+    send_event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(send_event.source));
+    PMPI_Type_size(sendtype, &datatype_size);
+    send_event.size = sendcount * datatype_size;
+    send_event.tag = sendtag;
+    send_event.datatype = (int64_t) sendtype;
+    send_event.start_time = CBTF_GetTime();
+#else
+    mpi_start_event(&event);
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2276,11 +2982,33 @@ int mpi_PMPI_Sendrecv
 
     if (dotrace) {
 
-    event.stop_time = CBTF_GetTime();
     
-    /* Set up the recv record */
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    send_event.stop_time = CBTF_GetTime();
+    send_event.communicator = (int64_t) comm;
+    send_event.retval = retval;
+    recv_event.start_time = send_event.start_time;
+    recv_event.stop_time = send_event.stop_time;
+    mpi_record_event(&send_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv));
 
+    /* Set up the recv record */
+    recv_event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(recv_event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+    recv_event.size = recvcount * datatype_size;
+    recv_event.tag = recvtag;
+    recv_event.datatype = (int64_t) recvtype;
+
+    recv_event.communicator = (int64_t) comm;
+    recv_event.retval = retval;
+
+    send_event.stop_time = CBTF_GetTime();
+    mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv));
+#else
+    event.stop_time = CBTF_GetTime();
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Sendrecv));
+#endif
 
     }
 
@@ -2312,7 +3040,8 @@ int mpi_PMPI_Sendrecv_replace
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_mpit_event event;
+    CBTF_mpit_event send_event,recv_event;
+    int datatype_size;
 #else
     CBTF_mpi_event event;
 #endif
@@ -2321,11 +3050,24 @@ int mpi_PMPI_Sendrecv_replace
 
     if (dotrace) {
 
-    mpi_start_event(&event);
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
     /* Set up the send record */
-    
+    mpi_start_event(&send_event);
+    mpi_start_event(&recv_event);
+    send_event.destination = dest;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(send_event.source));
+    PMPI_Type_size(datatype, &datatype_size);
+    send_event.size = count * datatype_size;
+    send_event.tag = sendtag;
+    send_event.datatype = (int64_t) datatype;
+    send_event.start_time = CBTF_GetTime();
+#else
+    mpi_start_event(&event);
     event.start_time = CBTF_GetTime();
+#endif
+    
 
     }
 
@@ -2335,11 +3077,32 @@ int mpi_PMPI_Sendrecv_replace
 
     if (dotrace) {
 
-    event.stop_time = CBTF_GetTime();
     
-    /* Set up the recv record */
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    send_event.stop_time = CBTF_GetTime();
+    send_event.communicator = (int64_t) comm;
+    send_event.retval = retval;
+    recv_event.start_time = send_event.start_time;
+    recv_event.stop_time = send_event.stop_time;
+    mpi_record_event(&send_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv_replace));
 
+    /* Set up the recv record */
+    recv_event.source = source;
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(recv_event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+    recv_event.size = count * datatype_size;
+    recv_event.tag = recvtag;
+    recv_event.datatype = (int64_t) datatype;
+
+    recv_event.communicator = (int64_t) comm;
+    recv_event.retval = retval;
+    mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv_replace));
+#else
+    event.stop_time = CBTF_GetTime();
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Sendrecv_replace));
+#endif
+
 
     }
 
@@ -2398,6 +3161,20 @@ int mpi_PMPI_Cart_create
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Cart_create));
 
     }
@@ -2443,6 +3220,19 @@ int mpi_PMPI_Cart_sub
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Cart_sub));
 
@@ -2493,6 +3283,19 @@ int mpi_PMPI_Graph_create
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Graph_create));
 
@@ -2545,6 +3348,19 @@ int mpi_PMPI_Intercomm_create
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Intercomm_create));
 
     }
@@ -2589,6 +3405,19 @@ int mpi_PMPI_Intercomm_merge
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Intercomm_merge));
 
@@ -2635,6 +3464,19 @@ int mpi_PMPI_Comm_free
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Comm_free));
 
@@ -2690,6 +3532,19 @@ int mpi_PMPI_Comm_dup
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Comm_dup));
 
     }
@@ -2734,6 +3589,19 @@ int mpi_PMPI_Comm_create
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Comm_create));
 
@@ -2781,6 +3649,19 @@ int mpi_PMPI_Comm_split
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Comm_split));
 
     }
@@ -2827,6 +3708,19 @@ int mpi_PMPI_Start
 
     event.stop_time = CBTF_GetTime();
 
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Start));
 
     }
@@ -2872,6 +3766,19 @@ int mpi_PMPI_Startall
     if (dotrace) {
 
     event.stop_time = CBTF_GetTime();
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
 
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Startall));
 

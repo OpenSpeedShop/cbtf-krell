@@ -33,12 +33,33 @@ struct CBTF_mpi_event {
     uint16_t stacktrace;  /**< Index of the stack trace. */
 };
 
+/** Event structure describing a single MPI call with details. */
+struct CBTF_mpit_event {
+    uint64_t start_time;  /**< Start time of the call. */
+    uint64_t stop_time;   /**< End time of the call. */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+
+    int source;        /**< Source rank (in MPI_COMM_WORLD). */
+    int destination;   /**< Destination rank (in MPI_COMM_WORLD). */
+    uint64_t size;     /**< Number of bytes sent. */
+    int tag;           /**< Tag of the message (if any). */
+    int communicator;  /**< Communicator used. */
+    int datatype;      /**< Data type of the message. */
+    int retval;        /**< Enumerated return value. */
+
+};
+
 /** Structure of the blob containing trace performance data. */
 struct CBTF_mpi_trace_data {
     uint64_t stacktraces<>;  /**< Stack traces. */
     CBTF_mpi_event events<>; /**< MPI call events. */
 };
 
+/** Structure of the blob containing extended trace performance data. */
+struct CBTF_mpi_exttrace_data {
+    uint64_t stacktraces<>;  /**< Stack traces. */
+    CBTF_mpit_event events<>; /**< MPI call events. */
+};
 
 /** Structure of the blob containing profile performance data. */
 struct CBTF_mpi_profile_data {

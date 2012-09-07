@@ -49,7 +49,11 @@
 
 
 /** String uniquely identifying this collector. */
+#if defined(EXTENDEDTRACE)
+const char* const cbtf_collector_unique_id = "mpit";
+#else
 const char* const cbtf_collector_unique_id = "mpi";
+#endif
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -72,7 +76,7 @@ const unsigned OverheadFrameCount = 2;
 
 /** Maximum number of frames to allow in each stack trace. */
 /* what is a reasonable default here. 32? */
-#define MaxFramesPerStackTrace 48
+#define MaxFramesPerStackTrace 64
 
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
@@ -82,18 +86,30 @@ const unsigned OverheadFrameCount = 2;
 
 /** Number of event entries in the tracing buffer. */
 /** CBTF_mpi_event is 32 bytes */
+#if defined(EXTENDEDTRACE)
+#define EventBufferSize (CBTF_BlobSizeFactor * 215)
+#else
 #define EventBufferSize (CBTF_BlobSizeFactor * 415)
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
+#if defined(EXTENDEDTRACE)
+    CBTF_mpi_exttrace_data data;              /**< Actual data blob. */
+#else
     CBTF_mpi_trace_data data;              /**< Actual data blob. */
+#endif
 
     /** Tracing buffer. */
     struct {
         uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
-        CBTF_mpi_event events[EventBufferSize];          /**< MPI call events. */
+#if defined(EXTENDEDTRACE)
+        CBTF_mpit_event events[EventBufferSize];    /**< MPI call events with details. */
+#else
+        CBTF_mpi_event events[EventBufferSize];     /**< MPI call events. */
+#endif
     } buffer;
     
 #if defined (CBTF_SERVICE_USE_OFFLINE)
@@ -236,7 +252,11 @@ static void send_samples(TLS *tls)
 	}
 #endif
 
+#if defined(EXTENDEDTRACE)
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mpi_exttrace_data, &(tls->data));
+#else
     cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mpi_trace_data, &(tls->data));
+#endif
 
     /* Re-initialize the data blob's header */
     initialize_data(tls);
@@ -250,7 +270,11 @@ static void send_samples(TLS *tls)
  *
  * @param event    Event to be started.
  */
+#if defined(EXTENDEDTRACE)
+void mpi_start_event(CBTF_mpit_event* event)
+#else
 void mpi_start_event(CBTF_mpi_event* event)
+#endif
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -264,7 +288,11 @@ void mpi_start_event(CBTF_mpi_event* event)
     ++tls->nesting_depth;
 
     /* Initialize the event record. */
+#if defined(EXTENDEDTRACE)
+    memset(event, 0, sizeof(CBTF_mpit_event));
+#else
     memset(event, 0, sizeof(CBTF_mpi_event));
+#endif
 }
 
 
@@ -282,7 +310,11 @@ void mpi_start_event(CBTF_mpi_event* event)
  * @param function    Address of the MPI function for which the event is being
  *                    recorded.
  */
+#if defined(EXTENDEDTRACE)
+void mpi_record_event(const CBTF_mpit_event* event, uint64_t function)
+#else
 void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
+#endif
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -300,7 +332,11 @@ void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
     unsigned pathindex = 0;
 
 #ifdef DEBUG
+#if defined(EXTENDEDTRACE)
+fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpit_event),sizeof(stacktrace),tls->nesting_depth);
+#else
 fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpi_event),sizeof(stacktrace),tls->nesting_depth);
+#endif
 #endif
 
     /* Decrement the MPI function wrapper nesting depth */
@@ -410,8 +446,13 @@ fprintf(stderr,"StackTraceBufferSize is full, call send_samples\n");
     }
     
     /* Add a new entry for this event to the tracing buffer. */
+#if defined(EXTENDEDTRACE)
+    memcpy(&(tls->buffer.events[tls->data.events.events_len]),
+	   event, sizeof(CBTF_mpit_event));
+#else
     memcpy(&(tls->buffer.events[tls->data.events.events_len]),
 	   event, sizeof(CBTF_mpi_event));
+#endif
     tls->buffer.events[tls->data.events.events_len].stacktrace = entry;
     tls->data.events.events_len++;
     
@@ -436,7 +477,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 /**
  * Start tracing.
  *
- * Starts MPI extended event tracing for the thread executing this function.
+ * Starts MPI event tracing for the thread executing this function.
  * Initializes the appropriate thread-local data structures.
  *
  * @param arguments    Encoded function arguments.

@@ -1,19 +1,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 //
-// This library is free software; you can redistribute it and/or modify it under
-// the terms of the GNU Lesser General Public License as published by the Free
-// Software Foundation; either version 2.1 of the License, or (at your option)
-// any later version.
+// This program is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free Software
+// Foundation; either version 2 of the License, or (at your option) any later
+// version.
 //
-// This library is distributed in the hope that it will be useful, but WITHOUT
+// This program is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+// FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
 // details.
 //
-// You should have received a copy of the GNU Lesser General Public License
-// along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+// Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
 /** @file Component for converting CUDA data to pseudo I/O data. */
@@ -27,6 +27,7 @@
 #include <KrellInstitute/CBTF/Version.hpp>
 #include <KrellInstitute/CBTF/XDR.hpp>
 
+//#include <KrellInstitute/Core/Path.hpp>
 //#include <KrellInstitute/Core/SymbolTable.hpp>
 
 #include <KrellInstitute/Messages/Address.h>
@@ -73,70 +74,26 @@ public:
 private:
 
     /** Default constructor. */
-    CUDAToIO() :
-        Component(Type(typeid(CUDAToIO)), Version(0, 0, 0))
-    {
-        declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
-            "InitialLinkedObjects",
-            boost::bind(&CUDAToIO::handleInitialLinkedObjects, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
-            "LoadedLinkedObject",
-            boost::bind(&CUDAToIO::handleLoadedLinkedObject, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
-            "UnloadedLinkedObject",
-            boost::bind(&CUDAToIO::handleUnloadedLinkedObject, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_cuda_data> >(
-            "Data", boost::bind(&CUDAToIO::handleData, this, _1)
-            );
-
-        declareOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
-            "InitialLinkedObjects"
-            );
-        declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
-            "LoadedLinkedObject"
-            );
-        declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
-            "UnloadedLinkedObject"
-            );
-        declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
-            "SymbolTable"
-            );
-        declareOutput<boost::shared_ptr<CBTF_io_trace_data> >("Data");
-    }
+    CUDAToIO();
 
     /** Handler for the "InitialLinkedObjects" input. */
     void handleInitialLinkedObjects(
         const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& message
-        )
-    {
-        // ...
-    }
-
+        );
+    
     /** Handler for the "LoadedLinkedObject" input. */
     void handleLoadedLinkedObject(
         const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& message
-        )
-    {
-        // ...
-    }
+        );
     
     /** Handler for the "UnloadedLinkedObject" input. */
     void handleUnloadedLinkedObject(
         const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& message
-        )
-    {
-        // ...
-    }
-
+        );
+    
     /** Handler for the "Data" input. */
-    void handleData(const boost::shared_ptr<CBTF_cuda_data>& message)
-    {
-        // ...
-    }
-
+    void handleData(const boost::shared_ptr<CBTF_cuda_data>& message);
+    
 }; // class CUDAToIO
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDAToIO)
@@ -147,3 +104,80 @@ KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_UnloadedLinkedObject)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_cuda_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_trace_data)
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+CUDAToIO::CUDAToIO() :
+    Component(Type(typeid(CUDAToIO)), Version(0, 0, 0))
+{
+    declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
+        "InitialLinkedObjects",
+        boost::bind(&CUDAToIO::handleInitialLinkedObjects, this, _1)
+        );
+    declareInput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
+        "LoadedLinkedObject",
+        boost::bind(&CUDAToIO::handleLoadedLinkedObject, this, _1)
+        );
+    declareInput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
+        "UnloadedLinkedObject",
+        boost::bind(&CUDAToIO::handleUnloadedLinkedObject, this, _1)
+        );
+    declareInput<boost::shared_ptr<CBTF_cuda_data> >(
+        "Data", boost::bind(&CUDAToIO::handleData, this, _1)
+        );
+    
+    declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
+        "LoadedLinkedObject"
+        );
+    declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
+        "UnloadedLinkedObject"
+        );
+    declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
+        "SymbolTable"
+        );
+    declareOutput<boost::shared_ptr<CBTF_io_trace_data> >("Data");
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void CUDAToIO::handleInitialLinkedObjects(
+    const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& message
+    )
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void CUDAToIO::handleLoadedLinkedObject(
+    const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& message
+    )
+{
+    // ...
+}
+
+
+    
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void CUDAToIO::handleUnloadedLinkedObject(
+    const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& message
+    )
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void CUDAToIO::handleData(const boost::shared_ptr<CBTF_cuda_data>& message)
+{
+    // ...
+}

@@ -31,6 +31,13 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Time.h"
 
+
+#if !defined(CBTF_SERVICE_USE_OFFLINE)
+#include <syscall.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 #include <dlfcn.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -39,6 +46,22 @@
 extern void io_start_event(CBTF_io_event*);
 extern void io_record_event(const CBTF_io_event*, uint64_t);
 extern bool_t io_do_trace(const char*);
+
+
+/* Start part 2 of 2 for Hack to get around inconsistent syscall definitions */
+#include <sys/syscall.h>
+#ifdef __NR_pread64  /* Newer kernels renamed but it's the same.  */
+# ifndef __NR_pread
+# define __NR_pread __NR_pread64
+# endif
+#endif
+
+#ifdef __NR_pwrite64  /* Newer kernels renamed but it's the same.  */
+# ifndef __NR_pwrite
+#  define __NR_pwrite __NR_pwrite64
+# endif
+#endif
+/* End part 2 of 2 for Hack to get around inconsistent syscall definitions */
 
 /*
  * IO Wrapper Functions
@@ -76,6 +99,20 @@ SYS_pwrite64;
 SYS_lseek64;
 */
 
+
+#if defined(EXTENDEDTRACE)
+/* used by io_record_event to record pathnames into pathnames buffer */
+/* currentpathname must be set prior to calling io_record_event. */
+/* io_record_event sets pathindex and so we must set event.pathindex */
+/* after the call to io_record_event in each wrapper. */
+/* Currently we record a pathname that is passed as an argument. */
+/* TODO: On linux, we can examine /proc/"mypid"/fd after an syscall is made */
+/* that uses a file descriptor (e.g. read). This is one way to map a */
+/* file descriptor to a pathname. */
+
+extern char currentpathname[PATH_MAX];
+#endif
+
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef read
 #undef read
@@ -88,13 +125,22 @@ ssize_t ioread(int fd, void *buf, size_t count)
 #endif
 {
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("read");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -107,9 +153,47 @@ ssize_t ioread(int fd, void *buf, size_t count)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_read;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.retval = retval;
+
+#ifdef DEBUG_IOT
+    printf("iotread, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+/*
+    event.sysargs[3] = namebuf;
+*/
+
+#ifdef DEBUG_IOT
+    printf("iotread, status=%d, namebuf=%s\n", status, namebuf);
+#endif
+
+#endif
+
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_read));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_read);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -120,6 +204,7 @@ ssize_t ioread(int fd, void *buf, size_t count)
     return retval;
 }
 
+#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 ssize_t write(int fd, __const void *buf, size_t count) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
@@ -129,13 +214,22 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 #endif
 {    
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("write");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -150,7 +244,13 @@ ssize_t iowrite(int fd, void *buf, size_t count)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_write));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_write);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -161,6 +261,7 @@ ssize_t iowrite(int fd, void *buf, size_t count)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
+#endif
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 off_t lseek(int fd, off_t offset, int whence) 
@@ -171,13 +272,22 @@ off_t iolseek(int fd, off_t offset, int whence)
 #endif
 {    
     off_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("lseek");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -192,7 +302,13 @@ off_t iolseek(int fd, off_t offset, int whence)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_lseek));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_lseek);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -208,17 +324,26 @@ __off64_t lseek64(int fd, __off64_t offset, int whence)
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 __off64_t __wrap_lseek64(int fd, __off64_t offset, int whence) 
 #else
-__off_t iolseek64(int fd, __off_t offset, int whence) 
+off_t iotlseek64(int fd, off_t offset, int whence) 
 #endif
-{    
+{
     off_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("lseek64");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -233,7 +358,13 @@ __off_t iolseek64(int fd, __off_t offset, int whence)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_lseek64));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_lseek64);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -251,15 +382,15 @@ int __wrap_open(const char *pathname, int flags, mode_t mode)
 #else
 int ioopen(const char *pathname, int flags, mode_t mode) 
 #endif
-{    
+{
     int retval = 0;
     CBTF_io_event event;
 
     bool_t dotrace = io_do_trace("open");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -274,7 +405,13 @@ int ioopen(const char *pathname, int flags, mode_t mode)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_open));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_open);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -293,15 +430,15 @@ int __wrap_open64(const char *pathname, int flags, mode_t mode)
 #else
 int ioopen64(const char *pathname, int flags, mode_t mode) 
 #endif
-{    
+{
     int retval = 0;
     CBTF_io_event event;
 
     bool_t dotrace = io_do_trace("open64");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -316,7 +453,13 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_open64));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_open64);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -334,9 +477,18 @@ int __wrap_close(int fd)
 #else
 int ioclose(int fd) 
 #endif
-{    
+{
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("close");
 
@@ -356,7 +508,13 @@ int ioclose(int fd)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_close));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_close);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -374,15 +532,24 @@ int __wrap_dup(int oldfd)
 #else
 int iodup(int oldfd) 
 #endif
-{    
+{
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("dup");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -397,7 +564,13 @@ int iodup(int oldfd)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_dup));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_dup);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -415,15 +588,24 @@ int __wrap_dup2(int oldfd, int newfd)
 #else
 int iodup2(int oldfd, int newfd) 
 #endif
-{    
+{
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("dup2");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -438,7 +620,13 @@ int iodup2(int oldfd, int newfd)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_dup2));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_dup2);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -463,8 +651,8 @@ int iocreat(char *pathname, mode_t mode)
     bool_t dotrace = io_do_trace("creat");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -479,7 +667,13 @@ int iocreat(char *pathname, mode_t mode)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_creat));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_creat);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -504,8 +698,8 @@ int iocreat64(char *pathname, mode_t mode)
     bool_t dotrace = io_do_trace("creat64");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -520,7 +714,13 @@ int iocreat64(char *pathname, mode_t mode)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_creat64));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_creat64);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -539,15 +739,15 @@ int __wrap_pipe(int filedes[2])
 #else
 int iopipe(int filedes[2]) 
 #endif
-{    
+{
     int retval;
     CBTF_io_event event;
 
     bool_t dotrace = io_do_trace("pipe");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -562,7 +762,13 @@ int iopipe(int filedes[2])
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_pipe));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_pipe);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -580,15 +786,15 @@ ssize_t __wrap_pread(int fd, void *buf, size_t count, off_t offset)
 #else
 ssize_t iopread(int fd, void *buf, size_t count, off_t offset) 
 #endif
-{    
+{
     ssize_t retval;
     CBTF_io_event event;
 
     bool_t dotrace = io_do_trace("pread");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -603,7 +809,13 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_pread));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_pread);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -621,15 +833,24 @@ ssize_t __wrap_pread64(int fd, void *buf, size_t count, __off64_t offset)
 #else
 ssize_t iopread64(int fd, void *buf, size_t count, off_t offset) 
 #endif
-{    
+{
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("pread64");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -644,7 +865,13 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_pread64));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_pread64);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -655,22 +882,32 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
     return retval;
 }
 
+#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 ssize_t pwrite(int fd, __const void *buf, size_t count, __off_t offset) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 ssize_t __wrap_pwrite(int fd, __const void *buf, size_t count, __off_t offset) 
 #else
-ssize_t iopwrite(int fd, __const void *buf, size_t count, __off64_t offset) 
+ssize_t iotpwrite(int fd, void *buf, size_t count, off_t offset) 
 #endif
-{    
+{
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("pwrite");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -685,7 +922,13 @@ ssize_t iopwrite(int fd, __const void *buf, size_t count, __off64_t offset)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_pwrite));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_pwrite);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -695,7 +938,9 @@ ssize_t iopwrite(int fd, __const void *buf, size_t count, __off64_t offset)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
+#endif
 
+#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 ssize_t pwrite64(int fd, __const void *buf, size_t count, __off64_t offset) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
@@ -703,15 +948,24 @@ ssize_t __wrap_pwrite64(int fd, __const void *buf, size_t count, __off64_t offse
 #else
 ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset) 
 #endif
-{    
+{
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("pwrite64");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -726,7 +980,13 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_pwrite64));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_pwrite64);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -736,6 +996,7 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
+#endif
 
 #if !defined(CBTF_SERVICE_USE_OFFLINE)
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
@@ -745,15 +1006,24 @@ ssize_t __wrap_readv(int fd, const struct iovec *vector, size_t count)
 #else
 ssize_t ioreadv(int fd, const struct iovec *vector, size_t count) 
 #endif
-{    
+{
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("readv");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -767,7 +1037,13 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_readv));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_readv);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -779,6 +1055,7 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 }
 
 
+#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 ssize_t writev(int fd, const struct iovec *vector, size_t count) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
@@ -786,15 +1063,24 @@ ssize_t __wrap_writev(int fd, const struct iovec *vector, size_t count)
 #else
 ssize_t iowritev(int fd, const struct iovec *vector, size_t count) 
 #endif
-{    
+{
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_event event;
+    int status = -1;
+    char namebuf[1024];
+    char pf[256];
+    memset(namebuf, 0, sizeof(namebuf));
+    memset(pf, 0, sizeof(pf));
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("writev");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
     }
 
     /* Call the real IO function */
@@ -809,7 +1095,13 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
     if (dotrace) {
         event.stop_time = CBTF_GetTime();
     /* Record event and it's stacktrace*/
-#if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+#if defined(TARGET_OS_BGQ)
+#if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
+        io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+#else
+        io_record_event(&event, CBTF_GetAddressOfFunction((const void *) __real_writev));
+#endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         io_record_event(&event, (uint64_t) __real_writev);
 #else
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
@@ -819,4 +1111,5 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
+#endif
 #endif

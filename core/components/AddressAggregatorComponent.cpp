@@ -143,6 +143,12 @@ bool is_debug_aggregator_events_enabled =
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
 	    stacktraces_val = data.stacktraces.stacktraces_val;
 	    stacktraces_len = data.stacktraces.stacktraces_len;
+	} else if (id == "iot") {
+            CBTF_io_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
+	    stacktraces_val = data.stacktraces.stacktraces_val;
+	    stacktraces_len = data.stacktraces.stacktraces_len;
 	} else if (id == "mem") {
             CBTF_mem_exttrace_data data;
             memset(&data, 0, sizeof(data));
@@ -220,6 +226,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_io_trace_data> >(
             "io", boost::bind(&AddressAggregator::ioHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_io_exttrace_data> >(
+            "iot", boost::bind(&AddressAggregator::iotHandler, this, _1)
             );
         declareInput<boost::shared_ptr<CBTF_hwc_data> >(
             "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
@@ -341,6 +350,19 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
+    /** Handler for the "iot" input.*/
+    void iotHandler(const boost::shared_ptr<CBTF_io_exttrace_data>& in)
+    {
+        CBTF_io_exttrace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
     /** Handler for the "mem" input.*/
     void memHandler(const boost::shared_ptr<CBTF_mem_exttrace_data>& in)
     {
@@ -404,7 +426,7 @@ private:
 
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << "Aggregating addresses for "
+	    std::cerr << "Aggregating CBTF_Protocol_Blob addresses for "
 	    << collectorID << " data from "
 	    << header.host << ":" << header.pid << std::endl;
 	}
@@ -421,7 +443,7 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem" ||
+        } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
@@ -493,7 +515,7 @@ private:
 	std::string collectorID(header.id);
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << "Aggregating addresses for "
+	    std::cerr << "Aggregating Blob addresses for "
 	    << collectorID << " data from "
 	    << header.host << ":" << header.pid << std::endl;
 	}
@@ -510,7 +532,7 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "mem" ||
+        } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {

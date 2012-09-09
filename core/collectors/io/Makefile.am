@@ -21,10 +21,10 @@ plugindir = $(libdir)/KrellInstitute/Components
 pkglibdir = $(libdir)/KrellInstitute/Collectors
 staticpkglibdir = $(libdir)/KrellInstitute/Collectors/static
 
-BUILT_FILES = io.xml
+BUILT_FILES = io.xml iot.xml
 
 nobase_dist_xml_DATA = \
-        io.xml
+        io.xml iot.xml
 
 pkglib_LTLIBRARIES =
 staticpkglib_LTLIBRARIES =
@@ -33,8 +33,9 @@ WRAPPER_SOURCES = wrappers.c
 
 if !BUILD_TARGETED
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += io-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libio-monitor-fileio.la
+pkglib_LTLIBRARIES += io-collector-monitor-fileio.la iot-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libio-monitor-fileio.la libiot-monitor-fileio.la
+
 io_collector_monitor_fileio_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -96,9 +97,72 @@ libio_monitor_fileio_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
+iot_collector_monitor_fileio_la_CFLAGS = \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@
+
+iot_collector_monitor_fileio_la_LDFLAGS = \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+iot_collector_monitor_fileio_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
+	-lpthread -lrt
+
+iot_collector_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libiot_monitor_fileio_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_FILEIO \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@
+
+libiot_monitor_fileio_la_LDFLAGS = \
+	-static \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	-no-undefined
+
+libiot_monitor_fileio_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
+	-lpthread -lrt
+
+libiot_monitor_fileio_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
 if HAVE_MRNET
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la
+pkglib_LTLIBRARIES += io-collector-monitor-mrnet.la iot-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libio-monitor-mrnet.la libiot-monitor-mrnet.la
 
 io_collector_monitor_mrnet_la_CFLAGS = \
 	-D__USE_GNU \
@@ -168,9 +232,79 @@ libio_monitor_mrnet_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
+iot_collector_monitor_mrnet_la_CFLAGS = \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
 
-pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la
+iot_collector_monitor_mrnet_la_LDFLAGS = \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	@MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+iot_collector_monitor_mrnet_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	@MRNET_LWR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
+	-lpthread -lrt
+
+iot_collector_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libiot_monitor_mrnet_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+libiot_monitor_mrnet_la_LDFLAGS = \
+	-static \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	@MRNET_LDFLAGS@ \
+	-no-undefined
+
+libiot_monitor_mrnet_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	@MRNET_LWR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
+	-lpthread -lrt
+
+libiot_monitor_mrnet_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+
+pkglib_LTLIBRARIES += io-collector-monitor-mrnet-mpi.la iot-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libio-monitor-mrnet-mpi.la libiot-monitor-mrnet-mpi.la
 
 io_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-D__USE_GNU \
@@ -240,6 +374,79 @@ libio_monitor_mrnet_mpi_la_LIBADD = \
 	-lpthread -lrt
 
 libio_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+iot_collector_monitor_mrnet_mpi_la_CFLAGS = \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+iot_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	@MRNET_LDFLAGS@ \
+	-no-undefined -module -avoid-version
+
+iot_collector_monitor_mrnet_mpi_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	@MRNET_LWR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
+	-lpthread -lrt
+
+iot_collector_monitor_mrnet_mpi_la_SOURCES = \
+	$(OFFLINE_SOURCES) \
+	collector.c $(WRAPPER_SOURCES)
+
+libiot_monitor_mrnet_mpi_la_CFLAGS = \
+	-static \
+	-D__USE_GNU \
+	-DEXTENDEDTRACE \
+	-DCBTF_SERVICE_USE_OFFLINE \
+	-DCBTF_SERVICE_USE_MRNET \
+	-DCBTF_SERVICE_USE_MRNET_MPI \
+	@CBTF_SERVICES_CPPFLAGS@ \
+	@LIBMONITOR_CPPFLAGS@ \
+	@LIBUNWIND_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+libiot_monitor_mrnet_mpi_la_LDFLAGS = \
+	-static \
+	@CBTF_SERVICES_LDFLAGS@ \
+	@LIBMONITOR_LDFLAGS@ \
+	@LIBUNWIND_LDFLAGS@ \
+	@MRNET_LDFLAGS@ \
+	-no-undefined
+
+libiot_monitor_mrnet_mpi_la_LIBADD = \
+	@LIBMONITOR_LIBS@ \
+	@LIBUNWIND_LIBS@ \
+	@MRNET_LWR_LIBS@ \
+	-lcbtf-services-common \
+	-lcbtf-services-monitor \
+	-lcbtf-services-offline \
+	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
+	-lpthread -lrt
+
+libiot_monitor_mrnet_mpi_la_SOURCES = \
 	$(OFFLINE_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
@@ -609,4 +816,12 @@ io.xml: io.xml.in
 		-e 's,@@cbtflib_location@@,$(libdir),' \
 		$(srcdir)/io.xml.in > io.xml
 
-EXTRA_DIST = io.xml.in
+iot.xml: iot.xml.in
+
+	@rm -f iot.xml
+	@sed \
+		-e 's,@@component_location@@,$(plugindir),' \
+		-e 's,@@cbtflib_location@@,$(libdir),' \
+		$(srcdir)/iot.xml.in > iot.xml
+
+EXTRA_DIST = io.xml.in iot.xml.in

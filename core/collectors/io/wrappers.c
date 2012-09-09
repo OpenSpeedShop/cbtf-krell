@@ -43,8 +43,13 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
-extern void io_start_event(CBTF_io_event*);
+#if defined(EXTENDEDTRACE)
+extern void io_record_event(const CBTF_iot_event*, uint64_t);
+extern void io_start_event(CBTF_iot_event*);
+#else
 extern void io_record_event(const CBTF_io_event*, uint64_t);
+extern void io_start_event(CBTF_io_event*);
+#endif
 extern bool_t io_do_trace(const char*);
 
 
@@ -126,7 +131,7 @@ ssize_t ioread(int fd, void *buf, size_t count)
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -215,7 +220,7 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 {    
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -242,7 +247,33 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_write;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.retval = retval;
+
+#ifdef DEBUG_IOT
+    printf("iotwrite, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -270,10 +301,10 @@ off_t __wrap_lseek(int fd, off_t offset, int whence)
 #else
 off_t iolseek(int fd, off_t offset, int whence) 
 #endif
-{    
+{
     off_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -300,7 +331,33 @@ off_t iolseek(int fd, off_t offset, int whence)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_lseek;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = offset;
+    event.sysargs[2] = whence;
+    event.retval = retval;
+
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#ifdef DEBUG_IOT
+    printf("iotlseek, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -324,12 +381,12 @@ __off64_t lseek64(int fd, __off64_t offset, int whence)
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 __off64_t __wrap_lseek64(int fd, __off64_t offset, int whence) 
 #else
-off_t iotlseek64(int fd, off_t offset, int whence) 
+off_t iolseek64(int fd, off_t offset, int whence) 
 #endif
 {
     off_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -356,7 +413,34 @@ off_t iotlseek64(int fd, off_t offset, int whence)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_lseek;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = offset;
+    event.sysargs[2] = whence;
+    event.retval = retval;
+
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#ifdef DEBUG_IOT
+    printf("iotlseek64, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -384,7 +468,11 @@ int ioopen(const char *pathname, int flags, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("open");
 
@@ -403,7 +491,20 @@ int ioopen(const char *pathname, int flags, mode_t mode)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+    event.syscallno = SYS_open;
+    event.nsysargs = 3;
+    event.sysargs[0] = (long) pathname;
+    event.sysargs[1] = flags;
+    event.sysargs[2] = mode;
+
+    strncpy(currentpathname,pathname,strlen(pathname));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -432,7 +533,11 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("open64");
 
@@ -451,7 +556,20 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_open;
+    event.nsysargs = 3;
+    event.sysargs[0] = (long) pathname;
+    event.sysargs[1] = flags;
+    event.sysargs[2] = mode;
+    event.retval = retval;
+    strncpy(currentpathname,pathname,strlen(pathname));
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -480,7 +598,7 @@ int ioclose(int fd)
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -493,8 +611,25 @@ int ioclose(int fd)
     bool_t dotrace = io_do_trace("close");
 
     if (dotrace) {
-        io_start_event(&event);
-        event.start_time = CBTF_GetTime();
+	io_start_event(&event);
+	event.start_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+	/* use that to get the path into /proc. */
+	sprintf(pf,"/proc/self/fd/%d",fd);
+
+	/* Read the link the file descriptor points to in the /proc filesystem */
+	status = readlink(pf,namebuf,1024);
+	if (status > 1024) {
+	    printf("ERROR, name too large\n");
+	}
+	namebuf[status] = 0;
+#ifdef DEBUG_IOT
+	printf("iotclose, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+
+	strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
     }
 
     /* Call the real IO function */
@@ -505,8 +640,19 @@ int ioclose(int fd)
     retval = (*realfunc)(fd);
 #endif
 
+
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_close;
+    event.nsysargs = 1;
+    event.sysargs[0] = fd;
+    event.retval = retval;
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -535,7 +681,7 @@ int iodup(int oldfd)
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -562,7 +708,32 @@ int iodup(int oldfd)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_dup;
+    event.nsysargs = 1;
+    event.sysargs[0] = oldfd;
+    event.retval = retval;
+
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",oldfd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#ifdef DEBUG_IOT
+    printf("iotdup, oldfd=%d, namebuf=%s\n", oldfd, namebuf);
+#endif
+
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -591,7 +762,7 @@ int iodup2(int oldfd, int newfd)
 {
     int retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -618,7 +789,32 @@ int iodup2(int oldfd, int newfd)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_dup2;
+    event.nsysargs = 2;
+    event.sysargs[0] = oldfd;
+    event.sysargs[1] = newfd;
+    event.retval = retval;
+
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",oldfd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#ifdef DEBUG_IOT
+    printf("iotdup2, oldfd=%d, namebuf=%s\n", oldfd, namebuf);
+#endif
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -646,7 +842,11 @@ int iocreat(char *pathname, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("creat");
 
@@ -665,7 +865,19 @@ int iocreat(char *pathname, mode_t mode)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.retval = retval;
+    event.syscallno = SYS_creat;
+    event.nsysargs = 2;
+    event.sysargs[0] = (long) pathname;
+    event.sysargs[1] = mode;
+
+    strncpy(currentpathname,pathname,strlen(pathname));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -693,7 +905,11 @@ int iocreat64(char *pathname, mode_t mode)
 #endif
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("creat64");
 
@@ -712,7 +928,18 @@ int iocreat64(char *pathname, mode_t mode)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_creat;
+    event.nsysargs = 2;
+    event.sysargs[0] = (long) pathname;
+    event.sysargs[1] = mode;
+    event.retval = retval;
+    strncpy(currentpathname,pathname,strlen(pathname));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -741,7 +968,11 @@ int iopipe(int filedes[2])
 #endif
 {
     int retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("pipe");
 
@@ -760,7 +991,16 @@ int iopipe(int filedes[2])
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_pipe;
+    event.nsysargs = 1;
+    event.sysargs[0] = (long) filedes;
+    event.retval = retval;
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -788,7 +1028,11 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
 #endif
 {
     ssize_t retval;
+#if defined(EXTENDEDTRACE)
+    CBTF_iot_event event;
+#else
     CBTF_io_event event;
+#endif
 
     bool_t dotrace = io_do_trace("pread");
 
@@ -807,7 +1051,27 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+#if   defined(__linux) && defined(SYS_pread)
+    event.syscallno = SYS_pread;
+#elif defined(__linux) && defined(SYS_pread64)
+    event.syscallno = SYS_pread64;
+#else
+#error "SYS_pread or SYS_pread64 is not defined"
+#endif
+
+
+    event.nsysargs = 4;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.sysargs[3] = offset;
+    event.retval = retval;
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -836,7 +1100,7 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -863,7 +1127,41 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+#if   defined(__linux) && defined(SYS_pread)
+    event.syscallno = SYS_pread;
+#elif defined(__linux) && defined(SYS_pread64)
+    event.syscallno = SYS_pread64;
+#else
+#error "SYS_pread or SYS_pread64 is not defined"
+#endif
+
+
+    event.nsysargs = 4;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.sysargs[3] = offset;
+    event.retval = retval;
+
+#ifdef DEBUG_IOT
+    printf("iotpread64, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -888,12 +1186,12 @@ ssize_t pwrite(int fd, __const void *buf, size_t count, __off_t offset)
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 ssize_t __wrap_pwrite(int fd, __const void *buf, size_t count, __off_t offset) 
 #else
-ssize_t iotpwrite(int fd, void *buf, size_t count, off_t offset) 
+ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset) 
 #endif
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -920,7 +1218,40 @@ ssize_t iotpwrite(int fd, void *buf, size_t count, off_t offset)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+#if   defined(__linux) && defined(SYS_pwrite)
+    event.syscallno = SYS_pwrite;
+#elif defined(__linux) && defined(SYS_pwrite64)
+    event.syscallno = SYS_pwrite64;
+#else
+#error "SYS_pwrite or SYS_pwrite64 is not defined"
+#endif
+
+
+    event.nsysargs = 4;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.sysargs[3] = offset;
+    event.retval = retval;
+#ifdef DEBUG_IOT
+    printf("iotpwrite, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -951,7 +1282,7 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -978,7 +1309,41 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+#if   defined(__linux) && defined(SYS_pwrite)
+    event.syscallno = SYS_pwrite;
+#elif defined(__linux) && defined(SYS_pwrite64)
+    event.syscallno = SYS_pwrite64;
+#else
+#error "SYS_pwrite or SYS_pwrite64 is not defined"
+#endif
+
+
+    event.nsysargs = 4;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) buf;
+    event.sysargs[2] = count;
+    event.sysargs[3] = offset;
+    event.retval = retval;
+
+#ifdef DEBUG_IOT
+    printf("iotwrite64, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -1009,7 +1374,7 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -1034,8 +1399,33 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
     retval = (*realfunc)(fd, vector, count);
 #endif
 
+
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_readv;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) vector;
+    event.sysargs[2] = count;
+    event.retval = retval;
+#ifdef DEBUG_IOT
+    printf("iotreadv, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
@@ -1066,7 +1456,7 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 {
     ssize_t retval;
 #if defined(EXTENDEDTRACE)
-    CBTF_io_exttrace_event event;
+    CBTF_iot_event event;
     int status = -1;
     char namebuf[1024];
     char pf[256];
@@ -1093,7 +1483,33 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 
 
     if (dotrace) {
-        event.stop_time = CBTF_GetTime();
+
+    event.stop_time = CBTF_GetTime();
+
+#if defined(EXTENDEDTRACE)
+    event.syscallno = SYS_writev;
+    event.nsysargs = 3;
+    event.sysargs[0] = fd;
+    event.sysargs[1] = (long) vector;
+    event.sysargs[2] = count;
+    event.retval = retval;
+
+#ifdef DEBUG_IOT
+    printf("iotwritev, fd=%d, namebuf=%s\n", fd, namebuf);
+#endif
+    /* use that to get the path into /proc. */
+    sprintf(pf,"/proc/self/fd/%d",fd);
+
+    /* Read the link the file descriptor points to in the /proc filesystem */
+    status = readlink(pf,namebuf,1024);
+    if (status > 1024) {
+      printf("ERROR, name too large\n");
+    }
+    namebuf[status] = 0;
+    strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
+
+
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 

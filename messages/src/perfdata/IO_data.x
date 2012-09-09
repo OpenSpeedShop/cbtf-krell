@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2011 The KrellInstitute. All Rights Reserved.
+** Copyright (c) 2011-2012 The KrellInstitute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -33,10 +33,31 @@ struct CBTF_io_event {
     uint16_t stacktrace;  /**< Index of the stack trace. */
 };
 
+/** Event structure describing a single I/O call. */
+#define CBTF_IO_MAXARGS 4
+struct CBTF_iot_event {
+    uint64_t start_time;  /**< Start time of the call. */
+    uint64_t stop_time;   /**< End time of the call. */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+
+    uint16_t pathindex;         /**< Index of the pathnames. */
+    uint16_t syscallno;         /**< System call number. */
+    uint16_t nsysargs;          /**< Number of arg to the syscall. */
+    uint64_t sysargs[CBTF_IO_MAXARGS];  /**< Actual arguments as integers. */
+    int retval;
+};
+
 /** Structure of the blob containing trace performance data. */
 struct CBTF_io_trace_data {
     uint64_t stacktraces<>;  /**< Stack traces. */
-    CBTF_io_event events<>;       /**< IO call events. */
+    CBTF_io_event events<>;  /**< IO call events. */
+};
+
+/** Structure of the blob containing trace performance data. */
+struct CBTF_io_exttrace_data {
+    uint64_t stacktraces<>;  /**< Stack traces. */
+    CBTF_iot_event events<>;  /**< IO call events. */
+    char pathnames<>;        /**< I/O pathnames. */
 };
 
 

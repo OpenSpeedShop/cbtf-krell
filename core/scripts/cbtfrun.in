@@ -269,7 +269,7 @@ case "$collector" in
     fi
     ;;
 
-    io)
+    io|iot)
     if [ $use_mrnet == "true" ]
     then
         if [ $use_mpi == "true" ]

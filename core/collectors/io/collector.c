@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2011 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -48,7 +48,11 @@
 #include "IOTraceableFunctions.h"
 
 /** String uniquely identifying this collector. */
+#if defined(EXTENDEDTRACE)
+const char* const cbtf_collector_unique_id = "iot";
+#else
 const char* const cbtf_collector_unique_id = "io";
+#endif
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -71,7 +75,7 @@ const unsigned OverheadFrameCount = 2;
 
 /** Maximum number of frames to allow in each stack trace. */
 /* what is a reasonable default here. 32? */
-#define MaxFramesPerStackTrace 48
+#define MaxFramesPerStackTrace 64
 
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
@@ -80,19 +84,35 @@ const unsigned OverheadFrameCount = 2;
 
 
 /** Number of event entries in the tracing buffer. */
-/** CBTF_io_event is 32 bytes */
+/** CBTF_io_event is 32 bytes , CBTF_iot_event is 80 bytes */
+#if defined(EXTENDEDTRACE)
+#define EventBufferSize (CBTF_BlobSizeFactor * 140)
+#define PathBufferSize  (CBTF_BlobSizeFactor * 2048)
+/* FIXME: is this thread safe? */
+char currentpathname[PATH_MAX];
+#else
 #define EventBufferSize (CBTF_BlobSizeFactor * 415)
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
+#if defined(EXTENDEDTRACE)
+    CBTF_io_exttrace_data data;              /**< Actual data blob. */
+#else
     CBTF_io_trace_data data;              /**< Actual data blob. */
+#endif
 
     /** Tracing buffer. */
     struct {
         uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
+#if defined(EXTENDEDTRACE)
+        CBTF_iot_event events[EventBufferSize]; /**< IO call events. */
+	char pathnames[PathBufferSize];                 /**< pathname buffer */
+#else
         CBTF_io_event events[EventBufferSize];          /**< IO call events. */
+#endif
     } buffer;
     
 #if defined (CBTF_SERVICE_USE_OFFLINE)
@@ -111,7 +131,11 @@ typedef struct {
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
+#if defined(EXTENDEDTRACE)
+static const uint32_t TLSKey = 0x00001EF8;
+#else
 static const uint32_t TLSKey = 0x00001EF7;
+#endif
 int io_init_tls_done = 0;
 
 #else
@@ -160,6 +184,12 @@ static void initialize_data(TLS* tls)
     /* Re-initialize the sampling buffer */
     memset(tls->buffer.stacktraces, 0, sizeof(tls->buffer.stacktraces));
     memset(tls->buffer.events, 0, sizeof(tls->buffer.events));
+#if defined(EXTENDEDTRACE)
+    tls->data.pathnames.pathnames_len = 1;
+    //tls->buffer.pathnames[0] = 0;
+    tls->data.pathnames.pathnames_val = tls->buffer.pathnames;
+    memset(tls->buffer.pathnames, 0, sizeof(tls->buffer.pathnames));
+#endif
 }
 
 
@@ -236,7 +266,11 @@ static void send_samples(TLS *tls)
 	}
 #endif
 
+#if defined(EXTENDEDTRACE)
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_io_exttrace_data, &(tls->data));
+#else
     cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_io_trace_data, &(tls->data));
+#endif
 
     /* Re-initialize the data blob's header */
     initialize_data(tls);
@@ -253,7 +287,11 @@ static void send_samples(TLS *tls)
 /*
 NO DEBUG PRINT STATEMENTS HERE.
 */
+#if defined(EXTENDEDTRACE)
+void io_start_event(CBTF_iot_event* event)
+#else
 void io_start_event(CBTF_io_event* event)
+#endif
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -267,7 +305,13 @@ void io_start_event(CBTF_io_event* event)
     ++tls->nesting_depth;
 
     /* Initialize the event record. */
+
+#if defined(EXTENDEDTRACE)
+    memset(event, 0, sizeof(CBTF_iot_event));
+    memset(currentpathname,0, sizeof(currentpathname));
+#else
     memset(event, 0, sizeof(CBTF_io_event));
+#endif
 }
 
 
@@ -286,7 +330,11 @@ void io_start_event(CBTF_io_event* event)
  *                    recorded.
  * NO DEBUG PRINT STATEMENTS HERE IF TRACING "write, __libc_write".
  */
+#if defined(EXTENDEDTRACE)
+void io_record_event(const CBTF_iot_event* event, uint64_t function)
+#else
 void io_record_event(const CBTF_io_event* event, uint64_t function)
+#endif
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -301,10 +349,83 @@ void io_record_event(const CBTF_io_event* event, uint64_t function)
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
     unsigned entry = 0, start, i;
-    unsigned pathindex = 0;
 
 #ifdef DEBUG
+#if defined(EXTENDEDTRACE)
+fprintf(stderr,"ENTERED io_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_iot_event),sizeof(stacktrace),tls->nesting_depth);
+#else
 fprintf(stderr,"ENTERED io_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_io_event),sizeof(stacktrace),tls->nesting_depth);
+#endif
+#endif
+
+
+#if defined(EXTENDEDTRACE)
+    /* need to search pathnames to see if this pathname already exists. */
+    unsigned pathindex = 0;
+    int curpathlen = 0;
+    if (currentpathname[0] > 0) {
+	curpathlen = strlen(currentpathname);
+    }
+
+    for(start = 0, i = 0;
+	(i < curpathlen) &&
+	    ((start + i) < tls->data.pathnames.pathnames_len);
+	++i)
+    {
+	/* Do the i'th charactes differ? */
+	if(currentpathname[i] != tls->buffer.pathnames[start + i]) {
+	    
+	    /* Advance in the tracing buffer to the end of this stack trace */
+	    for(start += i;
+		(tls->buffer.pathnames[start] != 0) &&
+		    (start < tls->data.pathnames.pathnames_len);
+		++start);
+	    
+	    /* Advance in the pathnames buffer past the terminating zero */
+	    ++start;
+
+	    /* Begin comparing at the zero'th frame again */
+	    i = 0;
+	}
+    }
+
+    /* Did we find a match in the pathnames buffer? */
+    if(i == curpathlen) {
+	entry = pathindex = start;
+#ifdef DEBUG
+	char *s = &(tls->buffer.pathnames[entry]);
+	printf("iot_record_event: tls->buffer.pathnames[%d]=%s, currentpathname=%s\n",entry, s, currentpathname );
+#endif
+
+    /* Otherwise add this pathname to the pathnames buffer */
+    } else {
+	
+	/* Send events if there is insufficient room for this pathname */
+	if((tls->data.pathnames.pathnames_len + curpathlen + 1) >=
+	   PathBufferSize) {
+#ifdef DEBUG
+fprintf(stderr,"PathBufferSize is full, call send_samples\n");
+#endif
+	    send_samples(tls);
+	}
+	
+	/* Add each char in the pathname to the pathnames buffer. */	
+	entry = tls->data.pathnames.pathnames_len;
+	for(i = 0; i < curpathlen; ++i) {
+	    
+	    /* Add the i'th frame to the tracing buffer */
+	    tls->buffer.pathnames[entry + i] = currentpathname[i];
+	}
+
+	pathindex = entry;
+	
+	/* Add a terminating zero  to the pathnames buffer */
+	tls->buffer.pathnames[entry + curpathlen] = 0;
+	
+	/* Set the new size of the pathnames buffer */
+	tls->data.pathnames.pathnames_len += (curpathlen + 1);
+	
+    }
 #endif
 
     /* Decrement the IO function wrapper nesting depth */
@@ -414,8 +535,14 @@ fprintf(stderr,"StackTraceBufferSize is full, call send_samples\n");
     }
     
     /* Add a new entry for this event to the tracing buffer. */
+#if defined(EXTENDEDTRACE)
+    memcpy(&(tls->buffer.events[tls->data.events.events_len]),
+	   event, sizeof(CBTF_iot_event));
+    tls->buffer.events[tls->data.events.events_len].pathindex = pathindex;
+#else
     memcpy(&(tls->buffer.events[tls->data.events.events_len]),
 	   event, sizeof(CBTF_io_event));
+#endif
     tls->buffer.events[tls->data.events.events_len].stacktrace = entry;
     tls->data.events.events_len++;
     

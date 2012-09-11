@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2011 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -59,9 +59,9 @@ typedef struct {
     CBTF_hwc_data data;        /**< Actual data blob. */
 
     CBTF_PCData buffer;      /**< PC sampling data buffer. */
-    int EventSet;
 
-    bool defer_sampling;
+    bool_t defer_sampling;
+    int EventSet;
 } TLS;
 
 static int hwc_papi_init_done = 0;
@@ -183,7 +183,6 @@ static void send_samples (TLS* tls)
     cbtf_collector_send(&tls->header, (xdrproc_t)xdr_CBTF_hwc_data, &tls->data);
 
     /* Re-initialize the data blob's header */
-    //tls->header.time_begin = tls->header.time_end;
     initialize_data(tls);
 }
 
@@ -274,12 +273,11 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
- 
+    /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
     tls->header.time_begin = CBTF_GetTime();
 
-    /* Begin sampling */
     if(hwc_papi_init_done == 0) {
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
@@ -288,10 +286,14 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 
     unsigned papi_event_code = get_papi_eventcode(hwc_papi_event);
 
+    /* PAPI SETUP */
     CBTF_Create_Eventset(&tls->EventSet);
     CBTF_AddEvent(tls->EventSet, papi_event_code);
     CBTF_Overflow(tls->EventSet, papi_event_code,
 		    hwc_papithreshold, hwcPAPIHandler);
+
+    /* Begin sampling */
+    tls->header.time_begin = CBTF_GetTime();
     CBTF_Start(tls->EventSet);
 }
 
@@ -308,7 +310,7 @@ void cbtf_collector_pause()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (tls == NULL)
+    if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
 
     tls->defer_sampling=TRUE;
@@ -327,21 +329,27 @@ void cbtf_collector_resume()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (tls == NULL)
+    if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
 
     tls->defer_sampling=FALSE;
 }
 
 
+#ifdef USE_EXPLICIT_TLS
+void destroy_explicit_tls() {
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    /* Destroy our thread-local storage */
+    if (tls) {
+        free(tls);
+    }
+    CBTF_SetTLS(TLSKey, NULL);
+}
+#endif
+
 
 /**
- * Stop sampling.
- *
- * Stops hardware counter (HWC) sampling for the thread executing this function.
- * Disables the sampling counter and sends any samples remaining in the buffer.
- *
- * @param arguments    Encoded (unused) function arguments.
+ * Called by the CBTF collector service in order to stop data collection.
  */
 void cbtf_collector_stop()
 {
@@ -368,9 +376,9 @@ void cbtf_collector_stop()
     if(tls->buffer.length > 0) {
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "hwc_stop_sampling calls send_samples.\n");
-	}
+        if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+            fprintf(stderr, "hwcsamp collector stop calls send_samples.\n");
+        }
 #endif
 
 	/* Send these samples */
@@ -379,15 +387,14 @@ void cbtf_collector_stop()
 
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS
-    free(tls);
-    CBTF_SetTLS(TLSKey, NULL);
+    destroy_explicit_tls();
 #endif
 }
 
 
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
-void hwc_resume_papi()
+void cbtf_offline_service_start_timer()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -400,7 +407,7 @@ void hwc_resume_papi()
     CBTF_Start(tls->EventSet);
 }
 
-void hwc_suspend_papi()
+void cbtf_offline_service_stop_timer()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -411,16 +418,5 @@ void hwc_suspend_papi()
     if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
     CBTF_Stop(tls->EventSet, NULL);
-}
-#endif
-
-#ifdef USE_EXPLICIT_TLS
-void destroy_explicit_tls() {
-    TLS* tls = CBTF_GetTLS(TLSKey);
-    /* Destroy our thread-local storage */
-    if (tls) {
-        free(tls);
-    }
-    CBTF_SetTLS(TLSKey, NULL);
 }
 #endif

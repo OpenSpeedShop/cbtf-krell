@@ -33,6 +33,8 @@
 #include "Mpi.h"
 #include "Hwc_data.h"
 #include "Hwc.h"
+#include "Hwcsamp_data.h"
+#include "Hwcsamp.h"
 #include "Hwctime_data.h"
 #include "Hwctime.h"
 
@@ -50,6 +52,9 @@ KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_start_sampling_args)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_parameters)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwc_start_sampling_args)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwcsamp_data)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwcsamp_parameters)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwcsamp_start_sampling_args)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwctime_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwctime_parameters)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_hwctime_start_sampling_args)

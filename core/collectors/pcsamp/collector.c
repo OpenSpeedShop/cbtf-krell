@@ -47,17 +47,6 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
-#define true 1
-#define false 0
-
-#if !defined (TRUE)
-#define TRUE true
-#endif
-
-#if !defined (FALSE)
-#define FALSE false
-#endif
-
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
 
@@ -88,15 +77,87 @@ static __thread TLS the_tls;
 
 #endif
 
-static void send_samples ()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
 
+/**
+ * Initialize the performance data header and blob contained within the given
+ * thread-local storage. This function <em>must</em> be called before any of
+ * the collection routines attempts to add a message.
+ *
+ * @param tls    Thread-local storage to be initialized.
+ */
+static void initialize_data(TLS* tls)
+{
+    Assert(tls != NULL);
+
+    tls->header.time_begin = CBTF_GetTime();
+    tls->header.time_end = 0;
+    tls->header.addr_begin = ~0;
+    tls->header.addr_end = 0;
+    
+    /* Initialize the actual data blob */
+    tls->data.pc.pc_val = tls->buffer.pc;
+    tls->data.count.count_val = tls->buffer.count;
+
+    /* Re-initialize the actual data blob */
+    tls->data.pc.pc_len = 0;
+    tls->data.count.count_len = 0;
+
+    /* Re-initialize the sampling buffer */
+    tls->buffer.addr_begin = ~0;
+    tls->buffer.addr_end = 0;
+    tls->buffer.length = 0;
+    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
+}
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified time. Insures that the time interval defined by
+ * time_begin and time_end contain the specified time.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param time    Time with which to update.
+ */
+inline void update_header_with_time(TLS* tls, uint64_t time)
+{
+    Assert(tls != NULL);
+
+    if (time < tls->header.time_begin)
+    {
+        tls->header.time_begin = time;
+    }
+    if (time >= tls->header.time_end)
+    {
+        tls->header.time_end = time + 1;
+    }
+}
+
+
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified address. Insures that the address range defined
+ * by addr_begin and addr_end contain the specified address.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param addr    Address with which to update.
+ */
+inline void update_header_with_address(TLS* tls, uint64_t addr)
+{
+    Assert(tls != NULL);
+
+    if (addr < tls->header.addr_begin)
+    {
+        tls->header.addr_begin = addr;
+    }
+    if (addr >= tls->header.addr_end)
+    {
+        tls->header.addr_end = addr + 1;
+    }
+}
+
+static void send_samples (TLS* tls)
+{
     Assert(tls != NULL);
 
     tls->header.id = strdup(cbtf_collector_unique_id);
@@ -119,20 +180,7 @@ static void send_samples ()
     cbtf_collector_send(&tls->header, (xdrproc_t)xdr_CBTF_pcsamp_data, &tls->data);
 
     /* Re-initialize the data blob's header */
-    tls->header.time_begin = tls->header.time_end;
-    tls->header.time_end = 0;
-    tls->header.addr_begin = ~0;
-    tls->header.addr_end = 0;
-
-    /* Re-initialize the actual data blob */
-    tls->data.pc.pc_len = 0;
-    tls->data.count.count_len = 0;
-
-    /* Re-initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    tls->buffer.length = 0;
-    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
+    initialize_data(tls);
 }
 
 
@@ -161,15 +209,14 @@ static void serviceTimerHandler(const ucontext_t* context)
     if(tls->defer_sampling == TRUE) {
         return;
     }
-    
+ 
     /* Obtain the program counter (PC) address from the thread context */
     uint64_t pc = CBTF_GetPCFromContext(context);
 
     /* Update the sampling buffer and check if it has been filled */
     if(CBTF_UpdatePCData(pc, &tls->buffer)) {
-
 	/* Send these samples */
-	send_samples();
+	send_samples(tls);
     }
 }
 
@@ -210,25 +257,22 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 			    (xdrproc_t)xdr_CBTF_pcsamp_start_sampling_args,
 			    &args);
 #endif
-    
+
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
     /* Initialize the actual data blob */
+    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
+    initialize_data(tls);
+    tls->header.time_begin = CBTF_GetTime();
+
     tls->data.interval = 
 	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);
     tls->data.pc.pc_val = tls->buffer.pc;
     tls->data.count.count_val = tls->buffer.count;
 
-    /* Initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
-    tls->buffer.addr_end = 0;
-    tls->buffer.length = 0;
-    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
- 
     /* Begin sampling */
-    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     tls->header.time_begin = CBTF_GetTime();
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
@@ -272,6 +316,17 @@ void cbtf_collector_resume()
 }
 
 
+#ifdef USE_EXPLICIT_TLS
+void destroy_explicit_tls() {
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    /* Destroy our thread-local storage */
+    if (tls) {
+        free(tls);
+    }
+    CBTF_SetTLS(TLSKey, NULL);
+}
+#endif
+
 
 /**
  * Called by the CBTF collector service in order to stop data collection.
@@ -293,15 +348,13 @@ void cbtf_collector_stop()
 
     /* Are there any unsent samples? */
     if(tls->buffer.length > 0) {
-
 	/* Send these samples */
-	send_samples();
+	send_samples(tls);
     }
 
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS
-    free(tls);
-    CBTF_SetTLS(TLSKey, NULL);
+    destroy_explicit_tls();
 #endif
 }
 
@@ -325,16 +378,5 @@ void cbtf_offline_service_start_timer()
 void cbtf_offline_service_stop_timer()
 {
     CBTF_Timer(0, NULL);
-}
-#endif
-
-#ifdef USE_EXPLICIT_TLS
-void destroy_explicit_tls() {
-    TLS* tls = CBTF_GetTLS(TLSKey);
-    /* Destroy our thread-local storage */
-    if (tls) {
-        free(tls);
-    }
-    CBTF_SetTLS(TLSKey, NULL);
 }
 #endif

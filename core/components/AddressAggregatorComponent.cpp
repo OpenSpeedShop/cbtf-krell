@@ -42,6 +42,7 @@
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
 #include "KrellInstitute/Messages/Hwc_data.h"
+#include "KrellInstitute/Messages/Hwcsamp_data.h"
 #include "KrellInstitute/Messages/Hwctime_data.h"
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
@@ -87,6 +88,14 @@ bool is_debug_aggregator_events_enabled =
             CBTF_hwc_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
+	    pc_val = data.pc.pc_val;
+	    count_val = data.count.count_val;
+	    pc_len = data.pc.pc_len;
+	    interval = data.interval;
+	} else if (id == "hwcsamp") {
+            CBTF_hwcsamp_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data), &data);
 	    pc_val = data.pc.pc_val;
 	    count_val = data.count.count_val;
 	    pc_len = data.pc.pc_len;
@@ -233,6 +242,9 @@ private:
         declareInput<boost::shared_ptr<CBTF_hwc_data> >(
             "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
             );
+        declareInput<boost::shared_ptr<CBTF_hwcsamp_data> >(
+            "hwcsamp", boost::bind(&AddressAggregator::hwcsampHandler, this, _1)
+            );
         declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
             "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
             );
@@ -306,12 +318,28 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
-    /** Handler for the "in1" input.*/
+    /** Handler for the "hwc" input.*/
     void hwcHandler(const boost::shared_ptr<CBTF_hwc_data>& in)
     {
         CBTF_hwc_data *data = in.get();
 
         //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
+	PCData pcdata;
+        pcdata.aggregateAddressCounts(data->pc.pc_len,
+                                data->pc.pc_val,
+                                data->count.count_val,
+                                abuffer);
+
+	emitOutput<uint64_t>("interval",  data->interval);
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "hwcsamp" input.*/
+    void hwcsampHandler(const boost::shared_ptr<CBTF_hwcsamp_data>& in)
+    {
+        CBTF_hwcsamp_data *data = in.get();
+
+        //std::cerr << "AddressAggregator::hwcsampHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,

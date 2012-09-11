@@ -20,7 +20,7 @@
 
 /** @file
  *
- * Declaration and definition of the HWCTime collector's runtime.
+ * Declaration and definition of the HWC sampling collector's runtime.
  *
  */
 
@@ -33,8 +33,8 @@
 #include <string.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
-#include "KrellInstitute/Messages/Hwctime.h"
-#include "KrellInstitute/Messages/Hwctime_data.h"
+#include "KrellInstitute/Messages/Hwcsamp.h"
+#include "KrellInstitute/Messages/Hwcsamp_data.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -46,58 +46,34 @@
 #include "KrellInstitute/Services/PapiAPI.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
-#include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 
 /** String uniquely identifying this collector. */
-const char* const cbtf_collector_unique_id = "hwctime";
+const char* const cbtf_collector_unique_id = "hwcsamp";
 
-#if UNW_TARGET_X86 || UNW_TARGET_X86_64
-# define STACK_SIZE     (128*1024)      /* On x86, SIGSTKSZ is too small */
-#else
-# define STACK_SIZE     SIGSTKSZ
-#endif
-
-/*
- * NOTE: For some reason GCC doesn't like it when the following two macros are
- *       replaced with constant unsigned integers. It complains about the arrays
- *       in the tls structure being "variable-size type declared outside of any
- *       function" even though the size IS constant... Maybe this can be fixed?
- */
-
-/** Number of entries in the sample buffer. */
-#define CBTF_USERTIME_BUFFERSIZE  1024
-
-/** Man number of frames for callstack collection */
-#define CBTF_USERTIME_MAXFRAMES 100
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_hwctime_data data;        /**< Actual data blob. */
+    CBTF_hwcsamp_data data;        /**< Actual data blob. */
 
-    /** Sample buffer. */
-    /**< buffer.stacktraces: Stack trace (PC) addresses. */
-    /**< buffer.count: count value greater than 0 is top */
-    /**< of stack. A count of 255 indicates */
-    /**< another instance of this stack may */
-    /**< exist in buffer stacktraces. */
-    CBTF_StackTraceData buffer;
+    CBTF_HWCPCData buffer;      /**< PC sampling data buffer. */
 
     bool_t defer_sampling;
     int EventSet;
 } TLS;
 
-static int hwctime_papi_init_done = 0;
+static int hwcsamp_papi_init_done = 0;
+static long_long evalues[6] = { 0, 0, 0, 0, 0, 0 };
 
-#ifdef USE_EXPLICIT_TLS
+#if defined(USE_EXPLICIT_TLS)
 
 /**
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
-static const uint32_t TLSKey = 0x00001EF6;
+static const uint32_t TLSKey = 0x00001FF3;
 
 #else
 
@@ -123,15 +99,23 @@ static void initialize_data(TLS* tls)
     tls->header.addr_begin = ~0;
     tls->header.addr_end = 0;
     
-    /* Re-initialize the actual data blob */
-    tls->data.stacktraces.stacktraces_val = tls->buffer.stacktraces;
-    tls->data.stacktraces.stacktraces_len = 0;
+    /* Initialize the actual data blob */
+    tls->data.pc.pc_val = tls->buffer.pc;
     tls->data.count.count_val = tls->buffer.count;
+
+    /* Re-initialize the actual data blob */
+    tls->data.pc.pc_len = 0;
     tls->data.count.count_len = 0;
+    tls->data.events.events_val = tls->buffer.hwccounts;
+    tls->data.events.events_len = tls->buffer.length;
 
     /* Re-initialize the sampling buffer */
-    memset(tls->buffer.stacktraces, 0, sizeof(tls->buffer.stacktraces));
-    memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
+    tls->buffer.addr_begin = ~0;
+    tls->buffer.addr_end = 0;
+    tls->buffer.length = 0;
+    memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
+    memset(tls->buffer.hwccounts, 0, sizeof(tls->buffer.hwccounts));
+    memset(evalues,0,sizeof(evalues));
 }
 
 
@@ -187,42 +171,64 @@ static void send_samples (TLS* tls)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+    tls->header.addr_begin = tls->buffer.addr_begin;
+    tls->header.addr_end = tls->buffer.addr_end;
+    tls->data.pc.pc_len = tls->buffer.length;
+    tls->data.count.count_len = tls->buffer.length;
+    tls->data.events.events_len = tls->buffer.length;
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "hwctime send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+
+#if 0
+int bufsize = tls->buffer.length * sizeof(tls->buffer);
+int pcsize =  tls->buffer.length * sizeof(tls->data.pc.pc_val);
+int countsize =  tls->buffer.length * sizeof(tls->data.count.count_val);
+
+fprintf(stderr,"send_samples: size of tls data is %d, buffer is %d\n",sizeof(tls->data), sizeof(tls->buffer));
+fprintf(stderr,"send_samples: size of tls PC data is %d  %d, COUNT is %d  %d\n",tls->buffer.length , pcsize,tls->buffer.length , countsize);
+fprintf(stderr,"send_samples: size of tls HASH is %d\n", sizeof(tls->buffer.hash_table));
+fprintf(stderr,"send_samples: size of tls data pc buff is %d\n", sizeof(tls->data.pc.pc_val)*CBTF_HWCPCBufferSize);
+fprintf(stderr,"send_samples: size of tls data count buff is %d\n", sizeof(tls->data.count.count_val)*CBTF_HWCPCBufferSize);
+fprintf(stderr,"send_samples: size of tls hwccounts is %d\n", sizeof(tls->buffer.hwccounts));
+fprintf(stderr,"send_samples: size of CBTF_evcounts is %d\n", sizeof(CBTF_evcounts)*CBTF_HWCPCBufferSize);
+fprintf(stderr,"send_samples: size of lon long is %d\n", sizeof(long long));
+fprintf(stderr,"send_samples: size of uint64_t is %d\n", sizeof(uint64_t));
+fprintf(stderr,"send_samples: size of CBTF_HWCPCData is %d\n", sizeof(CBTF_HWCPCData));
+int eventssize =  tls->buffer.length * sizeof(tls->data.events.events_val);
+fprintf(stderr,"send_samples: size of eventssize = %d\n",eventssize);
+#endif
+
+
+	    fprintf(stderr, "hwcsamp send_samples:\n");
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
-		tls->data.stacktraces.stacktraces_len,
+		tls->data.pc.pc_len,
 		tls->data.count.count_len);
 	}
 #endif
 
-    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_hwctime_data, &(tls->data));
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_hwcsamp_data, &(tls->data));
 
     /* Re-initialize the data blob's header */
     initialize_data(tls);
 }
 
-static int total = 0;
-static int stacktotal = 0;
 
 /**
- * PAPI event handler.
+ * Timer event handler.
  *
- * Called by PAPI_overflow each time a sample is to be taken. 
- * Extract the PC address for each frame in the current stack trace and store
- * them into the sample buffer. Terminate each stack trace with a NULL address.
- * When the sample buffer is full, it is sent to the framework
+ * Called by the timer handler each time a sample is to be taken. Extracts the
+ * program counter (PC) address from the signal context and places it into the
+ * sample buffer. When the sample buffer is full, it is sent to the framework
  * for storage in the experiment's database.
  *
  * @note    
  * 
- * @param context    Thread context at papi overflow.
+ * @param context    Thread context at timer interrupt.
  */
-static void
-hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void* context)
+static void hwcsampTimerHandler(const ucontext_t* context)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -235,105 +241,32 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
     if(tls->defer_sampling == TRUE) {
         return;
     }
+ 
+    /* Obtain the program counter (PC) address from the thread context */
+    uint64_t pc = CBTF_GetPCFromContext(context);
 
-    int framecount = 0;
-    int stackindex = 0;
-    uint64_t framebuf[CBTF_USERTIME_MAXFRAMES];
+    /* This is supposed to reset counters */
+    CBTF_HWCAccum(tls->EventSet, evalues);
 
-    memset(framebuf,0, sizeof(framebuf));
-
-    /* get stack address for current context and store them into framebuf. */
-
-#if defined(__linux) && defined(__x86_64)
-    /* The latest version of libunwind provides a fast trace
-     * backtrace function we now use. We need to manually
-     * skip signal frames when using that unwind function.
-     * For PAPI's handler we need to skip 6 frames of
-     * overhead.
-     */
-
-#if defined(USE_FASTTRACE)
-    CBTF_GetStackTrace(FALSE, 6,
-                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
-#else
-    CBTF_GetStackTraceFromContext (context, TRUE, 0,
-                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
-#endif
-
-#else
-    CBTF_GetStackTraceFromContext (context, TRUE, 0,
-                        CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
-#endif
-
-    bool_t stack_already_exists = FALSE;
-
-    int i, j;
-    /* search individual stacks via count/indexing array */
-    for (i = 0; i < tls->data.count.count_len ; i++ )
-    {
-	/* a count > 0 indexes the top of stack in the data buffer. */
-	/* a count == 255 indicates this stack is at the count limit. */
-
-	if (tls->buffer.count[i] == 0) {
-	    continue;
-	}
-	if (tls->buffer.count[i] == 255) {
-	    continue;
-	}
-
-	/* see if the stack addresses match */
-	for (j = 0; j < framecount ; j++ )
-	{
-	    if ( tls->buffer.stacktraces[i+j] != framebuf[j] ) {
-		   break;
-	    }
-	}
-
-	if ( j == framecount) {
-	    stack_already_exists = TRUE;
-	    stackindex = i;
-	}
-    }
-
-    /* if the stack already exisits in the buffer, update its count
-     * and return. If the stack is already at the count limit.
-    */
-    if (stack_already_exists && tls->buffer.count[stackindex] < 255 ) {
-	/* update count for this stack */
-	tls->buffer.count[stackindex] = tls->buffer.count[stackindex] + 1;
-	return;
-    }
-
-    /* sample buffer has no room for these stack frames.*/
-    int buflen = tls->data.stacktraces.stacktraces_len + framecount;
-    if ( buflen > CBTF_USERTIME_BUFFERSIZE) {
-	/* send the current sample buffer. (will init a new buffer) */
+    /* Update the sampling buffer and check if it has been filled */
+    if(CBTF_UpdateHWCPCData(pc, &tls->buffer,evalues)) {
+	/* Send these samples */
 	send_samples(tls);
     }
 
-    /* add frames to sample buffer, compute addresss range */
-    for (i = 0; i < framecount ; i++)
-    {
-	/* always add address to buffer bt */
-	tls->buffer.stacktraces[tls->data.stacktraces.stacktraces_len] = framebuf[i];
+    /* reset our values */
+    memset(evalues,0,sizeof(evalues));
 
-	/* top of stack indicated by a positive count. */
-	/* all other elements are 0 */
-	if (i > 0 ) {
-	    tls->buffer.count[tls->data.count.count_len] = 0;
-	} else {
-	    tls->buffer.count[tls->data.count.count_len] = 1;
-	}
-
-	if (framebuf[i] < tls->header.addr_begin ) {
-	    tls->header.addr_begin = framebuf[i];
-	}
-	if (framebuf[i] > tls->header.addr_end ) {
-	    tls->header.addr_end = framebuf[i];
-	}
-	tls->data.stacktraces.stacktraces_len++;
-	tls->data.count.count_len++;
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR_DETAILS") != NULL) {
+      int i;
+      for (i = 0; i < 6; i++) {
+        if (tls->buffer.hwccounts[tls->buffer.length-1][i] > 0) {
+            fprintf(stderr,"%#lx HWC sampTimerHandler %d count %d is %ld\n",pc,tls->buffer.length-1,i, tls->buffer.hwccounts[tls->buffer.length-1][i]);
+        }
+      }
     }
+#endif
 }
 
 
@@ -364,24 +297,29 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->defer_sampling=FALSE;
 
     /* Decode the passed function arguments */
-    CBTF_hwctime_start_sampling_args args;
+    // Need to handle the arguments...
+    CBTF_hwcsamp_start_sampling_args args;
     memset(&args, 0, sizeof(args));
- 
+    args.sampling_rate = 100;
 
-    /* set defaults */ 
-    int hwctime_papithreshold = THRESHOLD*2;
-    char* hwctime_papi_event = "PAPI_TOT_CYC";
+    /* First set defaults */
+    int hwcsamp_rate = 100;
+    char* hwcsamp_papi_event = "PAPI_TOT_CYC,PAPI_FP_OPS";
 
-    char* hwctime_event_param = getenv("CBTF_HWCTIME_EVENT");
-    if (hwctime_event_param != NULL) {
-        hwctime_papi_event=hwctime_event_param;
+#if defined (CBTF_SERVICE_USE_OFFLINE)
+    char* hwcsamp_event_param = getenv("CBTF_HWCSAMP_EVENTS");
+    if (hwcsamp_event_param != NULL) {
+        hwcsamp_papi_event=hwcsamp_event_param;
     }
 
-    const char* sampling_rate = getenv("CBTF_HWCTIME_THRESHOLD");
+    const char* sampling_rate = getenv("CBTF_HWCSAMP_RATE");
     if (sampling_rate != NULL) {
-        hwctime_papithreshold=atoi(sampling_rate);
+        hwcsamp_rate=atoi(sampling_rate);
     }
-    tls->data.interval = hwctime_papithreshold;
+    args.collector = 1;
+    args.experiment = 0;
+    tls->data.interval = (uint64_t)(1000000000) / (uint64_t)(hwcsamp_rate);;
+#endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
@@ -392,23 +330,87 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     initialize_data(tls);
     tls->header.time_begin = CBTF_GetTime();
 
-    if(hwctime_papi_init_done == 0) {
+    if(hwcsamp_papi_init_done == 0) {
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
-	hwctime_papi_init_done = 1;
+	tls->data.clock_mhz = (float) hw_info->mhz;
+	hwcsamp_papi_init_done = 1;
+    } else {
+	tls->data.clock_mhz = (float) hw_info->mhz;
     }
 
-    unsigned papi_event_code = get_papi_eventcode(hwctime_papi_event);
 
     /* PAPI SETUP */
     CBTF_Create_Eventset(&tls->EventSet);
-    CBTF_AddEvent(tls->EventSet, papi_event_code);
-    CBTF_Overflow(tls->EventSet, papi_event_code,
-		    hwctime_papithreshold, hwctimePAPIHandler);
+
+    int rval = PAPI_OK;
+
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+       fprintf(stderr, "PAPI Version: %d.%d.%d.%d\n", PAPI_VERSION_MAJOR( PAPI_VERSION ),
+                        PAPI_VERSION_MINOR( PAPI_VERSION ),
+                        PAPI_VERSION_REVISION( PAPI_VERSION ),
+                        PAPI_VERSION_INCREMENT( PAPI_VERSION ) );
+       fprintf(stderr,"System has %d hardware counters.\n", PAPI_num_counters());
+    }
+#endif
+
+/* In Component PAPI, EventSets must be assigned a component index
+ * before you can fiddle with their internals. 0 is always the cpu component */
+#if (PAPI_VERSION_MAJOR(PAPI_VERSION)>=4)
+    rval = PAPI_assign_eventset_component( tls->EventSet, 0 );
+    if (rval != PAPI_OK) {
+        CBTF_PAPIerror(rval,"CBTF_Create_Eventset assign_eventset_component");
+        return;
+    }
+#endif
+
+    if (getenv("CBTF_HWCSAMP_MULTIPLEX") != NULL) {
+#if !defined(TARGET_OS_BGP) 
+	rval = PAPI_set_multiplex( tls->EventSet );
+	if ( rval == PAPI_ENOSUPP) {
+	    fprintf(stderr,"CBTF_Create_Eventset: Multiplex not supported\n");
+	} else if (rval != PAPI_OK)  {
+	    CBTF_PAPIerror(rval,"CBTF_Create_Eventset set_multiplex");
+	}
+#endif
+    }
+
+    /* TODO: check return values of direct PAPI calls
+     * and handle them as needed.
+     */
+    /* Rework the code here to call PAPI directly rather than
+     * call any OPENSS helper functions due to inconsitent
+     * behaviour seen on various lab systems
+     */
+    int eventcode = 0;
+    rval = PAPI_OK;
+    if (hwcsamp_papi_event != NULL) {
+	char *tfptr, *saveptr, *tf_token;
+	tfptr = strdup(hwcsamp_papi_event);
+	int i;
+	for (i = 1;  ; i++, tfptr = NULL) {
+	    tf_token = strtok_r(tfptr, ",", &saveptr);
+	    if (tf_token == NULL) {
+		break;
+	    }
+	    PAPI_event_name_to_code(tf_token,&eventcode);
+	    rval = PAPI_add_event(tls->EventSet,eventcode);
+
+	    if (tfptr) free(tfptr);
+	}
+	
+    } else {
+	PAPI_event_name_to_code("PAPI_TOT_CYC",&eventcode);
+	rval = PAPI_add_event(tls->EventSet,eventcode);
+	PAPI_event_name_to_code("PAPI_FP_OPS",&eventcode);
+	rval = PAPI_add_event(tls->EventSet,eventcode);
+    }
 
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
     CBTF_Start(tls->EventSet);
+    CBTF_Timer(tls->data.interval, hwcsampTimerHandler);
 }
 
 
@@ -424,10 +426,11 @@ void cbtf_collector_pause()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwctime_papi_init_done == 0 || tls == NULL)
+    if (hwcsamp_papi_init_done == 0 || tls == NULL)
 	return;
 
     tls->defer_sampling=TRUE;
+    CBTF_Stop(tls->EventSet, evalues);
 }
 
 
@@ -443,10 +446,11 @@ void cbtf_collector_resume()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwctime_papi_init_done == 0 || tls == NULL)
+    if (hwcsamp_papi_init_done == 0 || tls == NULL)
 	return;
 
     tls->defer_sampling=FALSE;
+    CBTF_Start(tls->EventSet);
 }
 
 
@@ -476,18 +480,21 @@ void cbtf_collector_stop()
     Assert(tls != NULL);
 
     if (tls->EventSet == PAPI_NULL) {
-	/*fprintf(stderr,"hwctime_stop_sampling RETURNS - NO EVENTSET!\n");*/
+	/*fprintf(stderr,"hwcsamp_stop_sampling RETURNS - NO EVENTSET!\n");*/
 	/* we are called before eny events are set in papi. just return */
         return;
     }
 
+    /* Stop counters */
+    CBTF_Stop(tls->EventSet, evalues);
+
     /* Stop sampling */
-    CBTF_Stop(tls->EventSet, NULL);
+    CBTF_Timer(0, NULL);
 
     tls->header.time_end = CBTF_GetTime();
 
     /* Are there any unsent samples? */
-    if(tls->data.stacktraces.stacktraces_len > 0) {
+    if(tls->buffer.length > 0) {
 	/* Send these samples */
 	send_samples(tls);
     }
@@ -509,9 +516,10 @@ void cbtf_offline_service_start_timer()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwctime_papi_init_done == 0 || tls == NULL)
+    if (hwcsamp_papi_init_done == 0 || tls == NULL)
 	return;
     CBTF_Start(tls->EventSet);
+    CBTF_Timer(tls->data.interval, hwcsampTimerHandler);
 }
 
 void cbtf_offline_service_stop_timer()
@@ -522,8 +530,7 @@ void cbtf_offline_service_stop_timer()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwctime_papi_init_done == 0 || tls == NULL)
-	return;
-    CBTF_Stop(tls->EventSet, NULL);
+    CBTF_Stop(tls->EventSet, evalues);
+    CBTF_Timer(0, NULL);
 }
 #endif

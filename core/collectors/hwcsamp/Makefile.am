@@ -23,10 +23,10 @@ plugindir = $(libdir)/KrellInstitute/Components
 pkglibdir = $(libdir)/KrellInstitute/Collectors
 staticpkglibdir = $(libdir)/KrellInstitute/Collectors/static
 
-BUILT_FILES = hwc.xml
+BUILT_FILES = hwcsamp.xml
 
 nobase_dist_xml_DATA = \
-        hwc.xml
+        hwcsamp.xml
 
 
 pkglib_LTLIBRARIES =
@@ -35,22 +35,22 @@ staticpkglib_LTLIBRARIES =
 if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += hwc-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libhwc-monitor-fileio.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-fileio.la
 
-hwc_collector_monitor_fileio_la_CFLAGS = \
+hwcsamp_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
 	@PAPI_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
 
-hwc_collector_monitor_fileio_la_LDFLAGS = \
+hwcsamp_collector_monitor_fileio_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_fileio_la_LIBADD = \
+hwcsamp_collector_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -59,10 +59,10 @@ hwc_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-hwc_collector_monitor_fileio_la_SOURCES = \
+hwcsamp_collector_monitor_fileio_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_fileio_la_CFLAGS = \
+libhwcsamp_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -70,13 +70,13 @@ libhwc_monitor_fileio_la_CFLAGS = \
 	@PAPI_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
 
-libhwc_monitor_fileio_la_LDFLAGS = \
+libhwcsamp_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_fileio_la_LIBADD = \
+libhwcsamp_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -85,15 +85,15 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libhwc_monitor_fileio_la_SOURCES = \
+libhwcsamp_monitor_fileio_la_SOURCES = \
 	collector.c
 
 if HAVE_MRNET
 
-pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet.la
-staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-mrnet.la
 
-hwc_collector_monitor_mrnet_la_CFLAGS = \
+hwcsamp_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -102,13 +102,13 @@ hwc_collector_monitor_mrnet_la_CFLAGS = \
 	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-hwc_collector_monitor_mrnet_la_LDFLAGS = \
+hwcsamp_collector_monitor_mrnet_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_mrnet_la_LIBADD = \
+hwcsamp_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -118,10 +118,10 @@ hwc_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-hwc_collector_monitor_mrnet_la_SOURCES = \
+hwcsamp_collector_monitor_mrnet_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_mrnet_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -131,14 +131,14 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_la_LIBADD = \
+libhwcsamp_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -148,14 +148,14 @@ libhwc_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_la_SOURCES = \
+libhwcsamp_monitor_mrnet_la_SOURCES = \
 	collector.c
 
 
-pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-mrnet-mpi.la
 
-hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
+hwcsamp_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -165,13 +165,13 @@ hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+hwcsamp_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
+hwcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -182,10 +182,10 @@ hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-hwc_collector_monitor_mrnet_mpi_la_SOURCES = \
+hwcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_mrnet_mpi_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -196,14 +196,14 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@PAPI_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_mpi_la_LIBADD = \
+libhwcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -213,7 +213,7 @@ libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_mpi_la_SOURCES = \
+libhwcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 
 # endif for HAVE_MRNET
@@ -226,24 +226,24 @@ endif
 
 if HAVE_TARGET_LIBMONITOR
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += hwc-collector-monitor-fileio.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-fileio.la
 endif
-staticpkglib_LTLIBRARIES += libhwc-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
-hwc_collector_monitor_fileio_la_CFLAGS = \
+hwcsamp_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
-hwc_collector_monitor_fileio_la_LDFLAGS = \
+hwcsamp_collector_monitor_fileio_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_fileio_la_LIBADD = \
+hwcsamp_collector_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -252,10 +252,10 @@ hwc_collector_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-hwc_collector_monitor_fileio_la_SOURCES = \
+hwcsamp_collector_monitor_fileio_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_fileio_la_CFLAGS = \
+libhwcsamp_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -263,13 +263,13 @@ libhwc_monitor_fileio_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
-libhwc_monitor_fileio_la_LDFLAGS = \
+libhwcsamp_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_fileio_la_LIBADD = \
+libhwcsamp_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -278,12 +278,12 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libhwc_monitor_fileio_la_SOURCES = \
+libhwcsamp_monitor_fileio_la_SOURCES = \
 	collector.c
 else
 
 if HAVE_TARGET_STATIC
-libhwc_monitor_fileio_la_CFLAGS = \
+libhwcsamp_monitor_fileio_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -291,13 +291,13 @@ libhwc_monitor_fileio_la_CFLAGS = \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
 	@TARGET_LIBMONITOR_CPPFLAGS@
 
-libhwc_monitor_fileio_la_LDFLAGS = \
+libhwcsamp_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_fileio_la_LIBADD = \
+libhwcsamp_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
@@ -306,7 +306,7 @@ libhwc_monitor_fileio_la_LIBADD = \
 	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libhwc_monitor_fileio_la_SOURCES = \
+libhwcsamp_monitor_fileio_la_SOURCES = \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -316,12 +316,12 @@ endif
 
 if HAVE_TARGET_MRNET
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-mrnet.la
 endif
-staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-mrnet.la
 
 if HAVE_TARGET_SHARED
-hwc_collector_monitor_mrnet_la_CFLAGS = \
+hwcsamp_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
@@ -330,13 +330,13 @@ hwc_collector_monitor_mrnet_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-hwc_collector_monitor_mrnet_la_LDFLAGS = \
+hwcsamp_collector_monitor_mrnet_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_mrnet_la_LIBADD = \
+hwcsamp_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -346,10 +346,10 @@ hwc_collector_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-hwc_collector_monitor_mrnet_la_SOURCES = \
+hwcsamp_collector_monitor_mrnet_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_mrnet_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -359,14 +359,14 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_la_LIBADD = \
+libhwcsamp_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -376,12 +376,12 @@ libhwc_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_la_SOURCES = \
+libhwcsamp_monitor_mrnet_la_SOURCES = \
 	collector.c
 else
 
 if HAVE_TARGET_STATIC
-libhwc_monitor_mrnet_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -391,14 +391,14 @@ libhwc_monitor_mrnet_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_la_LIBADD = \
+libhwcsamp_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -408,7 +408,7 @@ libhwc_monitor_mrnet_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_la_SOURCES = \
+libhwcsamp_monitor_mrnet_la_SOURCES = \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -417,12 +417,12 @@ endif
 
 
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += hwc-collector-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += hwcsamp-collector-monitor-mrnet-mpi.la
 endif
-staticpkglib_LTLIBRARIES += libhwc-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libhwcsamp-monitor-mrnet-mpi.la
 
 if HAVE_TARGET_SHARED
-hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
+hwcsamp_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -432,13 +432,13 @@ hwc_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-hwc_collector_monitor_mrnet_mpi_la_LDFLAGS = \
+hwcsamp_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
+hwcsamp_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -449,10 +449,10 @@ hwc_collector_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-hwc_collector_monitor_mrnet_mpi_la_SOURCES = \
+hwcsamp_collector_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 
-libhwc_monitor_mrnet_mpi_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -463,14 +463,14 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_mpi_la_LIBADD = \
+libhwcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -480,12 +480,12 @@ libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_mpi_la_SOURCES = \
+libhwcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 else
 
 if HAVE_TARGET_STATIC
-libhwc_monitor_mrnet_mpi_la_CFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
@@ -496,14 +496,14 @@ libhwc_monitor_mrnet_mpi_la_CFLAGS = \
 	@TARGET_PAPI_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@
 
-libhwc_monitor_mrnet_mpi_la_LDFLAGS = \
+libhwcsamp_monitor_mrnet_mpi_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
 	-no-undefined
 
-libhwc_monitor_mrnet_mpi_la_LIBADD = \
+libhwcsamp_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
@@ -513,7 +513,7 @@ libhwc_monitor_mrnet_mpi_la_LIBADD = \
 	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
-libhwc_monitor_mrnet_mpi_la_SOURCES = \
+libhwcsamp_monitor_mrnet_mpi_la_SOURCES = \
 	collector.c
 # endif TARGET_STATIC
 endif
@@ -528,12 +528,12 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-hwc.xml: hwc.xml.in
+hwcsamp.xml: hwcsamp.xml.in
 
-	@rm -f hwc.xml
+	@rm -f hwcsamp.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/hwc.xml.in > hwc.xml
+		$(srcdir)/hwcsamp.xml.in > hwcsamp.xml
 
-EXTRA_DIST = hwc.xml.in
+EXTRA_DIST = hwcsamp.xml.in

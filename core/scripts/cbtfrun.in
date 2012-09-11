@@ -299,7 +299,7 @@ case "$collector" in
     fi
     ;;
 
-    hwc)
+    hwc|hwcsamp)
     if [ $use_mrnet == "true" ]
     then
         if [ $use_mpi == "true" ]

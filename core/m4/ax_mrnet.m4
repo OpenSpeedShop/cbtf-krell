@@ -58,10 +58,6 @@ AC_DEFUN([AX_MRNET], [
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
         MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
-        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lxmlrpc-epi"
-        MRNET_LW_LIBS="$MRNET_LW_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LW_LIBS="$MRNET_LW_LIBS -lxmlrpc-epi"
       fi
     else
       if [ test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
@@ -69,10 +65,6 @@ AC_DEFUN([AX_MRNET], [
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
         MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
-        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LWR_LIBS="$MRNET_LWR_LIBS -lxmlrpc-epi"
-        MRNET_LW_LIBS="$MRNET_LW_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LW_LIBS="$MRNET_LW_LIBS -lxmlrpc-epi"
       fi
     fi
 

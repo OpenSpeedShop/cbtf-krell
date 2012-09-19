@@ -211,44 +211,24 @@ AM_CONDITIONAL(BUILD_TARGETED, false)
 build_targeted=0
 case "$TARGET_OS" in
     cray-xk)
-	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
-	AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
-	AM_CONDITIONAL(BUILD_TARGETED, true)
-	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXK, 1, [Do not define if not building for targeted cray-xk.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xk,
 			[Name targeted OS])
-	build_targeted=1
 	;;
     cray-xe)
-	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
-	AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
-	AM_CONDITIONAL(BUILD_TARGETED, true)
-	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXE, 1, [Do not define if not building for targeted cray-xe.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xe,
 			[Name targeted OS])
-	build_targeted=1
 	;;
     cray-xt5)
-	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
-	AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
-	AM_CONDITIONAL(BUILD_TARGETED, true)
-	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXT5, 1, [Do not define if not building for targeted cray-xt5.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt5,
 			[Name targeted OS])
-	build_targeted=1
 	;;
     cray-xt4)
-	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)
-	AC_DEFINE([HAVE_TARGET_STATIC], [1],[Define to 1 targeted static builds.])
-	AM_CONDITIONAL(BUILD_TARGETED, true)
-	AC_DEFINE(BUILD_TARGETED, 1, [Define to 0 if not building a targeted runtime.])
 	AC_DEFINE(TARGET_OS_CRAYXT4, 1, [Do not define if not building for targeted cray-xt4.])
 	AC_DEFINE_UNQUOTED(TARGET_OS,cray-xt4,
 			[Name targeted OS])
-	build_targeted=1
 	;;
     bgl)
 	AM_CONDITIONAL(HAVE_TARGET_STATIC, true)

@@ -30,7 +30,7 @@ AC_DEFUN([AX_DYNINST], [
 
     AC_ARG_WITH(dyninst-version,
                 AC_HELP_STRING([--with-dyninst-version=VERS],
-                               [dyninst-version installation @<:@7.0.1@:>@]),
+                               [dyninst-version installation @<:@8.0.0@]),
                 dyninst_vers=$withval, dyninst_vers="8.0.0")
 
     DYNINST_CPPFLAGS="-I$dyninst_dir/include/dyninst"

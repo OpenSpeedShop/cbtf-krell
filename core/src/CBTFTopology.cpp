@@ -35,7 +35,7 @@
 #include <typeinfo>
 #include <limits.h>
 
-#if 0
+#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE)
 #include <alps/alps.h>
 #endif
 
@@ -66,7 +66,7 @@ int CBTFTopology::getCrayFENid( void )
 {
     int nid = -1;
 
-#if 0
+#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE)
     // alps.h defines ALPS_XT_NID to be the file containing the nid.
     // it's /proc/cray_xt/nid for the machines we've seen so far
     std::ifstream ifs( ALPS_XT_NID );
@@ -75,6 +75,7 @@ int CBTFTopology::getCrayFENid( void )
         ifs.close();
     }
 #else
+    // just for testing on a non-cray...
     nid = 100;
 #endif
     return nid;
@@ -345,6 +346,7 @@ void CBTFTopology::parseSlurmEnv()
 	    ;
 	} else {
 	    dm_slurm_jobid = t;
+//std::cerr << "set dm_slurm_jobid " << t << std::endl;
 	}
     }
     
@@ -360,9 +362,11 @@ void CBTFTopology::parseSlurmEnv()
 	} else {
 	    dm_slurm_num_nodes = t;
 	    dm_num_app_nodes = t;
+//std::cerr << "set dm_slurm_num_nodes " << t << std::endl;
 	}
     }
 
+#if 0
     envval = getenv("SLURM_JOB_CPUS_PER_NODE");
     // need to parse this one.  can have values like:
     // 2(x8)
@@ -380,12 +384,34 @@ void CBTFTopology::parseSlurmEnv()
 	    dm_procs_per_node = t;
 	}
     }
+#endif
+
+    envval = getenv("SLURM_TASKS_PER_NODE");
+    // need to parse this one.  can have values like:
+    // 2(x8)
+    // 16
+    // 16,2(x8),1
+    if (envval == NULL) {
+	has_slurm = false;
+    } else {
+	t = strtol(envval, &ptr, 10);
+	if (ptr == envval || t < 0) {
+	    // problem
+	    has_slurm = false;
+	    ;
+	} else {
+	    dm_procs_per_node = t;
+//std::cerr << "set dm_procs_per_node " << t << std::endl;
+	}
+    }
+
 
     envval = getenv("SLURM_JOB_NODELIST");
     if (envval == NULL) {
 	has_slurm = false;
     } else {
-	std::string listval(envval);
+        std::string listval(envval);
+//std::cerr << "set SLURM_JOB_NODELIST " << listval << std::endl;
 	setNodeList(envval);
     }
 
@@ -394,7 +420,7 @@ void CBTFTopology::parseSlurmEnv()
     if (is_slurm_valid && dm_slurm_num_nodes > 1) {
 	long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
 	long needed_cps = maxsize / dm_top_fanout;
-#if 0
+#if 1
 	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
 	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
 	 std::cerr << "maxsize " << maxsize << " needed_cps "

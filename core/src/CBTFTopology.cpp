@@ -350,7 +350,6 @@ void CBTFTopology::parseSlurmEnv()
 	    ;
 	} else {
 	    dm_slurm_jobid = t;
-//std::cerr << "set dm_slurm_jobid " << t << std::endl;
 	}
     }
     
@@ -366,10 +365,16 @@ void CBTFTopology::parseSlurmEnv()
 	} else {
 	    dm_slurm_num_nodes = t;
 	    dm_num_app_nodes = t;
-//std::cerr << "set dm_slurm_num_nodes " << t << std::endl;
 	}
     }
 
+// FIXME:  This may be preferred but can be messy.
+// Would be preferred if the cpu conut was consistent for
+// all nodes in a partion.  The goal is to determine how many
+// CP's we need to handle the ltwt mrnet BE's we connect
+// assuming one CP can handle as many as 64 ltwt BE's.
+// If for example one node has 16 cpus, we can place 16 CP's
+// on that node.
 #if 0
     envval = getenv("SLURM_JOB_CPUS_PER_NODE");
     // need to parse this one.  can have values like:
@@ -391,10 +396,12 @@ void CBTFTopology::parseSlurmEnv()
 #endif
 
     envval = getenv("SLURM_TASKS_PER_NODE");
-    // need to parse this one.  can have values like:
-    // 2(x8)
-    // 16
-    // 16,2(x8),1
+    // this is very misleading.  It really represents the
+    // total number of cpus on all the nodes.
+    // One can divide this by the number of job nodes to
+    // get an approximation of cpus per node.  This will
+    // be accurate if all the nodes have the same number
+    // of cpus.
     if (envval == NULL) {
 	has_slurm = false;
     } else {
@@ -405,7 +412,6 @@ void CBTFTopology::parseSlurmEnv()
 	    ;
 	} else {
 	    dm_procs_per_node = t;
-//std::cerr << "set dm_procs_per_node " << t << std::endl;
 	}
     }
 
@@ -415,16 +421,19 @@ void CBTFTopology::parseSlurmEnv()
 	has_slurm = false;
     } else {
         std::string listval(envval);
-//std::cerr << "set SLURM_JOB_NODELIST " << listval << std::endl;
 	setNodeList(envval);
     }
 
     is_slurm_valid = has_slurm;
     
     if (is_slurm_valid && dm_slurm_num_nodes > 1) {
-	long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
+	//long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
+	// We will use the total number of job procs divided
+	// by the number of nodes to see howm many cpus per node
+	// since we got dm_procs_per_node from getenv("SLURM_TASKS_PER_NODE");
+	long maxsize = dm_procs_per_node / dm_slurm_num_nodes;
 	long needed_cps = maxsize / dm_top_fanout;
-#if 1
+#if 0
 	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
 	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
 	 std::cerr << "maxsize " << maxsize << " needed_cps "
@@ -438,10 +447,10 @@ void CBTFTopology::parseSlurmEnv()
 
 	    if (need_cp || dm_colocate_mrnet_procs) {
                 dm_cp_nodelist.push_back(*NodeListIter);
-std::cerr << "dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
+		//std::cerr << "dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
 	    } else {
                 dm_app_nodelist.push_back(*NodeListIter);
-std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
+		//std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
 	    }
 
 	    counter++;

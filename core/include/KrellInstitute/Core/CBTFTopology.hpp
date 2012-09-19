@@ -117,8 +117,11 @@ class CBTFTopology {
 	    }
 
 	    std::string formatCrayNid(const std::string& nidstr, const int& nid) {
+		// all cray nodes are named beginning with "nid" and then
+		// followed by a 5 digit integer.
+		std::string craynid("nid");
 	        std::ostringstream ostr;
-		ostr << nidstr << std::setw( 5 ) << std::setfill('0') << nid;
+		ostr << craynid << std::setw( 5 ) << std::setfill('0') << nid;
 		return ostr.str();
 	    };
 

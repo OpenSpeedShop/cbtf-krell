@@ -523,6 +523,7 @@ private:
  	        std::cerr << "AddressAggregator::addressBufferHandler "
  	        << "handled " << handled_threads << " threads."
  	        << std::endl;
+		abuffer.printResults();
 	    }
 #endif
 	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);

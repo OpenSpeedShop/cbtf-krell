@@ -322,7 +322,7 @@ void CBTF_Waitfor_MRNet_Shutdown() {
 	/* Now wait for mrnet to shutdown */
 	if (CBTF_MRNet_netPtr && !Network_is_ShutDown(CBTF_MRNet_netPtr)) {
 	    //fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown Network_waitfor_ShutDown %d\n",getpid());
-	    //Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
+	    Network_waitfor_ShutDown(CBTF_MRNet_netPtr);
         }
 
     }

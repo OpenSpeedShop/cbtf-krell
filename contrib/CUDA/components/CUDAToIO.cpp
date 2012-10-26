@@ -18,8 +18,12 @@
 
 /** @file Component for converting CUDA data to pseudo I/O data. */
 
+#include <algorithm>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <map>
+#include <set>
+#include <string>
 #include <typeinfo>
 
 #include <KrellInstitute/CBTF/Component.hpp>
@@ -27,8 +31,8 @@
 #include <KrellInstitute/CBTF/Version.hpp>
 #include <KrellInstitute/CBTF/XDR.hpp>
 
-//#include <KrellInstitute/Core/Path.hpp>
-//#include <KrellInstitute/Core/SymbolTable.hpp>
+#include <KrellInstitute/Core/Path.hpp>
+#include <KrellInstitute/Core/ThreadName.hpp>
 
 #include <KrellInstitute/Messages/Address.h>
 #include <KrellInstitute/Messages/Blob.h>
@@ -37,11 +41,48 @@
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/Messages/Thread.h>
+#include <KrellInstitute/Messages/ThreadEvents.h>
 #include <KrellInstitute/Messages/Time.h>
 
 #include "CUDA_data.h"
 
 using namespace KrellInstitute::CBTF;
+using namespace KrellInstitute::Core;
+
+
+
+/** Anonymous namespace hiding implementation details. */
+namespace {
+
+    /**
+     * Constant specifying the (fake) file name of the pseudo linked object
+     * containing the dynamically generated symbol table of CUDA operations.
+     */
+    const char* const kFileName = "CUDA";
+
+    /**
+     * Constant specifying the (fake) checksum of the pseduo linked object
+     * containing the dynamically generated symbol table of CUDA operations.
+     */
+    const uint64_t kChecksum = 0x00000BADC00DAFAD;
+    
+    /**
+     * Constant specifying the (fake) address range of the pseudo linked object
+     * containing the dynamically generated symbol table of CUDA operations.
+     *
+     * @note    This address range is intentionally placed within the kernel's
+     *          portion of the process' 64-bit virtual address space. By doing
+     *          this, we avoid having to track the location of all of the real
+     *          linked objects in the process in order to find a safe location
+     *          for the pseudo linked object. I.e. this fixed location is, in
+     *          theory, always safe to use.
+     */
+    const CBTF_Protocol_AddressRange kAddressRange = {
+        0xF0BADC00DA000000,
+        0xF0BADC00DAFFFFFF
+    };
+    
+} // namespace <anonymous>
 
 
 
@@ -73,35 +114,54 @@ public:
     
 private:
 
+    /**
+     * Type of associative container used to map the names of individual
+     * CUDA operations to their address within the process' address space.
+     */
+    typedef std::map<std::string, CBTF_Protocol_Address> OperationTable;
+    
     /** Default constructor. */
     CUDAToIO();
 
+    /** Handler for the "Data" input. */
+    void handleData(
+        const boost::shared_ptr<CBTF_cuda_data>& message
+        );
+    
     /** Handler for the "InitialLinkedObjects" input. */
     void handleInitialLinkedObjects(
         const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& message
         );
     
-    /** Handler for the "LoadedLinkedObject" input. */
-    void handleLoadedLinkedObject(
-        const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& message
+    /** Handler for the "ThreadsStateChanged" input. */
+    void handleThreadsStateChanged(
+        const boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged>& message
         );
+
+    /**
+     * List of active (non-terminated) threads. Our dynamically generated
+     * symbol table of CUDA operations is emitted once this list empties.
+     */
+    ThreadNameVec dm_active_threads;
     
-    /** Handler for the "UnloadedLinkedObject" input. */
-    void handleUnloadedLinkedObject(
-        const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& message
-        );
-    
-    /** Handler for the "Data" input. */
-    void handleData(const boost::shared_ptr<CBTF_cuda_data>& message);
-    
+    /**
+     * Next available (unused) address within the dynamically generated
+     * symbol table of CUDA operations.
+     */
+    CBTF_Protocol_Address dm_next_address;
+
+    /**
+     * Table of individual CUDA operations.
+     */
+    OperationTable dm_operations;
+
 }; // class CUDAToIO
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDAToIO)
 
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_LinkedObjectGroup)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_LoadedLinkedObject)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_UnloadedLinkedObject)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable)
+KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_ThreadsStateChanged)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_cuda_data)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_trace_data)
 
@@ -110,74 +170,259 @@ KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_trace_data)
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 CUDAToIO::CUDAToIO() :
-    Component(Type(typeid(CUDAToIO)), Version(0, 0, 0))
+    Component(Type(typeid(CUDAToIO)), Version(0, 0, 0)),
+    dm_active_threads(),
+    dm_next_address(kAddressRange.begin),
+    dm_operations()
 {
+    declareInput<boost::shared_ptr<CBTF_cuda_data> >(
+        "Data", boost::bind(&CUDAToIO::handleData, this, _1)
+        );
     declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
         "InitialLinkedObjects",
         boost::bind(&CUDAToIO::handleInitialLinkedObjects, this, _1)
         );
-    declareInput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
-        "LoadedLinkedObject",
-        boost::bind(&CUDAToIO::handleLoadedLinkedObject, this, _1)
+    declareInput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+        "ThreadsStateChanged",
+        boost::bind(&CUDAToIO::handleThreadsStateChanged, this, _1)
         );
-    declareInput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
-        "UnloadedLinkedObject",
-        boost::bind(&CUDAToIO::handleUnloadedLinkedObject, this, _1)
+
+    declareOutput<boost::shared_ptr<CBTF_io_trace_data> >(
+        "Data"
         );
-    declareInput<boost::shared_ptr<CBTF_cuda_data> >(
-        "Data", boost::bind(&CUDAToIO::handleData, this, _1)
-        );
-    
-    declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
-        "LoadedLinkedObject"
-        );
-    declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
-        "UnloadedLinkedObject"
+    declareOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
+        "InitialLinkedObjects"
         );
     declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
         "SymbolTable"
         );
-    declareOutput<boost::shared_ptr<CBTF_io_trace_data> >("Data");
+    declareOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+        "ThreadsStateChanged"
+        );
 }
 
 
 
 //------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void CUDAToIO::handleData(
+    const boost::shared_ptr<CBTF_cuda_data>& message
+    )
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// Append an entry for the dynamically generated symbol table of CUDA operations
+// to the list of initial linked objects within this thread.
 //------------------------------------------------------------------------------
 void CUDAToIO::handleInitialLinkedObjects(
     const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& message
     )
 {
-    // ...
-}
+    //
+    // Create a deep copy of the incoming CBTF_Protocol_LinkedObjectGroup
+    // message, allocating an extra linked object entry in the table that
+    // will refer to our dynamically generated symbol table.
+    //
 
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void CUDAToIO::handleLoadedLinkedObject(
-    const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& message
-    )
-{
-    // ...
-}
-
-
+    boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> group(
+        new CBTF_Protocol_LinkedObjectGroup()
+        );
     
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void CUDAToIO::handleUnloadedLinkedObject(
-    const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& message
-    )
-{
-    // ...
+    memcpy(&group->thread, &message->thread, sizeof(CBTF_Protocol_ThreadName));
+    group->thread.host = strdup(message->thread.host);
+    
+    group->linkedobjects.linkedobjects_len = 
+        message->linkedobjects.linkedobjects_len + 1;
+    
+    group->linkedobjects.linkedobjects_val = 
+        reinterpret_cast<CBTF_Protocol_LinkedObject*>(            
+            malloc(group->linkedobjects.linkedobjects_len * 
+                   sizeof(CBTF_Protocol_LinkedObject))
+            );
+    
+    for (int i = 0; i < message->linkedobjects.linkedobjects_len; ++i)
+    {
+        const CBTF_Protocol_LinkedObject* source =
+            &message->linkedobjects.linkedobjects_val[i];
+        
+        CBTF_Protocol_LinkedObject* destination =
+            &group->linkedobjects.linkedobjects_val[i];
+        
+        memcpy(destination, source, sizeof(CBTF_Protocol_LinkedObject));
+        destination->linked_object.path = strdup(source->linked_object.path);
+    }
+    
+    //
+    // Create the linked object entry for our dynamically generated symbol
+    // table. The entry is placed at the same, fixed, address range in all
+    // threads, for the entire possible time interval.
+    //
+    
+    CBTF_Protocol_LinkedObject* linked_object =
+        &group->linkedobjects.linkedobjects_val[
+            group->linkedobjects.linkedobjects_len - 1
+            ];
+    
+    linked_object->linked_object.path = strdup(kFileName);
+    linked_object->linked_object.checksum = kChecksum;
+    linked_object->range.begin = kAddressRange.begin;
+    linked_object->range.end = kAddressRange.end;
+    linked_object->time_begin = 0;
+    linked_object->time_end = -1;
+    linked_object->is_executable = FALSE;
+    
+    //
+    // Emit the resulting, modified, CBTF_Protocol_LinkedObjectGroup message
+    // on our appropriate output. The modified message should take the place
+    // of the original message in any upstream processing.
+    //
+    
+    emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
+        "InitialLinkedObjects", group
+        );
 }
 
 
 
 //------------------------------------------------------------------------------
+// Update the list of active threads and emit our dynamically generated symbol
+// table of CUDA operations if the last thread has been terminated.
 //------------------------------------------------------------------------------
-void CUDAToIO::handleData(const boost::shared_ptr<CBTF_cuda_data>& message)
+void CUDAToIO::handleThreadsStateChanged(
+    const boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged>& message
+    )
 {
-    // ...
+    // Re-emit the original message unchanged
+    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+        "ThreadsStateChanged", message
+        );
+
+    // We only care when threads begin running or are terminated
+    if ((message->state != Running) && (message->state != Terminated))
+    {
+        return;
+    }
+    
+    // Update the list of active threads appropriately
+    for (u_int i = 0; i < message->threads.names.names_len; ++i)
+    {
+        ThreadName thread_name(message->threads.names.names_val[i]);
+        
+        ThreadNameVec::iterator found_at = dm_active_threads.end();
+        for (ThreadNameVec::iterator j = dm_active_threads.begin();
+             j != dm_active_threads.end();
+             ++j)
+        {
+            if (*j == thread_name)
+            {
+                found_at = j;
+                break;
+            }
+        }
+        
+        if ((message->state == Running) && 
+            (found_at == dm_active_threads.end()))
+        {
+            dm_active_threads.push_back(thread_name);
+        }
+        else if ((message->state == Terminated) && 
+                 (found_at != dm_active_threads.end()))
+        {
+            dm_active_threads.erase(found_at);
+        }
+    }
+
+    // Do not proceed further unless the last thread has now been terminated
+    if ((message->state != Terminated) || !dm_active_threads.empty())
+    {
+        return;
+    }
+    
+    //
+    // Construct a new CBTF_Protocol_SymbolTable from the table of individual
+    // CUDA operations. Each of the individual CUDA operations is represented
+    // as a single function. No statements are generated. The code below is a
+    // bit longer than might otherwise be expected because XDR does not allow
+    // the value pointer of variable-length arrays to be NULL. Thus we must
+    // generated dummy entries in a couple cases.
+    //
+    
+    boost::shared_ptr<CBTF_Protocol_SymbolTable> table(
+        new CBTF_Protocol_SymbolTable()
+        );
+    
+    table->linked_object.path = strdup(kFileName);
+    table->linked_object.checksum = kChecksum;
+    
+    table->functions.functions_len = dm_operations.size();
+    
+    table->functions.functions_val = 
+        reinterpret_cast<CBTF_Protocol_FunctionEntry*>(
+            malloc(std::max(1U, table->functions.functions_len) *
+                   sizeof(CBTF_Protocol_FunctionEntry))
+            );
+
+    int n = 0;
+    for (OperationTable::const_iterator
+             i = dm_operations.begin(); i != dm_operations.end(); ++i, ++n)
+    {
+        CBTF_Protocol_FunctionEntry* function = 
+            &table->functions.functions_val[n];
+        
+        function->name = strdup(i->first.c_str());        
+        function->bitmaps.bitmaps_len = 1;
+        
+        function->bitmaps.bitmaps_val =
+            reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
+                malloc(sizeof(CBTF_Protocol_AddressBitmap))
+                );
+        
+        CBTF_Protocol_AddressBitmap* bitmap = &function->bitmaps.bitmaps_val[0];
+        
+        bitmap->range.begin = i->second;
+        bitmap->range.end = i->second + 1;
+        bitmap->bitmap.data.data_len = 1;
+        bitmap->bitmap.data.data_val = reinterpret_cast<uint8_t*>(malloc(1));
+        bitmap->bitmap.data.data_val[0] = 0xFF;
+    }
+
+    table->statements.statements_len = 0;
+
+    table->statements.statements_val = 
+        reinterpret_cast<CBTF_Protocol_StatementEntry*>(
+            malloc(sizeof(CBTF_Protocol_StatementEntry))
+            );
+    
+    CBTF_Protocol_StatementEntry* statement =
+        &table->statements.statements_val[0];
+
+    statement->path.path = strdup("");
+    statement->path.checksum = 0;
+    statement->line = 0;
+    statement->column = 0;
+    
+    statement->bitmaps.bitmaps_len = 1;
+        
+    statement->bitmaps.bitmaps_val =
+        reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
+            malloc(sizeof(CBTF_Protocol_AddressBitmap))
+            );
+    
+    CBTF_Protocol_AddressBitmap* bitmap = &statement->bitmaps.bitmaps_val[0];
+    
+    bitmap->range.begin = 0;
+    bitmap->range.end = 0;
+    bitmap->bitmap.data.data_len = 1;
+    bitmap->bitmap.data.data_val = reinterpret_cast<uint8_t*>(malloc(1));
+    bitmap->bitmap.data.data_val[0] = 0;
+    
+    // Emit the CBTF_Protocol_SymbolTable on our appropriate output.
+    emitOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
+        "SymbolTable", table
+        );    
 }

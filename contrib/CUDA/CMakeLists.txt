@@ -32,7 +32,7 @@ find_package(CBTF-Messages REQUIRED)
 find_package(CBTF-Services REQUIRED)
 find_package(CUPTI 2)
 find_package(MRNet 4.0.0)
-#find_package(PAPI 3.0.0)
+find_package(PAPI 3.0.0)
 find_package(Threads)
 
 add_subdirectory(collector)

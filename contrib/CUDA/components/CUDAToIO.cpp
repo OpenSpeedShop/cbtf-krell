@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <set>
@@ -29,7 +30,6 @@
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
-#include <KrellInstitute/CBTF/XDR.hpp>
 
 #include <KrellInstitute/Core/Path.hpp>
 #include <KrellInstitute/Core/ThreadName.hpp>
@@ -81,7 +81,109 @@ namespace {
         0xF0BADC00DA000000,
         0xF0BADC00DAFFFFFF
     };
+
+    /**
+     * Formats the specified byte count as a string with accompanying units.
+     * E.g. an input of 1,614,807 returns "1.5 MB".
+     *
+     * @param x    Byte count to format.
+     * @return     String with accompanying units.
+     */
+    std::string formatByteCount(const uint64_t& x)
+    {
+        const struct { uint64_t value; const char* label; } kUnits[] = {
+            { 1024ull * 1024ull * 1024ull * 1024ull, "TB" },
+            {           1024ull * 1024ull * 1024ull, "GB" },
+            {                     1024ull * 1024ull, "MB" },
+            {                               1024ull, "KB" },
+            {                                  0ull, ""   } // End-Of-Table
+        };
+        
+        for (int i = 0; kUnits[i].value > 0; ++i)
+        {
+            if (x >= kUnits[i].value)
+            {
+                return boost::str(boost::format("%1$2.1f %2%") %
+                                  (static_cast<double>(x) /
+                                   static_cast<double>(kUnits[i].value)) %
+                                  kUnits[i].label);
+            }
+        }
+
+        return boost::str(boost::format("%1% bytes") % x);
+    }
+
+    /**
+     * Convert the specified CUDA_CopiedMemory message to an operation string.
+     *
+     * @param message    Message to be converted.
+     * @return           Operation string describing this message.
+     */
+    std::string toOperation(const CUDA_CopiedMemory& message)
+    {
+        const char* kCopyKind[] = {
+            "",                      // InvalidCopyKind (0)
+            "",                      // UnknownCopyKind (1)
+            "from host to device",   // HostToDevice (2)
+            "from device to host",   // DeviceToHost (3)
+            "from host to array",    // HostToArray (4)
+            "from array to host",    // ArrayToHost (5)
+            "from array to array",   // ArrayToArray (6)
+            "from array to device",  // ArrayToDevice (7)
+            "from device to array",  // DeviceToArray (8)
+            "from device to device", // DeviceToDevice (9)
+            "from host to host"      // HostToHost (10)
+        };
+
+        return boost::str(
+            boost::format("copy %1% %2%") %
+            formatByteCount(message.size) %
+            ((message.kind <= 10) ? kCopyKind[message.kind] : "")
+            );
+    }
+
+    /**
+     * Convert the specified CUDA_ExecutedKernel message to an operation string.
+     *
+     * @param message    Message to be converted.
+     * @return           Operation string describing this message.
+     */
+    std::string toOperation(const CUDA_ExecutedKernel& message)
+    {
+        if (message.dynamic_shared_memory > 0)
+        {
+            return boost::str(
+                boost::format("%1%<<<[%2%,%3%,%4%], [%5%,%6%,%7%], %8%>>>") %
+                message.function %
+                message.grid[0] % message.grid[1] % message.grid[2] %
+                message.block[0] % message.block[1] % message.block[2] %
+                message.dynamic_shared_memory
+                );
+        }
+        else
+        {
+            return boost::str(
+                boost::format("%1%<<<[%2%,%3%,%4%], [%5%,%6%,%7%]>>>") %
+                message.function %
+                message.grid[0] % message.grid[1] % message.grid[2] %
+                message.block[0] % message.block[1] % message.block[2]
+                );
+        }
+    }
     
+    /**
+     * Convert the specified CUDA_SetMemory message to an operation string.
+     *
+     * @param message    Message to be converted.
+     * @return           Operation string describing this message.
+     */
+    std::string toOperation(const CUDA_SetMemory& message)
+    {
+        return boost::str(
+            boost::format("set %1% on device") % formatByteCount(message.size)
+            );
+    }
+        
 } // namespace <anonymous>
 
 
@@ -159,12 +261,6 @@ private:
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDAToIO)
 
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_LinkedObjectGroup)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_ThreadsStateChanged)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_cuda_data)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_io_trace_data)
-
 
 
 //------------------------------------------------------------------------------
@@ -210,6 +306,59 @@ void CUDAToIO::handleData(
     const boost::shared_ptr<CBTF_cuda_data>& message
     )
 {
+    //
+    // ...
+    //
+
+    for (u_int i = 0; i < message->messages.messages_len; ++i)
+    {
+        const CBTF_cuda_message& cuda_message =
+            message->messages.messages_val[i];
+        
+        switch (cuda_message.type)
+        {
+            
+        case CopiedMemory:
+            {
+                const CUDA_CopiedMemory& msg =
+                    cuda_message.CBTF_cuda_message_u.copied_memory;
+
+                // ...
+            }
+            break;
+            
+        case EnqueueRequest:
+            {
+                const CUDA_EnqueueRequest& msg = 
+                    cuda_message.CBTF_cuda_message_u.enqueue_request;
+
+                // ...
+            }
+            break;
+
+        case ExecutedKernel:
+            {
+                const CUDA_ExecutedKernel& msg =
+                    cuda_message.CBTF_cuda_message_u.executed_kernel;
+
+                // ...
+            }
+            break;
+
+        case SetMemory:
+            {
+                const CUDA_SetMemory& msg =
+                    cuda_message.CBTF_cuda_message_u.set_memory;
+                
+                // ...
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
     // ...
 }
 

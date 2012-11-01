@@ -16,7 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_library(CUDA SHARED CUDAToIO.cpp)
+add_library(CUDA SHARED CUDADebug.cpp CUDAToIO.cpp XDR.cpp)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

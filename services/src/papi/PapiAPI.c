@@ -55,7 +55,11 @@ void CBTF_init_papi()
     if (rval != PAPI_VER_CURRENT && rval > 0) {
 	fprintf(stderr,"PAPI library version mismatch!\n");
 	char error_str[PAPI_MAX_STR_LEN];
+#if (PAPI_VERSION_MAJOR(PAPI_VERSION) >= 5)
+	PAPI_perror(error_str);
+#else
 	PAPI_perror(rval,error_str,PAPI_MAX_STR_LEN);
+#endif
 	fprintf(stderr,"PAPI_error %d: %s\n",rval,error_str);
 	exit(1);
     }
@@ -64,7 +68,11 @@ void CBTF_init_papi()
 	/* test rval to see if something is wrong */
 	fprintf(stderr,"PAPI rval < 0 !\n");
 	char error_str[PAPI_MAX_STR_LEN];
+#if (PAPI_VERSION_MAJOR(PAPI_VERSION) >= 5)
+	PAPI_perror(error_str);
+#else
 	PAPI_perror(rval,error_str,PAPI_MAX_STR_LEN);
+#endif
 	fprintf(stderr,"PAPI_error %d: %s\n",rval,error_str);
 	fprintf(stderr,"SYSTEM error: %s\n", strerror(errno));
 	return;
@@ -299,7 +307,11 @@ void print_papi_error (int errcode)
 void CBTF_PAPIerror (int rval, const char *where)
 {
 	char error_str[PAPI_MAX_STR_LEN];
+#if (PAPI_VERSION_MAJOR(PAPI_VERSION) >= 5)
+	PAPI_perror(error_str);
+#else
 	PAPI_perror(rval,error_str,PAPI_MAX_STR_LEN);
+#endif
 	unsigned long mytid = PAPI_thread_id();
 	fprintf(stderr,"CBTF_PAPIerror:%s, %d in %lu: %s\n",where,rval,mytid,error_str);
 }

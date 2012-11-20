@@ -112,6 +112,8 @@ CollectionPlugin_la_LDFLAGS = \
 
 CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
+	-lcbtf-core-bfd \
+	-lcbtf-core-symtabapi \
 	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
 	-lcbtf-messages-collector \

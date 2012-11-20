@@ -16,62 +16,147 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-lib_LTLIBRARIES = libcbtf-core.la
+lib_LTLIBRARIES = libcbtf-core.la \
+		  libcbtf-core-bfd.la \
+		  libcbtf-core-symtabapi.la \
+		  libcbtf-core-mrnet.la
 
 if BUILD_TARGETED
 if HAVE_TARGET_SHARED
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_la_LDFLAGS = \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_la_LIBADD = \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_bfd_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_BINUTILS_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_bfd_la_LDFLAGS = \
+	@TARGET_BINUTILS_LDFLAGS@ \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+libcbtf_core_bfd_la_LIBADD = \
+	@TARGET_BINUTILS_BFD_LIB@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_symtabapi_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_LIBDWARF_CPPFLAGS@ \
 	@TARGET_DYNINST_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_symtabapi_la_LDFLAGS = \
+	@TARGET_LIBDWARF_LDFLAGS@ \
+	@TARGET_DYNINST_LDFLAGS@ \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_symtabapi_la_LIBADD = \
+	@TARGET_LIBDWARF_LIBS@ \
+	@TARGET_DYNINST_LIBS@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_mrnet_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
-libcbtf_core_la_LDFLAGS = \
-	@TARGET_BINUTILS_LDFLAGS@ \
-	@TARGET_LIBDWARF_LDFLAGS@ \
-	@TARGET_DYNINST_LDFLAGS@ \
+libcbtf_core_mrnet_la_LDFLAGS = \
 	@TARGET_MESSAGES_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
-	-version-info 0:0:0
+	-export-dynamic -version-info 0:0:0
 
-
-libcbtf_core_la_LIBADD = \
-	@TARGET_BINUTILS_BFD_LIB@ \
-	@TARGET_LIBDWARF_LIBS@ \
-	@TARGET_DYNINST_LIBS@ \
+libcbtf_core_mrnet_la_LIBADD = \
 	@TARGET_MESSAGES_PERFDATA_LIBS@ \
 	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
+
 else
 if HAVE_TARGET_STATIC
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_la_LDFLAGS = \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_la_LIBADD = \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_bfd_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_BINUTILS_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_bfd_la_LDFLAGS = \
+	@TARGET_BINUTILS_LDFLAGS@ \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+libcbtf_core_bfd_la_LIBADD = \
+	@TARGET_BINUTILS_BFD_LIB@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_symtabapi_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_LIBDWARF_CPPFLAGS@ \
 	@TARGET_DYNINST_CPPFLAGS@ \
+	@TARGET_MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_symtabapi_la_LDFLAGS = \
+	@TARGET_LIBDWARF_LDFLAGS@ \
+	@TARGET_DYNINST_LDFLAGS@ \
+	@TARGET_MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_symtabapi_la_LIBADD = \
+	@TARGET_LIBDWARF_LIBS@ \
+	@TARGET_DYNINST_LIBS@ \
+	@TARGET_MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_mrnet_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@TARGET_MESSAGES_CPPFLAGS@ \
 	@TARGET_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
-libcbtf_core_la_LDFLAGS = \
-	@TARGET_BINUTILS_LDFLAGS@ \
-	@TARGET_LIBDWARF_LDFLAGS@ \
-	@TARGET_DYNINST_LDFLAGS@ \
+libcbtf_core_mrnet_la_LDFLAGS = \
 	@TARGET_MESSAGES_LDFLAGS@ \
 	@TARGET_MRNET_LDFLAGS@ \
-	-version-info 0:0:0
+	-export-dynamic -version-info 0:0:0
 
-
-libcbtf_core_la_LIBADD = \
-	@TARGET_BINUTILS_BFD_LIB@ \
-	@TARGET_LIBDWARF_LIBS@ \
-	@TARGET_DYNINST_LIBS@ \
+libcbtf_core_mrnet_la_LIBADD = \
 	@TARGET_MESSAGES_PERFDATA_LIBS@ \
 	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
+
 #endif for HAVE_TARGET_STATIC
 endif
 #endif for HAVE_TARGET_SHARED
@@ -81,37 +166,76 @@ else
 libcbtf_core_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_la_LDFLAGS = \
+	@MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_la_LIBADD = \
+	@MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_bfd_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@BINUTILS_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_bfd_la_LDFLAGS = \
+	@BINUTILS_LDFLAGS@ \
+	@MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+libcbtf_core_bfd_la_LIBADD = \
+	@BINUTILS_BFD_LIB@ \
+	@MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_symtabapi_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
+	@MESSAGES_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_core_symtabapi_la_LDFLAGS = \
+	@LIBDWARF_LDFLAGS@ \
+	@DYNINST_LDFLAGS@ \
+	@MESSAGES_LDFLAGS@ \
+	-export-dynamic -version-info 0:0:0
+
+
+libcbtf_core_symtabapi_la_LIBADD = \
+	@LIBDWARF_LIBS@ \
+	@DYNINST_LIBS@ \
+	@MESSAGES_PERFDATA_LIBS@ \
+	@LIBLTDL@
+
+libcbtf_core_mrnet_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
-libcbtf_core_la_LDFLAGS = \
-	@BINUTILS_LDFLAGS@ \
-	@LIBDWARF_LDFLAGS@ \
-	@DYNINST_LDFLAGS@ \
+libcbtf_core_mrnet_la_LDFLAGS = \
 	@MESSAGES_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
-	-version-info 0:0:0
+	-export-dynamic -version-info 0:0:0
 
-
-libcbtf_core_la_LIBADD = \
-	@BINUTILS_BFD_LIB@ \
-	@LIBDWARF_LIBS@ \
-	@DYNINST_LIBS@ \
+libcbtf_core_mrnet_la_LIBADD = \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@MRNET_LIBS@ \
 	@LIBLTDL@
+
 endif
 
 libcbtf_core_la_SOURCES = \
 	AddressBitmap.cpp \
 	AddressBuffer.cpp \
-	BFDSymbols.cpp \
 	Blob.cpp \
-	CBTFTopology.cpp \
 	Exception.cpp \
 	ExtentGroup.cpp \
 	LinkedObjectEntry.cpp \
@@ -119,5 +243,13 @@ libcbtf_core_la_SOURCES = \
 	PCData.cpp \
 	StacktraceData.cpp \
 	SymbolTable.cpp \
-	SymtabAPISymbols.cpp \
 	ThreadName.cpp
+
+libcbtf_core_bfd_la_SOURCES = \
+	BFDSymbols.cpp
+
+libcbtf_core_symtabapi_la_SOURCES = \
+	SymtabAPISymbols.cpp
+
+libcbtf_core_mrnet_la_SOURCES = \
+	CBTFTopology.cpp

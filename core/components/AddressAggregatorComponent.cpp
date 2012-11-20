@@ -60,7 +60,7 @@ bool is_debug_aggregator_events_enabled =
 #endif
 
     // count of threads handled
-    int handled_threads = 0;
+    int handled_buffers = 0;
 
     bool is_finished = false;
 
@@ -285,16 +285,26 @@ private:
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
             std::cerr
-	    << "AddressAggregator::threadnamesHandler finished is "
-	    << is_finished << std::endl;
+	    << "AddressAggregator::finishedHandler finished is " << is_finished
+	    << " for " << threadnames.size() << " threadnames seen"
+	    << " from cbtf pid " << getpid()
+	    << std::endl;
 	}
 #endif
+
+	// the only time to send a final buffer to a client is
+	// when all threads are finished.  This handler is the notification
+	// that all threads have sent a terminated message and therefore all
+	// data has been sent.  Likely we do not need the sent_buffer flag
+	// anymore...
 	if (!sent_buffer) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
                 std::cerr
-	        << "AddressAggregator::threadnamesHandler sends buffer "
-	        << sent_buffer << std::endl;
+	        << "AddressAggregator::finishedHandler sends buffer " << sent_buffer
+	        << " from cbtf pid " << getpid()
+		<< std::endl;
+		abuffer.printResults();
 	    }
 #endif
 	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
@@ -456,7 +466,9 @@ private:
         if (is_debug_aggregator_events_enabled) {
 	    std::cerr << "Aggregating CBTF_Protocol_Blob addresses for "
 	    << collectorID << " data from "
-	    << header.host << ":" << header.pid << std::endl;
+	    << header.host << ":" << header.pid
+	    << " from cbtf pid " << getpid()
+	    << std::endl;
 	}
 #endif
 
@@ -507,28 +519,38 @@ private:
 	    abuffer.updateAddressCounts(aci->first.getValue(), aci->second);
 	}
 
-        handled_threads++;
+        handled_buffers++;
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
  	    std::cerr << "AddressAggregator::addressBufferHandler"
-	    << " handled threads " << handled_threads
+	    << " handled buffers " << handled_buffers
 	    << " known threads " << threadnames.size()
 	    << " is_finished " << is_finished
+	    << " from cbtf pid " << getpid()
 	    << std::endl;
 	}
 #endif
-        if (handled_threads == threadnames.size()) {
+	// This logic is now suspect.  It is possible for a collector
+	// to send multiple buffers from a single thread.  therefore
+	// we can handle more buffers than the total for known threads.
+	// e.g. if each thread sends 2 buffers, then handled_buffers
+	// will be twice the known threads size.
+        if (handled_buffers == threadnames.size()) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
  	        std::cerr << "AddressAggregator::addressBufferHandler "
- 	        << "handled " << handled_threads << " threads."
+ 	        << "handled " << handled_buffers
+		<< " buffers for known total threads" << threadnames.size()
+		<< " from cbtf pid " << getpid()
  	        << std::endl;
-		abuffer.printResults();
 	    }
 #endif
-	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-	    sent_buffer = true;
+	    //emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+	    //sent_buffer = true;
 	}
+	// We are not sending to a client here. We are sending upward
+	// to potentially other nodes for further aggregation.
+	//emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
     /** Handler for the "in3" input.*/
@@ -546,7 +568,9 @@ private:
         if (is_debug_aggregator_events_enabled) {
 	    std::cerr << "Aggregating Blob addresses for "
 	    << collectorID << " data from "
-	    << header.host << ":" << header.pid << std::endl;
+	    << header.host << ":" << header.pid
+	    << " from cbtf pid " << getpid()
+	    << std::endl;
 	}
 #endif
 

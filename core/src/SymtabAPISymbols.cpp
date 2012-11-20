@@ -403,7 +403,7 @@ SymtabAPISymbols::getDepenentLibs(const std::string& objname,
     }
 }
 
-bool SymtabAPISymbols::foundLibrary(std::string exename, std::string libname)
+bool SymtabAPISymbols::foundLibrary(const std::string& exename, const std::string& libname)
 {
 
     std::vector<std::string> depends;

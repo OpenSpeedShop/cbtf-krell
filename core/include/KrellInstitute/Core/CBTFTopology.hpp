@@ -267,7 +267,7 @@ class CBTFTopology {
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
 	    bool is_slurm_valid, dm_is_cray;
 	    bool attach_be_mode, dm_colocate_mrnet_procs;
-	    long dm_slurm_jobid, dm_slurm_num_nodes;
+	    long dm_slurm_jobid, dm_slurm_num_nodes, dm_slurm_job_tasks;
 	    std::list<std::string> dm_cp_nodelist;
 	    std::list<std::string> dm_app_nodelist;
 	    std::list<std::string> dm_nodelist;

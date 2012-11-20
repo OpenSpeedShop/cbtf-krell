@@ -51,8 +51,8 @@ using namespace KrellInstitute::Core;
 
 CBTFTopology::CBTFTopology()
 {
-    dm_top_depth = 0;
-    dm_top_fanout = 64;
+    dm_top_depth = 2;
+    dm_top_fanout = 0;
     dm_topology_spec = "";
     dm_topology_filename = "./cbtfAutoTopology";
     dm_colocate_mrnet_procs = true;
@@ -132,6 +132,8 @@ CBTFTopology::PrintTopology( TopologyNode* n, std::ostringstream& ostr )
 }
 
 // based on cray example from mrnet src.
+// use std::list for nodes.  no need for mynid if this
+// can work for more than cray.  maybe no need for fanout...
 void
 CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
                         int myNid, 
@@ -143,7 +145,7 @@ CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
          iter != nodes.end();
          iter++ )
     {
-	std::cerr << "CBTFTopology::BuildFlattenedTopology push a node" << std::endl;
+	//std::cerr << "CBTFTopology::BuildFlattenedTopology push a node" << std::endl;
         currLevel->push_back( new TopologyNode( *iter ) );
     }
 
@@ -155,7 +157,7 @@ CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
         currLevel = new std::vector<TopologyNode*>;
 
         unsigned int nNodesThisLevel = (oldLevel->size() / fanout);
-	std::cerr << "CBTFTopology::BuildFlattenedTopology nNodesThisLevel " << nNodesThisLevel << std::endl;
+	//std::cerr << "CBTFTopology::BuildFlattenedTopology nNodesThisLevel " << nNodesThisLevel << std::endl;
         if( (oldLevel->size() % fanout) != 0 )
         {
             // we need one extra node for the remainder
@@ -198,7 +200,7 @@ CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
             << myNid;
     (*currLevel)[0]->hostname = ostr.str();
 
-    std::cerr << "CBTFTopology::BuildFlattenedTopology FE node " << ostr.str() << std::endl;
+    //std::cerr << "CBTFTopology::BuildFlattenedTopology FE node " << ostr.str() << std::endl;
 
     // now assign per-host indices to processes
     std::map<std::string, unsigned int> indexMap;
@@ -222,7 +224,7 @@ CBTFTopology::BuildFlattenedTopology( unsigned int fanout,
     std::string topologyStr = topoStr.str();
     setTopologyStr(topologyStr);
 
-    std::cerr << "CBTFTopology::BuildFlattenedTopology topologyStr\n" << topologyStr << std::endl;
+    //std::cerr << "CBTFTopology::BuildFlattenedTopology topologyStr\n" << topologyStr << std::endl;
 }
 
 
@@ -368,24 +370,30 @@ void CBTFTopology::parseSlurmEnv()
 	}
     }
 
-// FIXME:  This may be preferred but can be messy.
-// Would be preferred if the cpu conut was consistent for
+// 
+// Would be preferred if the cpu count was consistent for
 // all nodes in a partion.  The goal is to determine how many
 // CP's we need to handle the ltwt mrnet BE's we connect
 // assuming one CP can handle as many as 64 ltwt BE's.
 // If for example one node has 16 cpus, we can place 16 CP's
 // on that node.
-#if 0
+
     envval = getenv("SLURM_JOB_CPUS_PER_NODE");
     // need to parse this one.  can have values like:
     // 2(x8)
     // 16
     // 16,2(x8),1
+    // We will take the first in the specification.  Hopefully
+    // the nodes will have homogenous cpu counts.
+
     if (envval == NULL) {
 	has_slurm = false;
     } else {
-	t = strtol(envval, &ptr, 10);
-	if (ptr == envval || t < 0) {
+	std::string strval = envval;
+	int loc = strval.find_first_of("(,");
+	std::string val = strval.substr(0,loc);
+	t = strtol(val.c_str(), &ptr, 10);
+	if (ptr == val || t < 0) {
 	    // problem
 	    has_slurm = false;
 	    ;
@@ -393,15 +401,10 @@ void CBTFTopology::parseSlurmEnv()
 	    dm_procs_per_node = t;
 	}
     }
-#endif
 
     envval = getenv("SLURM_TASKS_PER_NODE");
     // this is very misleading.  It really represents the
-    // total number of cpus on all the nodes.
-    // One can divide this by the number of job nodes to
-    // get an approximation of cpus per node.  This will
-    // be accurate if all the nodes have the same number
-    // of cpus.
+    // total number of cpus on all the nodes in the allocation.
     if (envval == NULL) {
 	has_slurm = false;
     } else {
@@ -411,7 +414,7 @@ void CBTFTopology::parseSlurmEnv()
 	    has_slurm = false;
 	    ;
 	} else {
-	    dm_procs_per_node = t;
+	    dm_slurm_job_tasks = t;
 	}
     }
 
@@ -427,37 +430,56 @@ void CBTFTopology::parseSlurmEnv()
     is_slurm_valid = has_slurm;
     
     if (is_slurm_valid && dm_slurm_num_nodes > 1) {
-	//long maxsize = dm_slurm_num_nodes * dm_procs_per_node ;
-	// We will use the total number of job procs divided
-	// by the number of nodes to see howm many cpus per node
-	// since we got dm_procs_per_node from getenv("SLURM_TASKS_PER_NODE");
-	long maxsize = dm_procs_per_node / dm_slurm_num_nodes;
-	long needed_cps = maxsize / dm_top_fanout;
+	long needed_cps = 0;
+	if (dm_top_fanout != 0)
+	    needed_cps = dm_procs_per_node / dm_top_fanout;
+	else
+	    needed_cps = dm_slurm_job_tasks / dm_procs_per_node;
+	
+	long numcpnodes = needed_cps / dm_procs_per_node;
+	long numcpnodesX = needed_cps % dm_procs_per_node;
+	if (numcpnodesX > 0 )
+	     numcpnodes++;
+
+	if (!dm_colocate_mrnet_procs)
+	    dm_num_app_nodes -= numcpnodes;
 #if 0
 	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
 	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	 std::cerr << "maxsize " << maxsize << " needed_cps "
-	     << needed_cps << std::endl;
+	 std::cerr << " needed_cps " << needed_cps << std::endl;
+	 std::cerr << "numcpnodes " << numcpnodes << std::endl;
+	 std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	 std::cerr << "fanout " << dm_top_fanout << std::endl;
 #endif
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
-	bool need_cp = true;
+	bool need_cp_node = true;
         for (NodeListIter = dm_nodelist.begin();
 	     NodeListIter != dm_nodelist.end(); NodeListIter++) {
 
-	    if (need_cp || dm_colocate_mrnet_procs) {
+	    if (need_cp_node || dm_colocate_mrnet_procs) {
                 dm_cp_nodelist.push_back(*NodeListIter);
-		//std::cerr << "dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
+		//std::cerr << "NEED CP || dm_colocate_mrnet_procs dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
 	    } else {
                 dm_app_nodelist.push_back(*NodeListIter);
 		//std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
 	    }
 
 	    counter++;
-	    if (counter == needed_cps ||
-		(!dm_colocate_mrnet_procs && needed_cps < dm_procs_per_node) ) {
-		//break;
-		need_cp = false;
+#if 0
+	    std::cerr << " counter:" << counter << " needed_cps:" << needed_cps
+		    << " !dm_colocate_mrnet_procs:" << !dm_colocate_mrnet_procs
+		    << std::endl;
+#endif
+	    if (counter == numcpnodes )
+	    {
+
+#if 0
+		std::cerr << "DONE WITH CP's"
+		    << std::endl;
+#endif
+
+		need_cp_node = false;
 	    }
 	}
     }
@@ -472,7 +494,7 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 	setAttachBEMode(true);
 	setIsCray(true);
 	setColocateMRNetProcs(false);
-	setFanout(32);
+	setFanout(0);
     }
 
     std::string fehostname;
@@ -542,9 +564,12 @@ void CBTFTopology::createTopology()
     int desiredMaxFanout = dm_top_fanout;
     int procsNeeded = 0;
 
+    //std::cerr << "CreateTopology desiredDepth  " << desiredDepth << std::endl;
+
     // Set topology format and compute depth and fanout.
     if (topologyspec.empty()) {
         if (desiredDepth == 0) {
+	    //std::cerr << "COMPUTING desiredDepth  " << desiredDepth << std::endl;
             // Compute desired depth based on the fanout and number of app nodes.
             for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
                 fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
@@ -557,6 +582,7 @@ void CBTFTopology::createTopology()
 
 #if 0
 	std::cerr << "computed desiredDepth  " << desiredDepth
+		<< " dm_top_depth  " << dm_top_depth
 		<< " dm_num_app_nodes  " << dm_num_app_nodes
 		<< " computed fanout  " << fanout << std::endl;
 #endif
@@ -566,25 +592,28 @@ void CBTFTopology::createTopology()
         for (i = 1; i <= desiredDepth; i++) {
             if (i == 1) {
 		ostr << fanout;
+		//std::cerr << "ostr i == 1: " << ostr.str() << std::endl;
             } else {
 		int val = (int)ceil(pow((float)fanout, (float)i));
 		ostr << "-" << val;
+		//std::cerr << "ostr i: " << ostr.str() << std::endl;
             }
             procsNeeded += (int)ceil(pow((float)fanout, (float)i));
         }
 
 	topologyspec = ostr.str();
+	//std::cerr << "topologyspec " << ostr.str() << std::endl;
 
         if (procsNeeded <= dm_cp_nodelist.size() * dm_procs_per_node) {
             //  We have enough CPs, so we can have our desired depth
             depth = desiredDepth;
-	    // std::cerr << "depth OK" << std::endl;
+	    //std::cerr << "depth OK" << std::endl;
         } else {
             // There aren't enough CPs, so make a 2-deep tree with as many CPs as we have
             std::ostringstream nstr;
 	    nstr << (dm_cp_nodelist.size() * dm_procs_per_node);
 	    topologyspec = nstr.str();
-	    // std::cerr << "depth not ok" << std::endl;
+	    //std::cerr << "BAD depth " << depth << " desireddepth " << desiredDepth << std::endl;
         }
 
 #if 0
@@ -653,6 +682,7 @@ void CBTFTopology::createTopology()
                 cpstr << (*CPNodeListIter).c_str() << ":" << i;
 	    }
             treeList.push_back(cpstr.str());
+	    //std::cerr << "PUSH treelist " << cpstr.str() << std::endl;
         }
     }
 
@@ -672,8 +702,10 @@ void CBTFTopology::createTopology()
 	// Flat topology with no CP.  Just an FE that can be attached
 	// to by a BE (or BEs) later.  i.e. FE -> BE.
         fprintf(file, "%s;\n", treeList[0].c_str());
+        //std::cerr << "CREATE FROM TREELIST" << std::endl;
     } else {
         // Create the topology file from specification
+        //std::cerr << "CREATE FROM topology file from specification" << std::endl;
         topoIter = topologyspec;
         parentIter = 0;
         int parentCount = 1;

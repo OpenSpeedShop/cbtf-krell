@@ -475,6 +475,7 @@ AC_CONFIG_FILES([
     collectors/hwctime/Makefile
     collectors/mem/Makefile
     collectors/mpi/Makefile
+    collectors/pthreads/Makefile
     components/Makefile
     scripts/Makefile
     src/Makefile

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2011 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+  <Type>mem</Type>
+  <Version>1.0.0</Version>
+
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+    <Tag>1101</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+    <Tag>1104</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+    <Tag>1116</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_UNLOADED_LINKED_OBJECT</Name>
+    <Tag>1126</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+    <Tag>10000</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_MEMTRACE_DATA</Name>
+    <Tag>10032</Tag>
+  </Stream>
+  <Stream>
+    <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+    <Tag>1124</Tag>
+  </Stream>
+
+  <Output>
+      <Name>output</Name>
+      <From><Output>output_from_frontend</Output></From>
+  </Output>
+ 
+  <Frontend>
+
+    <Network>
+      <Type>mem_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>@@component_location@@</SearchPath>
+
+      <Plugin>CollectionPlugin.so</Plugin>
+
+      <Component>
+        <Name>Display</Name>
+        <Type>DisplayAddressBuffer</Type>
+      </Component>
+
+      <Component>
+        <Name>LinkedObject</Name>
+        <Type>LinkedObject</Type>
+      </Component>
+
+      <Component>
+        <Name>ThreadsStateChanged</Name>
+        <Type>ThreadsStateChanged</Type>
+      </Component>
+
+      <Component>
+        <Name>AttachedToThreads</Name>
+        <Type>AttachedToThreads</Type>
+      </Component>
+
+      <Component>
+        <Name>CreatedProcess</Name>
+        <Type>CreatedProcess</Type>
+      </Component>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>Display</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingLoadedLinkedObject</Name>
+        <To>
+          <Name>LinkedObject</Name>
+          <Input>loaded</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingThreadsStateChanged</Name>
+        <To>
+          <Name>ThreadsStateChanged</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingAttachedToThreads</Name>
+        <To>
+          <Name>AttachedToThreads</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingCreatedProcess</Name>
+        <To>
+          <Name>CreatedProcess</Name>
+          <Input>in</Input>
+        </To>
+      </Input>
+
+      <Output>
+         <Name>output_from_frontend</Name>
+         <From>
+            <Name>ThreadsStateChanged</Name>
+            <Output>out1</Output>
+         </From>
+      </Output>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT</Name>
+      <To><Input>IncomingLoadedLinkedObject</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+      <To><Input>IncomingThreadsStateChanged</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+      <To><Input>IncomingAttachedToThreads</Input></To>
+    </IncomingUpstream>
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
+      <To><Input>IncomingCreatedProcess</Input></To>
+    </IncomingUpstream>
+ 
+  </Frontend>
+
+  <Filter>
+ 
+    <Depth><AllOther/></Depth>
+
+    <Network>
+      <Type>mem_Filter</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>@@component_location@@</SearchPath>
+
+      <Plugin>CollectionPlugin.so</Plugin>
+
+      <Component>
+        <Name>Aggregator</Name>
+        <Type>AddressAggregator</Type>
+      </Component>
+ 
+      <Input>
+        <Name>IncomingBlobs</Name>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>cbtf_protocol_blob</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingMEMData</Name>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>mem</Input>
+        </To>
+      </Input>
+ 
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>addressBuffer</Input>
+        </To>
+      </Input>
+ 
+      <Output>
+        <Name>OutgoingBuffers</Name>
+        <From>
+          <Name>Aggregator</Name>
+          <Output>Aggregatorout</Output>
+        </From>
+      </Output>
+ 
+    </Network>    
+
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
+      <To><Input>IncomingBlobs</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_MEMTRACE_DATA</Name>
+      <To><Input>IncomingMEMData</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingUpstream>
+      <Name>Buffers</Name>
+      <From><Output>OutgoingBuffers</Output></From>
+    </OutgoingUpstream>
+
+  </Filter>
+
+</MRNet>

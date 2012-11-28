@@ -92,3 +92,7 @@
 #define CBTF_PROTOCOL_TAG_MEMTRACE_DATA                       ((int)10032)
 #define CBTF_PROTOCOL_TAG_MEMEXTTRACE_DATA                    ((int)10033)
 #define CBTF_PROTOCOL_TAG_MEMPROFILE_DATA                     ((int)10034)
+
+#define CBTF_PROTOCOL_TAG_PTHREAD_PARAMETERS                  ((int)10035)
+#define CBTF_PROTOCOL_TAG_PTHREAD_ARGS                        ((int)10036)
+#define CBTF_PROTOCOL_TAG_PTHREADEXTTRACE_DATA                ((int)10037)

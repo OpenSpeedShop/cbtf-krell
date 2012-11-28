@@ -310,28 +310,32 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 	base = lrange.getBegin();
     }
 
-    std::vector <Symbol *>fsyms;
+    std::vector <SymtabAPI::Function *>fsyms;
 
-    if(symtab && !symtab->getAllSymbolsByType(fsyms,Symbol::ST_FUNCTION)) {
+    if(symtab && !symtab->getAllFunctions(fsyms) ) {
 	std::cerr << "getAllSymbolsByType unable to get all Functions "
 	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
 	    << std::endl;
     }
 
-    for(unsigned i = 0; i< fsyms.size();i++){
-	KrellInstitute::Core::Address begin(fsyms[i]->getAddr());
+    std::vector<SymtabAPI::Function *>::iterator fsit;
 
-	if (i + 1 != fsyms.size()) {
-	    KrellInstitute::Core::Address end(fsyms[i+1]->getAddr());
+    for(fsit = fsyms.begin(); fsit != fsyms.end(); ++fsit) {
+	int sym_size = (*fsit)->getSize();
+	KrellInstitute::Core::Address begin((*fsit)->getOffset());
+	KrellInstitute::Core::Address end(begin + sym_size);
+
+	// don't let an invalid range through...
+	if (begin >= end) continue;
+
 // DEBUG
 #ifndef NDEBUG
 	    if(is_debug_symtabapi_symbols_enabled) {
-	        std::cerr << "ADDING FUNCTION " << fsyms[i]->getName()
+	        std::cerr << "ADDING FUNCTION " << (*fsit)->getFirstSymbol()->getPrettyName()
 		<< " RANGE " << begin << "," << end << std::endl;
 	    }
 #endif
-	    st.addFunction(begin + base, end + base,fsyms[i]->getName());
-	}
+	st.addFunction(begin + base, end + base,(*fsit)->getFirstSymbol()->getPrettyName());
     }
 
     std::vector <Module *>mods;

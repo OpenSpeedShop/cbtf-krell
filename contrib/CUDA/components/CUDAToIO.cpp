@@ -22,8 +22,8 @@
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
+#include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <typeinfo>
 
@@ -55,18 +55,6 @@ using namespace KrellInstitute::Core;
 namespace {
 
     /**
-     * Constant specifying the (fake) file name of the pseudo linked object
-     * containing the dynamically generated symbol table of CUDA operations.
-     */
-    const char* const kFileName = "CUDA";
-
-    /**
-     * Constant specifying the (fake) checksum of the pseduo linked object
-     * containing the dynamically generated symbol table of CUDA operations.
-     */
-    const uint64_t kChecksum = 0x00000BADC00DAFAD;
-    
-    /**
      * Constant specifying the (fake) address range of the pseudo linked object
      * containing the dynamically generated symbol table of CUDA operations.
      *
@@ -82,6 +70,88 @@ namespace {
         0xF0BADC00DAFFFFFF
     };
 
+    /**
+     * Constant specifying the (fake) checksum of the pseduo linked object
+     * containing the dynamically generated symbol table of CUDA operations.
+     */
+    const uint64_t kChecksum = 0x00000BADC00DAFAD;
+    
+    /**
+     * Constant specifying the (fake) file name of the pseudo linked object
+     * containing the dynamically generated symbol table of CUDA operations.
+     */
+    const char* const kFileName = "CUDA";
+
+    /**
+     * Add the given call site to the specified existing stack traces.
+     *
+     * @param call_site               Call site to be added.
+     * @param[in,out] stack_traces    Existing stack traces to which the
+     *                                call site is to be added.
+     * @return                        Index of the call site within the
+     *                                existing stack traces.
+     */
+    uint32_t addCallSite(
+        const std::vector<CBTF_Protocol_Address>& call_site,
+        std::vector<CBTF_Protocol_Address>& stack_traces
+        )
+    {
+        uint32_t i, j;
+        
+        // Iterate over the addresses in the existing stack traces
+        for (i = 0, j = 0; i < stack_traces.size(); ++i)
+        {
+            // Is this the terminating null of an existing stack trace?
+            if (stack_traces[i] == 0)
+            {
+                //
+                // Terminate the search if a complete match has been found
+                // between the call site and the existing stack trace.
+                //
+
+                if (j == call_site.size())
+                {
+                    break;
+                }
+
+                // Otherwise reset the pointer within the call site
+                else
+                {
+                    j = 0;
+                }
+            }
+            else
+            {
+                //
+                // Advance the pointer within the call site if the current
+                // address within the call site matches the current address
+                // within the existing stack traces. Otherwise reset the
+                // pointer.
+                //
+
+                j = (call_site[j] == stack_traces[i]) ? (j + 1) : 0;
+            }
+        }
+
+        //
+        // Add the call site to the existing stack traces if the end of the
+        // existing stack traces was reached without finding a match.
+        // 
+
+        if (i == stack_traces.size())
+        {
+            stack_traces.insert(
+                stack_traces.end(), call_site.begin(), call_site.end()
+                );
+            stack_traces.push_back(0);
+
+            i = stack_traces.size() - 1;
+        }
+        
+        // Return the index of the call site within the existing stack traces
+        return i - call_site.size();
+    }
+    
     /**
      * Formats the specified byte count as a string with accompanying units.
      * E.g. an input of 1,614,807 returns "1.5 MB".
@@ -183,7 +253,7 @@ namespace {
             boost::format("set %1% on device") % formatByteCount(message.size)
             );
     }
-        
+
 } // namespace <anonymous>
 
 
@@ -221,10 +291,29 @@ private:
      * CUDA operations to their address within the process' address space.
      */
     typedef std::map<std::string, CBTF_Protocol_Address> OperationTable;
+
+    /**
+     * Plain old data (POD) structure describing a single pending request.
+     *
+     * @sa http://en.wikipedia.org/wiki/Plain_old_data_structure
+     */
+    struct Request
+    {
+        /** Original message describing the enqueued request. */
+        CUDA_EnqueueRequest message;
+        
+        /** Expanded call site of the request. */
+        std::vector<CBTF_Protocol_Address> call_site;
+    };
     
     /** Default constructor. */
     CUDAToIO();
-
+    
+    /** Complete the specified CUDA operation. */
+    template <typename T> void complete(
+        const CUDA_RequestTypes& type, const T& message
+        );
+    
     /** Handler for the "Data" input. */
     void handleData(
         const boost::shared_ptr<CBTF_cuda_data>& message
@@ -252,11 +341,18 @@ private:
      */
     CBTF_Protocol_Address dm_next_address;
 
-    /**
-     * Table of individual CUDA operations.
-     */
+    /** Table of individual CUDA operations. */
     OperationTable dm_operations;
+    
+    /** Table of pending requests. */
+    std::list<Request> dm_requests;
+    
+    /** Table of I/O events for completed CUDA operations. */
+    std::vector<CBTF_io_event> dm_events;
 
+    /** Table of I/O stack traces for completed CUDA operations. */
+    std::vector<CBTF_Protocol_Address> dm_stack_traces;
+    
 }; // class CUDAToIO
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDAToIO)
@@ -269,7 +365,10 @@ CUDAToIO::CUDAToIO() :
     Component(Type(typeid(CUDAToIO)), Version(0, 0, 0)),
     dm_active_threads(),
     dm_next_address(kAddressRange.begin),
-    dm_operations()
+    dm_operations(),
+    dm_requests(),
+    dm_events(),
+    dm_stack_traces()
 {
     declareInput<boost::shared_ptr<CBTF_cuda_data> >(
         "Data", boost::bind(&CUDAToIO::handleData, this, _1)
@@ -300,16 +399,87 @@ CUDAToIO::CUDAToIO() :
 
 
 //------------------------------------------------------------------------------
-// ...
+// Complete the specified CUDA operation by matching it with the corresponding
+// previously-queued request, constructing a pseudo I/O event for it, and then
+// appending that event to our tables.
+//------------------------------------------------------------------------------
+template <typename T>
+void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
+{
+    //
+    // Locate the next queued request of the same request type, CUDA context,
+    // and CUDA stream as the completed CUDA operation.
+    //
+    
+    for (std::list<Request>::iterator i = dm_requests.begin();
+         i != dm_requests.end();
+         ++i)
+    {
+        if ((i->message.type == type) &&
+            (i->message.context == message.context) &&
+            (i->message.stream == message.stream))
+        {
+            // Create the operation string for this completed CUDA operation
+            std::string operation = toOperation(message);
+            
+            //
+            // Find the existing address corresponding to this CUDA operation
+            // or, if no such address exists yet, assign it the next available
+            // address. In either case, prepend the address to the beginning of
+            // the request's call site.
+            //
+            
+            OperationTable::const_iterator j = dm_operations.find(operation);
+
+            if (j == dm_operations.end())
+            {
+                j = dm_operations.insert(
+                    OperationTable::value_type(operation, dm_next_address++)
+                    ).first;
+            }
+
+            i->call_site.insert(i->call_site.begin(), j->second);
+
+            //
+            // Construct a CBTF_io_event entry for this completed CUDA operation
+            // and then push it onto our table of I/O events. The modified call
+            // site is added (when necessary) to our table of I/O stack traces.
+            //
+            
+            CBTF_io_event event;
+            
+            event.start_time = message.time_begin;
+            event.stop_time = message.time_end;
+            event.stacktrace = addCallSite(i->call_site, dm_stack_traces);
+
+            dm_events.push_back(event);
+            
+            // Remove this request from the queue of pending requests
+            dm_requests.erase(i);
+            
+            // And now exit the search...
+            break;
+        }
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Translate between the CBTF_cuda_data and CBTF_io_trace_data performance data
+// blobs and emit the resulting, translated, blob.
 //------------------------------------------------------------------------------
 void CUDAToIO::handleData(
     const boost::shared_ptr<CBTF_cuda_data>& message
     )
 {
     //
-    // ...
+    // Iterate over each of the individual CUDA messages "packed" into this
+    // performance data blob. Queued requests are pushed onto our own queue
+    // of such requests after first expanding the request's call site. When
+    // requests are completed they are pushed onto our appropriate tables.
     //
-
+    
     for (u_int i = 0; i < message->messages.messages_len; ++i)
     {
         const CBTF_cuda_message& cuda_message =
@@ -322,8 +492,8 @@ void CUDAToIO::handleData(
             {
                 const CUDA_CopiedMemory& msg =
                     cuda_message.CBTF_cuda_message_u.copied_memory;
-
-                // ...
+                
+                complete(MemoryCopy, msg);
             }
             break;
             
@@ -332,34 +502,87 @@ void CUDAToIO::handleData(
                 const CUDA_EnqueueRequest& msg = 
                     cuda_message.CBTF_cuda_message_u.enqueue_request;
 
-                // ...
+                Request request;
+                request.message = msg;
+                
+                for (uint32_t i = msg.call_site;
+                     (i < message->stack_traces.stack_traces_len) &&
+                         (message->stack_traces.stack_traces_val[i] != 0);
+                     ++i)
+                {
+                    request.call_site.push_back(
+                        message->stack_traces.stack_traces_val[i]
+                        );
+                }
+                
+                dm_requests.push_back(request);
             }
             break;
-
+            
         case ExecutedKernel:
             {
                 const CUDA_ExecutedKernel& msg =
                     cuda_message.CBTF_cuda_message_u.executed_kernel;
-
-                // ...
+                
+                complete(LaunchKernel, msg);
             }
             break;
-
+            
         case SetMemory:
             {
                 const CUDA_SetMemory& msg =
                     cuda_message.CBTF_cuda_message_u.set_memory;
                 
-                // ...
+                complete(MemorySet, msg);
             }
             break;
-
+            
         default:
             break;
         }
     }
+    
+    //
+    // Construct a new CBTF_io_trace_data from the two tables of completed
+    // CUDA operations. Direct memory copies are possible here because the
+    // only difference between our internal tables and the performance data
+    // blob is the use of (expandable) vectors for the former.
+    //
 
-    // ...
+    boost::shared_ptr<CBTF_io_trace_data> data(new CBTF_io_trace_data());
+
+    data->stacktraces.stacktraces_len = dm_stack_traces.size();
+    
+    data->stacktraces.stacktraces_val =
+        reinterpret_cast<CBTF_Protocol_Address*>(
+            malloc(std::max(1U, data->stacktraces.stacktraces_len) *
+                   sizeof(CBTF_Protocol_Address))
+            );
+
+    if (!dm_stack_traces.empty())
+    {
+        memcpy(data->stacktraces.stacktraces_val, &dm_stack_traces[0],
+               dm_stack_traces.size() * sizeof(CBTF_Protocol_Address));        
+    }
+
+    data->events.events_len = dm_events.size();
+
+    data->events.events_val = reinterpret_cast<CBTF_io_event*>(
+        malloc(std::max(1U, data->events.events_len) * sizeof(CBTF_io_event))
+        );
+    
+    if (!dm_events.empty())
+    {
+        memcpy(data->events.events_val, &dm_events[0],
+               dm_events.size() * sizeof(CBTF_io_event));        
+    }
+
+    // Empty the two tables of completed CUDA operations
+    dm_events.clear();
+    dm_stack_traces.clear();
+    
+    // Emit the CBTF_io_trace_data on our appropriate output
+    emitOutput<boost::shared_ptr<CBTF_io_trace_data> >("Data", data);    
 }
 
 
@@ -570,7 +793,7 @@ void CUDAToIO::handleThreadsStateChanged(
     bitmap->bitmap.data.data_val = reinterpret_cast<uint8_t*>(malloc(1));
     bitmap->bitmap.data.data_val[0] = 0;
     
-    // Emit the CBTF_Protocol_SymbolTable on our appropriate output.
+    // Emit the CBTF_Protocol_SymbolTable on our appropriate output
     emitOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
         "SymbolTable", table
         );    

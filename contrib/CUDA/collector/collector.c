@@ -372,15 +372,19 @@ static uint32_t add_current_call_site(TLS* tls)
         {
             /*
              * Terminate the search if a complete match has been found between
-             * this stack trace and the existing stack trace. Otherwise check
-             * for a null in the first or last entry, or for consecutive nulls,
-             * all of which indicate the end of the existing stack traces, and
-             * the need to add this stack trace to the existing stack traces.
+             * this stack trace and the existing stack trace.
              */
             if (j == frame_count)
             {
                 break;
             }
+
+            /*
+             * Otherwise check for a null in the first or last entry, or
+             * for consecutive nulls, all of which indicate the end of the
+             * existing stack traces, and the need to add this stack trace
+             * to the existing stack traces.
+             */
             else if ((i == 0) || 
                      (i == (MAX_ADDRESSES_PER_BLOB - 1)) ||
                      (tls->stack_traces[i - 1] == 0))
@@ -405,26 +409,25 @@ static uint32_t add_current_call_site(TLS* tls)
                 
                 break;
             }
+            
+            /* Otherwise reset the pointer within this stack trace to zero. */
+            else
+            {
+                j = 0;
+            }
         }
         else
         {
             /*
              * Advance the pointer within this stack trace if the current
              * address within this stack trace matches the current address
-             * within the existing stack trace. Otherwise reset the pointer
+             * within the existing stack traces. Otherwise reset the pointer
              * to zero.
              */
-            if (frame_buffer[j] == tls->stack_traces[i])
-            {
-                ++j;
-            }
-            else
-            {
-                j = 0;
-            } 
+            j = (frame_buffer[j] == tls->stack_traces[i]) ? (j + 1) : 0;
         }
     }
-
+    
     /* Return the index of this stack trace within the existing stack traces */
     return i - frame_count;
 }

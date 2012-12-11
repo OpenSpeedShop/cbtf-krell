@@ -21,7 +21,21 @@
 #define __USE_GNU /* XXX for RTLD_NEXT on Linux */ 
 #endif /* !__USE_GNU */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "KrellInstitute/Messages/Pthreads_data.h"
+#include "KrellInstitute/Services/Assert.h"
+#include "KrellInstitute/Services/Common.h"
+#include "KrellInstitute/Services/Time.h"
+
+
+#if !defined(CBTF_SERVICE_USE_OFFLINE)
+#include <syscall.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
 
 #include <dlfcn.h>
 #include <errno.h>

@@ -48,7 +48,7 @@
 #include "PthreadTraceableFunctions.h"
 
 /** String uniquely identifying this collector. */
-const char* const cbtf_collector_unique_id = "pthreadt";
+const char* const cbtf_collector_unique_id = "pthreads";
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -325,10 +325,12 @@ fprintf(stderr,"ENTERED pthreads_record_event, sizeof event=%d, sizeof stacktrac
 	return;
     }
     
+    ++tls->nesting_depth;
     /* Obtain the stack trace from the current thread context */
     CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
 				    MaxFramesPerStackTrace,
 				    &stacktrace_size, stacktrace);
+    --tls->nesting_depth;
 
     /*
      * Replace the first entry in the call stack with the address of the Pthread

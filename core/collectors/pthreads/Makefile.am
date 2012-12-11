@@ -35,10 +35,10 @@ WRAPPER_SOURCES = wrappers.c
 if !BUILD_TARGETED
 
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += pthreads-collector-monitor-filepthreads.la
-staticpkglib_LTLIBRARIES += libpthreads-monitor-filepthreads.la
+pkglib_LTLIBRARIES += pthreads-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libpthreads-monitor-fileio.la
 
-pthreads_collector_monitor_filepthreads_la_CFLAGS = \
+pthreads_collector_monitor_fileio_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -46,25 +46,27 @@ pthreads_collector_monitor_filepthreads_la_CFLAGS = \
 	@LIBMONITOR_CPPFLAGS@ \
 	@LIBUNWIND_CPPFLAGS@
 
-pthreads_collector_monitor_filepthreads_la_LDFLAGS = \
+pthreads_collector_monitor_fileio_la_LDFLAGS = \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-pthreads_collector_monitor_filepthreads_la_LIBADD = \
+pthreads_collector_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-pthreads_collector_monitor_filepthreads_la_SOURCES = \
+pthreads_collector_monitor_fileio_la_SOURCES = \
 	collector.c $(WRAPPER_SOURCES)
 
-libpthreads_monitor_filepthreads_la_CFLAGS = \
+libpthreads_monitor_fileio_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -74,23 +76,25 @@ libpthreads_monitor_filepthreads_la_CFLAGS = \
 	@LIBUNWIND_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@
 
-libpthreads_monitor_filepthreads_la_LDFLAGS = \
+libpthreads_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@CBTF_SERVICES_LDFLAGS@ \
 	@LIBMONITOR_LDFLAGS@ \
 	@LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libpthreads_monitor_filepthreads_la_LIBADD = \
+libpthreads_monitor_fileio_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libpthreads_monitor_filepthreads_la_SOURCES = \
+libpthreads_monitor_fileio_la_SOURCES = \
 	$(BUILT_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 
@@ -117,11 +121,13 @@ pthreads_collector_monitor_mrnet_la_LDFLAGS = \
 pthreads_collector_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 pthreads_collector_monitor_mrnet_la_SOURCES = \
@@ -149,11 +155,13 @@ libpthreads_monitor_mrnet_la_LDFLAGS = \
 libpthreads_monitor_mrnet_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_la_SOURCES = \
@@ -183,12 +191,14 @@ pthreads_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 pthreads_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 pthreads_collector_monitor_mrnet_mpi_la_SOURCES = \
@@ -218,11 +228,13 @@ libpthreads_monitor_mrnet_mpi_la_LDFLAGS = \
 libpthreads_monitor_mrnet_mpi_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBUNWIND_LIBS@ \
-	@MRNET_LW_LIBS@ \
+	@MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_mpi_la_SOURCES = \
@@ -239,12 +251,12 @@ endif
 
 if HAVE_TARGET_LIBMONITOR
 if HAVE_TARGET_SHARED
-pkglib_LTLIBRARIES += pthreads-collector-monitor-filepthreads.la
+pkglib_LTLIBRARIES += pthreads-collector-monitor-fileio.la
 endif
-staticpkglib_LTLIBRARIES += libpthreads-monitor-filepthreads.la
+staticpkglib_LTLIBRARIES += libpthreads-monitor-fileio.la
 
 if HAVE_TARGET_SHARED
-pthreads_collector_monitor_filepthreads_la_CFLAGS = \
+pthreads_collector_monitor_fileio_la_CFLAGS = \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
@@ -252,25 +264,26 @@ pthreads_collector_monitor_filepthreads_la_CFLAGS = \
 	@TARGET_LIBMONITOR_CPPFLAGS@ \
 	@TARGET_LIBUNWIND_CPPFLAGS@
 
-pthreads_collector_monitor_filepthreads_la_LDFLAGS = \
+pthreads_collector_monitor_fileio_la_LDFLAGS = \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined -module -avoid-version
 
-pthreads_collector_monitor_filepthreads_la_LIBADD = \
+pthreads_collector_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lpthread -lrt
 
-pthreads_collector_monitor_filepthreads_la_SOURCES = \
+pthreads_collector_monitor_fileio_la_SOURCES = \
 	collector.c $(WRAPPER_SOURCES)
 
-libpthreads_monitor_filepthreads_la_CFLAGS = \
+libpthreads_monitor_fileio_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -280,29 +293,31 @@ libpthreads_monitor_filepthreads_la_CFLAGS = \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@
 
-libpthreads_monitor_filepthreads_la_LDFLAGS = \
+libpthreads_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libpthreads_monitor_filepthreads_la_LIBADD = \
+libpthreads_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libpthreads_monitor_filepthreads_la_SOURCES = \
+libpthreads_monitor_fileio_la_SOURCES = \
 	$(BUILT_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 else
 
 if HAVE_TARGET_STATIC
-libpthreads_monitor_filepthreads_la_CFLAGS = \
+libpthreads_monitor_fileio_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -312,23 +327,25 @@ libpthreads_monitor_filepthreads_la_CFLAGS = \
 	@TARGET_LIBUNWIND_CPPFLAGS@ \
 	@TARGET_MESSAGES_CPPFLAGS@
 
-libpthreads_monitor_filepthreads_la_LDFLAGS = \
+libpthreads_monitor_fileio_la_LDFLAGS = \
 	-static \
 	@TARGET_CBTF_SERVICES_LDFLAGS@ \
 	@TARGET_LIBMONITOR_LDFLAGS@ \
 	@TARGET_LIBUNWIND_LDFLAGS@ \
 	-no-undefined
 
-libpthreads_monitor_filepthreads_la_LIBADD = \
+libpthreads_monitor_fileio_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-fileio \
 	-lpthread -lrt
 
-libpthreads_monitor_filepthreads_la_SOURCES = \
+libpthreads_monitor_fileio_la_SOURCES = \
 	$(BUILT_SOURCES) \
 	collector.c $(WRAPPER_SOURCES)
 # endif TARGET_STATIC
@@ -364,11 +381,12 @@ pthreads_collector_monitor_mrnet_la_LDFLAGS = \
 pthreads_collector_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
 	-lpthread -lrt
 
 pthreads_collector_monitor_mrnet_la_SOURCES = \
@@ -396,11 +414,13 @@ libpthreads_monitor_mrnet_la_LDFLAGS = \
 libpthreads_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_la_SOURCES = \
@@ -431,11 +451,13 @@ libpthreads_monitor_mrnet_la_LDFLAGS = \
 libpthreads_monitor_mrnet_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_la_SOURCES = \
@@ -474,12 +496,14 @@ pthreads_collector_monitor_mrnet_mpi_la_LDFLAGS = \
 pthreads_collector_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
+	-lcbtf-services-timer \
 	-lcbtf-services-unwind \
 	-lcbtf-services-data \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 pthreads_collector_monitor_mrnet_mpi_la_SOURCES = \
@@ -509,11 +533,13 @@ libpthreads_monitor_mrnet_mpi_la_LDFLAGS = \
 libpthreads_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_mpi_la_SOURCES = \
@@ -545,11 +571,13 @@ libpthreads_monitor_mrnet_mpi_la_LDFLAGS = \
 libpthreads_monitor_mrnet_mpi_la_LIBADD = \
 	@TARGET_LIBMONITOR_LIBS@ \
 	@TARGET_LIBUNWIND_LIBS@ \
-	@TARGET_MRNET_LW_LIBS@ \
+	@TARGET_MRNET_LWR_LIBS@ \
 	-lcbtf-services-common \
 	-lcbtf-services-monitor \
 	-lcbtf-services-offline \
 	-lcbtf-services-unwind \
+	-lcbtf-services-timer \
+	-lcbtf-services-collector-monitor-mrnet-mpi \
 	-lpthread -lrt
 
 libpthreads_monitor_mrnet_mpi_la_SOURCES = \

@@ -49,6 +49,7 @@
 #include "KrellInstitute/Messages/LinkedObjectEvents.h"
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
+#include <KrellInstitute/Messages/Symbol.h>
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
 
@@ -57,6 +58,12 @@ using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
 
 namespace {
+
+#ifndef NDEBUG
+/** Flag indicating if debuging for LinkedObjects is enabled. */
+bool is_debug_symbol_events_enabled =
+    (getenv("CBTF_DEBUG_SYMBOL_EVENTS") != NULL);
+#endif
 
     SymbolTableMap symtabmap;
 
@@ -104,6 +111,12 @@ private:
         declareInput<BFDSymbols>(
             "bfdsymsin", boost::bind(&ResolveSymbols::BFDSymbolHandler, this, _1)
             );
+	declareInput<bool>(
+            "finished", boost::bind(&ResolveSymbols::finishedHandler, this, _1)
+            );
+	declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
+	    "symboltable_xdr_out"
+	    );
         declareOutput<SymtabAPISymbols>("symtabapisymsout");
         declareOutput<BFDSymbols>("bfdsymbolsout");
     }
@@ -111,7 +124,6 @@ private:
     /** Handler for the "abuffer" input.*/
     void AddressBufferHandler(const AddressBuffer& in)
     {
-
 	abuffer = in;
 	ac = in.addresscounts;
     }
@@ -189,6 +201,59 @@ private:
 		SymbolTable st = i->first;
 		bfd_symbols.getSymbols(abuffer,le,st);
 	}
+    }
+
+
+    void finishedHandler(const bool& in)
+    {
+#ifndef NDEBUG
+        if (is_debug_symbol_events_enabled) {
+            std::cerr
+	    << "ResolveSymbols::finishedHandler is finished "
+	    << " from cbtf pid " << getpid()
+	    << std::endl;
+	}
+#endif
+
+        //abuffer.printResults();
+
+	AddressCounts::const_iterator aci;
+	LinkedObjectEntryVec::iterator li;
+	for (aci = ac.begin(); aci != ac.end(); ++aci) {
+	    bool foundit = false;
+	    for (li = linkedobjectvec.begin(); li != linkedobjectvec.end(); ++li) {
+		AddressRange addr_range(li->addr_begin,li->addr_end);
+		if (addr_range.doesContain(aci->first) ) {
+		    symtabmap.insert(std::make_pair(addr_range,
+				 std::make_pair(addr_range, *li )
+				));
+		    foundit = true;
+		    break;
+		}
+	    }
+
+	    if(!foundit) {
+#ifndef NDEBUG
+        	if (is_debug_symbol_events_enabled) {
+		    std::cerr << "CANNOT RESOLVE symbols for address "
+			<< aci->first  << std::endl;
+		}
+#endif
+	    }
+	}
+
+	// Now cycle through these symboltables and find functions and statements.
+	SymtabAPISymbols stapi_symbols;
+
+	for(SymbolTableMap::iterator i = symtabmap.begin(); i != symtabmap.end(); ++i) {
+		LinkedObjectEntry le = i->second.second;
+		SymbolTable st = i->first;
+		//std::cerr << "CALLING stapi_symbols for LOE " << le.path << std::endl;
+		stapi_symbols.getSymbols(abuffer,le,st);
+	}
+	
+	//emitOutput<SymtabAPISymbols>("symtabapisymsout",stapi_symbols);
+	
     }
     
 }; // class ResolveSymbols

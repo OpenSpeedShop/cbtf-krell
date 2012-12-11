@@ -70,8 +70,15 @@ namespace KrellInstitute { namespace Core {
 	{
 	}
 
+	StackTrace() :
+	    std::vector<Address>(),
+	    dm_thread(NULL),
+	    dm_time(Time::TheBeginning())
+	{
+	}
+
 	/** Read-only data member accessor function. */
-	Thread getThread() const
+	ThreadName getThread() const
 	{
 	    return dm_thread;
 	}
@@ -86,7 +93,7 @@ namespace KrellInstitute { namespace Core {
     private:
 
 	/** Thread in which this stack trace was recorded. */
-	Thread dm_thread;
+	ThreadName dm_thread;
 	
 	/** Time at which this stack trace was recorded. */
 	Time dm_time;

@@ -22,6 +22,12 @@
 #include <boost/operators.hpp>
 #include <mrnet/MRNet.h>
 #include <typeinfo>
+#include <string>
+#include <sstream>
+
+#include <vector>
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 
 #include <KrellInstitute/CBTF/Component.hpp>
@@ -35,6 +41,7 @@
 #include "KrellInstitute/Core/PCData.hpp"
 #include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/StacktraceData.hpp"
+#include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 #include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/DataHeader.h"
@@ -47,11 +54,13 @@
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
 #include "KrellInstitute/Messages/Mpi_data.h"
+#include "KrellInstitute/Messages/Pthreads_data.h"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
 
 namespace {
+
 
 #ifndef NDEBUG
 /** Flag indicating if debuging for LinkedObjects is enabled. */
@@ -72,116 +81,131 @@ bool is_debug_aggregator_events_enabled =
     void aggregatePCData(const std::string id, const Blob &blob,
 			 AddressBuffer &buf, uint64_t &interval)
     {
-	uint64_t *pc_val;
-	u_int pc_len;
-	uint8_t *count_val;
-
 	if (id == "pcsamp") {
             CBTF_pcsamp_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
-	    pc_val = data.pc.pc_val;
-	    count_val = data.count.count_val;
-	    pc_len = data.pc.pc_len;
 	    interval = data.interval;
+	    PCData pcdata;
+            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data),
+                     reinterpret_cast<char*>(&data));
+
 	} else if (id == "hwc") {
             CBTF_hwc_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
-	    pc_val = data.pc.pc_val;
-	    count_val = data.count.count_val;
-	    pc_len = data.pc.pc_len;
 	    interval = data.interval;
+	    PCData pcdata;
+            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "hwcsamp") {
             CBTF_hwcsamp_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data), &data);
-	    pc_val = data.pc.pc_val;
-	    count_val = data.count.count_val;
-	    pc_len = data.pc.pc_len;
 	    interval = data.interval;
+	    PCData pcdata;
+            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data),
+                     reinterpret_cast<char*>(&data));
 	} else {
 	    return;
 	}
-
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(pc_len, pc_val, count_val, buf);
     }
 
     void aggregateSTSampleData(const std::string id, const Blob &blob,
 			 AddressBuffer &buf, uint64_t &interval)
     {
-	uint64_t *stacktraces_val;
-	u_int stacktraces_len;
-	uint8_t *count_val;
-
 	if (id == "usertime") {
             CBTF_usertime_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    count_val = data.count.count_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
 	    interval = data.interval;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val,
+				data.count.count_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "hwctime") {
             CBTF_hwctime_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    count_val = data.count.count_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
 	    interval = data.interval;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val,
+				data.count.count_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data),
+                     reinterpret_cast<char*>(&data));
 	} else {
 	    return;
 	}
 
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(stacktraces_len,
-				stacktraces_val, count_val, buf);
     }
 
     void aggregateSTTraceData(const std::string id, const Blob &blob,
 			 AddressBuffer &buf)
     {
-	uint64_t *stacktraces_val;
-	u_int stacktraces_len;
-
 	if (id == "io") {
             CBTF_io_trace_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "iot") {
             CBTF_io_exttrace_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "mem") {
             CBTF_mem_exttrace_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "pthreads") {
+            CBTF_pthreads_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "mpi") {
             CBTF_mpi_trace_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "mpit") {
             CBTF_mpi_exttrace_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
-	    stacktraces_val = data.stacktraces.stacktraces_val;
-	    stacktraces_len = data.stacktraces.stacktraces_len;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data),
+                     reinterpret_cast<char*>(&data));
 	} else {
 	    return;
 	}
 
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(stacktraces_len, stacktraces_val, buf);
     }
 
 }
@@ -247,6 +271,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
             "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_pthreads_exttrace_data> >(
+            "pthreads", boost::bind(&AddressAggregator::pthreadsHandler, this, _1)
             );
         declareInput<boost::shared_ptr<CBTF_mpi_trace_data> >(
             "mpi", boost::bind(&AddressAggregator::mpiHandler, this, _1)
@@ -414,6 +441,19 @@ private:
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
+    /** Handler for the "mem" input.*/
+    void pthreadsHandler(const boost::shared_ptr<CBTF_pthreads_exttrace_data>& in)
+    {
+        CBTF_pthreads_exttrace_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
     /** Handler for the "mpi" input.*/
     void mpiHandler(const boost::shared_ptr<CBTF_mpi_trace_data>& in)
     {
@@ -484,7 +524,7 @@ private:
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit") {
+		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
@@ -586,7 +626,7 @@ private:
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit") {
+		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

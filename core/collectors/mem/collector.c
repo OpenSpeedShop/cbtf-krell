@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2011 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2011-2012 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -34,23 +34,19 @@
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
+#include "KrellInstitute/Services/Assert.h"
+#include "KrellInstitute/Services/Collector.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
+#include "KrellInstitute/Services/Time.h"
+#include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "MemTraceableFunctions.h"
 
-#define true 1
-#define false 0
-
-#if !defined (TRUE)
-#define TRUE true
-#endif
-
-#if !defined (FALSE)
-#define FALSE false
-#endif
+/** String uniquely identifying this collector. */
+const char* const cbtf_collector_unique_id = "mem";
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -85,7 +81,7 @@ const unsigned OverheadFrameCount = 2;
 /** CBTF_mem_event is 32 bytes */
 #define EventBufferSize (CBTF_BlobSizeFactor * 415)
 
-/** Thread-local storage. */
+/** Type defining the items stored in thread-local storage. */
 typedef struct {
     
     /** Nesting depth within the Mem function wrappers. */
@@ -107,37 +103,13 @@ typedef struct {
     int defer_sampling;
     int do_trace;
 
-#if defined(CBTF_SERVICE_USE_MRNET)
-    CBTF_Protocol_ThreadNameGroup tgrp;
-    CBTF_Protocol_ThreadName tname;
-    CBTF_Protocol_CreatedProcess created_process_message;
-    CBTF_Protocol_AttachedToThreads attached_to_threads_message;
-    CBTF_Protocol_ThreadsStateChanged thread_state_changed_message;
-
-    int connected_to_mrnet;
-    int is_mpi_job;
-    int sent_process_thread_info;
-    int process_created;
-
-    struct {
-        CBTF_Protocol_ThreadName tnames[4096];
-    } tgrpbuf;
-#endif
-
 } TLS;
 
-
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-extern void cbtf_offline_sent_data(int);
-#endif
-
-#ifdef USE_EXPLICIT_TLS
+#if defined(USE_EXPLICIT_TLS)
 
 /**
- * Thread-local storage key.
- *
- * Key used for looking up our thread-local storage. This key <em>must</em>
- * be globally unique across the entire Open|SpeedShop code base.
+ * Key used to look up our thread-local storage. This key <em>must</em> be
+ * unique from any other key used by any of the CBTF services.
  */
 static const uint32_t TLSKey = 0x00001EF7;
 int mem_init_tls_done = 0;
@@ -161,191 +133,82 @@ void defer_trace(int defer_tracing) {
 }
 
 
-#if defined(CBTF_SERVICE_USE_MRNET)
-
-void started_process_thread()
+/**
+ * Initialize the performance data header and blob contained within the given
+ * thread-local storage. This function <em>must</em> be called before any of
+ * the collection routines attempts to add a message.
+ *
+ * @param tls    Thread-local storage to be initialized.
+ */
+static void initialize_data(TLS* tls)
 {
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
+    Assert(tls != NULL);
 
-    int saved_do_trace = tls->do_trace;
-    tls->do_trace = 0;
+    tls->nesting_depth = 0;
 
-    CBTF_Protocol_ThreadName origtname;
-    origtname.host = strdup(tls->tname.host);
-    origtname.pid = -1;
-    origtname.has_posix_tid = false;
-    origtname.posix_tid = 0;
-    origtname.rank = -1;
+    tls->header.time_begin = CBTF_GetTime();
+    tls->header.time_end = 0;
+    tls->header.addr_begin = ~0;
+    tls->header.addr_end = 0;
+    
+    /* Re-initialize the actual data blob */
+    tls->data.stacktraces.stacktraces_len = 0;
+    tls->data.stacktraces.stacktraces_val = tls->buffer.stacktraces;
+    tls->data.events.events_len = 0;
+    tls->data.events.events_val = tls->buffer.events;
 
-    tls->tname.rank = monitor_mpi_comm_rank();
-
-    //CBTF_Protocol_CreatedProcess message;
-    tls->created_process_message.original_thread = origtname;
-    tls->created_process_message.created_thread = tls->tname;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
-           &tls->tname, sizeof(tls->tname));
-    tls->tgrp.names.names_len++;
-
-    //CBTF_Protocol_AttachedToThreads tmessage;
-    tls->attached_to_threads_message.threads = tls->tgrp;
-    tls->process_created = 0;
-    tls->do_trace = saved_do_trace;
+    /* Re-initialize the sampling buffer */
+    memset(tls->buffer.stacktraces, 0, sizeof(tls->buffer.stacktraces));
+    memset(tls->buffer.events, 0, sizeof(tls->buffer.events));
 }
 
-void send_process_thread_message()
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified time. Insures that the time interval defined by
+ * time_begin and time_end contain the specified time.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param time    Time with which to update.
+ */
+inline void update_header_with_time(TLS* tls, uint64_t time)
 {
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
+    Assert(tls != NULL);
 
-    int saved_do_trace = tls->do_trace;
-    tls->do_trace = 0;
-
-    started_process_thread();
-
-    if (!tls->process_created) {
-	if (tls->connected_to_mrnet) {
-	    CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_CREATED_PROCESS,
-                           (xdrproc_t) xdr_CBTF_Protocol_CreatedProcess,
-			   &tls->created_process_message);
-	}
-	tls->process_created = true;
+    if (time < tls->header.time_begin)
+    {
+        tls->header.time_begin = time;
     }
-
-    if (tls->connected_to_mrnet) {
-	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
-			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
-			&tls->attached_to_threads_message);
+    if (time >= tls->header.time_end)
+    {
+        tls->header.time_end = time + 1;
     }
-    tls->do_trace = saved_do_trace;
 }
 
-void set_mpi_flag(int flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
 
-    tls->is_mpi_job = flag;
+
+/**
+ * Update the performance data header contained within the given thread-local
+ * storage with the specified address. Insures that the address range defined
+ * by addr_begin and addr_end contain the specified address.
+ *
+ * @param tls     Thread-local storage to be updated.
+ * @param addr    Address with which to update.
+ */
+inline void update_header_with_address(TLS* tls, uint64_t addr)
+{
+    Assert(tls != NULL);
+
+    if (addr < tls->header.addr_begin)
+    {
+        tls->header.addr_begin = addr;
+    }
+    if (addr >= tls->header.addr_end)
+    {
+        tls->header.addr_end = addr + 1;
+    }
 }
 
-void connect_to_mrnet()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    int saved_do_trace = tls->do_trace;
-    tls->do_trace = 0;
-
-    if (tls->connected_to_mrnet) {
-        fprintf(stderr,"ALREADY connected  connect_to_mrnet \n");
-	return;
-    }
-
-#ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	 fprintf(stderr,"connect_to_mrnet() calling CBTF_MRNet_LW_connect for rank %d\n",
-	monitor_mpi_comm_rank());
-    }
-#endif
-
-    CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
-    tls->header.rank = monitor_mpi_comm_rank();
-    tls->connected_to_mrnet = 1;
-
-#ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	 fprintf(stderr,"connect_to_mrnet reports connection successful for %s:%d rank %d\n",
-		tls->header.host, tls->header.pid, tls->header.rank);
-    }
-#endif
-
-    //send_process_thread_message();
-    //tls->sent_process_thread_info = 1;
-    tls->do_trace = saved_do_trace;
-}
-
-void send_thread_state_changed_message()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-
-    if (tls == NULL) {
-	fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
-		monitor_mpi_comm_rank());
-	return;
-    }
-
-    int saved_do_trace = tls->do_trace;
-    tls->do_trace = 0;
-
-#ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-        fprintf(stderr,"ENTERED send_thread_state_changed_message for rank %d\n", monitor_mpi_comm_rank());
-    }
-#endif
-
-    CBTF_Protocol_ThreadName tname;
-    tname.experiment = 0;
-    tname.host = strdup(tls->header.host);
-    tname.pid = tls->header.pid;
-    tname.has_posix_tid = true;
-    tname.posix_tid = tls->header.posix_tid;
-    tname.rank = tls->header.rank;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
-           &tname, sizeof(tname));
-    tls->tgrp.names.names_len++;
-
-    //CBTF_Protocol_ThreadsStateChanged message;
-    tls->thread_state_changed_message.threads = tls->tgrp;
-    tls->thread_state_changed_message.state = Terminated;
-
-    if (tls->connected_to_mrnet) {
-	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
-                  (xdrproc_t) xdr_CBTF_Protocol_ThreadsStateChanged,
-		  &tls->thread_state_changed_message);
-    }
-
-    tls->do_trace = saved_do_trace;
-}
-#endif
 
 /**
  * Send events.
@@ -357,62 +220,30 @@ void send_thread_state_changed_message()
 /*
 NO DEBUG PRINT STATEMENTS HERE.
 */
-static void mem_send_events(TLS *tls)
+static void send_samples(TLS *tls)
 {
     int saved_do_trace = tls->do_trace;
     tls->do_trace = 0;
 
-    /* Set the end time of this data blob */
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
-    tls->header.id = strdup("mem");
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-        fprintf(stderr,"Mem Collector runtime sends data:\n");
-        fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] "
-		" stacktraces_len(%d) events_len(%d)\n",
-            tls->header.time_end,tls->header.addr_begin,tls->header.addr_end,
-	    tls->data.stacktraces.stacktraces_len,
-            tls->data.events.events_len);
-    }
-#endif
-
-
-#if defined(CBTF_SERVICE_USE_FILEIO)
-	CBTF_Send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
-#endif
-
-#if defined(CBTF_SERVICE_USE_MRNET)
-	if (tls->connected_to_mrnet) {
-	    if (!tls->sent_process_thread_info) {
-	        send_process_thread_message();
-	    }
-	    tls->sent_process_thread_info = 1;
-
-	    CBTF_MRNet_Send_PerfData( &tls->header,
-				 (xdrproc_t)xdr_CBTF_mem_exttrace_data,
-				 &tls->data);
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr, "pthread send_samples:\n");
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+		tls->header.time_begin,tls->header.time_end,
+		tls->header.addr_begin,tls->header.addr_end,
+		tls->data.stacktraces.stacktraces_len,
+		tls->data.events.events_len);
 	}
 #endif
 
-#if defined(CBTF_SERVICE_USE_OFFLINE)
-    cbtf_offline_sent_data(1);
-#endif
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
 
     /* Re-initialize the data blob's header */
-    tls->header.time_begin = tls->header.time_end;
-    tls->header.time_end = 0;
-    tls->header.addr_begin = ~0;
-    tls->header.addr_end = 0;
-    
-    /* Re-initialize the actual data blob */
-    tls->data.stacktraces.stacktraces_len = 0;
-    tls->data.events.events_len = 0;    
-
-    tls->do_trace = saved_do_trace;
+    initialize_data(tls);
 }
-    
-
 
 /**
  * Start an event.
@@ -481,7 +312,6 @@ void mem_record_event(const CBTF_memt_event* event, uint64_t function)
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
     unsigned entry = 0, start, i;
-    unsigned pathindex = 0;
 
 #ifdef DEBUG
 fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_memt_event),sizeof(stacktrace),tls->nesting_depth);
@@ -567,7 +397,7 @@ fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d,
 #ifdef DEBUG
 fprintf(stderr,"StackTraceBufferSize is full, call mem_send_events\n");
 #endif
-	    mem_send_events(tls);
+	    send_samples(tls);
 	}
 	
 	/* Add each frame in the stack trace to the tracing buffer. */	
@@ -602,9 +432,9 @@ fprintf(stderr,"StackTraceBufferSize is full, call mem_send_events\n");
     /* Send events if the tracing buffer is now filled with events */
     if(tls->data.events.events_len == EventBufferSize) {
 #ifdef DEBUG
-fprintf(stderr,"Event Buffer is full, call mem_send_events\n");
+fprintf(stderr,"Event Buffer is full, call send_samples\n");
 #endif
-	mem_send_events(tls);
+	send_samples(tls);
     }
 
     tls->do_trace = saved_do_trace;
@@ -613,6 +443,11 @@ fprintf(stderr,"Event Buffer is full, call mem_send_events\n");
 
 
 /**
+ * Called by the CBTF collector service in order to start data collection.
+ */
+void cbtf_collector_start(const CBTF_DataHeader* const header)
+{
+/**
  * Start tracing.
  *
  * Starts Mem extended event tracing for the thread executing this function.
@@ -620,10 +455,6 @@ fprintf(stderr,"Event Buffer is full, call mem_send_events\n");
  *
  * @param arguments    Encoded function arguments.
  */
-void mem_start_tracing(const char* arguments)
-{
-    CBTF_mem_start_sampling_args args;
-
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
 	//fprintf(stderr,"mem_start_tracing sets TLSKey %#x\n",TLSKey);
@@ -636,28 +467,21 @@ void mem_start_tracing(const char* arguments)
 #endif
     Assert(tls != NULL);
 
-fprintf(stderr,"size of data is %d\n",sizeof(CBTF_mem_event));
-fprintf(stderr,"size of extdata is %d\n",sizeof(CBTF_memt_event));
+    tls->defer_sampling=FALSE;
 
     /* Decode the passed function arguments */
+    // Need to handle the arguments...
+    CBTF_mem_start_sampling_args args;
     memset(&args, 0, sizeof(args));
+    
+#if 0
     CBTF_DecodeParameters(arguments,
 			  (xdrproc_t)xdr_CBTF_mem_start_sampling_args,
 			   &args);
-    
-    /* 
-     * Initialize the data blob's header
-     *
-     * Passing &tls->header to CBTF_InitializeDataHeader() was found
-     * to not be safe on IA64 systems. Hopefully the extra copy can be
-     * removed eventually.
-     */
-    CBTF_DataHeader local_data_header;
-    CBTF_InitializeDataHeader(args.experiment, args.collector, &(local_data_header));
-    memcpy(&tls->header, &local_data_header, sizeof(CBTF_DataHeader));
+#endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(&(tls->header), "mem","cbtf-data");
+    CBTF_SetSendToFile("usertime", "cbtf-data");
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)
@@ -678,69 +502,69 @@ fprintf(stderr,"size of extdata is %d\n",sizeof(CBTF_memt_event));
     }
 #endif
 
-    /* Initialize the Mem function wrapper nesting depth */
-    tls->nesting_depth = 0;
+    memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
 
-    tls->header.time_begin = 0;
-    tls->header.time_end = 0;
-    tls->header.addr_begin = ~0;
-    tls->header.addr_end = 0;
-    
     /* Initialize the actual data blob */
-    tls->data.stacktraces.stacktraces_len = 0;
-    tls->data.stacktraces.stacktraces_val = tls->buffer.stacktraces;
-    tls->data.events.events_len = 0;
-    tls->data.events.events_val = tls->buffer.events;
+    initialize_data(tls);
 
+    /* Initialize the IO function wrapper nesting depth */
+    tls->nesting_depth = 0;
  
-#if defined (CBTF_SERVICE_USE_MRNET)
-    //CBTF_Protocol_ThreadName tname;
-    tls->tname.host = strdup(local_data_header.host);
-    tls->tname.pid = local_data_header.pid;
-    tls->tname.has_posix_tid = true;
-    tls->tname.posix_tid = local_data_header.posix_tid;
-    tls->tname.rank = local_data_header.rank;
-
-    CBTF_Protocol_ThreadName origtname;
-    origtname.host = strdup(tls->tname.host);
-    origtname.pid = -1;
-    origtname.has_posix_tid = false;
-    origtname.posix_tid = 0;
-    origtname.rank = -1;
-
-    CBTF_Protocol_CreatedProcess message;
-    message.original_thread = origtname;
-    message.created_thread = tls->tname;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
-           &tls->tname, sizeof(tls->tname));
-    tls->tgrp.names.names_len++;
-
-    CBTF_Protocol_AttachedToThreads tmessage;
-    tmessage.threads = tls->tgrp;
-
-    tls->connected_to_mrnet = 0;
-    tls->sent_process_thread_info = 0;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-#if !defined (CBTF_SERVICE_USE_MRNET_MPI)
-    connect_to_mrnet();
-#endif
-
-#endif
-
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    tls->do_trace = 1;
+    tls->do_trace = TRUE;
 }
 
+
+/**
+ * Called by the CBTF collector service in order to pause data collection.
+ */
+void cbtf_collector_pause()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=TRUE;
+    tls->do_trace = FALSE;
+}
+
+
+
+/**
+ * Called by the CBTF collector service in order to resume data collection.
+ */
+void cbtf_collector_resume()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=FALSE;
+    tls->do_trace = TRUE;
+}
+
+
+#ifdef USE_EXPLICIT_TLS
+void destroy_explicit_tls() {
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    /* Destroy our thread-local storage */
+    if (tls) {
+        free(tls);
+    }
+    CBTF_SetTLS(TLSKey, NULL);
+}
+#endif
 
 
 /**
@@ -751,7 +575,7 @@ fprintf(stderr,"size of extdata is %d\n",sizeof(CBTF_memt_event));
  *
  * @param arguments    Encoded (unused) function arguments.
  */
-void mem_stop_tracing(const char* arguments)
+void cbtf_collector_stop()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -762,12 +586,14 @@ void mem_stop_tracing(const char* arguments)
 
     Assert(tls != NULL);
 
+    tls->header.time_end = CBTF_GetTime();
+
     /* Stop sampling */
     defer_trace(0);
 
     /* Are there any unsent samples? */
-    if(tls->data.events.events_len > 0) {
-	mem_send_events(tls);
+    if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
+	send_samples(tls);
     }
 
     /* Destroy our thread-local storage */

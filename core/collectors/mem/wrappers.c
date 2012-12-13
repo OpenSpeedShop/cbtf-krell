@@ -42,6 +42,25 @@
 #include <sys/uio.h>
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+static void* (*f_malloc)(size_t);
+static void* (*f_calloc)(size_t, size_t);
+static void* (*f_realloc)(void*, size_t);
+static void* (*f_free)(void*);
+static int (*f_posix_memalign)(void **, size_t, size_t);
+static int (*f_memalign)(size_t, size_t);
+
+static void __attribute__ ((constructor)) initialize()
+{
+    f_malloc = dlsym(RTLD_NEXT, "malloc");
+    f_calloc = dlsym(RTLD_NEXT, "calloc");
+    f_realloc = dlsym(RTLD_NEXT, "realloc");
+    f_free = dlsym(RTLD_NEXT, "free");
+    f_posix_memalign = dlsym(RTLD_NEXT, "posix_memalign");
+    f_memalign = dlsym(RTLD_NEXT, "memalign");
+}
+#endif
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef malloc
 #undef malloc
 #endif
@@ -52,6 +71,11 @@ void* __wrap_malloc(size_t size)
 void* memmalloc(size_t size)
 #endif
 {
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_malloc == NULL)
+	return NULL;
+#endif
+
     void* retval;
     CBTF_memt_event event;
 
@@ -67,8 +91,7 @@ void* memmalloc(size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_malloc(size);
 #else
-    void* (*realfunc)() = dlsym (RTLD_NEXT, "malloc");
-    retval = (*realfunc)(size);
+    retval = f_malloc(size);
 #endif
 
 
@@ -83,7 +106,7 @@ void* memmalloc(size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_malloc);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_malloc));
 #endif
     }
     
@@ -96,6 +119,7 @@ void* memmalloc(size_t size)
 #ifdef calloc
 #undef calloc
 #endif
+
 void* calloc(size_t count, size_t size) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 void* __wrap_calloc(size_t count, size_t size)
@@ -103,6 +127,10 @@ void* __wrap_calloc(size_t count, size_t size)
 void* memcalloc(size_t count, size_t size)
 #endif
 {
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_calloc == NULL)
+	return NULL;
+#endif
     void* retval;
     CBTF_memt_event event;
 
@@ -118,9 +146,7 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_calloc(count,size);
 #else
-    //void* (*realfunc)() = dlsym (RTLD_NEXT, "calloc");
-    //retval = (*realfunc)(count,size);
-    retval = (void*)__libc_calloc(count,size);
+    retval = f_calloc(count,size);
 #endif
 
 
@@ -135,8 +161,7 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_calloc);
 #else
-        //mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
-        mem_record_event(&event, CBTF_GetAddressOfFunction((__libc_calloc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_calloc));
 #endif
     }
     
@@ -156,6 +181,11 @@ void* __wrap_realloc(void* oldPtr, size_t size)
 void* memrealloc(void* oldPtr, size_t size)
 #endif
 {
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_realloc == NULL)
+	return NULL;
+#endif
+
     void* retval;
     CBTF_memt_event event;
 
@@ -171,8 +201,7 @@ void* memrealloc(void* oldPtr, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_realloc(oldPtr,size);
 #else
-    void* (*realfunc)() = dlsym (RTLD_NEXT, "realloc");
-    retval = (*realfunc)(oldPtr,size);
+    retval = f_realloc(oldPtr,size);
 #endif
 
 
@@ -187,7 +216,7 @@ void* memrealloc(void* oldPtr, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_realloc);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_realloc));
 #endif
     }
     
@@ -219,8 +248,8 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_posix_memalign(memptr,alignment,size);
 #else
-    int (*realfunc)() = dlsym (RTLD_NEXT, "posix_memalign");
-    retval = (*realfunc)(memptr,alignment,size);
+    retval = f_posix_memalign(memptr,alignment,size);
+
 #endif
 
 
@@ -235,7 +264,7 @@ int memposix_memalign(void ** memptr, size_t alignment, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_posix_memalign);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_posix_memalign));
 #endif
     }
     
@@ -269,8 +298,7 @@ int memmemalign(size_t blocksize, size_t bytes)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_memalign(blocksize,bytes);
 #else
-    int (*realfunc)() = dlsym (RTLD_NEXT, "memalign");
-    retval = (*realfunc)(blocksize,bytes);
+    retval = f_memalign(blocksize,bytes);
 #endif
 
 
@@ -285,7 +313,7 @@ int memmemalign(size_t blocksize, size_t bytes)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_memalign);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_memalign));
 #endif
     }
     
@@ -307,7 +335,10 @@ void __wrap_free(void * ptr)
 void memfree(void * ptr)
 #endif
 {
-    //void retval;
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_free == NULL)
+	return;
+#endif
     CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("free");
@@ -322,8 +353,7 @@ void memfree(void * ptr)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     __real_free(ptr);
 #else
-    void (*realfunc)() = dlsym (RTLD_NEXT, "free");
-    (*realfunc)(ptr);
+    f_free(ptr);
 #endif
 
 
@@ -338,10 +368,8 @@ void memfree(void * ptr)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_free);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(f_free));
 #endif
     }
     
-    /* Return the real MEM function's return value to the caller */
-    //return retval;
 }

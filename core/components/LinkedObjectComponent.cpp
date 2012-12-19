@@ -168,6 +168,8 @@ private:
 #endif
 	    
 	    emitOutput<LinkedObjectEntryVec>("linkedobjectvec_out",linkedobjectvec);
+	    // clear any linkedobjects for which we sent entries for.
+	    linkedobjectvec.clear();
 	}
 
 	// collector runtimes send this message.  we would rather emit the

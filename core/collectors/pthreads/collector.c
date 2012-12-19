@@ -1,7 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2011-2012 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -71,7 +69,7 @@ const unsigned OverheadFrameCount = 2;
 
 /** Maximum number of frames to allow in each stack trace. */
 /* what is a reasonable default here. 32? */
-#define MaxFramesPerStackTrace 64
+#define MaxFramesPerStackTrace 48
 
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
@@ -80,30 +78,30 @@ const unsigned OverheadFrameCount = 2;
 
 
 /** Number of event entries in the tracing buffer. */
-/** CBTF_pthreadt_event is 32 bytes , CBTF_pthreadt_event is 80 ??? bytes */
-#define EventBufferSize (CBTF_BlobSizeFactor * 140)
-#define PathBufferSize  (CBTF_BlobSizeFactor * 2048)
+/** FIXME: VERIFY: CBTF_pthreadt_event is 32 bytes */
+#define EventBufferSize (CBTF_BlobSizeFactor * 415)
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
+    /** Nesting depth within the Pthread function wrappers. */
+    unsigned nesting_depth;
+
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_pthreads_exttrace_data data;              /**< Actual data blob. */
+    CBTF_pthreads_exttrace_data data;      /**< Actual data blob. */
 
     /** Tracing buffer. */
     struct {
         uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
         CBTF_pthreadt_event events[EventBufferSize]; /**< Pthread call events. */
     } buffer;
-    
+
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     char CBTF_pthreads_traced[PATH_MAX];
 #endif
-    
-    /** Nesting depth within the Pthread function wrappers. */
-    unsigned nesting_depth;
-    bool_t do_trace;
-    bool_t defer_sampling;
+    int defer_sampling;
+    int do_trace;
+
 } TLS;
 
 #if defined(USE_EXPLICIT_TLS)
@@ -217,11 +215,11 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
  * Sends all the events in the tracing buffer to the framework for storage in 
  * the experiment's database. Then resets the tracing buffer to the empty state.
  * This is done regardless of whether or not the buffer is actually full.
- * NO DEBUG PRINT STATEMENTS HERE.
  */
 static void send_samples(TLS *tls)
 {
-    Assert(tls != NULL);
+    int saved_do_trace = tls->do_trace;
+    tls->do_trace = 0;
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
@@ -264,12 +262,16 @@ void pthreads_start_event(CBTF_pthreadt_event* event)
 #endif
     Assert(tls != NULL);
 
-    /* Increment the Pthread function wrapper nesting depth */
+    int saved_do_trace = tls->do_trace;
+    tls->do_trace = 0;
+
+    /* Increment the Mem function wrapper nesting depth */
     ++tls->nesting_depth;
 
     /* Initialize the event record. */
-
     memset(event, 0, sizeof(CBTF_pthreadt_event));
+
+    tls->do_trace = saved_do_trace;
 }
 
 
@@ -297,7 +299,8 @@ void pthreads_record_event(const CBTF_pthreadt_event* event, uint64_t function)
 #endif
     Assert(tls != NULL);
 
-    tls->do_trace = FALSE;
+    int saved_do_trace = tls->do_trace;
+    tls->do_trace = 0;
 
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
@@ -421,7 +424,7 @@ fprintf(stderr,"Event Buffer is full, call send_samples\n");
 	send_samples(tls);
     }
 
-    tls->do_trace = TRUE;
+    tls->do_trace = saved_do_trace;
 }
 
 
@@ -603,15 +606,21 @@ bool_t pthreads_do_trace(const char* traced_func)
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
-    if (tls->do_trace == FALSE) {
+    int saved_do_trace = tls->do_trace;
+    if (tls->do_trace == 0) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
 	return FALSE;
     }
 
+    //fprintf(stderr,"TRACING %s\n",traced_func);
+
     /* See if this function has been selected for tracing */
     char *tfptr, *saveptr, *tf_token;
+
+    tls->do_trace = 0;
     tfptr = strdup(tls->CBTF_pthreads_traced);
+
     int i;
     for (i = 1;  ; i++, tfptr = NULL) {
 	tf_token = strtok_r(tfptr, ":,", &saveptr);
@@ -621,6 +630,7 @@ bool_t pthreads_do_trace(const char* traced_func)
 	
     	    if (tfptr)
 		free(tfptr);
+	    tls->do_trace = saved_do_trace;
 	    return TRUE;
 	}
     }
@@ -632,13 +642,14 @@ bool_t pthreads_do_trace(const char* traced_func)
     if (tls->nesting_depth > 1)
 	--tls->nesting_depth;
 
+    tls->do_trace = saved_do_trace;
     return FALSE;
 #else
     /* Always return true for dynamic instrumentors since these collectors
      * can be passed a list of traced functions for use with executeInPlaceOf.
      */
 
-    if (tls->do_trace == FALSE) {
+    if (tls->do_trace == 0) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
 	return FALSE;

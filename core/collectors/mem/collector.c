@@ -83,20 +83,19 @@ const unsigned OverheadFrameCount = 2;
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
-    
+
     /** Nesting depth within the Mem function wrappers. */
     unsigned nesting_depth;
-    
+
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_mem_trace_data data;              /**< Actual data blob. */
-    CBTF_mem_exttrace_data extdata;              /**< Actual data blob. */
-    
+    CBTF_mem_exttrace_data data;        /**< Actual data blob. */
+
     /** Tracing buffer. NOTE: using exended data memt for buffer*/
     struct {
 	uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
-	CBTF_memt_event events[EventBufferSize];          /**< Mem call events. */
-    } buffer;    
-    
+	CBTF_memt_event events[EventBufferSize];     /**< Mem call events. */
+    } buffer;
+
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     char CBTF_mem_traced[PATH_MAX];
 #endif
@@ -217,9 +216,6 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
  * the experiment's database. Then resets the tracing buffer to the empty state.
  * This is done regardless of whether or not the buffer is actually full.
  */
-/*
-NO DEBUG PRINT STATEMENTS HERE.
-*/
 static void send_samples(TLS *tls)
 {
     int saved_do_trace = tls->do_trace;
@@ -457,7 +453,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
  */
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
-	//fprintf(stderr,"mem_start_tracing sets TLSKey %#x\n",TLSKey);
     TLS* tls = malloc(sizeof(TLS));
     Assert(tls != NULL);
     CBTF_SetTLS(TLSKey, tls);

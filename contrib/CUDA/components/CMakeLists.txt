@@ -32,7 +32,7 @@ target_link_libraries(CUDA
     cbtf-messages-cuda
     ${CBTF_LIBRARIES}
     ${CBTF_CORE_LIBRARIES}
-    ${CBTF_MESSAGE_LIBRARIES}
+    ${CBTF_MESSAGES_LIBRARIES}
     ${MRNet_LIBRARIES}
     )
 

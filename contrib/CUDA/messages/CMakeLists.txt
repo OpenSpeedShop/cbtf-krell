@@ -35,6 +35,8 @@ include_directories(
     ${CBTF_MESSAGES_INCLUDE_DIRS}
     )
 
+target_link_libraries(cbtf-messages-cuda ${CBTF_MESSAGES_BASE_SHARED_LIBRARY})
+
 set_target_properties(cbtf-messages-cuda PROPERTIES VERSION 0.0.0)
 
 install(

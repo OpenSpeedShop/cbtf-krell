@@ -202,11 +202,6 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Input>
       
       <Input>
-        <Name>IncomingCUDAData</Name>
-        <To><Name>CUDAToIO</Name><Input>Data</Input></To>
-      </Input>
-      
-      <Input>
         <Name>IncomingLoadedLinkedObject</Name>
         <To><Name>LinkedObject</Name><Input>loaded</Input></To>
       </Input>
@@ -222,6 +217,11 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Input>
       
       <!-- List of the frontend network's connections -->
+
+      <Connection>
+        <From><Name>CUDADebug</Name><Output>Data</Output></From>
+        <To><Name>CUDAToIO</Name><Input>Data</Input></To>
+      </Connection>
       
       <Connection>
         <From><Name>AttachedToThreads</Name><Output>out</Output></From>
@@ -234,7 +234,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Connection>
 
       <Connection>
-        <From><Name>CUDAToIO</Name><Output>InitialLinkedObject</Output></From>
+        <From><Name>CUDAToIO</Name><Output>InitialLinkedObjects</Output></From>
         <To><Name>LinkedObject</Name><Input>group</Input></To>
       </Connection>
       
@@ -246,7 +246,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Output>
       
       <Output>
-        <Name>OutgoingAttachedThreads</Name>
+        <Name>OutgoingAttachedToThreads</Name>
         <From><Name>AttachedToThreads</Name><Output>xdr_out</Output></From>
       </Output>
 
@@ -255,10 +255,10 @@ Place, Suite 330, Boston, MA  02111-1307  USA
         <From><Name>CreatedProcess</Name><Output>xdr_out</Output></From>
       </Output>
 
-      <Input>
+      <Output>
         <Name>OutgoingIOData</Name>
         <From><Name>CUDAToIO</Name><Output>Data</Output></From>
-      </Input>
+      </Output>
       
       <Output>
         <Name>OutgoingLinkedObjectEntryVec</Name>

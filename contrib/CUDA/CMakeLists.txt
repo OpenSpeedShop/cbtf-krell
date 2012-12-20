@@ -39,3 +39,10 @@ add_subdirectory(collector)
 add_subdirectory(components)
 add_subdirectory(messages)
 #add_subdirectory(symtab)
+
+configure_file(cuda.xml.in cuda.xml)
+
+install(
+    FILES ${PROJECT_BINARY_DIR}/cuda.xml
+    DESTINATION share/KrellInstitute/xml
+    )

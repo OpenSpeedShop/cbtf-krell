@@ -52,8 +52,6 @@ set_target_properties(
     PROPERTIES PREFIX "" VERSION 0.0.0
     )
 
-install(FILES cuda.xml DESTINATION share/KrellInstitute/xml)
-
 install(
     TARGETS
         cuda-collector-monitor-mrnet

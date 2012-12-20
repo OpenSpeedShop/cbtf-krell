@@ -37,7 +37,10 @@ include_directories(
 
 set_target_properties(cbtf-messages-cuda PROPERTIES VERSION 0.0.0)
 
-install(FILES CUDA_data.h DESTINATION include/KrellInstitute/Messages)
+install(
+    FILES ${PROJECT_BINARY_DIR}/messages/CUDA_data.h 
+    DESTINATION include/KrellInstitute/Messages
+    )
 
 install(TARGETS cbtf-messages-cuda
     RUNTIME DESTINATION bin

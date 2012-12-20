@@ -32,6 +32,7 @@ include_directories(
 
 target_link_libraries(cuda-collector-monitor-mrnet
     cbtf-messages-cuda
+    ${CBTF_MESSAGES_EVENTS_SHARED_LIBRARY}
     ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_SHARED_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
@@ -40,6 +41,7 @@ target_link_libraries(cuda-collector-monitor-mrnet
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
     cbtf-messages-cuda
+    ${CBTF_MESSAGES_EVENTS_SHARED_LIBRARY}
     ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_MPI_SHARED_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}

@@ -252,6 +252,7 @@ CUDADebug::CUDADebug() :
     declareInput<boost::shared_ptr<CBTF_cuda_data> >(
         "Data", boost::bind(&CUDADebug::handleData, this, _1)
         );
+    declareOutput<boost::shared_ptr<CBTF_cuda_data> >("Data");
 }
 
 
@@ -265,6 +266,8 @@ void CUDADebug::handleData(
     const boost::shared_ptr<CBTF_cuda_data>& message
     )
 {
+    emitOutput<boost::shared_ptr<CBTF_cuda_data> >("Data", message);
+
     std::cout << std::endl
               << "CUDA Performance Data Blob" << std::endl;
     

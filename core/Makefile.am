@@ -18,4 +18,4 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = libltdl include src collectionTool collectors components scripts
+SUBDIRS = libltdl include src collectors components collectionTool daemonTool scripts

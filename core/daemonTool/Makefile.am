@@ -17,10 +17,7 @@
 ################################################################################
 
 xmldir = $(datadir)/KrellInstitute/xml
-componentdir = $(datadir)/KrellInstitute/components
-
-
-if !BUILD_TARGETED
+componentdir = $(libdir)/KrellInstitute/Components
 
 bin_PROGRAMS = daemonTool
 
@@ -49,50 +46,8 @@ daemonTool_LDADD = \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@\
-	@MRNET_LIBS@
+	@MRNET_LIBS@ \
+	-lcbtf-core-mrnet 
 
 daemonTool_SOURCES = \
 	daemonTool.cpp
-# else for not build targeted
-else
-
-if HAVE_TARGET_SHARED
-
-bin_PROGRAMS = daemonTool
-
-daemonTool_CXXFLAGS = \
-	-DLIBDIR="\"$(libdir)\"" \
-	-DXMLDIR="\"$(xmldir)\"" \
-	-DCOMPONENTDIR="\"$(componentdir)\"" \
-	@TARGET_BOOST_CPPFLAGS@ \
-	@TARGET_CBTF_CPPFLAGS@ \
-	@TARGET_CBTF_MRNET_CPPFLAGS@ \
-	@TARGET_CBTF_XML_CPPFLAGS@ \
-	@TARGET_MRNET_CPPFLAGS@
-
-daemonTool_LDFLAGS = \
-	@TARGET_BOOST_LDFLAGS@ \
-	@TARGET_CBTF_LDFLAGS@ \
-	@TARGET_CBTF_MRNET_LDFLAGS@ \
-	@TARGET_LIBXERCES_C_LDFLAGS@ \
-	@TARGET_CBTF_XML_LDFLAGS@ \
-	@TARGET_MRNET_LDFLAGS@
-
-daemonTool_LDADD = \
-	@TARGET_MRNET_LIBS@ \
-	@TARGET_BOOST_PROGRAM_OPTIONS_LIB@ \
-	@TARGET_BOOST_SYSTEM_LIB@ \
-	@TARGET_BOOST_THREAD_LIB@ \
-	@TARGET_BOOST_FILESYSTEM_LIB@ \
-	@TARGET_CBTF_LIBS@ \
-	@TARGET_LIBXERCES_C@ \
-	@TARGET_CBTF_MRNET_LIBS@\
-	@TARGET_CBTF_XML_LIBS@
-
-daemonTool_SOURCES = \
-	daemonTool.cpp
-# endif for targeted shared
-endif
-# endif for targeted else
-endif
-

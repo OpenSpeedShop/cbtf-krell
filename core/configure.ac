@@ -477,6 +477,7 @@ AC_CONFIG_FILES([
     collectors/mpi/Makefile
     collectors/pthreads/Makefile
     components/Makefile
+    daemonTool/Makefile
     scripts/Makefile
     src/Makefile
 ])

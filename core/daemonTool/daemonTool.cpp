@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012 Krell Institute. All Rights Reserved.
+// Copyright (c) 2012-2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -26,21 +27,23 @@
 #include <KrellInstitute/CBTF/ValueSink.hpp>
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
+#include "KrellInstitute/Core/CBTFTopology.hpp"
 #include <string>
 
 using namespace boost;
 using namespace KrellInstitute::CBTF;
+using namespace KrellInstitute::Core;
 using namespace std;
 
 
 
 /**
- * Class wrapping the main implementation of the example daemon tool.
+ * Class wrapping the main implementation of the daemon tool.
  */
 class DaemonTool
 {
     
-public:
+  public:
     
     DaemonTool()
     {
@@ -48,9 +51,10 @@ public:
     
     void start(const string& topology,
                const string& tool,
+               const string& toolargs,
                const unsigned int& numBE)
     {
-        dm_thread = thread(&DaemonTool::run, this, topology, tool, numBE);
+        dm_thread = thread(&DaemonTool::run, this, topology, tool, toolargs, numBE);
     }
 
     void join()
@@ -63,6 +67,7 @@ public:
     // and Backend network must be defined. (expand on this).
     void run(const string& topology,
              const string& tool,
+             const string& toolargs,
              const unsigned int& numBE)
     {
         //
@@ -72,19 +77,35 @@ public:
         // internally.  It is optional to specify <Filter> component networks
         // for placement on nodes where commuication processes may exist in
         // the topology (CP's are mrnet_commnodes where filter plugins may
-        // be loaded).
+        // be loaded). The xml file is responsible to set up all needed
+        // component plugin paths and load needed components.
+        //
         // In order to make use of the CBTF distrbuted (via MRNet) component
         // network defined in the tool .xml passed by the tool argument we
         // must first register that XML file with CBTF. The string defined
-        // by the tool argument does not include the xml name explicitly
-        // since we also use that name later below to identify the network.
+        // by the tool argument may potentially specify the xml filename
+        // explicitly. Since we also use that name later below to identify
+        // the network, we must extract the real tool name in that case.
         // i.e. MyTool names the tool definition as MyTool.xml and the
         // network instance as MyTool (which is encoded in the xml and
         // referenced below where the network is instantiated).
 
-	std::string xmlfile(tool);
-	xmlfile += ".xml";
-	registerXML(filesystem::path(XMLDIR) / xmlfile);
+	std::string realtoolname;
+	filesystem::path toolpath(tool);
+	if (toolpath.is_complete()) {
+	    registerXML(toolpath);
+	    realtoolname = toolpath.stem();
+	} else {
+	    // search default path for xml defined by XMLDIR.
+	    // TODO: provide a CBTF_XML_PATH environment variable
+	    // for cases where xml tool specifications are installed
+	    // elsewhere?
+	    std::string xmlfile(tool);
+	    xmlfile += ".xml";
+	    registerXML(filesystem::path(XMLDIR) / xmlfile);
+	    realtoolname = tool;
+	}
+
 
         //
         // The plugin BasicMRNetLaunchers contains, you guessed it, two basic
@@ -112,7 +133,7 @@ public:
         //
         
         Component::Instance network = Component::instantiate(
-            Type(tool)
+            Type(realtoolname)
             );
 
         //
@@ -135,15 +156,15 @@ public:
         //
         // In order to pass values between "raw" C++ code and a CBTF component
         // network, bridge objects are used. The CBTF ValueSource and ValueSink
-        // template classes function as these bridges. In this example we have
-        // two inputs to, and one output from, the "tool"+launcher
+        // template classes function as these bridges. In this client we have
+        // two inputs to and no outputs from, the "tool"+launcher
         // combination:
         //
         //     topology_file: The name of the topology file describing the
         //                    MRNet network to be constructed. This will be
         //                    passed into the launcher.
         //
-        //           command: The tool to be executed.
+        //           toolargs: Any arguments to the tool to be executed.
         //
         // Note that unlike most other CBTF components, the Value[Source|Sink]
         // components are explictly instantiated via their instantiate() method.
@@ -154,10 +175,15 @@ public:
         shared_ptr<ValueSource<filesystem::path> > topology_file =
             ValueSource<filesystem::path>::instantiate();
 
-
         Component::Instance topology_file_component = 
             reinterpret_pointer_cast<Component>(topology_file);
-        
+
+	shared_ptr<ValueSource<string> > args =
+            ValueSource<string>::instantiate();
+
+	Component::Instance args_component =
+	    reinterpret_pointer_cast<Component>(args);
+
         //
         // Connect the bridges to the appropriate inputs and output of the
         // launcher and "tool" components.
@@ -166,6 +192,8 @@ public:
         Component::connect(
             topology_file_component, "value", launcher, "TopologyFile"
             );
+
+	Component::connect(args_component, "value", network, "ToolArgs");
 
         //
         // Now that all the components have been hooked up, we are finally
@@ -177,18 +205,21 @@ public:
         // complete CBTF distrubted (via MRNet) component network to be created.
         // 
 
+	// start the network.
         *topology_file = topology;
+	// send any tool arguments.
+	*args = toolargs;
 
     } // run
     
-private:
+  private:
 	thread dm_thread;
 };
 
 
 
 /**
- * Main function for the example daemon tool.
+ * Main function for the daemon tool.
  */
 int main(int argc, char** argv)
 {
@@ -196,10 +227,7 @@ int main(int argc, char** argv)
     // Create a default topology file location that is used if one isn't
     // specified as a command-line argument.
     //
-
-    char const* home = getenv("HOME");
-    string default_topology(home);
-    default_topology += "/.cbtf/cbtf_topology";
+    string default_topology("");
 
     //
     // Parse the command-line arguments using Boost.Program_options.
@@ -208,25 +236,30 @@ int main(int argc, char** argv)
     unsigned int numBE;
     string topology;
     string tool;
+    string toolargs;
     
     program_options::options_description desc("daemonTool options");
 
     desc.add_options()
         ("help,h", "Produce this help message.")
 
-        ("numBE",
-         program_options::value<unsigned int>(&numBE)->default_value(1),
-         "Number of expected mrnet backends. Default is 1, This should "
-         "match the number of nodes in your topology and job allocation.")
+        ("tool",
+         program_options::value<string>(&tool)->default_value(""),
+         "Name specifying tool to execute. This is the name of the tool xml specification. e.g. If the tool is defined by mytool.xml, use --tool mytool. In this case the default search path for cbtf XML files will be used. You can specify the full pathname. e.g. /foo/bar/abc.xml and the tool abc will be launched.")
+
+        ("toolargs",
+         program_options::value<string>(&toolargs)->default_value(""),
+         "arguments to tool.  If more than one argument, this value must be in double quotes. e.g. --toolargs \"arg1 arg2\".")
         
         ("topology",
          program_options::value<string>(&topology)->
          default_value(default_topology),
-         "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen),")
+         "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen). If no topology is specified one will be created. Default is to auto create a topology and choose the full number of nodes available to you for the numBE option.")
 
-        ("tool",
-         program_options::value<string>(&cmd)->default_value(default_cmd),
-         "Tool specified in xml to execute.")
+        ("numBE",
+         program_options::value<unsigned int>(&numBE)->default_value(1),
+         "Number of desired mrnet backends. Default is 1, This typically should "
+         "match the number of nodes in your job allocation.")
         ;
     
     program_options::variables_map vm;
@@ -251,16 +284,34 @@ int main(int argc, char** argv)
         return 1;
     }
     
-    cout << "Running tool " << tool 
+    std::cout << "Running tool " << tool 
          << "\nNumber of mrnet backends: "  << numBE
-         << endl;
+         << std::endl;
     
     //
     // Construct an instance of DaemonTool, initiate a separate thread
     // to run the command, and wait for that thread to complete.
     //
 
-    DaemonTool dt;
-    dt.start(topology, tool, numBE);
-    dt.join();
+    if (tool.empty()) {
+	std::cerr << "No tool specified! Please specify a valid tool using --tool <tool name>" << std::endl;
+    } else {
+
+	if (topology.empty()) {
+	    // For a daemon tool we typically wish to run one instance
+	    // per node in a cluster.  So numBE should be set to the
+	    // number of nodes you wish to monitor on.  Can be a
+	    // subset of the cluster. TODO: Have the slurm parser
+	    // autocreate this if numBE was not set on the command line.
+	    CBTFTopology cbtftopology;
+	    cbtftopology.autoCreateTopology(BE_START);
+	    topology = cbtftopology.getTopologyFileName();
+	    std::cerr << "Generated topology file: " << topology << std::endl;
+	}
+
+	// kick of the boost thread that runs the tool...
+	DaemonTool dt;
+	dt.start(topology, tool, toolargs, numBE);
+	dt.join();
+    } 
 }

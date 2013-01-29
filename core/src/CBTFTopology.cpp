@@ -291,15 +291,24 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                 memcpy(numString, nodeRange + startPos, endPos-startPos + 1);
                 numString[endPos-startPos + 1] = '\0';
 
+
+		int minLength = strlen(numString);
+
                 if (isRange) {
                     isRange = false;
                     num2 = atoi(numString);
+		    int tLength = floor(log10(abs(num2)))+1;
                     for (j = num1; j <= num2; j++) {
 			if (getIsCray()) {
                             dm_nodelist.push_back(formatCrayNid(baseNodeName,j));
 			} else {
 			    std::ostringstream ostr;
-                            ostr << baseNodeName << j;
+                            ostr << baseNodeName;
+			    for (int jl = 0 ; jl < minLength - tLength; jl++) {
+				// pad with leading 0's as needed
+				ostr << 0;
+			    }
+			    ostr << j;
                             dm_nodelist.push_back(ostr.str());
 			}
                     }
@@ -490,6 +499,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     // need to handle cray and bluegene separately...
     if (mode == BE_ATTACH) {
 	setAttachBEMode(true);
+    } else if (mode == BE_START) {
+	setAttachBEMode(false);
     } else if (mode == BE_CRAY_ATTACH) {
 	setAttachBEMode(true);
 	setIsCray(true);
@@ -563,6 +574,11 @@ void CBTFTopology::createTopology()
     int desiredDepth = dm_top_depth;
     int desiredMaxFanout = dm_top_fanout;
     int procsNeeded = 0;
+
+    // FE will launch BE's. i.e. daemon type tools.
+    if (!isAttachBEMode()) {
+	desiredDepth = 1;
+    }
 
     //std::cerr << "CreateTopology desiredDepth  " << desiredDepth << std::endl;
 

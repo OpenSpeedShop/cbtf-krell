@@ -22,7 +22,4 @@ plugin libraries and an xml file that contains the tools implementation.
 The xml and component plugin library naming conventions are (where myTool
 represents the tool name):
 myTool.xml
-myToolFE.so
-myToolFilter.so
-myToolBE.so
-
+myTool.so (contains Frontend,Filters,Backend components and any mrnet type converters).

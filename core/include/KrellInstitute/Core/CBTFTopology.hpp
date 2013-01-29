@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 #include <unistd.h> 
+#include <string> 
 #include <sys/param.h>
 #include "mrnet/Tree.h"
 
@@ -151,10 +152,31 @@ class CBTFTopology {
 		return dm_topology_spec;
 	    };
 
-	    std::string getLocalHostName() {
+	    std::string getLocalHostName1() {
 		char lhostname[MAXHOSTNAMELEN];
 		gethostname(lhostname, MAXHOSTNAMELEN);
 		return lhostname;
+	    };
+
+	    std::string getLocalHostName() {
+		char lhostname[MAXHOSTNAMELEN];
+		gethostname(lhostname, MAXHOSTNAMELEN);
+		std::string tname(lhostname);
+		std::string delim(".");
+		size_t current;
+		size_t next = -1;
+		std::string nodename;
+		do
+		{
+		    current = next + 1;
+		    next = tname.find_first_of( delim, current );
+		    nodename = tname.substr( current, next - current );
+		    // Only want first name from something like localhost.localdomain.
+		    //
+		    if (!nodename.empty())
+		        break;
+		} while (next != std::string::npos);
+		return nodename;
 	    };
 
 	    void setFENodeStr(const std::string& node) {

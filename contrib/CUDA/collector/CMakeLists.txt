@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+# Copyright (c) 2012-2013 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -27,25 +27,33 @@ include_directories(
     ${CBTF_INCLUDE_DIRS}
     ${CBTF_MESSAGES_INCLUDE_DIRS}
     ${CUPTI_INCLUDE_DIRS}
-    ${PAPI_INCLUDE_DIRS}
+    #${PAPI_INCLUDE_DIRS}
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet
     cbtf-messages-cuda
     ${CBTF_MESSAGES_EVENTS_SHARED_LIBRARY}
     ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_SHARED_LIBRARY}
+    ${CBTF_SERVICES_MONITOR_SHARED_LIBRARY}
+    ${CBTF_SERVICES_OFFLINE_SHARED_LIBRARY}
+    ${CBTF_SERVICES_UNWIND_SHARED_LIBRARY}
+    ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
-    ${PAPI_LIBRARIES}
+    #${PAPI_LIBRARIES}
     )
 
 target_link_libraries(cuda-collector-monitor-mrnet-mpi
     cbtf-messages-cuda
     ${CBTF_MESSAGES_EVENTS_SHARED_LIBRARY}
     ${CBTF_SERVICES_COLLECTOR_MONITOR_MRNET_MPI_SHARED_LIBRARY}
+    ${CBTF_SERVICES_MONITOR_SHARED_LIBRARY}
+    ${CBTF_SERVICES_OFFLINE_SHARED_LIBRARY}
+    ${CBTF_SERVICES_UNWIND_SHARED_LIBRARY}
+    ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${CUPTI_LIBRARIES}
-    ${PAPI_LIBRARIES}
+    #${PAPI_LIBRARIES}
     )
 
 set_target_properties(

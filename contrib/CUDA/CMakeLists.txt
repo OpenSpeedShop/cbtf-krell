@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+# Copyright (c) 2012-2013 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -32,7 +32,7 @@ find_package(CBTF-Messages REQUIRED)
 find_package(CBTF-Services REQUIRED)
 find_package(CUPTI 2)
 find_package(MRNet 4.0.0)
-find_package(PAPI 3.0.0)
+#find_package(PAPI 3.0.0)
 find_package(Threads)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64*")

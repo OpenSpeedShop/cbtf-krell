@@ -254,7 +254,10 @@ static void send_data(TLS* tls)
 #if !defined(NDEBUG)
         if (debug)
         {
-            printf("[CBTF/CUDA] send_data(): sending CBTF_cuda_data message\n");
+            printf("[CBTF/CUDA] send_data(): "
+                   "sending CBTF_cuda_data message (%u messages, %u PCs)\n",
+                   tls->data.messages.messages_len,
+                   tls->data.stack_traces.stack_traces_len);
         }
 #endif
 
@@ -357,9 +360,9 @@ static uint32_t add_current_call_site(TLS* tls)
     CBTF_GetContext(&context);
 
     CBTF_GetStackTraceFromContext(
-        &context, FALSE, 1, CBTF_ST_MAXFRAMES, &frame_count, frame_buffer
+        &context, FALSE, 0, CBTF_ST_MAXFRAMES, &frame_count, frame_buffer
         );
-    
+
     /* Search for this stack trace amongst the existing stack traces */
     
     int i, j;
@@ -404,9 +407,11 @@ static uint32_t add_current_call_site(TLS* tls)
                 for (j = 0; j < frame_count; ++j, ++i)
                 {
                     tls->stack_traces[i] = frame_buffer[j];
+                    update_header_with_address(tls, tls->stack_traces[i]);
                 }
-                tls->stack_traces[i++] = 0;
-                
+                tls->stack_traces[i] = 0;
+                tls->data.stack_traces.stack_traces_len = i + 1;
+              
                 break;
             }
             
@@ -427,7 +432,7 @@ static uint32_t add_current_call_site(TLS* tls)
             j = (frame_buffer[j] == tls->stack_traces[i]) ? (j + 1) : 0;
         }
     }
-    
+
     /* Return the index of this stack trace within the existing stack traces */
     return i - frame_count;
 }

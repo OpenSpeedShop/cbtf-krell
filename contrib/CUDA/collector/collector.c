@@ -255,7 +255,7 @@ static void send_data(TLS* tls)
         if (debug)
         {
             printf("[CBTF/CUDA] send_data(): "
-                   "sending CBTF_cuda_data message (%u messages, %u PCs)\n",
+                   "sending CBTF_cuda_data message (%u msg, %u pc)\n",
                    tls->data.messages.messages_len,
                    tls->data.stack_traces.stack_traces_len);
         }

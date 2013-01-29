@@ -254,7 +254,7 @@ static void send_data(TLS* tls)
 #if !defined(NDEBUG)
         if (debug)
         {
-            printf("[CBTF/CUDA] send_data(): sending CBTF_cuda_data message");
+            printf("[CBTF/CUDA] send_data(): sending CBTF_cuda_data message\n");
         }
 #endif
 
@@ -1547,6 +1547,9 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
         if (debug)
         {
             printf("[CBTF/CUDA] cbtf_collector_start()\n");
+            printf("[CBTF/CUDA] cbtf_collector_start(): "
+                   "thread_count.value = %d --> %d\n",
+                   thread_count.value, thread_count.value + 1);
         }
 #endif
 

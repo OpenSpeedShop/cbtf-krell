@@ -1566,11 +1566,11 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
                         ));
         
         /* Enable the CUPTI activities of interest */
-        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_CONTEXT));
-        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_DEVICE));
-        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_MEMCPY));
-        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_MEMSET));
-        CUPTI_CHECK(cuptActivityEnable(CUPTI_ACTIVITY_KIND_KERNEL));
+        CUPTI_CHECK(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_CONTEXT));
+        CUPTI_CHECK(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_DEVICE));
+        CUPTI_CHECK(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_MEMCPY));
+        CUPTI_CHECK(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_MEMSET));
+        CUPTI_CHECK(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_KERNEL));
 
         /* Subscribe to the CUPTI callbacks of interest */
 
@@ -1748,11 +1748,11 @@ void cbtf_collector_stop()
     if (thread_count.value == 0)
     {
         /* Disable all CUPTI activities */
-        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_CONTEXT));
-        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_DEVICE));
-        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_MEMCPY));
-        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_MEMSET));
-        CUPTI_CHECK(cuptActivityDisable(CUPTI_ACTIVITY_KIND_KERNEL));
+        CUPTI_CHECK(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_CONTEXT));
+        CUPTI_CHECK(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_DEVICE));
+        CUPTI_CHECK(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_MEMCPY));
+        CUPTI_CHECK(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_MEMSET));
+        CUPTI_CHECK(cuptiActivityDisable(CUPTI_ACTIVITY_KIND_KERNEL));
         
         /* Unsubscribe from all CUPTI callbacks */
         CUPTI_CHECK(cuptiUnsubscribe(cupti_subscriber_handle));

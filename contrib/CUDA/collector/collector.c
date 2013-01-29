@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+** Copyright (c) 2012-2013 Argo Navis Technologies. All Rights Reserved.
 **
 ** This program is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU General Public License as published by the Free Software
@@ -87,20 +87,20 @@
  */
 #define CUPTI_CHECK(x)                                              \
     do {                                                            \
-        CUptiResult retval = x;                                     \
-        if (retval != CUPTI_SUCCESS)                                \
+        CUptiResult RETVAL = x;                                     \
+        if (RETVAL != CUPTI_SUCCESS)                                \
         {                                                           \
             const char* description = NULL;                         \
-            if (cuptiGetResultString(retval, &description) ==       \
+            if (cuptiGetResultString(RETVAL, &description) ==       \
                 CUPTI_SUCCESS)                                      \
             {                                                       \
                 fprintf(stderr, "[CBTF/CUDA] %s(): %s = %d (%s)\n", \
-                        __func__, #x, retval, description);         \
+                        __func__, #x, RETVAL, description);         \
             }                                                       \
             else                                                    \
             {                                                       \
                 fprintf(stderr, "[CBTF/CUDA] %s(): %s = %d\n",      \
-                        __func__, #x, retval);                      \
+                        __func__, #x, RETVAL);                      \
             }                                                       \
             fflush(stderr);                                         \
             abort();                                                \
@@ -118,11 +118,11 @@
  */
 #define PTHREAD_CHECK(x)                                   \
     do {                                                   \
-        int retval = x;                                    \
-        if (retval != 0)                                   \
+        int RETVAL = x;                                    \
+        if (RETVAL != 0)                                   \
         {                                                  \
             fprintf(stderr, "[CBTF/CUDA] %s(): %s = %d\n", \
-                    __func__, #x, retval);                 \
+                    __func__, #x, RETVAL);                 \
             fflush(stderr);                                \
             abort();                                       \
         }                                                  \

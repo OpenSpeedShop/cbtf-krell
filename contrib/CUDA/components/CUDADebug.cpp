@@ -26,9 +26,11 @@
 #include <boost/tuple/tuple.hpp>
 #include <iostream>
 #include <list>
+#include <rpc/rpc.h>
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#include <utility>
 
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
@@ -36,7 +38,9 @@
 
 #include <KrellInstitute/Messages/Address.h>
 #include <KrellInstitute/Messages/Blob.h>
+#include <KrellInstitute/Messages/DataHeader.h>
 #include <KrellInstitute/Messages/File.h>
+#include <KrellInstitute/Messages/PerformanceData.hpp>
 #include <KrellInstitute/Messages/Time.h>
 
 #include "CUDA_data.h"
@@ -235,7 +239,7 @@ private:
 
     /** Handler for the "Data" input. */
     void handleData(
-        const boost::shared_ptr<CBTF_cuda_data>& message
+        const boost::shared_ptr<CBTF_Protocol_Blob>& message
         );
     
 }; // class CUDAToIO
@@ -249,10 +253,10 @@ KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDADebug)
 CUDADebug::CUDADebug() :
     Component(Type(typeid(CUDADebug)), Version(0, 0, 0))
 {
-    declareInput<boost::shared_ptr<CBTF_cuda_data> >(
+    declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data", boost::bind(&CUDADebug::handleData, this, _1)
         );
-    declareOutput<boost::shared_ptr<CBTF_cuda_data> >("Data");
+    declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("Data");
 }
 
 
@@ -263,18 +267,38 @@ CUDADebug::CUDADebug() :
 // do the same.
 //------------------------------------------------------------------------------
 void CUDADebug::handleData(
-    const boost::shared_ptr<CBTF_cuda_data>& message
+    const boost::shared_ptr<CBTF_Protocol_Blob>& message
     )
 {
-    emitOutput<boost::shared_ptr<CBTF_cuda_data> >("Data", message);
-
-    std::cout << std::endl
-              << "CUDA Performance Data Blob" << std::endl;
+    emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("Data", message);
     
-    for (u_int i = 0; i < message->messages.messages_len; ++i)
+    std::pair<
+        boost::shared_ptr<CBTF_DataHeader>, boost::shared_ptr<CBTF_cuda_data>
+        > unpacked_message = KrellInstitute::Messages::unpack<CBTF_cuda_data>(
+            message, reinterpret_cast<xdrproc_t>(xdr_CBTF_cuda_data)
+            );
+
+    const CBTF_DataHeader& header = *unpacked_message.first;
+    const CBTF_cuda_data& data = *unpacked_message.second;
+    
+    std::cout << std::endl
+              << "CUDA Performance Data Blob" << std::endl
+              << std::endl
+              << "    experiment = " << header.experiment << std::endl
+              << "    collector  = " << header.collector << std::endl
+              << "    id         = " << header.id << std::endl
+              << "    host       = " << header.host << std::endl
+              << "    pid        = " << header.pid << std::endl
+              << "    posix_tid  = " << header.posix_tid << std::endl
+              << "    rank       = " << header.rank << std::endl
+              << "    time_begin = " << format(header.time_begin) << std::endl
+              << "    time_end   = " << format(header.time_end) << std::endl
+              << "    addr_begin = " << format(header.addr_begin) << std::endl
+              << "    addr_end   = " << format(header.addr_end) << std::endl;
+    
+    for (u_int i = 0; i < data.messages.messages_len; ++i)
     {
-        const CBTF_cuda_message& cuda_message =
-            message->messages.messages_val[i];
+        const CBTF_cuda_message& cuda_message = data.messages.messages_val[i];
         
         std::list<boost::tuples::tuple<std::string, std::string> > fields;
         
@@ -454,19 +478,13 @@ void CUDADebug::handleData(
                   << format(fields);
     }
     
-    for (u_int i = 0; i < message->stack_traces.stack_traces_len; ++i)
+    for (u_int i = 0; i < data.stack_traces.stack_traces_len; ++i)
     {
         if ((i % 4) == 0)
         {
             std::cout << std::endl << (boost::format("    [%1$4d] ") % i);
         }
         
-        std::cout << format(message->stack_traces.stack_traces_val[i]) << " ";
-    }
-    
-    if ((message->messages.messages_len == 0) &&
-        (message->stack_traces.stack_traces_len == 0))
-    {
-        std::cout << std::endl << "    Empty!" << std::endl;
+        std::cout << format(data.stack_traces.stack_traces_val[i]) << " ";
     }
 }

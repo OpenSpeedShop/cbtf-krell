@@ -51,8 +51,12 @@ add_subdirectory(messages)
 #add_subdirectory(symtab)
 
 configure_file(cuda.xml.in cuda.xml)
+configure_file(cudadump.xml.in cudadump.xml)
 
 install(
-    FILES ${PROJECT_BINARY_DIR}/cuda.xml
-    DESTINATION share/KrellInstitute/xml
+    FILES
+        ${PROJECT_BINARY_DIR}/cuda.xml
+        ${PROJECT_BINARY_DIR}/cudadump.xml
+    DESTINATION
+        share/KrellInstitute/xml
     )

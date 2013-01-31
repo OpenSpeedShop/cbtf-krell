@@ -165,11 +165,6 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Component>
       
       <Component>
-        <Name>CUDADebug</Name>
-        <Type>CUDADebug</Type>
-      </Component>
-      
-      <Component>
         <Name>CUDAToIO</Name>
         <Type>CUDAToIO</Type>
       </Component>
@@ -198,7 +193,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
 
       <Input>
         <Name>IncomingCUDAData</Name>
-        <To><Name>CUDADebug</Name><Input>Data</Input></To>
+        <To><Name>CUDAToIO</Name><Input>Data</Input></To>
       </Input>
       
       <Input>
@@ -218,11 +213,6 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       
       <!-- List of the frontend network's connections -->
 
-      <Connection>
-        <From><Name>CUDADebug</Name><Output>Data</Output></From>
-        <To><Name>CUDAToIO</Name><Input>Data</Input></To>
-      </Connection>
-      
       <Connection>
         <From><Name>AttachedToThreads</Name><Output>out</Output></From>
         <To><Name>LinkedObject</Name><Input>threadnames</Input></To>

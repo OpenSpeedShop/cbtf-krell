@@ -344,7 +344,7 @@ case "$collector" in
     fi
     ;;
 
-    cuda)
+    cuda|cudadump)
         if [ $use_mrnet == "true" ]
         then
             if [ $use_mpi == "true" ]

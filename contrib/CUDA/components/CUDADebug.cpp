@@ -24,6 +24,7 @@
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <cxxabi.h>
 #include <iostream>
 #include <list>
 #include <rpc/rpc.h>
@@ -58,7 +59,7 @@ namespace {
     /**
      * Type representing a byte count. Its only reason for existence is to
      * allow the Format<> template below to be specialized for byte counts
-     * versus other 64-bit values (e.g. addresses).
+     * versus other integer values.
      */
     class ByteCount
     {
@@ -67,6 +68,21 @@ namespace {
         operator uint64_t() const { return dm_value; }
     private:
         uint64_t dm_value;
+    };
+
+    /**
+     * Type representing a function name. Its only reason for existence is
+     * to allow the Format<> template below to be specialized for function
+     * names versus other strings.
+     */
+    class FunctionName
+    {
+    public:
+        FunctionName(const char* value) : dm_value(value) { }
+        FunctionName(const std::string& value) : dm_value(value) { }
+        operator std::string() const { return dm_value; }
+    private:
+        std::string dm_value;
     };
     
     /**
@@ -247,7 +263,7 @@ namespace {
             };
             
             uint64_t x = value;
-            std::string label = "bytes";
+            std::string label = "Bytes";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
@@ -260,6 +276,31 @@ namespace {
             }
 
             return boost::str(boost::format("%1% %2%") % x % label);
+        }
+    };
+
+    template <>
+    struct Format<FunctionName>
+    {
+        static std::string impl(const FunctionName& value)
+        {
+            std::string retval = value;
+            
+            int status = -2;
+            char* demangled = abi::__cxa_demangle(
+                static_cast<std::string>(value).c_str(), NULL, NULL, &status
+                );
+
+            if (demangled != NULL)
+            {
+                if (status == 0)
+                {
+                    retval = std::string(demangled);
+                }
+                free(demangled);
+            }
+
+            return retval;
         }
     };
     
@@ -502,7 +543,7 @@ void CUDADebug::handleData(
                     ("stream", format(msg.stream))
                     ("time_begin", format(msg.time_begin))
                     ("time_end", format(msg.time_end))
-                    ("function", format(msg.function))
+                    ("function", format<FunctionName>(msg.function))
                     ("grid", 
                      format<std::vector<int32_t> >(
                          boost::assign::list_of
@@ -548,7 +589,7 @@ void CUDADebug::handleData(
                 fields = boost::assign::tuple_list_of
                     ("time", format(msg.time))
                     ("module_handle", format(msg.module_handle))
-                    ("function", format(msg.function))
+                    ("function", format<FunctionName>(msg.function))
                     ("handle", format(msg.handle));
             }
             break;

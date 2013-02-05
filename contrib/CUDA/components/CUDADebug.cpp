@@ -24,6 +24,7 @@
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <cmath>
 #include <cxxabi.h>
 #include <iostream>
 #include <list>
@@ -267,7 +268,7 @@ namespace {
     {
         static std::string impl(const ByteCount& value)
         {
-            const struct { const uint64_t value; const char* label; } kUnits[] =
+            const struct { const float value; const char* label; } kUnits[] =
             {
                 { 1024.0f * 1024.0f * 1024.0f * 1024.0f, "TB" },
                 {           1024.0f * 1024.0f * 1024.0f, "GB" },
@@ -289,7 +290,11 @@ namespace {
                 }
             }
 
-            return boost::str(boost::format("[%1$0.1f] %2%") % x % label);
+            return boost::str(
+                (x == floor(x)) ?
+                (boost::format("%1% %2%") % static_cast<uint64_t>(x) % label) :
+                (boost::format("%1$0.1f %2%") % x % label)
+                );
         }
     };
 
@@ -319,8 +324,12 @@ namespace {
                     break;
                 }
             }
-
-            return boost::str(boost::format("[%1$0.1f] %2%") % x % label);
+            
+            return boost::str(
+                (x == floor(x)) ?
+                (boost::format("%1% %2%") % static_cast<uint64_t>(x) % label) :
+                (boost::format("%1$0.1f %2%") % x % label)
+                );
         }
     };
 

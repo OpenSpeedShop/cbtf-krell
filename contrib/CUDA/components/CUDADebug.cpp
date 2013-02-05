@@ -474,7 +474,9 @@ void CUDADebug::handleData(
 
         std::cout << std::endl
                   << (boost::format("    [%1$3d] %2%") %
-                      i % format(cuda_message.type)) << std::endl
+                      i % format(static_cast<CUDA_MessageTypes>(
+                                     cuda_message.type
+                                     ))) << std::endl
                   << format(fields);
     }
     

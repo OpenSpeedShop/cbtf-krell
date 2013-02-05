@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+// Copyright (c) 2012-2013 Argo Navis Technologies. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -65,6 +65,20 @@ namespace {
     {
     public:
         ByteCount(const uint64_t& value) : dm_value(value) { }
+        operator uint64_t() const { return dm_value; }
+    private:
+        uint64_t dm_value;
+    };
+
+    /**
+     * Type representing a clock rate. Its only reason for existence is to
+     * allow the Format<> template below to be specialized for clock rates
+     * versus other integer values.
+     */
+    class ClockRate
+    {
+    public:
+        ClockRate(const uint64_t& value) : dm_value(value) { }
         operator uint64_t() const { return dm_value; }
     private:
         uint64_t dm_value;
@@ -264,6 +278,37 @@ namespace {
             
             uint64_t x = value;
             std::string label = "Bytes";
+            
+            for (int i = 0; kUnits[i].label != NULL; ++i)
+            {
+                if (value >= kUnits[i].value)
+                {
+                    x = value / kUnits[i].value;
+                    label = kUnits[i].label;
+                    break;
+                }
+            }
+
+            return boost::str(boost::format("%1% %2%") % x % label);
+        }
+    };
+
+    template <>
+    struct Format<ClockRate>
+    {
+        static std::string impl(const ClockRate& value)
+        {
+            const struct { const uint64_t value; const char* label; } kUnits[] =
+            {
+                { 1024ULL * 1024ULL * 1024ULL * 1024ULL, "THz" },
+                {           1024ULL * 1024ULL * 1024ULL, "GHz" },
+                {                     1024ULL * 1024ULL, "MHz" },
+                {                               1024ULL, "KHz" },
+                {                                  0ULL, NULL } // End-Of-Table
+            };
+            
+            uint64_t x = value;
+            std::string label = "Hz";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
@@ -495,14 +540,16 @@ void CUDADebug::handleData(
                          (msg.max_block[2])
                          ))
                     ("global_memory_bandwidth", 
-                     format(msg.global_memory_bandwidth))
+                     format<ByteCount>(1024ULL * msg.global_memory_bandwidth) +
+                     "/Second")
                     ("global_memory_size",
                      format<ByteCount>(msg.global_memory_size))
                     ("constant_memory_size",
                      format<ByteCount>(msg.constant_memory_size))
                     ("l2_cache_size", format<ByteCount>(msg.l2_cache_size))
                     ("threads_per_warp", format(msg.threads_per_warp))
-                    ("core_clock_rate", format(msg.core_clock_rate))
+                    ("core_clock_rate",
+                     format<ClockRate>(1024ULL * msg.core_clock_rate))
                     ("memcpy_engines", format(msg.memcpy_engines))
                     ("multiprocessors", format(msg.multiprocessors))
                     ("max_ipc", format(msg.max_ipc))

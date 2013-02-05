@@ -269,27 +269,27 @@ namespace {
         {
             const struct { const uint64_t value; const char* label; } kUnits[] =
             {
-                { 1024ULL * 1024ULL * 1024ULL * 1024ULL, "TB" },
-                {           1024ULL * 1024ULL * 1024ULL, "GB" },
-                {                     1024ULL * 1024ULL, "MB" },
-                {                               1024ULL, "KB" },
-                {                                  0ULL, NULL } // End-Of-Table
+                { 1024.0f * 1024.0f * 1024.0f * 1024.0f, "TB" },
+                {           1024.0f * 1024.0f * 1024.0f, "GB" },
+                {                     1024.0f * 1024.0f, "MB" },
+                {                               1024.0f, "KB" },
+                {                                  0.0f, NULL } // End-Of-Table
             };
             
-            uint64_t x = value;
+            float x = static_cast<float>(value);
             std::string label = "Bytes";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
-                if (value >= kUnits[i].value)
+                if (static_cast<float>(value) >= kUnits[i].value)
                 {
-                    x = value / kUnits[i].value;
+                    x = static_cast<float>(value) / kUnits[i].value;
                     label = kUnits[i].label;
                     break;
                 }
             }
 
-            return boost::str(boost::format("%1% %2%") % x % label);
+            return boost::str(boost::format("[%1$0.1f] %2%") % x % label);
         }
     };
 
@@ -298,29 +298,29 @@ namespace {
     {
         static std::string impl(const ClockRate& value)
         {
-            const struct { const uint64_t value; const char* label; } kUnits[] =
+            const struct { const float value; const char* label; } kUnits[] =
             {
-                { 1024ULL * 1024ULL * 1024ULL * 1024ULL, "THz" },
-                {           1024ULL * 1024ULL * 1024ULL, "GHz" },
-                {                     1024ULL * 1024ULL, "MHz" },
-                {                               1024ULL, "KHz" },
-                {                                  0ULL, NULL } // End-Of-Table
+                { 1024.0f * 1024.0f * 1024.0f * 1024.0f, "THz" },
+                {           1024.0f * 1024.0f * 1024.0f, "GHz" },
+                {                     1024.0f * 1024.0f, "MHz" },
+                {                               1024.0f, "KHz" },
+                {                                  0.0f, NULL  } // End-Of-Table
             };
             
-            uint64_t x = value;
+            float x = static_cast<float>(value);
             std::string label = "Hz";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
-                if (value >= kUnits[i].value)
+                if (static_cast<float>(value) >= kUnits[i].value)
                 {
-                    x = value / kUnits[i].value;
+                    x = static_cast<float>(value) / kUnits[i].value;
                     label = kUnits[i].label;
                     break;
                 }
             }
 
-            return boost::str(boost::format("%1% %2%") % x % label);
+            return boost::str(boost::format("[%1$0.1f] %2%") % x % label);
         }
     };
 

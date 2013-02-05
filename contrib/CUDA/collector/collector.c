@@ -953,7 +953,7 @@ static void cupti_callback(void* userdata,
 #if !defined(NDEBUG)
                     if (debug)
                     {
-                        printf("[CBTF/CUDA] enter cuMempy*()\n");
+                        printf("[CBTF/CUDA] enter cuMemcpy*()\n");
                     }
 #endif
                     

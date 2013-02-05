@@ -56,6 +56,20 @@ namespace {
     typedef std::list<boost::tuples::tuple<std::string, std::string> > Fields;
 
     /**
+     * Type representing a byte count. Its only reason for existence is to
+     * allow the Format<> template below to be specialized for byte counts
+     * versus other 64-bit values (e.g. addresses).
+     */
+    class ByteCount
+    {
+    public:
+        ByteCount(const uint64_t& value) : dm_value(value) { }
+        operator uint64_t() const { return dm_value; }
+    private:
+        uint64_t dm_value;
+    };
+    
+    /**
      * Implementation of the format() function. This template is used to get
      * around the C++ prohibition against partial template specialization of
      * functions.
@@ -68,7 +82,7 @@ namespace {
             return boost::str(boost::format("%1%") % value);
         }
     };
-
+    
     template <>
     struct Format<bool>
     {
@@ -219,6 +233,37 @@ namespace {
     };
 
     template <>
+    struct Format<ByteCount>
+    {
+        static std::string impl(const ByteCount& value)
+        {
+            const struct { const uint64_t value; const char* label; } kUnits[] =
+            {
+                { 1024ULL * 1024ULL * 1024ULL * 1024ULL, "TB" },
+                {           1024ULL * 1024ULL * 1024ULL, "GB" },
+                {                     1024ULL * 1024ULL, "MB" },
+                {                               1024ULL, "KB" },
+                {                                  0ULL, NULL } // End-Of-Table
+            };
+            
+            uint64_t x = value;
+            std::string label = "bytes";
+            
+            for (int i = 0; kUnits[i].label != NULL; ++i)
+            {
+                if (value >= kUnits[i].value)
+                {
+                    x = value / kUnits[i].value;
+                    label = kUnits[i].label;
+                    break;
+                }
+            }
+
+            return boost::str(boost::format("%1% %2%") % x % label);
+        }
+    };
+    
+    template <>
     struct Format<Fields>
     {
         static std::string impl(const Fields& value)
@@ -253,7 +298,7 @@ namespace {
     {
         return Format<T>::impl(value);
     }
-        
+
 } // namespace <anonymous>
 
 
@@ -372,7 +417,7 @@ void CUDADebug::handleData(
                     ("stream", format(msg.stream))
                     ("time_begin", format(msg.time_begin))
                     ("time_end", format(msg.time_end))
-                    ("size", format(msg.size))
+                    ("size", format<ByteCount>(msg.size))
                     ("kind", format(msg.kind))
                     ("source_kind", format(msg.source_kind))
                     ("destination_kind", format(msg.destination_kind))
@@ -410,9 +455,11 @@ void CUDADebug::handleData(
                          ))
                     ("global_memory_bandwidth", 
                      format(msg.global_memory_bandwidth))
-                    ("global_memory_size", format(msg.global_memory_size))
-                    ("constant_memory_size", format(msg.constant_memory_size))
-                    ("l2_cache_size", format(msg.l2_cache_size))
+                    ("global_memory_size",
+                     format<ByteCount>(msg.global_memory_size))
+                    ("constant_memory_size",
+                     format<ByteCount>(msg.constant_memory_size))
+                    ("l2_cache_size", format<ByteCount>(msg.l2_cache_size))
                     ("threads_per_warp", format(msg.threads_per_warp))
                     ("core_clock_rate", format(msg.core_clock_rate))
                     ("memcpy_engines", format(msg.memcpy_engines))
@@ -425,7 +472,7 @@ void CUDADebug::handleData(
                     ("max_registers_per_block",
                      format(msg.max_registers_per_block))
                     ("max_shared_memory_per_block",
-                     format(msg.max_shared_memory_per_block))
+                     format<ByteCount>(msg.max_shared_memory_per_block))
                     ("max_threads_per_block",
                      format(msg.max_threads_per_block));
             }
@@ -472,9 +519,12 @@ void CUDADebug::handleData(
                          ))
                     ("cache_preference", format(msg.cache_preference))
                     ("registers_per_thread", format(msg.registers_per_thread))
-                    ("static_shared_memory", format(msg.static_shared_memory))
-                    ("dynamic_shared_memory", format(msg.dynamic_shared_memory))
-                    ("local_memory", format(msg.local_memory));
+                    ("static_shared_memory", 
+                     format<ByteCount>(msg.static_shared_memory))
+                    ("dynamic_shared_memory",
+                     format<ByteCount>(msg.dynamic_shared_memory))
+                    ("local_memory",
+                     format<ByteCount>(msg.local_memory));
             }
             break;
             
@@ -513,7 +563,7 @@ void CUDADebug::handleData(
                     ("stream", format(msg.stream))
                     ("time_begin", format(msg.time_begin))
                     ("time_end", format(msg.time_end))
-                    ("size", format(msg.size));
+                    ("size", format<ByteCount>(msg.size));
             }
             break;
             

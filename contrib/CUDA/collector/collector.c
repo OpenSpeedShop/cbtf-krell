@@ -907,26 +907,45 @@ static void cupti_callback(void* userdata,
 
 
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2D:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2D_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DUnaligned:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DUnaligned_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3D:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3D_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DPeer:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DPeerAsync:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoA:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoA_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoD:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoD_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoH:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoH_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoHAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoHAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoA:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoA_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoD:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoD_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoH:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoH_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoHAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoHAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoA:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoA_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoD:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoD_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyPeer:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyPeerAsync:
                 {
@@ -962,8 +981,18 @@ static void cupti_callback(void* userdata,
                                   cbdata->functionParams)->hStream;
                         break;
 
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync_v2:
+                        stream = ((cuMemcpy2DAsync_v2_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync:
                         stream = ((cuMemcpy3DAsync_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync_v2:
+                        stream = ((cuMemcpy3DAsync_v2_params*)
                                   cbdata->functionParams)->hStream;
                         break;
 
@@ -977,8 +1006,18 @@ static void cupti_callback(void* userdata,
                                   cbdata->functionParams)->hStream;
                         break;
 
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoHAsync_v2:
+                        stream = ((cuMemcpyAtoHAsync_v2_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync:
                         stream = ((cuMemcpyDtoDAsync_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync_v2:
+                        stream = ((cuMemcpyDtoDAsync_v2_params*)
                                   cbdata->functionParams)->hStream;
                         break;
 
@@ -987,13 +1026,28 @@ static void cupti_callback(void* userdata,
                                   cbdata->functionParams)->hStream;
                         break;
 
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoHAsync_v2:
+                        stream = ((cuMemcpyDtoHAsync_v2_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync:
                         stream = ((cuMemcpyHtoAAsync_params*)
                                   cbdata->functionParams)->hStream;
                         break;
 
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync_v2:
+                        stream = ((cuMemcpyHtoAAsync_v2_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync:
                         stream = ((cuMemcpyHtoDAsync_params*)
+                                  cbdata->functionParams)->hStream;
+                        break;
+
+                    case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync_v2:
+                        stream = ((cuMemcpyHtoDAsync_v2_params*)
                                   cbdata->functionParams)->hStream;
                         break;
 
@@ -1022,16 +1076,22 @@ static void cupti_callback(void* userdata,
 
 
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D8:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D8_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D8Async:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D16:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D16_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D16Async:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D32:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D32_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D32Async:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD8:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD8_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD8Async:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD16:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD16_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD16Async:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32:
+            case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32Async:
                 {
 #if !defined(NDEBUG)

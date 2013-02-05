@@ -948,6 +948,7 @@ static void cupti_callback(void* userdata,
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyPeer:
             case CUPTI_DRIVER_TRACE_CBID_cuMemcpyPeerAsync:
+                if (cbdata->callbackSite == CUPTI_API_ENTER)
                 {
 #if !defined(NDEBUG)
                     if (debug)
@@ -1093,6 +1094,7 @@ static void cupti_callback(void* userdata,
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32_v2:
             case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32Async:
+                if (cbdata->callbackSite == CUPTI_API_ENTER)
                 {
 #if !defined(NDEBUG)
                     if (debug)

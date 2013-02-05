@@ -696,4 +696,9 @@ void CUDADebug::handleData(
         
         std::cout << format(data.stack_traces.stack_traces_val[i]) << " ";
     }
+
+    if ((data.stack_traces.stack_traces_len % 4) != 0)
+    {
+        std::cout << std::endl;
+    }
 }

@@ -54,161 +54,206 @@ namespace {
     
     /** Type of container used to store ordered fields (key/value pairs). */
     typedef std::list<boost::tuples::tuple<std::string, std::string> > Fields;
+
+    /**
+     * Implementation of the format() function. This template is used to get
+     * around the C++ prohibition against partial template specialization of
+     * functions.
+     */
+    template <typename T>
+    struct Format
+    {
+        static std::string impl(const T& value)
+        {
+            return boost::str(boost::format("%1%") % value);
+        }
+    };
+
+    template <>
+    struct Format<bool>
+    {
+        static std::string impl(const bool& value)
+        {
+            return value ? "true" : "false";
+        }
+    };
     
+    template <>
+    struct Format<uint64_t>
+    {
+        static std::string impl(const uint64_t& value)
+        {
+            return boost::str(boost::format("0x%016X") % value);
+        }
+    };
+
+    template <typename T>
+    struct Format<std::vector<T> >
+    {
+        static std::string impl(const std::vector<T>& value)
+        {
+            std::ostringstream stream;
+            
+            stream << "[";
+            
+            for (typename std::vector<T>::size_type 
+                     i = 0; i < value.size(); ++i)
+            {
+                stream << value[i];
+                
+                if (i < (value.size() - 1))
+                {
+                    stream << ", ";
+                }
+            }
+            
+            stream << "]";
+            
+            return stream.str();
+        }
+    };
+    
+    template <>
+    struct Format<CBTF_Protocol_FileName>
+    {
+        static std::string impl(const CBTF_Protocol_FileName& value)
+        {
+            return boost::str(boost::format("%1% (%2%)") % 
+                value.path % Format<uint64_t>::impl(value.checksum)
+                );
+        }
+    };
+
+    template <>
+    struct Format<CUDA_CachePreference>
+    {
+        static std::string impl(const CUDA_CachePreference& value)
+        {
+            switch (value)
+            {
+            case InvalidCachePreference: return "InvalidCachePreference";
+            case NoPreference: return "NoPreference";
+            case PreferShared: return "PreferShared";
+            case PreferCache: return "PreferCache";
+            case PreferEqual: return "PreferEqual";
+            }
+            return "?";
+        }
+    };
+
+    template <>
+    struct Format<CUDA_CopyKind>
+    {
+        static std::string impl(const CUDA_CopyKind& value)
+        {
+            switch (value)
+            {
+            case InvalidCopyKind: return "InvalidCopyKind";
+            case UnknownCopyKind: return "UnknownCopyKind";
+            case HostToDevice: return "HostToDevice";
+            case DeviceToHost: return "DeviceToHost";
+            case HostToArray: return "HostToArray";
+            case ArrayToHost: return "ArrayToHost";
+            case ArrayToArray: return "ArrayToArray";
+            case ArrayToDevice: return "ArrayToDevice";
+            case DeviceToArray: return "DeviceToArray";
+            case DeviceToDevice: return "DeviceToDevice";
+            case HostToHost: return "HostToHost";
+            }
+            return "?";
+        }
+    };
+
+    template <>
+    struct Format<CUDA_MemoryKind>
+    {
+        static std::string impl(const CUDA_MemoryKind& value)
+        {
+            switch (value)
+            {
+            case InvalidMemoryKind: return "InvalidMemoryKind";
+            case UnknownMemoryKind: return "UnknownMemoryKind";
+            case Pageable: return "Pageable";
+            case Pinned: return "Pinned";
+            case Device: return "Device";
+            case Array: return "Array";
+            }
+            return "?";
+        }
+    };
+
+    template <>
+    struct Format<CUDA_MessageTypes>
+    {
+        static std::string impl(const CUDA_MessageTypes& value)
+        {
+            switch (value)
+            {
+            case ContextInfo: return "ContextInfo";
+            case CopiedMemory: return "CopiedMemory";
+            case DeviceInfo: return "DeviceInfo";
+            case EnqueueRequest: return "EnqueueRequest";
+            case ExecutedKernel: return "ExecutedKernel";
+            case LoadedModule: return "LoadedModule";
+            case ResolvedFunction: return "ResolvedFunction";
+            case SetMemory: return "SetMemory";
+            case UnloadedModule: return "UnloadedModule";
+            }
+            return "?";
+        }
+    };
+
+    template <>
+    struct Format<CUDA_RequestTypes>
+    {
+        static std::string impl(const CUDA_RequestTypes& value)
+        {
+            switch (value)
+            {
+            case LaunchKernel: return "LaunchKernel";
+            case MemoryCopy: return "MemoryCopy";
+            case MemorySet: return "MemorySet";
+            }
+            return "?";
+        }
+    };
+
+    template <>
+    struct Format<Fields>
+    {
+        static std::string impl(const Fields& value)
+        {
+            std::ostringstream stream;
+            
+            int n = 0;
+            for (Fields::const_iterator 
+                     i = value.begin(); i != value.end(); ++i)
+            {
+                n = std::max<int>(n, i->get<0>().size());
+            }
+            
+            for (Fields::const_iterator 
+                     i = value.begin(); i != value.end(); ++i)
+            {
+                stream << "        ";
+                for (int j = 0; j < (n - i->get<0>().size()); ++j)
+                {
+                    stream << " ";
+                }
+                stream << i->get<0>() << " = " << i->get<1>() << std::endl;
+            }
+            
+            return stream.str();                
+        }
+    };
+
     /** Format the specified value as a string. */
     template <typename T>
     std::string format(const T& value)
     {
-        return boost::str(boost::format("%1%") % value);
+        return Format<T>::impl(value);
     }
-    
-    /** Format the specified uint64_t as a string. */
-    template <>
-    std::string format(const uint64_t& value)
-    {
-        return boost::str(boost::format("0x%016X") % value);
-    }
-
-    /** Format the specified CBTF_Protocol_FileName as a string. */
-    template <>
-    std::string format(const CBTF_Protocol_FileName& value)
-    {
-        return boost::str(
-            boost::format("%1% (%2%)") % value.path % format(value.checksum)
-            );
-    }
-    
-    /** Format the specified CUDA_CachePreference as a string. */
-    template <>
-    std::string format(const CUDA_CachePreference& value)
-    {
-        switch (value)
-        {
-        case InvalidCachePreference: return "InvalidCachePreference";
-        case NoPreference: return "NoPreference";
-        case PreferShared: return "PreferShared";
-        case PreferCache: return "PreferCache";
-        case PreferEqual: return "PreferEqual";
-        }
-        return "?";
-    }
-
-    /** Format the specified CUDA_CopyKind as a string. */
-    template <>
-    std::string format(const CUDA_CopyKind& value)
-    {
-        switch (value)
-        {
-        case InvalidCopyKind: return "InvalidCopyKind";
-        case UnknownCopyKind: return "UnknownCopyKind";
-        case HostToDevice: return "HostToDevice";
-        case DeviceToHost: return "DeviceToHost";
-        case HostToArray: return "HostToArray";
-        case ArrayToHost: return "ArrayToHost";
-        case ArrayToArray: return "ArrayToArray";
-        case ArrayToDevice: return "ArrayToDevice";
-        case DeviceToArray: return "DeviceToArray";
-        case DeviceToDevice: return "DeviceToDevice";
-        case HostToHost: return "HostToHost";
-        }
-        return "?";
-    }
-
-    /** Format the specified CUDA_MemoryKind as a string. */
-    template <>
-    std::string format(const CUDA_MemoryKind& value)
-    {
-        switch (value)
-        {
-        case InvalidMemoryKind: return "InvalidMemoryKind";
-        case UnknownMemoryKind: return "UnknownMemoryKind";
-        case Pageable: return "Pageable";
-        case Pinned: return "Pinned";
-        case Device: return "Device";
-        case Array: return "Array";
-        }
-        return "?";
-    }
-
-    /** Format the specified CUDA_MessageTYpes as a string. */
-    template <>
-    std::string format(const CUDA_MessageTypes& value)
-    {
-        switch (value)
-        {
-        case ContextInfo: return "ContextInfo";
-        case CopiedMemory: return "CopiedMemory";
-        case DeviceInfo: return "DeviceInfo";
-        case EnqueueRequest: return "EnqueueRequest";
-        case ExecutedKernel: return "ExecutedKernel";
-        case LoadedModule: return "LoadedModule";
-        case ResolvedFunction: return "ResolvedFunction";
-        case SetMemory: return "SetMemory";
-        case UnloadedModule: return "UnloadedModule";
-        }
-        return "?";
-    }
-
-    /** Format the specified CUDA_RequestTypes as a string. */
-    template <>
-    std::string format(const CUDA_RequestTypes& value)
-    {
-        switch (value)
-        {
-        case LaunchKernel: return "LaunchKernel";
-        case MemoryCopy: return "MemoryCopy";
-        case MemorySet: return "MemorySet";
-        }
-        return "?";
-    }
-
-    /** Format the specified vector of uint32_t as a string. */
-    std::string format(const std::vector<uint32_t>& value)
-    {
-        std::ostringstream stream;
-
-        stream << "[";
-
-        for (std::vector<uint32_t>::size_type i = 0; i < value.size(); ++i)
-        {
-            stream << value[i];
-
-            if (i < (value.size() - 1))
-            {
-                stream << ", ";
-            }
-        }
         
-        stream << "]";
-
-        return stream.str();
-    }
-    
-    /** Format the specified fields as a string. */
-    template <>
-    std::string format(const Fields& value)
-    {
-        std::ostringstream stream;
-
-        int n = 0;
-        for (Fields::const_iterator i = value.begin(); i != value.end(); ++i)
-        {
-            n = std::max<int>(n, i->get<0>().size());
-        }
-
-        for (Fields::const_iterator i = value.begin(); i != value.end(); ++i)
-        {
-            stream << "        ";
-            for (int j = 0; j < (n - i->get<0>().size()); ++j)
-            {
-                stream << " ";
-            }
-            stream << i->get<0>() << " = " << i->get<1>() << std::endl;
-        }
-        
-        return stream.str();                
-    }
-    
 } // namespace <anonymous>
 
 
@@ -331,7 +376,7 @@ void CUDADebug::handleData(
                     ("kind", format(msg.kind))
                     ("source_kind", format(msg.source_kind))
                     ("destination_kind", format(msg.destination_kind))
-                    ("asynchronous", format(msg.asynchronous));
+                    ("asynchronous", format<bool>(msg.asynchronous));
             }
             break;
             
@@ -343,17 +388,26 @@ void CUDADebug::handleData(
                 fields = boost::assign::tuple_list_of
                     ("device", format(msg.device))
                     ("name", format(msg.name))
-                    ("compute_capability", format(boost::assign::list_of
-                                                  (msg.compute_capability[0])
-                                                  (msg.compute_capability[1])))
-                    ("max_grid", format(boost::assign::list_of
-                                        (msg.max_grid[0])
-                                        (msg.max_grid[1])
-                                        (msg.max_grid[2])))
-                    ("max_block", format(boost::assign::list_of
-                                         (msg.max_block[0])
-                                         (msg.max_block[1])
-                                         (msg.max_block[2])))
+                    ("compute_capability", 
+                     format<std::vector<uint32_t> >(
+                         boost::assign::list_of
+                         (msg.compute_capability[0])
+                         (msg.compute_capability[1])
+                         ))
+                    ("max_grid", 
+                     format<std::vector<uint32_t> >(
+                         boost::assign::list_of
+                         (msg.max_grid[0])
+                         (msg.max_grid[1])
+                         (msg.max_grid[2])
+                         ))
+                    ("max_block",
+                     format<std::vector<uint32_t> >(
+                         boost::assign::list_of
+                         (msg.max_block[0])
+                         (msg.max_block[1])
+                         (msg.max_block[2])
+                         ))
                     ("global_memory_bandwidth", 
                      format(msg.global_memory_bandwidth))
                     ("global_memory_size", format(msg.global_memory_size))
@@ -402,14 +456,20 @@ void CUDADebug::handleData(
                     ("time_begin", format(msg.time_begin))
                     ("time_end", format(msg.time_end))
                     ("function", format(msg.function))
-                    ("grid", format(boost::assign::list_of
-                                    (msg.grid[0])
-                                    (msg.grid[1])
-                                    (msg.grid[2])))
-                    ("block", format(boost::assign::list_of
-                                     (msg.block[0])
-                                     (msg.block[1])
-                                     (msg.block[2])))
+                    ("grid", 
+                     format<std::vector<int32_t> >(
+                         boost::assign::list_of
+                         (msg.grid[0])
+                         (msg.grid[1])
+                         (msg.grid[2])
+                         ))
+                    ("block", 
+                     format<std::vector<int32_t> >(
+                         boost::assign::list_of
+                         (msg.block[0])
+                         (msg.block[1])
+                         (msg.block[2])
+                         ))
                     ("cache_preference", format(msg.cache_preference))
                     ("registers_per_thread", format(msg.registers_per_thread))
                     ("static_shared_memory", format(msg.static_shared_memory))

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+// Copyright (c) 2012-2013 Argo Navis Technologies. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -39,6 +39,7 @@
 #include <KrellInstitute/Messages/File.h>
 #include <KrellInstitute/Messages/IO_data.h>
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
+#include <KrellInstitute/Messages/PerformanceData.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/Messages/Thread.h>
 #include <KrellInstitute/Messages/ThreadEvents.h>
@@ -316,7 +317,7 @@ private:
     
     /** Handler for the "Data" input. */
     void handleData(
-        const boost::shared_ptr<CBTF_cuda_data>& message
+        const boost::shared_ptr<CBTF_Protocol_Blob>& message
         );
     
     /** Handler for the "InitialLinkedObjects" input. */
@@ -370,7 +371,7 @@ CUDAToIO::CUDAToIO() :
     dm_events(),
     dm_stack_traces()
 {
-    declareInput<boost::shared_ptr<CBTF_cuda_data> >(
+    declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data", boost::bind(&CUDAToIO::handleData, this, _1)
         );
     declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
@@ -382,7 +383,7 @@ CUDAToIO::CUDAToIO() :
         boost::bind(&CUDAToIO::handleThreadsStateChanged, this, _1)
         );
 
-    declareOutput<boost::shared_ptr<CBTF_io_trace_data> >(
+    declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data"
         );
     declareOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
@@ -470,9 +471,18 @@ void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
 // blobs and emit the resulting, translated, blob.
 //------------------------------------------------------------------------------
 void CUDAToIO::handleData(
-    const boost::shared_ptr<CBTF_cuda_data>& message
+    const boost::shared_ptr<CBTF_Protocol_Blob>& message
     )
 {
+    std::pair<
+        boost::shared_ptr<CBTF_DataHeader>, boost::shared_ptr<CBTF_cuda_data>
+        > unpacked_message = KrellInstitute::Messages::unpack<CBTF_cuda_data>(
+            message, reinterpret_cast<xdrproc_t>(xdr_CBTF_cuda_data)
+            );
+
+    const CBTF_DataHeader& cuda_data_header = *unpacked_message.first;
+    const CBTF_cuda_data& cuda_data = *unpacked_message.second;
+ 
     //
     // Iterate over each of the individual CUDA messages "packed" into this
     // performance data blob. Queued requests are pushed onto our own queue
@@ -480,10 +490,10 @@ void CUDAToIO::handleData(
     // requests are completed they are pushed onto our appropriate tables.
     //
     
-    for (u_int i = 0; i < message->messages.messages_len; ++i)
+    for (u_int i = 0; i < cuda_data.messages.messages_len; ++i)
     {
         const CBTF_cuda_message& cuda_message =
-            message->messages.messages_val[i];
+            cuda_data.messages.messages_val[i];
         
         switch (cuda_message.type)
         {
@@ -506,12 +516,12 @@ void CUDAToIO::handleData(
                 request.message = msg;
                 
                 for (uint32_t i = msg.call_site;
-                     (i < message->stack_traces.stack_traces_len) &&
-                         (message->stack_traces.stack_traces_val[i] != 0);
+                     (i < cuda_data.stack_traces.stack_traces_len) &&
+                         (cuda_data.stack_traces.stack_traces_val[i] != 0);
                      ++i)
                 {
                     request.call_site.push_back(
-                        message->stack_traces.stack_traces_val[i]
+                        cuda_data.stack_traces.stack_traces_val[i]
                         );
                 }
                 
@@ -549,40 +559,81 @@ void CUDAToIO::handleData(
     // blob is the use of (expandable) vectors for the former.
     //
 
-    boost::shared_ptr<CBTF_io_trace_data> data(new CBTF_io_trace_data());
-
-    data->stacktraces.stacktraces_len = dm_stack_traces.size();
-    
-    data->stacktraces.stacktraces_val =
-        reinterpret_cast<CBTF_Protocol_Address*>(
-            malloc(std::max(1U, data->stacktraces.stacktraces_len) *
-                   sizeof(CBTF_Protocol_Address))
+    std::pair<
+        boost::shared_ptr<CBTF_DataHeader>,
+        boost::shared_ptr<CBTF_io_trace_data>
+        > pack_message(
+            boost::shared_ptr<CBTF_DataHeader>(new CBTF_DataHeader()),
+            boost::shared_ptr<CBTF_io_trace_data>(new CBTF_io_trace_data())
             );
 
+    CBTF_DataHeader& io_data_header = *pack_message.first;
+    CBTF_io_trace_data& io_data = *pack_message.second;
+
+    io_data_header.experiment = cuda_data_header.experiment;
+    io_data_header.collector = cuda_data_header.collector;
+    io_data_header.id = strdup("iot");
+    memcpy(&io_data_header.host, &cuda_data_header.host,
+           sizeof(io_data_header.host));
+    io_data_header.pid = cuda_data_header.pid;
+    io_data_header.posix_tid = cuda_data_header.posix_tid;
+    io_data_header.rank = cuda_data_header.rank;
+    io_data_header.time_begin = cuda_data_header.time_begin;
+    io_data_header.time_end = cuda_data_header.time_end;
+    io_data_header.addr_begin = -1;
+    io_data_header.addr_end = 0;
+
+    for (std::vector<CBTF_Protocol_Address>::const_iterator
+             i = dm_stack_traces.begin(); i != dm_stack_traces.end(); ++i)
+    {
+        if (*i != 0)
+        {
+            io_data_header.addr_begin = std::min(
+                io_data_header.addr_begin, *i
+                );
+            io_data_header.addr_end = 1 + std::max(
+                io_data_header.addr_end, *i
+                );
+        }
+    }
+    
+    io_data.stacktraces.stacktraces_len = dm_stack_traces.size();
+    
+    io_data.stacktraces.stacktraces_val =
+        reinterpret_cast<CBTF_Protocol_Address*>(
+            malloc(std::max(1U, io_data.stacktraces.stacktraces_len) *
+                   sizeof(CBTF_Protocol_Address))
+            );
+    
     if (!dm_stack_traces.empty())
     {
-        memcpy(data->stacktraces.stacktraces_val, &dm_stack_traces[0],
+        memcpy(io_data.stacktraces.stacktraces_val, &dm_stack_traces[0],
                dm_stack_traces.size() * sizeof(CBTF_Protocol_Address));        
     }
-
-    data->events.events_len = dm_events.size();
-
-    data->events.events_val = reinterpret_cast<CBTF_io_event*>(
-        malloc(std::max(1U, data->events.events_len) * sizeof(CBTF_io_event))
+    
+    io_data.events.events_len = dm_events.size();
+    
+    io_data.events.events_val = reinterpret_cast<CBTF_io_event*>(
+        malloc(std::max(1U, io_data.events.events_len) * sizeof(CBTF_io_event))
         );
     
     if (!dm_events.empty())
     {
-        memcpy(data->events.events_val, &dm_events[0],
+        memcpy(io_data.events.events_val, &dm_events[0],
                dm_events.size() * sizeof(CBTF_io_event));        
     }
-
+    
     // Empty the two tables of completed CUDA operations
     dm_events.clear();
     dm_stack_traces.clear();
     
     // Emit the CBTF_io_trace_data on our appropriate output
-    emitOutput<boost::shared_ptr<CBTF_io_trace_data> >("Data", data);    
+    emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >(
+        "Data", 
+        KrellInstitute::Messages::pack<CBTF_io_trace_data>(
+            pack_message, reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data)
+            )
+        );
 }
 
 

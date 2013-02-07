@@ -54,6 +54,12 @@
  */
 #define CUPTI_ACTIVITY_BUFFER_SIZE  (2 * 32 * 1024 /* 64 KB */)
 
+/** 
+ * Maximum supported number of CUDA contexts. Controls the size of the table
+ * used to translate CUPTI context IDs to CUDA context pointers.
+ */
+#define MAX_CUDA_CONTEXTS 32
+
 /**
  * Maximum number of individual (CBTF_cuda_message) messages contained within
  * each (CBTF_cuda_data) performance data blob. 
@@ -75,8 +81,6 @@
  *          optimal value.
  */
 #define MAX_ADDRESSES_PER_BLOB  1024
-
-
 
 /**
  * Checks that the given CUPTI function call returns the value "CUPTI_SUCCESS".
@@ -157,8 +161,30 @@ static CUpti_SubscriberHandle cupti_subscriber_handle;
  */
 static int64_t cupti_time_offset = 0;
 
+/**
+ * Table used to translate CUPTI context IDs to CUDA context pointers.
+ *
+ * For some reason CUPTI returns CUPTI_ACTIVITY_KIND_CONTEXT activity records
+ * in the global, rather than the per-context, activity queue. So the "context"
+ * parameter to add_activities() is NULL when this record is processed, making
+ * it difficult to associate the provided information with a context pointer.
+ * The associated CUpti_ActivityContext structure contains a "contextId" field,
+ * but there is no direct way to map between context IDs and context pointers
+ * similar to the cuptiGetStreamId() function. The only possible solution is
+ * to store the mapping from context ID to pointer explicitly as encountered
+ * in memcpy, memset, and kernel invocation activigy records. Then use that
+ * mapping when a CUPTI_ACTIVITY_KIND_CONTEXT activity record is found.
+ */
+struct {
+    struct {
+        uint32_t id;
+        CUcontext ptr;
+    } values[MAX_CUDA_CONTEXTS];
+    pthread_mutex_t mutex;
+} context_id_to_ptr;
 
 
+    
 /** Type defining the data stored in thread-local storage. */
 typedef struct {
 
@@ -208,6 +234,81 @@ static const uint32_t TLSKey = 0xBADC00DA;
 static __thread TLS the_tls;
 
 #endif
+
+
+
+/**
+ * Add the specified mapping of CUPTI context ID to CUDA context pointer.
+ *
+ * @param id     CUPTI context ID. 
+ * @param ptr    Corresponding CUDA context pointer.
+ */
+static void add_context_id_to_ptr_mapping(uint32_t id, CUcontext ptr)
+{
+    PTHREAD_CHECK(pthread_mutex_lock(&context_id_to_ptr.mutex));
+
+    int i;
+    for (i = 0;
+         (i < MAX_CUDA_CONTEXTS) && (context_id_to_ptr.values[i].ptr != NULL);
+         ++i)
+    {
+        if (context_id_to_ptr.values[i].id == id)
+        {
+            if (context_id_to_ptr.values[i].ptr != ptr)
+            {
+                printf("[CBTF/CUDA] add_context_id_to_ptr(): "
+                       "CUDA context pointer for CUPTI context "
+                       "ID %u changed!\n", id);
+            }
+            
+            break;
+        }
+    }
+
+    if (i == MAX_CUDA_CONTEXTS)
+    {
+        printf("[CBTF/CUDA] add_context_id_to_ptr(): "
+               "Maximum supported CUDA context pointers was reached!");
+    }
+    else if (context_id_to_ptr.values[i].ptr == NULL)
+    {
+        context_id_to_ptr.values[i].id = id;
+        context_id_to_ptr.values[i].ptr = ptr;
+    }
+    
+    PTHREAD_CHECK(pthread_mutex_unlock(&context_id_to_ptr.mutex));
+}
+
+
+
+/**
+ * Find the CUDA context pointer corresponding to the given CUPTI context ID.
+ *
+ * @param id    CUPTI context ID.
+ * @return      Corresponding CUDA context pointer.
+ */
+static CUcontext find_context_ptr(uint32_t id)
+{
+    CUcontext ptr = NULL;
+
+    PTHREAD_CHECK(pthread_mutex_lock(&context_id_to_ptr.mutex));
+    
+    int i;
+    for (i = 0;
+         (i < MAX_CUDA_CONTEXTS) && (context_id_to_ptr.values[i].ptr != NULL);
+         ++i)
+    {
+        if (context_id_to_ptr.values[i].id == id)
+        {
+            ptr = context_id_to_ptr.values[i].ptr;
+            break;
+        }
+    }
+    
+    PTHREAD_CHECK(pthread_mutex_unlock(&context_id_to_ptr.mutex));
+
+    return ptr;
+}
 
 
 
@@ -534,9 +635,11 @@ inline CUDA_CachePreference toCachePreference(CUfunc_cache value)
  *
  * @param tls          Thread-local storage to which activities are to be added.
  * @param context      CUDA context for the activities to be added.
- * @param stream_id    CUDA stream for the activities to be added.
+ * @param stream       CUDA stream for the activities to be added.
+ * @param stream_id    CUDA stream ID for the activities to be added.
  */
-static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
+static void add_activities(TLS* tls, CUcontext context, 
+                           CUstream stream, uint32_t stream_id)
 {
     Assert(tls != NULL);
 
@@ -547,8 +650,8 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
     if (dropped > 0)
     {
         printf("[CBTF/CUDA] add_activities(): "
-               "dropped %u activity records for stream %u in context %p\n",
-               (unsigned int)dropped, stream_id, context);
+               "dropped %u activity records for stream %p in context %p\n",
+               (unsigned int)dropped, stream, context);
     }
     
     /* Dequeue the buffer of activities */
@@ -603,9 +706,11 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                 CUDA_ContextInfo* message =
                     &raw_message->CBTF_cuda_message_u.context_info;
 
-                message->context = (CBTF_Protocol_Address)context;
-                message->device = activity->deviceId;
+                message->context = (CBTF_Protocol_Address)
+                    find_context_ptr(activity->contextId);
 
+                message->device = activity->deviceId;
+                
                 switch (activity->computeApiKind)
                 {
 
@@ -707,8 +812,8 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                     &raw_message->CBTF_cuda_message_u.copied_memory;
 
                 message->context = (CBTF_Protocol_Address)context;
-                message->stream = stream_id;
-
+                message->stream = (CBTF_Protocol_Address)stream;
+                
                 message->time_begin = activity->start + cupti_time_offset;
                 message->time_end = activity->end + cupti_time_offset;
 
@@ -724,6 +829,9 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                 
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
+
+                /** Add the context ID to pointer mapping from this activity */
+                add_context_id_to_ptr(activity->contextId, context);
             }
             break;
 
@@ -744,7 +852,7 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                     &raw_message->CBTF_cuda_message_u.set_memory;
 
                 message->context = (CBTF_Protocol_Address)context;
-                message->stream = stream_id;
+                message->stream = (CBTF_Protocol_Address)stream;
 
                 message->time_begin = activity->start + cupti_time_offset;
                 message->time_end = activity->end + cupti_time_offset;
@@ -753,6 +861,9 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                 
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
+
+                /** Add the context ID to pointer mapping from this activity */
+                add_context_id_to_ptr(activity->contextId, context);
             }
             break;
 
@@ -773,7 +884,7 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
                     &raw_message->CBTF_cuda_message_u.executed_kernel;
 
                 message->context = (CBTF_Protocol_Address)context;
-                message->stream = stream_id;
+                message->stream = (CBTF_Protocol_Address)stream;
 
                 message->time_begin = activity->start + cupti_time_offset;
                 message->time_end = activity->end + cupti_time_offset;
@@ -798,6 +909,9 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
 
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
+
+                /** Add the context ID to pointer mapping from this activity */
+                add_context_id_to_ptr(activity->contextId, context);
             }
             break;
 
@@ -812,8 +926,8 @@ static void add_activities(TLS* tls, CUcontext context, uint32_t stream_id)
     if (debug)
     {
         printf("[CBTF/CUDA] add_activities(): "
-               "added %u activity records for stream %u in context %p\n",
-               (unsigned int)added, stream_id, context);
+               "added %u activity records for stream %p in context %p\n",
+               (unsigned int)added, stream, context);
     }
 #endif
     
@@ -891,17 +1005,8 @@ static void cupti_callback(void* userdata,
                     
                     message->type = LaunchKernel;
                     message->time = CBTF_GetTime();
-
                     message->context = (CBTF_Protocol_Address)cbdata->context;
-                    message->stream = 0;
-
-                    if (params->hStream != NULL)
-                    {
-                        CUPTI_CHECK(cuptiGetStreamId(cbdata->context,
-                                                     params->hStream,
-                                                     &message->stream));
-                    }
-
+                    message->stream = (CBTF_Protocol_Address)params->hStream;
                     message->call_site = add_current_call_site(tls);
                     
                     update_header_with_time(tls, message->time);
@@ -972,104 +1077,111 @@ static void cupti_callback(void* userdata,
                     
                     message->type = MemoryCopy;
                     message->time = CBTF_GetTime();
-
                     message->context = (CBTF_Protocol_Address)cbdata->context;
                     message->stream = 0;
-
-                    CUstream stream = NULL;
-
+                    
                     switch (id)
                     {
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync:
-                        stream = ((cuMemcpy2DAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpy2DAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
-
+                        
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy2DAsync_v2:
-                        stream = ((cuMemcpy2DAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpy2DAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync:
-                        stream = ((cuMemcpy3DAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpy3DAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DAsync_v2:
-                        stream = ((cuMemcpy3DAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpy3DAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpy3DPeerAsync:
-                        stream = ((cuMemcpy3DPeerAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpy3DPeerAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoHAsync:
-                        stream = ((cuMemcpyAtoHAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyAtoHAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyAtoHAsync_v2:
-                        stream = ((cuMemcpyAtoHAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyAtoHAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync:
-                        stream = ((cuMemcpyDtoDAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyDtoDAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoDAsync_v2:
-                        stream = ((cuMemcpyDtoDAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyDtoDAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoHAsync:
-                        stream = ((cuMemcpyDtoHAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyDtoHAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyDtoHAsync_v2:
-                        stream = ((cuMemcpyDtoHAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyDtoHAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync:
-                        stream = ((cuMemcpyHtoAAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyHtoAAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoAAsync_v2:
-                        stream = ((cuMemcpyHtoAAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyHtoAAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync:
-                        stream = ((cuMemcpyHtoDAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyHtoDAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyHtoDAsync_v2:
-                        stream = ((cuMemcpyHtoDAsync_v2_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyHtoDAsync_v2_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemcpyPeerAsync:
-                        stream = ((cuMemcpyPeerAsync_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemcpyPeerAsync_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     default:
                         break;
 
-                    }
-
-                    if (stream != NULL)
-                    {
-                        CUPTI_CHECK(cuptiGetStreamId(cbdata->context, stream,
-                                                     &message->stream));
                     }
 
                     message->call_site = add_current_call_site(tls);
@@ -1118,54 +1230,51 @@ static void cupti_callback(void* userdata,
                     
                     message->type = MemorySet;
                     message->time = CBTF_GetTime();
-
                     message->context = (CBTF_Protocol_Address)cbdata->context;
                     message->stream = 0;
-
-                    CUstream stream = NULL;
-
+                    
                     switch (id)
                     {
                         
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D8Async:
-                        stream = ((cuMemsetD2D8Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD2D8Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D16Async:
-                        stream = ((cuMemsetD2D16Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD2D16Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD2D32Async: 
-                        stream = ((cuMemsetD2D32Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD2D32Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD8Async:
-                        stream = ((cuMemsetD8Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD8Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD16Async:
-                        stream = ((cuMemsetD16Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD16Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
 
                     case CUPTI_DRIVER_TRACE_CBID_cuMemsetD32Async:
-                        stream = ((cuMemsetD32Async_params*)
-                                  cbdata->functionParams)->hStream;
+                        message->stream = (CBTF_Protocol_Address)
+                            ((cuMemsetD32Async_params*)
+                             cbdata->functionParams)->hStream;
                         break;
                         
                     default:
                         break;
 
-                    }
-
-                    if (stream != NULL)
-                    {
-                        CUPTI_CHECK(cuptiGetStreamId(cbdata->context, stream,
-                                                     &message->stream));
                     }
 
                     message->call_site = add_current_call_site(tls);
@@ -1427,11 +1536,11 @@ static void cupti_callback(void* userdata,
                     }
 #endif
 
-                    /* Add messages for global activities */
-                    add_activities(tls, NULL, 0);
-                    
                     /* Add messages for this context's activities */
-                    add_activities(tls, rdata->context, 0);
+                    add_activities(tls, rdata->context, NULL, 0);
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, NULL, 0);
                 }
                 break;
 
@@ -1447,8 +1556,8 @@ static void cupti_callback(void* userdata,
 #if !defined(NDEBUG)
                     if (debug)
                     {
-                        printf("[CBTF/CUDA] created stream %u in context %p\n",
-                               stream_id, rdata->context);
+                        printf("[CBTF/CUDA] created stream %p in context %p\n",
+                               rdata->resourceHandle.stream, rdata->context);
                     }
 #endif
                     
@@ -1475,16 +1584,17 @@ static void cupti_callback(void* userdata,
                     if (debug)
                     {
                         printf("[CBTF/CUDA] "
-                               "destroying stream %u in context %p\n",
-                               stream_id, rdata->context);
+                               "destroying stream %p in context %p\n",
+                               rdata->resourceHandle.stream, rdata->context);
                     }
 #endif
 
-                    /* Add messages for global activities */
-                    add_activities(tls, NULL, 0);
-                    
                     /* Add messages for this stream's activities */
-                    add_activities(tls, rdata->context, stream_id);
+                    add_activities(tls, rdata->context,
+                                   rdata->resourceHandle.stream, stream_id);
+                    
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, NULL, 0);                    
                 }
                 break;
                 
@@ -1516,11 +1626,11 @@ static void cupti_callback(void* userdata,
                     }
 #endif
 
-                    /* Add messages for global activities */
-                    add_activities(tls, NULL, 0);
-                    
                     /* Add messages for this context's activities */
-                    add_activities(tls, sdata->context, 0);
+                    add_activities(tls, sdata->context, NULL, 0);
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, NULL, 0);
                 }
                 break;
 
@@ -1537,16 +1647,17 @@ static void cupti_callback(void* userdata,
                     if (debug)
                     {
                         printf("[CBTF/CUDA] "
-                               "synchronized stream %u in context %p\n",
-                               stream_id, sdata->context);
+                               "synchronized stream %p in context %p\n",
+                               sdata->stream, sdata->context);
                     }
 #endif
                     
-                    /* Add messages for global activities */
-                    add_activities(tls, NULL, 0);
-                    
                     /* Add messages for this stream's activities */
-                    add_activities(tls, sdata->context, stream_id);
+                    add_activities(tls, sdata->context,
+                                   sdata->stream, stream_id);
+
+                    /* Add messages for global activities */
+                    add_activities(tls, NULL, NULL, 0);                    
                 }
                 break;
 

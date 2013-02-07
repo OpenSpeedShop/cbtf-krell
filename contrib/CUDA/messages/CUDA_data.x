@@ -82,14 +82,14 @@ struct CUDA_CopiedMemory
     CBTF_Protocol_Address context;
 
     /** CUDA stream for which memory was copied. */
-    uint32_t stream;
+    CBTF_Protocol_Address stream;
 
     /** Time at which the memory copy began. */
     CBTF_Protocol_Time time_begin;
-
+    
     /** Time at which the memory copy ended. */
     CBTF_Protocol_Time time_end;
-
+    
     /** Number of bytes being copied. */
     uint64_t size;
 
@@ -198,7 +198,7 @@ struct CUDA_EnqueueRequest
     CBTF_Protocol_Address context;
 
     /** CUDA stream for which the request was enqueued. */
-    uint32_t stream;
+    CBTF_Protocol_Address stream;
 
     /**
      * Call site of the request. This is an index into the stack_traces array
@@ -230,7 +230,7 @@ struct CUDA_ExecutedKernel
     CBTF_Protocol_Address context;
 
     /** CUDA stream for which a kernel was executed. */
-    uint32_t stream;
+    CBTF_Protocol_Address stream;
 
     /** Time at which the kernel execution began. */
     CBTF_Protocol_Time time_begin;
@@ -311,7 +311,7 @@ struct CUDA_SetMemory
     CBTF_Protocol_Address context;
 
     /** CUDA stream for which memory was set. */
-    uint32_t stream;
+    CBTF_Protocol_Address stream;
 
     /** Time at which the memory set began. */
     CBTF_Protocol_Time time_begin;

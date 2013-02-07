@@ -108,7 +108,8 @@ namespace KrellInstitute { namespace Messages {
         // Allocate the performance data blob
         boost::shared_ptr<CBTF_Protocol_Blob> out(
             new CBTF_Protocol_Blob(),
-            boost::bind(&Impl::xdr_deleter<CBTF_Protocol_Blob>, _1, xdr_proc)
+            boost::bind(&Impl::xdr_deleter<CBTF_Protocol_Blob>, _1, 
+                        reinterpret_cast<xdrproc_t>(xdr_CBTF_Protocol_Blob))
             );
         
         // Iteratively increase the encoding buffer size

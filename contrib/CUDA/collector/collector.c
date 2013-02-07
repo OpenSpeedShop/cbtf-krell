@@ -243,7 +243,7 @@ static __thread TLS the_tls;
  * @param id     CUPTI context ID. 
  * @param ptr    Corresponding CUDA context pointer.
  */
-static void add_context_id_to_ptr_mapping(uint32_t id, CUcontext ptr)
+static void add_context_id_to_ptr(uint32_t id, CUcontext ptr)
 {
     PTHREAD_CHECK(pthread_mutex_lock(&context_id_to_ptr.mutex));
 
@@ -287,7 +287,7 @@ static void add_context_id_to_ptr_mapping(uint32_t id, CUcontext ptr)
  * @param id    CUPTI context ID.
  * @return      Corresponding CUDA context pointer.
  */
-static CUcontext find_context_ptr(uint32_t id)
+static CUcontext find_context_ptr_from_id(uint32_t id)
 {
     CUcontext ptr = NULL;
 
@@ -707,7 +707,7 @@ static void add_activities(TLS* tls, CUcontext context,
                     &raw_message->CBTF_cuda_message_u.context_info;
 
                 message->context = (CBTF_Protocol_Address)
-                    find_context_ptr(activity->contextId);
+                    find_context_ptr_from_id(activity->contextId);
 
                 message->device = activity->deviceId;
                 
@@ -830,7 +830,7 @@ static void add_activities(TLS* tls, CUcontext context,
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
 
-                /** Add the context ID to pointer mapping from this activity */
+                /* Add the context ID to pointer mapping from this activity */
                 add_context_id_to_ptr(activity->contextId, context);
             }
             break;
@@ -862,7 +862,7 @@ static void add_activities(TLS* tls, CUcontext context,
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
 
-                /** Add the context ID to pointer mapping from this activity */
+                /* Add the context ID to pointer mapping from this activity */
                 add_context_id_to_ptr(activity->contextId, context);
             }
             break;
@@ -910,7 +910,7 @@ static void add_activities(TLS* tls, CUcontext context,
                 update_header_with_time(tls, message->time_begin);
                 update_header_with_time(tls, message->time_end);
 
-                /** Add the context ID to pointer mapping from this activity */
+                /* Add the context ID to pointer mapping from this activity */
                 add_context_id_to_ptr(activity->contextId, context);
             }
             break;

@@ -893,10 +893,14 @@ static void cupti_callback(void* userdata,
                     message->time = CBTF_GetTime();
 
                     message->context = (CBTF_Protocol_Address)cbdata->context;
+                    message->stream = 0;
 
-                    CUPTI_CHECK(cuptiGetStreamId(cbdata->context,
-                                                 params->hStream,
-                                                 &message->stream));
+                    if (params->hStream != NULL)
+                    {
+                        CUPTI_CHECK(cuptiGetStreamId(cbdata->context,
+                                                     params->hStream,
+                                                     &message->stream));
+                    }
 
                     message->call_site = add_current_call_site(tls);
                     
@@ -1067,7 +1071,7 @@ static void cupti_callback(void* userdata,
                         CUPTI_CHECK(cuptiGetStreamId(cbdata->context, stream,
                                                      &message->stream));
                     }
-                    
+
                     message->call_site = add_current_call_site(tls);
                     
                     update_header_with_time(tls, message->time);

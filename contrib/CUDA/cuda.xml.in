@@ -32,6 +32,11 @@ Place, Suite 330, Boston, MA  02111-1307  USA
     -->
   
   <Output>
+    <Name>addressbuffer_output</Name>
+    <From><Output>OutgoingAddressBuffer</Output></From>
+  </Output>
+
+  <Output>
     <Name>attached_to_threads_xdr_output</Name>
     <From><Output>OutgoingAttachedToThreads</Output></From>
   </Output>
@@ -229,6 +234,11 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       </Connection>
       
       <!-- List of the frontend network's outputs -->
+
+      <Output>
+        <Name>OutgoingAddressBuffer</Name>
+        <From><Name>CUDAToIO</Name><Output>AddressBuffer</Output></From>
+      </Output>
       
       <Output>
         <Name>OutgoingAllTerminated</Name>

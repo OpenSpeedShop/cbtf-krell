@@ -31,6 +31,7 @@
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
 
+#include <KrellInstitute/Core/AddressBuffer.hpp>
 #include <KrellInstitute/Core/Path.hpp>
 #include <KrellInstitute/Core/ThreadName.hpp>
 
@@ -353,7 +354,10 @@ private:
 
     /** Table of I/O stack traces for completed CUDA operations. */
     std::vector<CBTF_Protocol_Address> dm_stack_traces;
-    
+
+    /** Address buffer containing all addresses seen within stack traces. */
+    AddressBuffer dm_addresses;
+        
 }; // class CUDAToIO
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(CUDAToIO)
@@ -369,7 +373,8 @@ CUDAToIO::CUDAToIO() :
     dm_operations(),
     dm_requests(),
     dm_events(),
-    dm_stack_traces()
+    dm_stack_traces(),
+    dm_addresses()
 {
     declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data", boost::bind(&CUDAToIO::handleData, this, _1)
@@ -383,6 +388,9 @@ CUDAToIO::CUDAToIO() :
         boost::bind(&CUDAToIO::handleThreadsStateChanged, this, _1)
         );
 
+    declareOutput<AddressBuffer>(
+        "AddressBuffer"
+        );
     declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data"
         );
@@ -445,6 +453,8 @@ void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
             // Construct a CBTF_io_event entry for this completed CUDA operation
             // and then push it onto our table of I/O events. The modified call
             // site is added (when necessary) to our table of I/O stack traces.
+            // Finally, the address buffer is updated with the contents of the
+            // stack trace.
             //
             
             CBTF_io_event event;
@@ -452,6 +462,14 @@ void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
             event.start_time = message.time_begin;
             event.stop_time = message.time_end;
             event.stacktrace = addCallSite(i->call_site, dm_stack_traces);
+
+            for (std::vector<CBTF_Protocol_Address>::size_type
+                     x = event.stacktrace;
+                 dm_stack_traces[x] != 0;
+                 ++x)
+            {
+                dm_addresses.updateAddressCounts(dm_stack_traces[x], 1);
+            }
 
             dm_events.push_back(event);
             
@@ -847,5 +865,8 @@ void CUDAToIO::handleThreadsStateChanged(
     // Emit the CBTF_Protocol_SymbolTable on our appropriate output
     emitOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
         "SymbolTable", table
-        );    
+        );
+    
+    // Emit the AddressBuffer for all addresses seen within stack traces
+    emitOutput<AddressBuffer>("AddressBuffer", dm_addresses);
 }

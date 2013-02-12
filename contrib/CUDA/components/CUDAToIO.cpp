@@ -572,7 +572,7 @@ void CUDAToIO::handleData(
 
     io_data_header.experiment = cuda_data_header.experiment;
     io_data_header.collector = cuda_data_header.collector;
-    io_data_header.id = strdup("iot");
+    io_data_header.id = strdup("io");
     memcpy(&io_data_header.host, &cuda_data_header.host,
            sizeof(io_data_header.host));
     io_data_header.pid = cuda_data_header.pid;

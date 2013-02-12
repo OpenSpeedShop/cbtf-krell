@@ -315,6 +315,11 @@ private:
     template <typename T> void complete(
         const CUDA_RequestTypes& type, const T& message
         );
+
+    /** Handler for the "CreatedProcess" input. */
+    void handleCreatedProcess(
+        const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& message
+        );
     
     /** Handler for the "Data" input. */
     void handleData(
@@ -376,8 +381,13 @@ CUDAToIO::CUDAToIO() :
     dm_stack_traces(),
     dm_addresses()
 {
+    declareInput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
+        "CreatedProcess",
+        boost::bind(&CUDAToIO::handleCreatedProcess, this, _1)
+        );
     declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
-        "Data", boost::bind(&CUDAToIO::handleData, this, _1)
+        "Data",
+        boost::bind(&CUDAToIO::handleData, this, _1)
         );
     declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
         "InitialLinkedObjects",
@@ -390,6 +400,9 @@ CUDAToIO::CUDAToIO() :
 
     declareOutput<AddressBuffer>(
         "AddressBuffer"
+        );
+    declareOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
+        "CreatedProcess"
         );
     declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data"
@@ -480,6 +493,37 @@ void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
             break;
         }
     }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Update the list of active threads.
+//------------------------------------------------------------------------------
+void CUDAToIO::handleCreatedProcess(
+    const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& message
+    )
+{
+    // Re-emit the original message unchanged
+    emitOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
+        "CreatedProcess", message
+        );
+    
+    // Update the list of active threads appropriately
+
+    ThreadName thread_name(message->created_thread);
+    
+    for (ThreadNameVec::iterator i = dm_active_threads.begin();
+         i != dm_active_threads.end();
+         ++i)
+    {
+        if (*i == thread_name)
+        {
+            return;
+        }
+    }
+    
+    dm_active_threads.push_back(thread_name);
 }
 
 
@@ -743,8 +787,8 @@ void CUDAToIO::handleThreadsStateChanged(
         "ThreadsStateChanged", message
         );
 
-    // We only care when threads begin running or are terminated
-    if ((message->state != Running) && (message->state != Terminated))
+    // We only care when threads are terminated
+    if (message->state != Terminated)
     {
         return;
     }
@@ -754,32 +798,20 @@ void CUDAToIO::handleThreadsStateChanged(
     {
         ThreadName thread_name(message->threads.names.names_val[i]);
         
-        ThreadNameVec::iterator found_at = dm_active_threads.end();
         for (ThreadNameVec::iterator j = dm_active_threads.begin();
              j != dm_active_threads.end();
              ++j)
         {
             if (*j == thread_name)
             {
-                found_at = j;
+                dm_active_threads.erase(j);
                 break;
             }
         }
-        
-        if ((message->state == Running) && 
-            (found_at == dm_active_threads.end()))
-        {
-            dm_active_threads.push_back(thread_name);
-        }
-        else if ((message->state == Terminated) && 
-                 (found_at != dm_active_threads.end()))
-        {
-            dm_active_threads.erase(found_at);
-        }
     }
-
+    
     // Do not proceed further unless the last thread has now been terminated
-    if ((message->state != Terminated) || !dm_active_threads.empty())
+    if (!dm_active_threads.empty())
     {
         return;
     }

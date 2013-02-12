@@ -193,7 +193,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       
       <Input>
         <Name>IncomingCreatedProcess</Name>
-        <To><Name>CreatedProcess</Name><Input>in</Input></To>
+        <To><Name>CUDAToIO</Name><Input>CreatedProcess</Input></To>
       </Input>
 
       <Input>
@@ -221,6 +221,11 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       <Connection>
         <From><Name>AttachedToThreads</Name><Output>out</Output></From>
         <To><Name>LinkedObject</Name><Input>threadnames</Input></To>
+      </Connection>
+
+      <Connection>        
+        <From><Name>CUDAToIO</Name><Output>CreatedProcess</Output></From>
+        <To><Name>CreatedProcess</Name><Input>in</Input></To>
       </Connection>
 
       <Connection>        

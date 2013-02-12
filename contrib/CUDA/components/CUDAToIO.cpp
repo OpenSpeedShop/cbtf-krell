@@ -22,6 +22,8 @@
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
+#include <cmath>
+#include <cxxabi.h>
 #include <list>
 #include <map>
 #include <string>
@@ -191,31 +193,38 @@ namespace {
      * Formats the specified byte count as a string with accompanying units.
      * E.g. an input of 1,614,807 returns "1.5 MB".
      *
-     * @param x    Byte count to format.
-     * @return     String with accompanying units.
+     * @param value    Byte count to format.
+     * @return         String with accompanying units.
      */
-    std::string formatByteCount(const uint64_t& x)
+    std::string formatByteCount(const uint64_t& value)
     {
-        const struct { uint64_t value; const char* label; } kUnits[] = {
-            { 1024ull * 1024ull * 1024ull * 1024ull, "TB" },
-            {           1024ull * 1024ull * 1024ull, "GB" },
-            {                     1024ull * 1024ull, "MB" },
-            {                               1024ull, "KB" },
-            {                                  0ull, ""   } // End-Of-Table
-        };
-        
-        for (int i = 0; kUnits[i].value > 0; ++i)
+        const struct { const double value; const char* label; } kUnits[] =
         {
-            if (x >= kUnits[i].value)
+            { 1024.0 * 1024.0 * 1024.0 * 1024.0, "TB" },
+            {          1024.0 * 1024.0 * 1024.0, "GB" },
+            {                   1024.0 * 1024.0, "MB" },
+            {                            1024.0, "KB" },
+            {                               0.0, NULL } // End-Of-Table
+        };
+            
+        double x = static_cast<double>(value);
+        std::string label = "bytes";
+            
+        for (int i = 0; kUnits[i].label != NULL; ++i)
+        {
+            if (static_cast<double>(value) >= kUnits[i].value)
             {
-                return boost::str(boost::format("%1$2.1f %2%") %
-                                  (static_cast<double>(x) /
-                                   static_cast<double>(kUnits[i].value)) %
-                                  kUnits[i].label);
+                x = static_cast<double>(value) / kUnits[i].value;
+                label = kUnits[i].label;
+                break;
             }
         }
-
-        return boost::str(boost::format("%1% bytes") % x);
+        
+        return boost::str(
+            (x == floor(x)) ?
+            (boost::format("%1% %2%") % static_cast<uint64_t>(x) % label) :
+            (boost::format("%1$0.1f %2%") % x % label)
+            );
     }
 
     /**
@@ -255,11 +264,27 @@ namespace {
      */
     std::string toOperation(const CUDA_ExecutedKernel& message)
     {
+        std::string function = message.function;
+            
+        int status = -2;
+        char* demangled = abi::__cxa_demangle(
+            function.c_str(), NULL, NULL, &status
+            );
+
+        if (demangled != NULL)
+        {
+            if (status == 0)
+            {
+                function = std::string(demangled);
+            }
+            free(demangled);
+        }
+
         if (message.dynamic_shared_memory > 0)
         {
             return boost::str(
                 boost::format("%1%<<<[%2%,%3%,%4%], [%5%,%6%,%7%], %8%>>>") %
-                message.function %
+                function %
                 message.grid[0] % message.grid[1] % message.grid[2] %
                 message.block[0] % message.block[1] % message.block[2] %
                 message.dynamic_shared_memory
@@ -269,7 +294,7 @@ namespace {
         {
             return boost::str(
                 boost::format("%1%<<<[%2%,%3%,%4%], [%5%,%6%,%7%]>>>") %
-                message.function %
+                function %
                 message.grid[0] % message.grid[1] % message.grid[2] %
                 message.block[0] % message.block[1] % message.block[2]
                 );

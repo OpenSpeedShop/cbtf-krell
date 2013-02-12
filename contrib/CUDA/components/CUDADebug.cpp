@@ -268,23 +268,23 @@ namespace {
     {
         static std::string impl(const ByteCount& value)
         {
-            const struct { const float value; const char* label; } kUnits[] =
+            const struct { const double value; const char* label; } kUnits[] =
             {
-                { 1024.0f * 1024.0f * 1024.0f * 1024.0f, "TB" },
-                {           1024.0f * 1024.0f * 1024.0f, "GB" },
-                {                     1024.0f * 1024.0f, "MB" },
-                {                               1024.0f, "KB" },
-                {                                  0.0f, NULL } // End-Of-Table
+                { 1024.0 * 1024.0 * 1024.0 * 1024.0, "TB" },
+                {          1024.0 * 1024.0 * 1024.0, "GB" },
+                {                   1024.0 * 1024.0, "MB" },
+                {                            1024.0, "KB" },
+                {                               0.0, NULL } // End-Of-Table
             };
             
-            float x = static_cast<float>(value);
+            double x = static_cast<double>(value);
             std::string label = "Bytes";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
-                if (static_cast<float>(value) >= kUnits[i].value)
+                if (static_cast<double>(value) >= kUnits[i].value)
                 {
-                    x = static_cast<float>(value) / kUnits[i].value;
+                    x = static_cast<double>(value) / kUnits[i].value;
                     label = kUnits[i].label;
                     break;
                 }
@@ -303,28 +303,28 @@ namespace {
     {
         static std::string impl(const ClockRate& value)
         {
-            const struct { const float value; const char* label; } kUnits[] =
+            const struct { const double value; const char* label; } kUnits[] =
             {
-                { 1024.0f * 1024.0f * 1024.0f * 1024.0f, "THz" },
-                {           1024.0f * 1024.0f * 1024.0f, "GHz" },
-                {                     1024.0f * 1024.0f, "MHz" },
-                {                               1024.0f, "KHz" },
-                {                                  0.0f, NULL  } // End-Of-Table
+                { 1024.0 * 1024.0 * 1024.0 * 1024.0, "THz" },
+                {          1024.0 * 1024.0 * 1024.0, "GHz" },
+                {                   1024.0 * 1024.0, "MHz" },
+                {                            1024.0, "KHz" },
+                {                               0.0, NULL  } // End-Of-Table
             };
             
-            float x = static_cast<float>(value);
+            double x = static_cast<double>(value);
             std::string label = "Hz";
             
             for (int i = 0; kUnits[i].label != NULL; ++i)
             {
-                if (static_cast<float>(value) >= kUnits[i].value)
+                if (static_cast<double>(value) >= kUnits[i].value)
                 {
-                    x = static_cast<float>(value) / kUnits[i].value;
+                    x = static_cast<double>(value) / kUnits[i].value;
                     label = kUnits[i].label;
                     break;
                 }
             }
-            
+
             return boost::str(
                 (x == floor(x)) ?
                 (boost::format("%1% %2%") % static_cast<uint64_t>(x) % label) :
@@ -342,7 +342,7 @@ namespace {
             
             int status = -2;
             char* demangled = abi::__cxa_demangle(
-                static_cast<std::string>(value).c_str(), NULL, NULL, &status
+                retval.c_str(), NULL, NULL, &status
                 );
 
             if (demangled != NULL)

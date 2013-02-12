@@ -843,19 +843,25 @@ void CUDAToIO::handleInitialLinkedObjects(
 //------------------------------------------------------------------------------
 // Update the list of active threads and emit our dynamically generated symbol
 // table of CUDA operations if the last thread has been terminated.
+//
+// It is extremely important that the final thread termination message not be
+// re-emitted before the CBTF_Protocol_SymbolTable and AddressBuffer messages
+// are emitted. When it is, the frontend sees the final thread terminating and
+// immediately exits with predictably poor results. Hence the multiple copies
+// of the re-emit below to make sure they are done in the correct order...
 //------------------------------------------------------------------------------
 void CUDAToIO::handleThreadsStateChanged(
     const boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged>& message
     )
 {
-    // Re-emit the original message unchanged
-    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
-        "ThreadsStateChanged", message
-        );
-
     // We only care when threads are terminated
     if (message->state != Terminated)
     {
+        // Re-emit the original message unchanged
+        emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+            "ThreadsStateChanged", message
+            );
+
         return;
     }
     
@@ -879,6 +885,11 @@ void CUDAToIO::handleThreadsStateChanged(
     // Do not proceed further unless the last thread has now been terminated
     if (!dm_active_threads.empty())
     {
+        // Re-emit the original message unchanged
+        emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+            "ThreadsStateChanged", message
+            );
+
         return;
     }
     
@@ -967,4 +978,9 @@ void CUDAToIO::handleThreadsStateChanged(
     
     // Emit the AddressBuffer for all addresses seen within stack traces
     emitOutput<AddressBuffer>("AddressBuffer", dm_addresses);
+
+    // Re-emit the original message unchanged
+    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >(
+        "ThreadsStateChanged", message
+        );
 }

@@ -316,9 +316,9 @@ private:
         const CUDA_RequestTypes& type, const T& message
         );
 
-    /** Handler for the "CreatedProcess" input. */
-    void handleCreatedProcess(
-        const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& message
+    /** Handler for the "AttachedToThreads" input. */
+    void handleAttachedToThreads(
+        const boost::shared_ptr<CBTF_Protocol_AttachedToThreads>& message
         );
     
     /** Handler for the "Data" input. */
@@ -381,9 +381,9 @@ CUDAToIO::CUDAToIO() :
     dm_stack_traces(),
     dm_addresses()
 {
-    declareInput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
-        "CreatedProcess",
-        boost::bind(&CUDAToIO::handleCreatedProcess, this, _1)
+    declareInput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >(
+        "AttachedToThreads",
+        boost::bind(&CUDAToIO::handleAttachedToThreads, this, _1)
         );
     declareInput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data",
@@ -401,8 +401,8 @@ CUDAToIO::CUDAToIO() :
     declareOutput<AddressBuffer>(
         "AddressBuffer"
         );
-    declareOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
-        "CreatedProcess"
+    declareOutput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >(
+        "AttachedToThreads"
         );
     declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >(
         "Data"
@@ -500,30 +500,38 @@ void CUDAToIO::complete(const CUDA_RequestTypes& type, const T& message)
 //------------------------------------------------------------------------------
 // Update the list of active threads.
 //------------------------------------------------------------------------------
-void CUDAToIO::handleCreatedProcess(
-    const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& message
+void CUDAToIO::handleAttachedToThreads(
+    const boost::shared_ptr<CBTF_Protocol_AttachedToThreads>& message
     )
 {
     // Re-emit the original message unchanged
-    emitOutput<boost::shared_ptr<CBTF_Protocol_CreatedProcess> >(
-        "CreatedProcess", message
+    emitOutput<boost::shared_ptr<CBTF_Protocol_AttachedToThreads> >(
+        "AttachedToThreads", message
         );
-    
-    // Update the list of active threads appropriately
 
-    ThreadName thread_name(message->created_thread);
-    
-    for (ThreadNameVec::iterator i = dm_active_threads.begin();
-         i != dm_active_threads.end();
-         ++i)
+    // Update the list of active threads appropriately
+    for (u_int i = 0; i < message->threads.names.names_len; ++i)
     {
-        if (*i == thread_name)
+        ThreadName thread_name(message->threads.names.names_val[i]);
+        
+        bool was_found = false;
+
+        for (ThreadNameVec::iterator j = dm_active_threads.begin();
+             j != dm_active_threads.end();
+             ++j)
         {
-            return;
+            if (*j == thread_name)
+            {
+                was_found = true;
+                break;
+            }
+        }
+        
+        if (!was_found)
+        {
+            dm_active_threads.push_back(thread_name);
         }
     }
-    
-    dm_active_threads.push_back(thread_name);
 }
 
 

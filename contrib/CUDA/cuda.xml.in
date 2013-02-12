@@ -188,12 +188,12 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       
       <Input>
         <Name>IncomingAttachedToThreads</Name>
-        <To><Name>AttachedToThreads</Name><Input>in</Input></To>
+        <To><Name>CUDAToIO</Name><Input>AttachedToThreads</Input></To>
       </Input>
       
       <Input>
         <Name>IncomingCreatedProcess</Name>
-        <To><Name>CUDAToIO</Name><Input>CreatedProcess</Input></To>
+        <To><Name>CreatedProcess</Name><Input>in</Input></To>
       </Input>
 
       <Input>
@@ -218,14 +218,14 @@ Place, Suite 330, Boston, MA  02111-1307  USA
       
       <!-- List of the frontend network's connections -->
 
+      <Connection>        
+        <From><Name>CUDAToIO</Name><Output>AttachedToThreads</Output></From>
+        <To><Name>AttachedToThreads</Name><Input>in</Input></To>
+      </Connection>
+
       <Connection>
         <From><Name>AttachedToThreads</Name><Output>out</Output></From>
         <To><Name>LinkedObject</Name><Input>threadnames</Input></To>
-      </Connection>
-
-      <Connection>        
-        <From><Name>CUDAToIO</Name><Output>CreatedProcess</Output></From>
-        <To><Name>CreatedProcess</Name><Input>in</Input></To>
       </Connection>
 
       <Connection>        

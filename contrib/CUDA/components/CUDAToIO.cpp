@@ -153,6 +153,39 @@ namespace {
         // Return the index of the call site within the existing stack traces
         return i - call_site.size();
     }
+
+    /**
+     * Test the equality of the two specified thread names. Two thread names
+     * are considered to be equal if they have the same host name, pid, and
+     * posix thread identifier.
+     *
+     * @param x, y    Thread names to test for equality.
+     * @return        Boolean "true" if the thread names
+     *                are equal, or "false" otherwise.
+     */
+    bool equal(const ThreadName& x, const ThreadName& y)
+    {
+        if (x.getHost() != y.getHost())
+        {
+            return false;
+        }
+        
+        if ((x.getPid().first != y.getPid().first) ||
+            ((x.getPid().first == true) &&
+             (x.getPid().second != y.getPid().second)))
+        {
+            return false;
+        }
+
+        if ((x.getPosixThreadId().first != y.getPosixThreadId().first) ||
+            ((x.getPosixThreadId().first == true) &&
+             (x.getPosixThreadId().second != y.getPosixThreadId().second)))
+        {
+            return false;
+        }
+        
+        return true;
+    }
     
     /**
      * Formats the specified byte count as a string with accompanying units.
@@ -520,7 +553,7 @@ void CUDAToIO::handleAttachedToThreads(
              j != dm_active_threads.end();
              ++j)
         {
-            if (*j == thread_name)
+            if (equal(*j, thread_name))
             {
                 was_found = true;
                 break;
@@ -810,7 +843,7 @@ void CUDAToIO::handleThreadsStateChanged(
              j != dm_active_threads.end();
              ++j)
         {
-            if (*j == thread_name)
+            if (equal(*j, thread_name))
             {
                 dm_active_threads.erase(j);
                 break;

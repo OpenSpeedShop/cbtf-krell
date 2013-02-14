@@ -29,7 +29,6 @@
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Collector.h"
-#include "KrellInstitute/Services/Context.h"
 #include "KrellInstitute/Services/Data.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
@@ -445,23 +444,21 @@ inline void update_header_with_address(TLS* tls, CBTF_Protocol_Address addr)
  * Add a new stack trace for the current call site to the performance data
  * blob contained within the given thread-local storage.
  *
- * @param tls    Thread-local storage to which the stack trace is to be added.
- * @return       Index of this call site within the performance data blob.
+ * @param tls     Thread-local storage to which the stack trace is to be added.
+ * @param skip    Fixed number of frames to skip.
+ * @return        Index of this call site within the performance data blob.
  */
-static uint32_t add_current_call_site(TLS* tls)
+static uint32_t add_current_call_site(TLS* tls, unsigned int skip)
 {
     Assert(tls != NULL);
 
     /* Get the stack trace for the current call site */
 
-    ucontext_t context;
     int frame_count = 0;
     uint64_t frame_buffer[CBTF_ST_MAXFRAMES];
     
-    CBTF_GetContext(&context);
-
     CBTF_GetStackTraceFromContext(
-        &context, FALSE, 0, CBTF_ST_MAXFRAMES, &frame_count, frame_buffer
+        NULL, FALSE, skip, CBTF_ST_MAXFRAMES, &frame_count, frame_buffer
         );
 
     /* Search for this stack trace amongst the existing stack traces */
@@ -1007,7 +1004,7 @@ static void cupti_callback(void* userdata,
                     message->time = CBTF_GetTime();
                     message->context = (CBTF_Protocol_Address)cbdata->context;
                     message->stream = (CBTF_Protocol_Address)params->hStream;
-                    message->call_site = add_current_call_site(tls);
+                    message->call_site = add_current_call_site(tls, 10);
                     
                     update_header_with_time(tls, message->time);
                 }
@@ -1184,7 +1181,7 @@ static void cupti_callback(void* userdata,
 
                     }
 
-                    message->call_site = add_current_call_site(tls);
+                    message->call_site = add_current_call_site(tls, 9);
                     
                     update_header_with_time(tls, message->time);
                 }
@@ -1277,7 +1274,7 @@ static void cupti_callback(void* userdata,
 
                     }
 
-                    message->call_site = add_current_call_site(tls);
+                    message->call_site = add_current_call_site(tls, 10);
                     
                     update_header_with_time(tls, message->time);
                 }
@@ -1723,7 +1720,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     if (thread_count.value == 0)
     {
         /* Should debugging be enabled? */
-        debug = (getenv("CBTF_DEBUG_COLLECTOR") == NULL);
+        debug = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
         
 #if !defined(NDEBUG)
         if (debug)

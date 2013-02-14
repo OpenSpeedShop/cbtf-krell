@@ -934,8 +934,9 @@ void CUDAToIO::handleThreadsStateChanged(
         
         CBTF_Protocol_AddressBitmap* bitmap = &function->bitmaps.bitmaps_val[0];
         
-        bitmap->range.begin = i->second;
-        bitmap->range.end = i->second + 1;
+        bitmap->range.begin = i->second - kAddressRange.begin;
+        bitmap->range.end = i->second - kAddressRange.begin + 1;
+
         bitmap->bitmap.data.data_len = 1;
         bitmap->bitmap.data.data_val = reinterpret_cast<uint8_t*>(malloc(1));
         bitmap->bitmap.data.data_val[0] = 0xFF;
@@ -967,6 +968,7 @@ void CUDAToIO::handleThreadsStateChanged(
     
     bitmap->range.begin = 0;
     bitmap->range.end = 0;
+
     bitmap->bitmap.data.data_len = 1;
     bitmap->bitmap.data.data_val = reinterpret_cast<uint8_t*>(malloc(1));
     bitmap->bitmap.data.data_val[0] = 0;

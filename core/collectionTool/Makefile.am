@@ -28,6 +28,7 @@ collectionTool_CXXFLAGS = \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
 	@CBTF_XML_CPPFLAGS@ \
+        @LIBXERCES_C_CPPFLAGS@ \
 	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
@@ -41,6 +42,7 @@ collectionTool_LDFLAGS = \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
 	@CBTF_XML_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@
 	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
@@ -54,6 +56,7 @@ collectionTool_LDADD = \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@ \
+        @LIBXERCES_C@ \
 	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
 	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core \

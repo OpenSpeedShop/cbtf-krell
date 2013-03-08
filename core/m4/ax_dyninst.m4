@@ -69,9 +69,13 @@ AC_DEFUN([AX_DYNINST], [
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
             DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
             ;;
+	"8.1")
+            DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
+            ;;
 	*)
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
-            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol" 
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
             ;;
     esac
 

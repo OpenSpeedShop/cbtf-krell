@@ -142,7 +142,7 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
 
     found_target_mrnet=0
 
-    if [ !test -z $SYSROOT_DIR -a test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a ]; then
+    if [ [ ! -z $SYSROOT_DIR ] && [ test -d $SYSROOT_DIR/usr/lib/alps ]  && [ test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a ] ] ; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
        TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"

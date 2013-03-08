@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -32,9 +32,12 @@ AC_DEFUN([AX_CBTF_XML], [
 
     cbtf_xml_saved_CPPFLAGS=$CPPFLAGS
     cbtf_xml_saved_LDFLAGS=$LDFLAGS
+    cbtf_xml_saved_LIBS=$LIBS
 
-    CPPFLAGS="$CPPFLAGS $CBTF_XML_CPPFLAGS $BOOST_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $CBTF_XML_LDFLAGS $CBTF_XML_LIBS $LIBXERCES_C_LDFLAGS $LIBXERCES_C $BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_THREAD_LIB $BOOST_FILESYSTEM_LIB"
+    CPPFLAGS="$CPPFLAGS $CBTF_XML_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $CBTF_XML_LDFLAGS $LIBXERCES_C_LDFLAGS $BOOST_LDFLAGS"
+    LIBS="$CBTF_XML_LIBS $LIBXERCES_C $BOOST_FILESYSTEM_LIB $BOOST_SYSTEM_LIB $BOOST_THREAD_LIB"
+
 
     AC_MSG_CHECKING([for CBTF XML library and headers])
 
@@ -51,6 +54,7 @@ AC_DEFUN([AX_CBTF_XML], [
 
     CPPFLAGS=$cbtf_xml_saved_CPPFLAGS
     LDFLAGS=$cbtf_xml_saved_LDFLAGS
+    LIBS=$cbtf_xml_saved_LIBS
 
     AC_LANG_POP(C++)
 

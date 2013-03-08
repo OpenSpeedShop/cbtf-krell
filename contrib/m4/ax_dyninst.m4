@@ -30,8 +30,8 @@ AC_DEFUN([AX_DYNINST], [
 
     AC_ARG_WITH(dyninst-version,
                 AC_HELP_STRING([--with-dyninst-version=VERS],
-                               [dyninst-version installation @<:@8.0.0@]),
-                dyninst_vers=$withval, dyninst_vers="8.0.0")
+                               [dyninst-version installation @<:@8.1@:>@]),
+                dyninst_vers=$withval, dyninst_vers="8.1")
 
     DYNINST_CPPFLAGS="-I$dyninst_dir/include/dyninst"
     DYNINST_LDFLAGS="-L$dyninst_dir/$abi_libdir"
@@ -67,11 +67,15 @@ AC_DEFUN([AX_DYNINST], [
             ;;
 	"8.0.0")
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
-            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol" 
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
+            ;;
+	"8.1")
+            DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
             ;;
 	*)
             DYNINST_CPPFLAGS="$DYNINST_CPPFLAGS -DUSE_STL_VECTOR"
-            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol" 
+            DYNINST_LIBS="-ldyninstAPI -lcommon -lsymtabAPI -linstructionAPI -lparseAPI -lpatchAPI -lstackwalk -lpcontrol -ldynElf -ldynDwarf -lsymLite" 
             ;;
     esac
 
@@ -126,8 +130,8 @@ AC_DEFUN([AC_PKG_TARGET_DYNINST], [
 
     AC_ARG_WITH(target-dyninst-version,
                 AC_HELP_STRING([--with-target-dyninst-version=VERS],
-                               [target dyninst version installation @<:@8.0.0@:>@]),
-                target_dyninst_vers=$withval, target_dyninst_vers="8.0.0")
+                               [target dyninst version installation @<:@8.1@:>@]),
+                target_dyninst_vers=$withval, target_dyninst_vers="8.1")
 
     AC_MSG_CHECKING([for Targetted dyninst support])
 

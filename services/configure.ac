@@ -75,7 +75,7 @@ case "$host" in
         if test x"$libdir" == x'${exec_prefix}/lib64'; then
             libdir='${exec_prefix}/lib'
         fi
-        LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+        LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         ;;
     powerpc64-*-*)
 
@@ -87,7 +87,7 @@ case "$host" in
                 if test x"$libdir" == x'${exec_prefix}/lib'; then
                     libdir='${exec_prefix}/lib64'
                 fi
-                LDFLAGS="-L/usr/lib64 -DLIB_DIR=lib64 $LDFLAGS"
+                LDFLAGS="-DLIB_DIR=lib64 $LDFLAGS"
                 CFLAGS="-m64 $CFLAGS"
                 CXXFLAGS="-m64 $CXXFLAGS"
                 CPPFLAGS="-m64 $CPPFLAGS"
@@ -98,7 +98,7 @@ case "$host" in
                 if test x"$libdir" == x'${exec_prefix}/lib64'; then
                     libdir='${exec_prefix}/lib'
                 fi
-                LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+                LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         fi
         ;;
 
@@ -109,14 +109,14 @@ case "$host" in
         fi
         abi_libdir="lib64"
         alt_abi_libdir="lib"
-        LDFLAGS="-L/usr/lib64 $LDFLAGS"
+        LDFLAGS="$LDFLAGS"
         ;;
 
     *)
         AC_MSG_CHECKING([Configuring for default host])
         abi_libdir="lib"
         alt_abi_libdir="lib64"
-        LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+        LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         ;;
 esac
 topdir_execprefix=${exec_prefix}
@@ -395,7 +395,7 @@ AC_SUBST(BUILD_RUNTIME)
 #AM_CONDITIONAL(HAVE_BINUTILS, false)
 
 
-#if test "$build_targeted" = 0 ; then
+if test "$build_targeted" == 0 ; then
 
 AC_PKG_BINUTILS()
 AC_PKG_LIBMONITOR()
@@ -404,17 +404,24 @@ AC_PKG_PAPI()
 AX_LW_MRNET()
 AX_MESSAGES()
 
-#fi
+AM_CONDITIONAL(HAVE_TARGET_BINUTILS, false)
+AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, false)
+AM_CONDITIONAL(HAVE_TARGET_LIBUNWIND, false)
+AM_CONDITIONAL(HAVE_TARGET_PAPI, false)
+AM_CONDITIONAL(HAVE_TARGET_PAPI_SHARED, false)
+AM_CONDITIONAL(HAVE_TARGET_LW_MRNET, false)
+AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
+AM_CONDITIONAL(HAVE_TARGET_MESSAGES, false)
+fi
 
+if test "$build_targeted" == 1 ; then
 AC_PKG_TARGET_BINUTILS()
 AC_PKG_TARGET_LIBMONITOR()
 AC_PKG_TARGET_LIBUNWIND()
 AC_PKG_TARGET_PAPI
-AC_PKG_TARGET_MRNET()
-
 AX_TARGET_MESSAGES()
 AX_TARGET_LW_MRNET()
-AC_PKG_TARGET_BOOST()
+fi
 
 AC_CONFIG_FILES([
     Makefile

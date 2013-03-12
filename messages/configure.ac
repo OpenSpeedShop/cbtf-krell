@@ -76,7 +76,7 @@ case "$host" in
         if test x"$libdir" == x'${exec_prefix}/lib64'; then
             libdir='${exec_prefix}/lib'
         fi
-        LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+        LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         ;;
     powerpc64-*-*)
 
@@ -88,7 +88,7 @@ case "$host" in
                 if test x"$libdir" == x'${exec_prefix}/lib'; then
                     libdir='${exec_prefix}/lib64'
                 fi
-                LDFLAGS="-L/usr/lib64 -DLIB_DIR=lib64 $LDFLAGS"
+                LDFLAGS="-DLIB_DIR=lib64 $LDFLAGS"
                 CFLAGS="-m64 $CFLAGS"
                 CXXFLAGS="-m64 $CXXFLAGS"
                 CPPFLAGS="-m64 $CPPFLAGS"
@@ -99,7 +99,7 @@ case "$host" in
                 if test x"$libdir" == x'${exec_prefix}/lib64'; then
                     libdir='${exec_prefix}/lib'
                 fi
-                LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+                LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         fi
         ;;
 
@@ -110,14 +110,14 @@ case "$host" in
         fi
         abi_libdir="lib64"
         alt_abi_libdir="lib"
-        LDFLAGS="-L/usr/lib64 $LDFLAGS"
+        LDFLAGS="$LDFLAGS"
         ;;
 
     *)
         AC_MSG_CHECKING([Configuring for default host])
         abi_libdir="lib"
         alt_abi_libdir="lib64"
-        LDFLAGS="-L/usr/lib -DLIB_DIR=lib $LDFLAGS"
+        LDFLAGS="-DLIB_DIR=lib $LDFLAGS"
         ;;
 esac
 topdir_execprefix=${exec_prefix}

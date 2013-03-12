@@ -19,8 +19,10 @@
 /** @file simple collection tool frontend. */
 
 #include <sys/param.h>
+#include <errno.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <iostream>
 #include <sstream>
 #include <boost/program_options.hpp>
@@ -142,6 +144,21 @@ int main(int argc, char** argv)
 
     // create a default for topology file.
     char const* home = getenv("HOME");
+
+    std::string cbtf_path(home);
+    cbtf_path += "/.cbtf";
+
+
+    struct stat sb;
+
+    if (!(stat(cbtf_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
+      int ret = mkdir(cbtf_path.c_str(), 0755);
+      if (ret != 0 && errno != EEXIST) {
+        fprintf(stderr,"collectionTool: could not create cbtf directory `%s': %s",
+                cbtf_path.c_str(), strerror(errno));
+      }
+    }
+
     std::string default_topology(home);
     default_topology += "/.cbtf/cbtf_topology";
 

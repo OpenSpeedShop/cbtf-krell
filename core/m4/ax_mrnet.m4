@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -54,19 +54,17 @@ AC_DEFUN([AX_MRNET], [
     if [ test -z "$SYSROOT_DIR" ]; then
       # SYSROOT_DIR was not set
       if [ test -d /usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
-        MRNET_CPPFLAGS="$MRNET_CPPFLAGS -I/usr/include"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib/alps"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi -lexpat"
+        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
       fi
     else
       if [ test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
-        MRNET_CPPFLAGS="$MRNET_CPPFLAGS -I$SYSROOT_DIR/usr/include"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib/alps"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
-        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi -lexpat"
+        MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
       fi
     fi
 
@@ -75,9 +73,11 @@ AC_DEFUN([AX_MRNET], [
 
     mrnet_saved_CPPFLAGS=$CPPFLAGS
     mrnet_saved_LDFLAGS=$LDFLAGS
+    mrnet_saved_LIBS=$LIBS
 
-    CPPFLAGS="$CPPFLAGS $MRNET_CPPFLAGS $BOOST_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $MRNET_LDFLAGS $MRNET_LIBS"
+    CPPFLAGS="$CPPFLAGS $MRNET_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $MRNET_LDFLAGS"
+    LIBS="$MRNET_LIBS"
 
     AC_MSG_CHECKING([for MRNet library and headers])
 
@@ -100,6 +100,7 @@ AC_DEFUN([AX_MRNET], [
 
     CPPFLAGS=$mrnet_saved_CPPFLAGS
     LDFLAGS=$mrnet_saved_LDFLAGS
+    LIBS=$mrnet_saved_LIBS
 
     AC_LANG_POP(C++)
 
@@ -141,7 +142,7 @@ AC_DEFUN([AC_PKG_TARGET_MRNET], [
 
     found_target_mrnet=0
 
-    if [ !test -z $SYSROOT_DIR -a test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a ]; then
+    if [ [ ! -z $SYSROOT_DIR ] && [ test -d $SYSROOT_DIR/usr/lib/alps ]  && [ test -f $target_mrnet_dir/$abi_libdir/libmrnet.so -o -f $target_mrnet_dir/$abi_libdir/libmrnet.a ] ] ; then
        found_target_mrnet=1
        TARGET_MRNET_LDFLAGS="-L$target_mrnet_dir/$abi_libdir"
        TARGET_MRNET_LDFLAGS="$TARGET_MRNET_LDFLAGS -L/usr/lib/alps -L/opt/cray/xt-tools/lgdb/1.4/lib/alps"

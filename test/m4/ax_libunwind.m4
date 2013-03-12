@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -34,9 +34,11 @@ AC_DEFUN([AC_PKG_LIBUNWIND], [
 
     libunwind_saved_CPPFLAGS=$CPPFLAGS
     libunwind_saved_LDFLAGS=$LDFLAGS
+    libunwind_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $LIBUNWIND_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $LIBUNWIND_LDFLAGS $LIBUNWIND_LIBS"
+    LDFLAGS="$LDFLAGS $LIBUNWIND_LDFLAGS"
+    LIBS="$LIBUNWIND_LIBS"
 
     AC_MSG_CHECKING([for libunwind library and headers])
 
@@ -62,6 +64,7 @@ AC_DEFUN([AC_PKG_LIBUNWIND], [
 
     CPPFLAGS=$libunwind_saved_CPPFLAGS
     LDFLAGS=$libunwind_saved_LDFLAGS
+    LIBS=$libunwind_saved_LIBS
 
     AC_SUBST(LIBUNWIND_CPPFLAGS)
     AC_SUBST(LIBUNWIND_LDFLAGS)

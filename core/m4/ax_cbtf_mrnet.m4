@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -25,16 +25,18 @@ AC_DEFUN([AX_CBTF_MRNET], [
 
     CBTF_MRNET_CPPFLAGS="-I$cbtf_mrnet_dir/include"
     CBTF_MRNET_LDFLAGS="-L$cbtf_mrnet_dir/$abi_libdir"
-    CBTF_MRNET_LIBS="$BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_THREAD_LIB $LIBXERCES_C $MRNET_LIBS -lcbtf -lcbtf-mrnet -lcbtf-xml"
+    CBTF_MRNET_LIBS="-lcbtf-mrnet"
 
     AC_LANG_PUSH(C++)
     AC_REQUIRE_CPP
 
     cbtf_mrnet_saved_CPPFLAGS=$CPPFLAGS
     cbtf_mrnet_saved_LDFLAGS=$LDFLAGS
+    cbtf_mrnet_saved_LIBS=$LIBS
 
-    CPPFLAGS="$CPPFLAGS $CBTF_MRNET_CPPFLAGS $BOOST_CPPFLAGS $MRNET_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $CBTF_MRNET_LDFLAGS $CBTF_MRNET_LIBS $BOOST_LDFLAGS $MRNET_LDFLAGS"
+    CPPFLAGS="$CPPFLAGS $CBTF_MRNET_CPPFLAGS $MRNET_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $CBTF_LDFLAGS $CBTF_XML_LDFLAGS $MRNET_LDFLAGS $LIBXERCES_C_LDFLAGS $CBTF_MRNET_LDFLAGS"
+    LIBS="$CBTF_LIBS $CBTF_XML_LIBS $CBTF_MRNET_LIBS $MRNET_LIBS $LIBXERCES_C $BOOST_SYSTEM_LIB "
 
     AC_MSG_CHECKING([for CBTF MRNet library and headers])
 
@@ -50,6 +52,7 @@ AC_DEFUN([AX_CBTF_MRNET], [
 
     CPPFLAGS=$cbtf_mrnet_saved_CPPFLAGS
     LDFLAGS=$cbtf_mrnet_saved_LDFLAGS
+    LIBS=$cbtf_mrnet_saved_LIBS
 
     AC_LANG_POP(C++)
 

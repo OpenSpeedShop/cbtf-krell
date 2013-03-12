@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -51,9 +51,11 @@ AC_DEFUN([AX_LW_MRNET], [
 
     mrnet_saved_CPPFLAGS=$CPPFLAGS
     mrnet_saved_LDFLAGS=$LDFLAGS
+    mrnet_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $MRNET_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $MRNET_LDFLAGS $MRNET_LIBS"
+    LDFLAGS="$CXXFLAGS $MRNET_LDFLAGS"
+    LIBS="$MRNET_LIBS"
 
     AC_MSG_CHECKING([for Lightweight MRNet library and headers])
 
@@ -75,6 +77,7 @@ AC_DEFUN([AX_LW_MRNET], [
 
     CPPFLAGS=$mrnet_saved_CPPFLAGS
     LDFLAGS=$mrnet_saved_LDFLAGS
+    LIBS=$mrnet_saved_LIBS
 
     AC_SUBST(MRNET_CPPFLAGS)
     AC_SUBST(MRNET_LDFLAGS)

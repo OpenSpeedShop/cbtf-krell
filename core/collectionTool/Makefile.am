@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -28,6 +28,7 @@ collectionTool_CXXFLAGS = \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
 	@CBTF_XML_CPPFLAGS@ \
+        @LIBXERCES_C_CPPFLAGS@ \
 	@LIBDWARF_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
@@ -41,6 +42,7 @@ collectionTool_LDFLAGS = \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
 	@CBTF_XML_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@
 	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
@@ -48,14 +50,16 @@ collectionTool_LDFLAGS = \
 
 collectionTool_LDADD = \
 	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@ \
+        @LIBXERCES_C@ \
 	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
-	-lcbtf-core -lcbtf-core-symtabapi -lcbtf-core-mrnet \
+	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core \
 	@MRNET_LIBS@
 
 collectionTool_SOURCES = \

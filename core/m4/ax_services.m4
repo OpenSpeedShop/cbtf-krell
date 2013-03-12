@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -65,9 +65,11 @@ AC_DEFUN([AX_CBTF_SERVICES], [
 
     services_saved_CPPFLAGS=$CPPFLAGS
     services_saved_LDFLAGS=$LDFLAGS
+    services_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $CBTF_SERVICES_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $CBTF_SERVICES_LDFLAGS $CBTF_SERVICES_COMMON_LIBS -lrt -lpthread"
+    LDFLAGS="$LDFLAGS $CBTF_SERVICES_LDFLAGS"
+    LIBS="$CBTF_SERVICES_COMMON_LIBS -lrt -lpthread"
 
     AC_MSG_CHECKING([for CBTF SERVICES library and headers])
 
@@ -81,6 +83,7 @@ AC_DEFUN([AX_CBTF_SERVICES], [
 
     CPPFLAGS=$services_saved_CPPFLAGS
     LDFLAGS=$services_saved_LDFLAGS
+    LIBS=$services_saved_LIBS
 
     AC_SUBST(CBTF_SERVICES_CPPFLAGS)
     AC_SUBST(CBTF_SERVICES_LDFLAGS)

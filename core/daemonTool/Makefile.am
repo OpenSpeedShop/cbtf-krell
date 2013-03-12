@@ -29,6 +29,7 @@ daemonTool_CXXFLAGS = \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
 	@CBTF_XML_CPPFLAGS@ \
+	@LIBXERCES_C_CPPFLAGS@
 	@MRNET_CPPFLAGS@
 
 daemonTool_LDFLAGS = \
@@ -36,6 +37,7 @@ daemonTool_LDFLAGS = \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
 	@CBTF_XML_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 
 daemonTool_LDADD = \
@@ -46,6 +48,7 @@ daemonTool_LDADD = \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@\
+        @LIBXERCES_C@ \
 	@MRNET_LIBS@ \
 	-lcbtf-core-mrnet 
 

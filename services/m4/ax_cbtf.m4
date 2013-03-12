@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -34,9 +34,9 @@ AC_DEFUN([AX_CBTF], [
     cbtf_saved_LDFLAGS=$LDFLAGS
     cbtf_saved_LIBS=$LIBS
 
-    CPPFLAGS="$CPPFLAGS $CBTF_CPPFLAGS $BOOST_CPPFLAGS"
-    LDFLAGS="$CXXFLAGS $CBTF_LDFLAGS $BOOST_LDFLAGS"
-    LIBS="$CBTF_LIBS $BOOST_SYSTEM_LIB $BOOST_THREAD_LIB $BOOST_FILESYSTEM_LIB"
+    CPPFLAGS="$CPPFLAGS $CBTF_CPPFLAGS"
+    LDFLAGS="$CXXFLAGS $CBTF_LDFLAGS"
+    LIBS="$CBTF_LIBS"
 
     AC_MSG_CHECKING([for CBTF library and headers])
 

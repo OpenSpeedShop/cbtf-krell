@@ -42,17 +42,13 @@ collectionTool_LDFLAGS = \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
 	@CBTF_XML_LDFLAGS@ \
-	@LIBXERCES_C_LDFLAGS@
+	@LIBXERCES_C_LDFLAGS@ \
 	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	@BOOST_LDFLAGS@
 
 collectionTool_LDADD = \
-	@BOOST_PROGRAM_OPTIONS_LIB@ \
-	@BOOST_FILESYSTEM_LIB@ \
-	@BOOST_SYSTEM_LIB@ \
-	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@ \
@@ -60,7 +56,11 @@ collectionTool_LDADD = \
 	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
 	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core \
-	@MRNET_LIBS@
+	@MRNET_LIBS@ \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@  \
+	@BOOST_SYSTEM_LIB@ 
 
 collectionTool_SOURCES = \
 	collectionTool.cpp

@@ -29,8 +29,8 @@ AC_DEFUN([AX_LIBDWARF], [
 
     found_libdwarf=0
 
-    LIBDWARF_CPPFLAGS="-I$libdwarf_dir/$abi_libdir/libdwarf/include"
-    LIBDWARF_LDFLAGS="-L$libdwarf_dir/$abi_libdir/libdwarf/$abi_libdir"
+    LIBDWARF_CPPFLAGS="-I$libdwarf_dir/include"
+    LIBDWARF_LDFLAGS="-L$libdwarf_dir/$abi_libdir"
     LIBDWARF_LIBS="-ldwarf"
 
     libdwarf_saved_CPPFLAGS=$CPPFLAGS

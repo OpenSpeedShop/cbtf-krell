@@ -17,3 +17,6 @@ cd ..
 cd test
 ./bootstrap
 cd ..
+cd ../contrib/LANL
+./bootstrap
+cd ../..

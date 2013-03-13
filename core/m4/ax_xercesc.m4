@@ -6,10 +6,16 @@ AC_DEFUN([AX_XERCESC], [
                                [XERCES installation @<:@/usr@:>@]),
                 xerces_dir=$withval, xerces_dir="/usr")
 
+
     LIBXERCES_C_DIR="$xerces_dir"
     LIBXERCES_C_LIBSDIR="$xerces_dir/$abi_libdir"
-    LIBXERCES_C_CPPFLAGS="-I$xerces_dir/include"
-    LIBXERCES_C_LDFLAGS="-L$xerces_dir/$abi_libdir"
+    if test "x$xerces_dir" != "x/usr"; then
+        LIBXERCES_C_CPPFLAGS="-I$xerces_dir/include"
+        LIBXERCES_C_LDFLAGS="-L$xerces_dir/$abi_libdir"
+    else
+        LIBXERCES_C_CPPFLAGS=""
+        LIBXERCES_C_LDFLAGS=""
+    fi
     LIBXERCES_C="-lxerces-c"
     LTLIBXERCES_C="-lxerces-c"
 

@@ -25,42 +25,42 @@ collectionTool_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
 	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \
 	@CBTF_XML_CPPFLAGS@ \
+	@DYNINST_CPPFLAGS@ \
         @LIBXERCES_C_CPPFLAGS@ \
 	@LIBDWARF_CPPFLAGS@ \
-	@DYNINST_CPPFLAGS@ \
-	@MRNET_CPPFLAGS@ \
-	@BOOST_CPPFLAGS@
+	@MRNET_CPPFLAGS@
 
 # Any lib directory search path that may override a library
 # that is potentially in the default (/usr) should come last.
 # examples of this are binutils, dwarf, boost, xerces-c...
 collectionTool_LDFLAGS = \
 	-L$(top_srcdir)/src \
+	@BOOST_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@CBTF_MRNET_LDFLAGS@ \
 	@CBTF_XML_LDFLAGS@ \
-	@LIBXERCES_C_LDFLAGS@ \
-	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
-	@MRNET_LDFLAGS@ \
-	@BOOST_LDFLAGS@
+	@LIBDWARF_LDFLAGS@ \
+	@LIBXERCES_C_LDFLAGS@ \
+	@MRNET_LDFLAGS@
 
 collectionTool_LDADD = \
+	@BOOST_PROGRAM_OPTIONS_LIB@ \
+	@BOOST_FILESYSTEM_LIB@ \
+	@BOOST_SYSTEM_LIB@ \
+	@BOOST_THREAD_LIB@ \
 	@CBTF_LIBS@ \
 	@CBTF_MRNET_LIBS@\
 	@CBTF_XML_LIBS@ \
-        @LIBXERCES_C@ \
-	@LIBDWARF_LIBS@ \
 	@DYNINST_LIBS@ \
-	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core \
+	@LIBDWARF_LIBS@ \
+        @LIBXERCES_C@ \
 	@MRNET_LIBS@ \
-	@BOOST_PROGRAM_OPTIONS_LIB@ \
-	@BOOST_FILESYSTEM_LIB@ \
-	@BOOST_THREAD_LIB@  \
-	@BOOST_SYSTEM_LIB@ 
+	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core
 
 collectionTool_SOURCES = \
 	collectionTool.cpp

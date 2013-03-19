@@ -197,6 +197,7 @@ libcbtf_core_bfd_la_LIBADD = \
 libcbtf_core_symtabapi_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@LIBDWARF_CPPFLAGS@ \
+	@BOOST_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
 	@LTDLINCL@ 
@@ -217,6 +218,7 @@ libcbtf_core_symtabapi_la_LIBADD = \
 libcbtf_core_mrnet_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
+	@BOOST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 

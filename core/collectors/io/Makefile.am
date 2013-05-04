@@ -103,6 +103,7 @@ libio_monitor_fileio_la_SOURCES = \
 
 iop_collector_monitor_fileio_la_CFLAGS = \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -133,6 +134,7 @@ iop_collector_monitor_fileio_la_SOURCES = \
 libiop_monitor_fileio_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -304,6 +306,7 @@ libio_monitor_mrnet_la_SOURCES = \
 
 iop_collector_monitor_mrnet_la_CFLAGS = \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -338,6 +341,7 @@ iop_collector_monitor_mrnet_la_SOURCES = \
 libiop_monitor_mrnet_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	@CBTF_SERVICES_CPPFLAGS@ \
@@ -522,6 +526,7 @@ libio_monitor_mrnet_mpi_la_SOURCES = \
 
 iop_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
@@ -558,6 +563,7 @@ iop_collector_monitor_mrnet_mpi_la_SOURCES = \
 libiop_monitor_mrnet_mpi_la_CFLAGS = \
 	-static \
 	-D__USE_GNU \
+	-DPROFILE \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \

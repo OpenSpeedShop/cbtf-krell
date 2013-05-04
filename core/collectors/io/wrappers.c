@@ -44,8 +44,8 @@
 #include <sys/uio.h>
 
 #if defined(PROFILE)
-extern void io_record_event(uint64_t);
-extern void io_start_event();
+extern void io_record_event(const CBTF_iop_event*, uint64_t);
+extern void io_start_event(CBTF_iop_event*);
 #else
 #if defined(EXTENDEDTRACE)
 extern void io_record_event(const CBTF_iot_event*, uint64_t);

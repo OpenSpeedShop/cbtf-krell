@@ -122,7 +122,11 @@ typedef struct {
 
     /** Tracing buffer. */
 #if defined(PROFILE)
-    CBTF_StackTraceData buffer;
+    struct {
+        uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
+        uint64_t time[StackTraceBufferSize];  /**< Stack traces. */
+        uint8_t count[StackTraceBufferSize];  /**< Stack traces. */
+    } buffer;
 #else
     struct {
         uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
@@ -295,11 +299,11 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "io send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
-		tls->data.stacktraces.stacktraces_len,
-		tls->data.events.events_len);
+		tls->data.stacktraces.stacktraces_len
+		);
 	}
 #endif
 
@@ -516,7 +520,8 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 
     bool_t stack_already_exists = FALSE;
 
-    int i, j;
+    int j;
+    int stackindex = 0;
     /* search individual stacks via count/indexing array */
     for (i = 0; i < tls->data.count.count_len ; i++ )
     {
@@ -586,6 +591,7 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 	tls->data.count.count_len++;
 	tls->data.time.time_len++;
     }
+
 #else
     /*
      * Replace the first entry in the call stack with the address of the IO
@@ -838,7 +844,7 @@ void cbtf_collector_stop()
 
     /* Are there any unsent samples? */
 #if defined(PROFILE)
-    if(tls->data.counts.counts_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
+    if(tls->data.count.count_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
 #else

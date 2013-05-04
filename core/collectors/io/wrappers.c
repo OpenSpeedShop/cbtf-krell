@@ -43,6 +43,10 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
+#if defined(PROFILE)
+extern void io_record_event(uint64_t);
+extern void io_start_event();
+#else
 #if defined(EXTENDEDTRACE)
 extern void io_record_event(const CBTF_iot_event*, uint64_t);
 extern void io_start_event(CBTF_iot_event*);
@@ -50,6 +54,8 @@ extern void io_start_event(CBTF_iot_event*);
 extern void io_record_event(const CBTF_io_event*, uint64_t);
 extern void io_start_event(CBTF_io_event*);
 #endif
+#endif
+
 extern bool_t io_do_trace(const char*);
 
 
@@ -130,6 +136,10 @@ ssize_t ioread(int fd, void *buf, size_t count)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -140,12 +150,17 @@ ssize_t ioread(int fd, void *buf, size_t count)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("read");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -158,6 +173,9 @@ ssize_t ioread(int fd, void *buf, size_t count)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -190,6 +208,7 @@ ssize_t ioread(int fd, void *buf, size_t count)
 #endif
 
 #endif
+#endif
 
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
@@ -219,6 +238,10 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 #endif
 {    
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -229,12 +252,17 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("write");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -247,6 +275,11 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 
 
     if (dotrace) {
+
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -271,6 +304,7 @@ ssize_t iowrite(int fd, void *buf, size_t count)
     }
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
 #endif
 
 
@@ -303,6 +337,10 @@ off_t iolseek(int fd, off_t offset, int whence)
 #endif
 {
     off_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -313,12 +351,17 @@ off_t iolseek(int fd, off_t offset, int whence)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("lseek");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -331,6 +374,10 @@ off_t iolseek(int fd, off_t offset, int whence)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -356,6 +403,7 @@ off_t iolseek(int fd, off_t offset, int whence)
     printf("iotlseek, fd=%d, namebuf=%s\n", fd, namebuf);
 #endif
 
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -385,6 +433,10 @@ off_t iolseek64(int fd, off_t offset, int whence)
 #endif
 {
     off_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -395,12 +447,17 @@ off_t iolseek64(int fd, off_t offset, int whence)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("lseek64");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -414,6 +471,9 @@ off_t iolseek64(int fd, off_t offset, int whence)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -438,6 +498,7 @@ off_t iolseek64(int fd, off_t offset, int whence)
     printf("iotlseek64, fd=%d, namebuf=%s\n", fd, namebuf);
 #endif
 
+#endif
 #endif
 
 
@@ -468,17 +529,26 @@ int ioopen(const char *pathname, int flags, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("open");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -492,6 +562,9 @@ int ioopen(const char *pathname, int flags, mode_t mode)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -503,6 +576,7 @@ int ioopen(const char *pathname, int flags, mode_t mode)
     event.sysargs[2] = mode;
 
     strncpy(currentpathname,pathname,strlen(pathname));
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -533,17 +607,26 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("open64");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -557,6 +640,9 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -567,6 +653,7 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
     event.sysargs[2] = mode;
     event.retval = retval;
     strncpy(currentpathname,pathname,strlen(pathname));
+#endif
 #endif
 
 
@@ -597,6 +684,10 @@ int ioclose(int fd)
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -607,11 +698,15 @@ int ioclose(int fd)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("close");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -630,6 +725,7 @@ int ioclose(int fd)
 
 	strncpy(currentpathname,namebuf,strlen(namebuf));
 #endif
+#endif
     }
 
     /* Call the real IO function */
@@ -642,6 +738,9 @@ int ioclose(int fd)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -650,6 +749,7 @@ int ioclose(int fd)
     event.nsysargs = 1;
     event.sysargs[0] = fd;
     event.retval = retval;
+#endif
 #endif
 
 
@@ -680,6 +780,10 @@ int iodup(int oldfd)
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -690,12 +794,17 @@ int iodup(int oldfd)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("dup");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -708,6 +817,9 @@ int iodup(int oldfd)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -731,6 +843,7 @@ int iodup(int oldfd)
     printf("iotdup, oldfd=%d, namebuf=%s\n", oldfd, namebuf);
 #endif
 
+#endif
 #endif
 
 
@@ -761,6 +874,10 @@ int iodup2(int oldfd, int newfd)
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -771,12 +888,17 @@ int iodup2(int oldfd, int newfd)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("dup2");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -789,6 +911,9 @@ int iodup2(int oldfd, int newfd)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -811,6 +936,7 @@ int iodup2(int oldfd, int newfd)
     strncpy(currentpathname,namebuf,strlen(namebuf));
 #ifdef DEBUG_IOT
     printf("iotdup2, oldfd=%d, namebuf=%s\n", oldfd, namebuf);
+#endif
 #endif
 #endif
 
@@ -842,17 +968,26 @@ int iocreat(char *pathname, mode_t mode)
 #endif
 {
     int retval = 0;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("creat");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -866,6 +1001,9 @@ int iocreat(char *pathname, mode_t mode)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -876,6 +1014,7 @@ int iocreat(char *pathname, mode_t mode)
     event.sysargs[1] = mode;
 
     strncpy(currentpathname,pathname,strlen(pathname));
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -905,17 +1044,26 @@ int iocreat64(char *pathname, mode_t mode)
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("creat64");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -929,6 +1077,9 @@ int iocreat64(char *pathname, mode_t mode)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -938,6 +1089,7 @@ int iocreat64(char *pathname, mode_t mode)
     event.sysargs[1] = mode;
     event.retval = retval;
     strncpy(currentpathname,pathname,strlen(pathname));
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -968,17 +1120,26 @@ int iopipe(int filedes[2])
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("pipe");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -992,6 +1153,9 @@ int iopipe(int filedes[2])
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -999,6 +1163,7 @@ int iopipe(int filedes[2])
     event.nsysargs = 1;
     event.sysargs[0] = (long) filedes;
     event.retval = retval;
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -1028,17 +1193,26 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
 #else
     CBTF_io_event event;
+#endif
 #endif
 
     bool_t dotrace = io_do_trace("pread");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1052,6 +1226,9 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -1070,6 +1247,7 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
     event.sysargs[2] = count;
     event.sysargs[3] = offset;
     event.retval = retval;
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -1099,6 +1277,10 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -1109,12 +1291,17 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("pread64");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1127,6 +1314,9 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -1161,6 +1351,7 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
 #endif
+#endif
 
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
@@ -1190,6 +1381,10 @@ ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -1200,12 +1395,17 @@ ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("pwrite");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1219,6 +1419,9 @@ ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -1251,6 +1454,7 @@ ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset)
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
 #endif
+#endif
 
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
@@ -1281,6 +1485,10 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -1291,12 +1499,17 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("pwrite64");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1310,6 +1523,9 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -1343,6 +1559,7 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
 #endif
+#endif
 
     /* Record event and it's stacktrace*/
 #if defined(TARGET_OS_BGQ)
@@ -1373,6 +1590,10 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -1383,12 +1604,17 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("readv");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1402,6 +1628,9 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
 
 #if defined(EXTENDEDTRACE)
@@ -1424,6 +1653,7 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
     }
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
 #endif
 
     /* Record event and it's stacktrace*/
@@ -1455,6 +1685,10 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 #endif
 {
     ssize_t retval;
+#if defined(PROFILE)
+    CBTF_iop_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_iot_event event;
     int status = -1;
@@ -1465,12 +1699,17 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 #else
     CBTF_io_event event;
 #endif
+#endif
 
     bool_t dotrace = io_do_trace("writev");
 
     if (dotrace) {
 	io_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 	event.start_time = CBTF_GetTime();
+#endif
     }
 
     /* Call the real IO function */
@@ -1483,6 +1722,9 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
 
@@ -1507,6 +1749,7 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
     }
     namebuf[status] = 0;
     strncpy(currentpathname,namebuf,strlen(namebuf));
+#endif
 #endif
 
 

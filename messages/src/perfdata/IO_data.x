@@ -25,6 +25,11 @@
  */
 
 
+/** Event structure describing a single I/O call profile time. */
+struct CBTF_iop_event {
+    uint64_t time;   /**< time of the call. */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+};
 
 /** Event structure describing a single I/O call. */
 struct CBTF_io_event {
@@ -64,6 +69,7 @@ struct CBTF_io_exttrace_data {
 /** Structure of the blob containing profile performance data. */
 struct CBTF_io_profile_data {
     uint64_t stacktraces<>;  /**< Stack traces. */
+    uint64_t time<>;      /**< Total time for stack trace.*/
     uint8_t count<>;      /**< Count for stack trace. Entries with a positive */
 			  /**< count value represent the top of stack for a */
 			  /**< specifc stack. If stack count exceeds 255 */

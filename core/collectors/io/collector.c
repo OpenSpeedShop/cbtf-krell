@@ -550,6 +550,7 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
     if (stack_already_exists && tls->buffer.count[stackindex] < 255 ) {
 	/* update count for this stack */
 	tls->buffer.count[stackindex] = tls->buffer.count[stackindex] + 1;
+	tls->buffer.time[stackindex] += event->time;
 	return;
     }
 
@@ -572,6 +573,7 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 	    tls->buffer.count[tls->data.count.count_len] = 0;
 	} else {
 	    tls->buffer.count[tls->data.count.count_len] = 1;
+	    tls->buffer.time[tls->data.time.time_len] = event->time;
 	}
 
 	if (stacktrace[i] < tls->header.addr_begin ) {
@@ -582,6 +584,7 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 	}
 	tls->data.stacktraces.stacktraces_len++;
 	tls->data.count.count_len++;
+	tls->data.time.time_len++;
     }
 #else
     /*

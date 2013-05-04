@@ -179,6 +179,7 @@ do
                 hwctime )       collector="$2" ;;
                 hwcsamp )       collector="$2" ;;
                 io )            collector="$2" ;;
+                iop )           collector="$2" ;;
                 iot )           collector="$2" ;;
                 mpi )           collector="$2" ;;
                 mpit )          collector="$2" ;;
@@ -580,7 +581,7 @@ case "$collector" in
     static_collector=${cbtf_plugins}/lib${collector}-offline.a
     collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
     ;;
-    io | iot)
+    io | iop | iot)
 #    static_collector=${cbtf_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
        fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;

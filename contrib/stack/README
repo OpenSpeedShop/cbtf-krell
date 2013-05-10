@@ -5,7 +5,7 @@ stack - a debugging tool for MPI applications, it will run gstack on each proc
 Run stack with the name of an application to see the gstack output for each procedure with that application name.  Similar stack traces will be grouped together. 
 
 Currently the topology file used is the default ~/.cbtf/cbtf_topology it must be in the form of:
-rr-dev-fe.lanl.gov:0 => 
-  rra012a.rr.lanl.gov:0 ;
+host.example.com:0 => 
+  host012.example.com:0 ;
 
 Currently you can only have one backend node.

@@ -4,11 +4,11 @@ tbonFS - an implementation of TBON-FS in CBTF that allows you to do (group)
 tbonFS has its own CLI, first run tbonFS then type help to see the list of commands.
 
 Currently the topology file used is the default ~/.cbtf/cbtf_topology it must be in the form of:
-rr-dev-fe.lanl.gov:0 => 
-  rr-dev-fe.lanl.gov:1 ;
+host.example.com:0 => 
+  host.example.com:1 ;
 
-rr-dev-fe.lanl.gov:1 =>
-  rra011a.rr.lanl.gov:0 
-  rra012a.rr.lanl.gov:0 ;
+host.example.com:1 =>
+  host011.example.com:0 
+  host012.example.com:0 ;
 
 You must have one filter node and two backend nodes.

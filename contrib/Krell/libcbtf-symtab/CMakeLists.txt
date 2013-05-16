@@ -17,6 +17,27 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+cmake_minimum_required(VERSION 2.8.0)
+
+project(CBTF-SymbolTable)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+
+find_package(Boost 1.39.0 REQUIRED COMPONENTS filesystem)
+find_package(CBTF-Messages REQUIRED)
+
+find_package(Threads REQUIRED)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64*")
+    set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64)
+    set(LIB_SUFFIX 64)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc*")
+    set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib)
+elseif(EXISTS /usr/lib64)
+    set(LIB_SUFFIX 64)
+    set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+endif()
+
 add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/Address.hpp
     AddressBitmap.hpp AddressBitmap.cpp

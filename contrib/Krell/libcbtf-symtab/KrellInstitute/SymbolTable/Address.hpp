@@ -109,10 +109,7 @@ namespace KrellInstitute { namespace SymbolTable {
         friend std::ostream& operator<<(std::ostream& stream,
                                         const Address& address)
         {
-            stream << boost::str(boost::format(
-                (address.dm_value > std::numeric_limits<uint32_t>::max()) ?
-                "0x%016X" : "0x%08X"
-                ) % dm_value);
+            stream << boost::str(boost::format("0x%016X") % dm_value);
             return stream;
         }
         

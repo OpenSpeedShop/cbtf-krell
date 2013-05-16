@@ -118,7 +118,7 @@ namespace KrellInstitute { namespace SymbolTable {
         {
             return (dm_begin == other.dm_begin) && (dm_end == other.dm_end);
         }
-
+        
         /** Union this interval with another one. */
         Interval& operator|=(const Interval& other)
         {
@@ -161,13 +161,13 @@ namespace KrellInstitute { namespace SymbolTable {
             return *this;
         }
         
-        /** Get the closed beginning of this interval. */
+        /** Get the beginning of this interval. */
         const T& getBegin() const
         { 
             return dm_begin;
         }
 
-        /** Get the open end of this interval. */
+        /** Get the end of this interval. */
         const T& getEnd() const
         {
             return dm_end; 
@@ -228,21 +228,22 @@ namespace KrellInstitute { namespace SymbolTable {
 namespace std {
     
     /**
-     * Partial specialization of the less-than functor for intervals. One reason
-     * for an interval class is to allow multiple, non-overlapping, intervals to
-     * be put into STL associative containers such that they can be searched for
-     * a particular value in logarithmic time. But associative containers cannot
-     * search for the value directly. They can, however, search for the interval
-     * [value, value + 1) containing only the value. Using the "constructor from
-     * a single value" is simple and convenient enough. However, the associative
-     * containers would still use the default ordering as defined by Interval's
-     * overloaded less-than operator. And that operator defines a total, rather
-     * than a simply strick weak, ordering. The result would be that overlapping
-     * intervals would not be considered equivalent. This template redefines the
-     * ordering used by all STL associative containers of Interval to impose a
-     * strict weak ordering in which two such intervals <em>are</em> considered
-     * equivalent. Doing so causes searches for a value within non-overlapping
-     * intervals to behave as desired.
+     * Partial specialization of the less-than functor for intervals. One
+     * reason for an interval class is to allow multiple, non-overlapping,
+     * intervals to be put into STL associative containers such that they
+     * can be searched for a particular value in logarithmic time. But
+     * associative containers cannot search for the value directly. They
+     * can, however, search for the interval [value, value + 1) containing
+     * only the value. Using the "constructor from a single value" is simple
+     * and convenient enough. However, the associative containers would
+     * still use the default ordering as defined by Interval's overloaded
+     * less-than operator. And that operator defines a total, rather than
+     * a simply strick weak, ordering. The result would be that overlapping
+     * intervals would not be considered equivalent. This template redefines
+     * the ordering used by all STL associative containers of Interval to
+     * impose a strict weak ordering in which two such intervals <em>are</em>
+     * considered equivalent. Doing so causes searches for a value within
+     * non-overlapping intervals to behave as desired.
      */
     template <typename T, typename S>
     struct less<KrellInstitute::SymbolTable::Interval<T, S> > :

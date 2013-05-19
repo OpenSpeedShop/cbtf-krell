@@ -1,5 +1,5 @@
 #################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -866,9 +866,11 @@ AC_DEFUN([AX_TARGET_MPICH2], [
       elif (test -f $target_mpich2_dir/$alt_abi_libdir/libmpich.cnk.a); then
         found_mpich2=1
         TARGET_MPICH2_LDFLAGS="-L$target_mpich2_dir/$alt_abi_libdir"
+        TARGET_MPICH2_LIBS="-lmpich.cnk"
       elif (test -f $target_mpich2_dir/$abi_libdir/libmpich.cnk.a); then
         found_mpich2=1
-        TARGET_MPICH2_LDFLAGS="-L$target_mpich2_dir/$alt_abi_libdir"
+        TARGET_MPICH2_LDFLAGS="-L$target_mpich2_dir/$abi_libdir"
+        TARGET_MPICH2_LIBS="-lmpich.cnk"
       fi 
     fi 
 

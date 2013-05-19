@@ -1,5 +1,5 @@
 #################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -35,9 +35,11 @@ AC_DEFUN([AX_LIBDWARF], [
 
     libdwarf_saved_CPPFLAGS=$CPPFLAGS
     libdwarf_saved_LDFLAGS=$LDFLAGS
+    libdwarf_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $LIBDWARF_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $LIBDWARF_LDFLAGS $LIBDWARF_LIBS -lelf -lpthread"
+    LDFLAGS="$LDFLAGS $LIBDWARF_LDFLAGS $LIBELF_LDFLAGS"
+    LIBS="$LIBDWARF_LIBS $LIBELF_LIBS -lpthread"
 
     AC_MSG_CHECKING([for libdwarf library and headers])
 
@@ -60,7 +62,8 @@ AC_DEFUN([AX_LIBDWARF], [
          LIBDWARF_LDFLAGS="-L$libdwarf_dir/$abi_libdir"
 
          CPPFLAGS="$CPPFLAGS $LIBDWARF_CPPFLAGS"
-         LDFLAGS="$LDFLAGS $LIBDWARF_LDFLAGS $LIBDWARF_LIBS -lelf -lpthread"
+         LDFLAGS="$LDFLAGS $LIBDWARF_LDFLAGS $LIBELF_LDFLAGS"
+         LIBS="$LIBS $LIBDWARF_LIBS $LIBELF_LIBS -lpthread"
 
          AC_MSG_CHECKING([for libdwarf library and headers])
 
@@ -70,9 +73,7 @@ AC_DEFUN([AX_LIBDWARF], [
              if (DW_ID_up_case != DW_ID_down_case) {
                 int mycase = DW_ID_up_case;
              }
-             ]]), [ found_libdwarf=1
-
-             ], [ found_libdwarf=0 ])
+             ]]), [ found_libdwarf=1 ], [ found_libdwarf=0 ])
 
          if test $found_libdwarf -eq 1; then
              AC_MSG_RESULT(yes)
@@ -88,66 +89,13 @@ AC_DEFUN([AX_LIBDWARF], [
          fi
     fi
 
-    CPPFLAGS=$libdwarf_saved_CPPFLAGS LDFLAGS=$libdwarf_saved_LDFLAGS
+    CPPFLAGS=$libdwarf_saved_CPPFLAGS 
+    LDFLAGS=$libdwarf_saved_LDFLAGS
+    LIBS=$libdwarf_saved_LIBS
 
     AC_SUBST(LIBDWARF_CPPFLAGS)
     AC_SUBST(LIBDWARF_LDFLAGS)
     AC_SUBST(LIBDWARF_LIBS)
-
-])
-
-
-#######################################################################################
-# Check for libdwarf for Target Architecture (http://www.reality.sgiweb.org/davea/dwarf.html)
-#######################################################################################
-
-AC_DEFUN([AC_PKG_TARGET_LIBDWARF], [
-
-    AC_ARG_WITH(target-libdwarf,
-                AC_HELP_STRING([--with-target-libdwarf=DIR],
-                               [libdwarf target architecture installation @<:@/opt@:>@]),
-                target_libdwarf_dir=$withval, target_libdwarf_dir="/zzz")
-
-    AC_MSG_CHECKING([for Targetted libdwarf support])
-
-
-    found_target_libdwarf=0
-    if test -f  $target_libdwarf_dir/$abi_libdir/libdwarf.so -o -f $target_libdwarf_dir/$abi_libdir/libdwarf.a; then
-       found_target_libdwarf=1
-       TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$abi_libdir"
-    elif test -f  $target_libdwarf_dir/$alt_abi_libdir/libdwarf.so -o -f $target_libdwarf_dir/$alt_abi_libdir/libdwarf.a; then
-       found_target_libdwarf=1
-       TARGET_LIBDWARF_LDFLAGS="-L$target_libdwarf_dir/$alt_abi_libdir"
-    fi
-
-    if test $found_target_libdwarf == 0 && test "$target_libdwarf_dir" == "/zzz" ; then
-      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, false)
-      TARGET_LIBDWARF_CPPFLAGS=""
-      TARGET_LIBDWARF_LDFLAGS=""
-      TARGET_LIBDWARF_LIBS=""
-      TARGET_LIBDWARF_DIR=""
-      AC_MSG_RESULT(no)
-    elif test $found_target_libdwarf == 1 ; then
-      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, true)
-      AC_DEFINE(HAVE_TARGET_LIBDWARF, 1, [Define to 1 if you have a target version of LIBDWARF.])
-      TARGET_LIBDWARF_CPPFLAGS="-I$target_libdwarf_dir/include"
-      TARGET_LIBDWARF_LIBS="-ldwarf"
-      TARGET_LIBDWARF_DIR="$target_libdwarf_dir"
-      AC_MSG_RESULT(yes)
-    else
-      AM_CONDITIONAL(HAVE_TARGET_LIBDWARF, false)
-      TARGET_LIBDWARF_CPPFLAGS=""
-      TARGET_LIBDWARF_LDFLAGS=""
-      TARGET_LIBDWARF_LIBS=""
-      TARGET_LIBDWARF_DIR=""
-      AC_MSG_RESULT(no)
-    fi
-
-
-    AC_SUBST(TARGET_LIBDWARF_CPPFLAGS)
-    AC_SUBST(TARGET_LIBDWARF_LDFLAGS)
-    AC_SUBST(TARGET_LIBDWARF_LIBS)
-    AC_SUBST(TARGET_LIBDWARF_DIR)
 
 ])
 

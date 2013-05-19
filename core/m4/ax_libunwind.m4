@@ -20,7 +20,7 @@
 # Check for Libunwind (http://www.hpl.hp.com/research/linux/libunwind)
 ################################################################################
 
-AC_DEFUN([AC_PKG_LIBUNWIND], [
+AC_DEFUN([AX_LIBUNWIND], [
 
     AC_ARG_WITH(libunwind,
                 AC_HELP_STRING([--with-libunwind=DIR],
@@ -77,7 +77,7 @@ AC_DEFUN([AC_PKG_LIBUNWIND], [
 # Check for Libunwind for Target Architecture (http://www.hpl.hp.com/research/linux/libunwind)
 #############################################################################################
 
-AC_DEFUN([AC_PKG_TARGET_LIBUNWIND], [
+AC_DEFUN([AX_TARGET_LIBUNWIND], [
 
     AC_ARG_WITH(target-libunwind,
                 AC_HELP_STRING([--with-target-libunwind=DIR],
@@ -103,13 +103,13 @@ AC_DEFUN([AC_PKG_TARGET_LIBUNWIND], [
       TARGET_LIBUNWIND_DIR=""
       AC_MSG_RESULT(no)
     elif test $found_target_libunwind == 1 ; then
-      AC_MSG_RESULT(yes)
       AM_CONDITIONAL(HAVE_TARGET_LIBUNWIND, true)
       AC_DEFINE(HAVE_TARGET_LIBUNWIND, 1, [Define to 1 if you have a target version of LIBUNWIND.])
       TARGET_LIBUNWIND_CPPFLAGS="-I$target_libunwind_dir/include -DUNW_LOCAL_ONLY"
       TARGET_LIBUNWIND_LDFLAGS="-L$target_libunwind_dir/$abi_libdir"
       TARGET_LIBUNWIND_LIBS="-lunwind"
       TARGET_LIBUNWIND_DIR="$target_libunwind_dir"
+      AC_MSG_RESULT(yes)
     else
       AM_CONDITIONAL(HAVE_TARGET_LIBUNWIND, false)
       TARGET_LIBUNWIND_CPPFLAGS=""
@@ -119,10 +119,8 @@ AC_DEFUN([AC_PKG_TARGET_LIBUNWIND], [
       AC_MSG_RESULT(no)
     fi
 
-
     AC_SUBST(TARGET_LIBUNWIND_CPPFLAGS)
     AC_SUBST(TARGET_LIBUNWIND_LDFLAGS)
     AC_SUBST(TARGET_LIBUNWIND_LIBS)
     AC_SUBST(TARGET_LIBUNWIND_DIR)
-
 ])

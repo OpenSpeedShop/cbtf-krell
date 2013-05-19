@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -20,7 +20,7 @@
 # Check for Binutils (http://www.gnu.org/software/binutils)
 ################################################################################
 
-AC_DEFUN([AC_PKG_BINUTILS], [
+AC_DEFUN([AX_BINUTILS], [
 
     AC_ARG_WITH(binutils,
                 AC_HELP_STRING([--with-binutils=DIR],
@@ -107,7 +107,8 @@ AC_DEFUN([AC_PKG_BINUTILS], [
     fi
 
     CPPFLAGS="$CPPFLAGS $BINUTILS_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $BINUTILS_LDFLAGS $BINUTILS_LIBS"
+    LDFLAGS="$LDFLAGS $BINUTILS_LDFLAGS"
+    LIBS="$BINUTILS_LIBS"
 
     AC_MSG_CHECKING([for binutils librarys and headers])
 
@@ -156,7 +157,7 @@ AC_DEFUN([AC_PKG_BINUTILS], [
 # Check for Binutils for Target Architecture (http://www.gnu.org/software/binutils)
 ################################################################################
 
-AC_DEFUN([AC_PKG_TARGET_BINUTILS], [
+AC_DEFUN([AX_TARGET_BINUTILS], [
 
     AC_ARG_WITH(target-binutils,
                 AC_HELP_STRING([--with-target-binutils=DIR],

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@
 # Check for PAPI (http://icl.cs.utk.edu/papi)
 ################################################################################
 
-AC_DEFUN([AC_PKG_PAPI], [
+AC_DEFUN([AX_PAPI], [
 
     AC_ARG_WITH(papi,
                 AC_HELP_STRING([--with-papi=DIR],
@@ -107,7 +107,7 @@ AC_DEFUN([AC_PKG_PAPI], [
 # Check for PAPI for Target Architecture (http://icl.cs.utk.edu/papi)
 ################################################################################
 
-AC_DEFUN([AC_PKG_TARGET_PAPI], [
+AC_DEFUN([AX_TARGET_PAPI], [
 
     AC_ARG_WITH(target-papi,
                 AC_HELP_STRING([--with-target-papi=DIR],

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -20,7 +20,7 @@
 # Check for Monitor (http://www.cs.utk.edu/~mucci)
 ################################################################################
 
-AC_DEFUN([AC_PKG_LIBMONITOR], [
+AC_DEFUN([AX_LIBMONITOR], [
 
     AC_ARG_WITH(libmonitor,
                 AC_HELP_STRING([--with-libmonitor=DIR],
@@ -31,12 +31,15 @@ AC_DEFUN([AC_PKG_LIBMONITOR], [
     LIBMONITOR_LDFLAGS="-L$libmonitor_dir/$abi_libdir"
     LIBMONITOR_LIBS="-lmonitor"
     LIBMONITOR_DIR="$libmonitor_dir"
+    LIBMONITOR_LIBDIR="$libmonitor_dir/$abi_libdir"
 
     libmonitor_saved_CPPFLAGS=$CPPFLAGS
     libmonitor_saved_LDFLAGS=$LDFLAGS
+    libmonitor_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $LIBMONITOR_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $LIBMONITOR_LDFLAGS $LIBMONITOR_LIBS -lpthread"
+    LDFLAGS="$LDFLAGS $LIBMONITOR_LDFLAGS"
+    LIBS="$LIBMONITOR_LIBS -lpthread"
 
     AC_MSG_CHECKING([for libmonitor library and headers])
 
@@ -62,11 +65,13 @@ AC_DEFUN([AC_PKG_LIBMONITOR], [
 
     CPPFLAGS=$libmonitor_saved_CPPFLAGS
     LDFLAGS=$libmonitor_saved_LDFLAGS
+    LIBS=$libmonitor_saved_LIBS
 
     AC_SUBST(LIBMONITOR_CPPFLAGS)
     AC_SUBST(LIBMONITOR_LDFLAGS)
     AC_SUBST(LIBMONITOR_LIBS)
     AC_SUBST(LIBMONITOR_DIR)
+    AC_SUBST(LIBMONITOR_LIBDIR)
 
 ])
 
@@ -74,7 +79,7 @@ AC_DEFUN([AC_PKG_LIBMONITOR], [
 # Check for Monitor for Target Architecture (http://www.cs.utk.edu/~mucci)
 ################################################################################
 
-AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
+AC_DEFUN([AX_TARGET_LIBMONITOR], [
 
     AC_ARG_WITH(target-libmonitor,
                 AC_HELP_STRING([--with-target-libmonitor=DIR],
@@ -84,20 +89,23 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
     AC_MSG_CHECKING([for Targetted libmonitor support])
 
     found_target_libmonitor=0
-    if test -f $target_libmonitor_dir/$abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$abi_libdir/libmonitor.a ; then
+    if test -f $target_libmonitor_dir/$abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$abi_libdir/libmonitor_wrap.a ; then
        found_target_libmonitor=1
        TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$abi_libdir"
-    elif test -f  $target_libmonitor_dir/$alt_abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$alt_abi_libdir/libmonitor.a ; then
+       TARGET_LIBMONITOR_LIBDIR="$target_libmonitor_dir/$abi_libdir"
+    elif test -f  $target_libmonitor_dir/$alt_abi_libdir/libmonitor.so -o -f $target_libmonitor_dir/$alt_abi_libdir/libmonitor_wrap.a ; then
        found_target_libmonitor=1
        TARGET_LIBMONITOR_LDFLAGS="-L$target_libmonitor_dir/$alt_abi_libdir"
+       TARGET_LIBMONITOR_LIBDIR="$target_libmonitor_dir/$alt_abi_libdir"
     fi
 
-    if test $found_target_libmonitor == 0 && test "$target_libmonitor_dir" == "/zzz" ; then
+    if test "$target_libmonitor_dir" == "/zzz" ; then
       AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, false)
       TARGET_LIBMONITOR_CPPFLAGS=""
       TARGET_LIBMONITOR_LDFLAGS=""
       TARGET_LIBMONITOR_LIBS=""
       TARGET_LIBMONITOR_DIR=""
+      TARGET_LIBMONITOR_LIBDIR=""
       AC_MSG_RESULT(no)
     elif test $found_target_libmonitor == 1 ; then
       AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, true)
@@ -113,6 +121,7 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
       TARGET_LIBMONITOR_LDFLAGS=""
       TARGET_LIBMONITOR_LIBS=""
       TARGET_LIBMONITOR_DIR=""
+      TARGET_LIBMONITOR_LIBDIR=""
       AC_MSG_RESULT(no)
     fi
 
@@ -120,6 +129,7 @@ AC_DEFUN([AC_PKG_TARGET_LIBMONITOR], [
     AC_SUBST(TARGET_LIBMONITOR_LDFLAGS)
     AC_SUBST(TARGET_LIBMONITOR_LIBS)
     AC_SUBST(TARGET_LIBMONITOR_DIR)
+    AC_SUBST(TARGET_LIBMONITOR_LIBDIR)
 
 ])
 

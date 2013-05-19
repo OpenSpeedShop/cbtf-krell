@@ -5,11 +5,11 @@ psTool - a tool to run the ps command on backends then compare the output and
 Run pstool after setting up the cbtf_topology file.
 
 Currently the topology file used is the default ~/.cbtf/cbtf_topology it must be in the form of:
-rr-dev-fe.lanl.gov:0 => 
-  rr-dev-fe.lanl.gov:1 ;
+host.example.com:0 => 
+  host.example.com:1 ;
 
-rr-dev-fe.lanl.gov:1 =>
-  rra011a.rr.lanl.gov:0 
-  rra012a.rr.lanl.gov:0 ;
+host.example.com:1 =>
+  host011.example.com:0 
+  host012.example.com:0 ;
 
 You must have one filter node and two backend nodes.

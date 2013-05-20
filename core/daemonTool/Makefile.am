@@ -25,6 +25,7 @@ daemonTool_CXXFLAGS = \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
 	-DCOMPONTENTDIR="\"$(componentdir)\"" \
+	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
 	@CBTF_MRNET_CPPFLAGS@ \

@@ -1,7 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -24,84 +21,67 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
-#include <boost/operators.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/Function.hpp>
+#include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <set>
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
-     * A source code statement from a symbol table.
+     * Implementation details of the Statement class. Anything that
+     * would normally be a private member of Statement is instead a
+     * member of StatementImpl.
      */
-    class StatementImpl :
-        public boost::totally_ordered<StatementImpl>
+    class StatementImpl
     {
-
+        
     public:
+
+        /**
+         * Construct a statement within the given linked object from its source
+         * file, line, and column numbers.
+         */
+        StatementImpl(const LinkedObject& linked_object,
+                      const boost::filesystem::path& path,
+                      const unsigned int& line,
+                      const unsigned int& column);
+
+        /** Construct a statement from an existing statement. */
+        StatementImpl(const StatementImpl& other);
         
         /** Destructor. */
         virtual ~StatementImpl();
         
-        /**
-         * Replace this statement with a copy of another one.
-         *
-         * @param other    StatementImpl to be copied.
-         * @return         Resulting (this) statement.
-         */
+        /** Replace this statement with a copy of another one. */
         StatementImpl& operator=(const StatementImpl& other);
 
-        /**
-         * Is this statement less than another one?
-         *
-         * @param other    StatementImpl to be compared.
-         * @return         Boolean "true" if this statement is less than the
-         *                 statement to be compared, or "false" otherwise.
-         */
+        /** Is this statement less than another one? */
         bool operator<(const StatementImpl& other) const;
 
-        /**
-         * Is this statement equal to another one?
-         *
-         * @param other    StatementImpl to be compared.
-         * @return         Boolean "true" if the statements are equal,
-         *                 or "false" otherwise.
-         */
+        /** Is this statement equal to another one? */
         bool operator==(const StatementImpl& other) const;
 
-        /**
-         * Get the linked object containing this statement.
-         *
-         * @return    Linked object containing this statement.
-         */
+        /** Get the linked object containing this statement. */
         LinkedObject getLinkedObject() const;
         
-        /**
-         * Get the functions containing this statement. An empty set is
-         * returned if no function contains this statement.
-         *
-         * @return    Functions containing this statement.
-         */
-        std::set<Function> getFunctions() const;
-
-        /**
-         * Get the full path name of this statement's source file.
-         *
-         * @return    Full path name of this statement's source file.
-         */
+        /** Get the full path name of this statement's source file. */
         boost::filesystem::path getPath() const;
 
-        /**
-         * Get the line number of this statement.
-         *
-         * @return    Line number of this statement.
-         */
-        int getLine() const;
+        /** Get the line number of this statement. */
+        unsigned int getLine() const;
 
-        /**
-         * Get the column number of this statement.
-         *
-         * @return    Column number of this statement.
-         */
-        int getColumn() const;
+        /** Get the column number of this statement. */
+        unsigned int getColumn() const;
+
+        /** Get the address ranges associated with this statement. */
+        std::set<AddressRange> getAddressRanges() const;
+        
+        /** Get the functions containing this statement. */
+        std::set<Function> getFunctions() const;
+
+        /** Associate the specified address ranges with this statement. */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
 
     private:
 

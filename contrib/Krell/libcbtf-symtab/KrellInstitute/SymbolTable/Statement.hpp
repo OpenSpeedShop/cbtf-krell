@@ -1,7 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -25,6 +22,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <set>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -44,7 +42,30 @@ namespace KrellInstitute { namespace SymbolTable {
     {
 
     public:
-        
+
+        /**
+         * Construct a statement within the given linked object from its source
+         * file, line, and column numbers. The constructed statement initially
+         * has no address ranges.
+         *
+         * @param linked_object    Linked object containing this statement.
+         * @param path             Full path name of this statement's source
+         *                         file.
+         * @param line             Line number of this statement.
+         * @param column           Column number of this statement.
+         */
+        Statement(const LinkedObject& linked_object,
+                  const boost::filesystem::path& path,
+                  const unsigned int& line,
+                  const unsigned int& column);
+
+        /**
+         * Construct a statement from an existing statement.
+         *
+         * @param other    Statement to be copied.
+         */
+        Statement(const Statement& other);
+       
         /** Destructor. */
         virtual ~Statement();
         
@@ -82,14 +103,6 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject getLinkedObject() const;
         
         /**
-         * Get the functions containing this statement. An empty set is
-         * returned if no function contains this statement.
-         *
-         * @return    Functions containing this statement.
-         */
-        std::set<Function> getFunctions() const;
-
-        /**
          * Get the full path name of this statement's source file.
          *
          * @return    Full path name of this statement's source file.
@@ -101,20 +114,50 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @return    Line number of this statement.
          */
-        int getLine() const;
+        unsigned int getLine() const;
 
         /**
          * Get the column number of this statement.
          *
          * @return    Column number of this statement.
          */
-        int getColumn() const;
+        unsigned int getColumn() const;
+
+        /**
+         * Get the address ranges associated with this statement. An empty set
+         * is returned if no address ranges are associated with this statement.
+         *
+         * @return    Address ranges associated with this statement.
+         *
+         * @note    The addresses specified are relative to the beginning of
+         *          the linked object containing this statement rather than
+         *          an absolute address from the address space of a specific
+         *          process.
+         */
+        std::set<AddressRange> getAddressRanges() const;
+
+        /**
+         * Get the functions containing this statement. An empty set is
+         * returned if no function contains this statement.
+         *
+         * @return    Functions containing this statement.
+         */
+        std::set<Function> getFunctions() const;
+
+        /**
+         * Associate the specified address ranges with this statement.
+         *
+         * @param ranges    Address ranges to associate with this statement.
+         *
+         * @note    The addresses specified are relative to the beginning of
+         *          the linked object containing this statement rather than
+         *          an absolute address from the address space of a specific
+         *          process.
+         */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
 
     private:
 
-        /** Construct a statement from its implementation details. */
-        Statement(Impl::StatementImpl* impl);
-        
         /**
          * Opaque pointer to this object's internal implementation details.
          * Provides information hiding, improves binary compatibility, and
@@ -125,5 +168,5 @@ namespace KrellInstitute { namespace SymbolTable {
         Impl::StatementImpl* dm_impl;
 
     }; // class Statement
-        
+    
 } } // namespace KrellInstitute::SymbolTable

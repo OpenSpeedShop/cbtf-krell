@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -24,10 +22,10 @@
 
 #include <boost/assert.h>
 #include <boost/operators.hpp>
-#include <cstdint>
 #include <iostream>
 #include <KrellInstitute/Messages/Time.h>
 #include <limits>
+#include <stdint.h>
 #include <time.h>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -41,7 +39,8 @@ namespace KrellInstitute { namespace SymbolTable {
      */
     class Time :
         public boost::addable<Time, int64_t>,
-        public boost::totally_ordered<Time>
+        public boost::totally_ordered<Time>,
+        public boost::unit_steppable<Time>
     {
 
     public:
@@ -98,6 +97,13 @@ namespace KrellInstitute { namespace SymbolTable {
             return dm_value == other.dm_value;
         }
 
+        /** Increment this time. */
+        Time& operator++()
+        {
+            dm_value += 1;
+            return *this;
+        }
+
         /** Add a signed offset to this time. */
         Time& operator+=(const int64_t& offset)
         {
@@ -105,6 +111,13 @@ namespace KrellInstitute { namespace SymbolTable {
             BOOST_ASSERT((offset > 0) || (result <= dm_value));
             BOOST_ASSERT((offset < 0) || (result >= dm_value));
             dm_value += offset;
+            return *this;
+        }
+
+        /** Decrement this time. */
+        Time& operator--()
+        {
+            dm_value -= 1;
             return *this;
         }
 

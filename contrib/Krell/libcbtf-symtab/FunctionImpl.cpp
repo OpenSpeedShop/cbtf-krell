@@ -16,9 +16,9 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Definition of the LinkedObjectImpl class. */
+/** @file Definition of the FunctionImpl class. */
 
-#include "LinkedObjectImpl.hpp"
+#include "FunctionImpl.hpp"
 
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
@@ -28,37 +28,8 @@ using namespace KrellInstitute::SymbolTable::Impl;
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const boost::filesystem::path& path)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const CBTF_Protocol_SymbolTable& message)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const LinkedObjectImpl& other)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::~LinkedObjectImpl()
+FunctionImpl::FunctionImpl(const LinkedObject& linked_object,
+                           const std::string& name)
 {
     // ...
 }
@@ -68,7 +39,27 @@ LinkedObjectImpl::~LinkedObjectImpl()
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-LinkedObjectImpl& LinkedObjectImpl::operator=(const LinkedObjectImpl& other)
+FunctionImpl::FunctionImpl(const FunctionImpl& other)
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+FunctionImpl::~FunctionImpl()
+{
+    // ...
+}
+
+
+        
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+FunctionImpl& FunctionImpl::operator=(const FunctionImpl& other)
 {
     if (this != &other)
     {
@@ -82,139 +73,103 @@ LinkedObjectImpl& LinkedObjectImpl::operator=(const LinkedObjectImpl& other)
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator<(const LinkedObjectImpl& other) const
-{
-    // ...
-
-    return false;
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator==(const LinkedObjectImpl& other) const
-{
-    // ...
-
-    return false;
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::operator CBTF_Protocol_SymbolTable() const
-{
-    CBTF_Protocol_SymbolTable message;
-
-    // ...
-
-    return message;
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-boost::filesystem::path LinkedObjectImpl::getPath() const
-{
-    // ...
-
-    return boost::filesystem::path();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-uint64_t LinkedObjectImpl::getChecksum() const
-{
-    // ...
-
-    return 0;
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctions() const
-{
-    // ...
-
-    return std::set<Function>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsAt(
-    const Address& address
-    ) const
-{
-    // ...
-
-    return std::set<Function>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsByName(
-    const std::string& name
-    ) const
-{
-    // ...
-
-    return std::set<Function>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatements() const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsAt(
-    const Address& address
-    ) const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsBySourceFile(
-    const boost::filesystem::path& path
-    ) const
+bool FunctionImpl::operator<(const FunctionImpl& other) const
 {
     // ...
     
+    return false;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+bool FunctionImpl::operator==(const FunctionImpl& other) const
+{
+    // ...
+    
+    return false;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+LinkedObject FunctionImpl::getLinkedObject() const
+{
+    // ...
+    
+    // return LinkedObject();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::string FunctionImpl::getMangledName() const
+{
+    // ...
+
+    return std::string();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::string FunctionImpl::getDemangledName(const bool& all) const
+{
+    // ...
+
+    return std::string();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::set<AddressRange> FunctionImpl::getAddressRanges() const
+{
+    // ...
+
+    return std::set<AddressRange>();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::set<Statement> FunctionImpl::getDefinitions() const
+{
+    // ...
+
     return std::set<Statement>();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::set<Statement> FunctionImpl::getStatements() const
+{
+    // ...
+
+    return std::set<Statement>();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void FunctionImpl::addAddressRanges(const std::set<AddressRange>& ranges)
+{
+    // ...
 }

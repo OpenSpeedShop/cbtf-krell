@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -26,12 +24,15 @@
 #include <boost/operators.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <stdint.h>
 
 namespace KrellInstitute { namespace SymbolTable {
+
+    class Address;
+    class Time;
 
     /**
      * A open-ended, integer, interval used to represent either address ranges
@@ -54,8 +55,8 @@ namespace KrellInstitute { namespace SymbolTable {
          * interval and their differences. Check that T is a type that is
          * known to be supported.
          */
-        BOOST_STATIC_ASSERT(boost::is_same<T, Address>::value ||
-                            boost::is_same<T, Time>::value);
+        BOOST_STATIC_ASSERT((boost::is_same<T, Address>::value) ||
+                            (boost::is_same<T, Time>::value));
         
     public:
         
@@ -122,9 +123,9 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Union this interval with another one. */
         Interval& operator|=(const Interval& other)
         {
-            if (!other.empty())
+            if (!other.isEmpty())
             {
-                if (!empty())
+                if (!isEmpty())
                 {
                     if (dm_begin > other.dm_begin)
                     {

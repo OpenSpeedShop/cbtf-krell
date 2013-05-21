@@ -16,9 +16,11 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Definition of the LinkedObjectImpl class. */
+/** @file Definition of the Function class. */
 
-#include "LinkedObjectImpl.hpp"
+#include <KrellInstitute/SymbolTable/Function.hpp>
+
+#include "FunctionImpl.hpp"
 
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
@@ -26,195 +28,130 @@ using namespace KrellInstitute::SymbolTable::Impl;
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const boost::filesystem::path& path)
+Function::Function(const LinkedObject& linked_object, const std::string& name) :
+    dm_impl(new FunctionImpl(linked_object, name))
 {
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const CBTF_Protocol_SymbolTable& message)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const LinkedObjectImpl& other)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::~LinkedObjectImpl()
-{
-    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl& LinkedObjectImpl::operator=(const LinkedObjectImpl& other)
+Function::Function(const Function& other) :
+    dm_impl(new FunctionImpl(*other.dm_impl))
 {
-    if (this != &other)
-    {
-        // ...
-    }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+Function::~Function()
+{
+    delete dm_impl;
+}
+
+
+        
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+Function& Function::operator=(const Function& other)
+{
+    *dm_impl = *other.dm_impl;
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator<(const LinkedObjectImpl& other) const
+bool Function::operator<(const Function& other) const
 {
-    // ...
-
-    return false;
+    return *dm_impl < *other.dm_impl;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator==(const LinkedObjectImpl& other) const
+bool Function::operator==(const Function& other) const
 {
-    // ...
-
-    return false;
+    return *dm_impl == *other.dm_impl;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl::operator CBTF_Protocol_SymbolTable() const
+LinkedObject Function::getLinkedObject() const
 {
-    CBTF_Protocol_SymbolTable message;
-
-    // ...
-
-    return message;
+    return dm_impl->getLinkedObject();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-boost::filesystem::path LinkedObjectImpl::getPath() const
+std::string Function::getMangledName() const
 {
-    // ...
-
-    return boost::filesystem::path();
+    return dm_impl->getMangledName();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-uint64_t LinkedObjectImpl::getChecksum() const
+std::string Function::getDemangledName(const bool& all) const
 {
-    // ...
-
-    return 0;
+    return dm_impl->getDemangledName(all);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctions() const
+std::set<AddressRange> Function::getAddressRanges() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getAddressRanges();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsAt(
-    const Address& address
-    ) const
+std::set<Statement> Function::getDefinitions() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getDefinitions();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsByName(
-    const std::string& name
-    ) const
+std::set<Statement> Function::getStatements() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getStatements();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatements() const
+void Function::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsAt(
-    const Address& address
-    ) const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsBySourceFile(
-    const boost::filesystem::path& path
-    ) const
-{
-    // ...
-    
-    return std::set<Statement>();
+    dm_impl->addAddressRanges(ranges);
 }

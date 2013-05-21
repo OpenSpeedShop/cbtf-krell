@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
@@ -21,9 +19,9 @@
 /** @file Definition of the AddressBitmap class. */
 
 #include <algorithm>
-#include <boost/assert.h>
-#include <cstdint>
+#include <boost/assert.hpp>
 #include <cstdlib>
+#include <stdint.h>
 
 #include "AddressBitmap.hpp"
 
@@ -97,7 +95,7 @@ const AddressRange& AddressBitmap::getRange() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-bool getValue(const Address& address) const
+bool AddressBitmap::getValue(const Address& address) const
 {
     BOOST_VERIFY(dm_range.doesContain(address));
 
@@ -108,7 +106,7 @@ bool getValue(const Address& address) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void setValue(const Address& address, const bool& value)
+void AddressBitmap::setValue(const Address& address, const bool& value)
 {
     BOOST_VERIFY(dm_range.doesContain(address));
 
@@ -161,12 +159,15 @@ std::set<AddressRange> AddressBitmap::getContiguousRanges(
 //------------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& stream, const AddressBitmap& bitmap)
 {
-    stream << bitmap.dm_range << " ";
+    const AddressRange& range = bitmap.getRange();
+
+    stream << range << " ";
     
     bool has_false = false, has_true = false;
-    for (int64_t i = 0; i < bitmap.dm_range.getWidth(); ++i)
+
+    for (Address i = range.getBegin(); i != range.getEnd(); ++i)
     {
-        if (bitmap.getBitmap()[i] == true)
+        if (bitmap.getValue(i) == true)
         {
             has_true = true;
         }
@@ -186,9 +187,9 @@ std::ostream& operator<<(std::ostream& stream, const AddressBitmap& bitmap)
     }
     else
     {
-        for (int64_t i = 0; i < bitmap.dm_range.getWidth(); ++i)
+        for (Address i = range.getBegin(); i != range.getEnd(); ++i)
         {
-            stream << (bitmap.dm_bitmap[i] ? "1" : "0");
+            stream << (bitmap.getValue(i) ? "1" : "0");
         }
     }
     

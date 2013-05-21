@@ -1,7 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -23,6 +20,8 @@
 
 #pragma once
 
+#include <boost/operators.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <set>
 #include <string>
 
@@ -38,7 +37,8 @@ namespace KrellInstitute { namespace SymbolTable {
     /**
      * A source code function within a linked object.
      */
-    class Function
+    class Function :
+        public boost::totally_ordered<Function>
     {
 
     public:
@@ -69,6 +69,24 @@ namespace KrellInstitute { namespace SymbolTable {
          * @return         Resulting (this) function.
          */
         Function& operator=(const Function& other);
+
+        /**
+         * Is this function less than another one?
+         *
+         * @param other    Function to be compared.
+         * @return         Boolean "true" if this function is less than the
+         *                 function to be compared, or "false" otherwise.
+         */
+        bool operator<(const Function& other) const;
+
+        /**
+         * Is this function equal to another one?
+         *
+         * @param other    Function to be compared.
+         * @return         Boolean "true" if the functions are equal,
+         *                 or "false" otherwise.
+         */
+        bool operator==(const Function& other) const;
 
         /**
          * Get the linked object containing this function.
@@ -126,16 +144,16 @@ namespace KrellInstitute { namespace SymbolTable {
         std::set<Statement> getStatements() const;
 
         /**
-         * Associate the specified address range with this function. 
+         * Associate the specified address ranges with this function. 
          *
-         * @param range    Address range to associate with this function.
+         * @param ranges    Address ranges to associate with this function.
          *
          * @note    The addresses specified are relative to the beginning of
          *          the linked object containing this function rather than
          *          an absolute address from the address space of a specific
          *          process.
          */
-        void addAddressRange(const AddressRange& range) const;
+        void addAddressRanges(const std::set<AddressRange>& ranges);
 
     private:
 

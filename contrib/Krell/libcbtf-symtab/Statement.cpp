@@ -16,9 +16,11 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Definition of the LinkedObjectImpl class. */
+/** @file Definition of the Statement class. */
 
-#include "LinkedObjectImpl.hpp"
+#include <KrellInstitute/SymbolTable/Statement.hpp>
+
+#include "StatementImpl.hpp"
 
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
@@ -26,195 +28,133 @@ using namespace KrellInstitute::SymbolTable::Impl;
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const boost::filesystem::path& path)
+Statement::Statement(const LinkedObject& linked_object,
+                     const boost::filesystem::path& path,
+                     const unsigned int& line,
+                     const unsigned int& column) :
+    dm_impl(new StatementImpl(linked_object, path, line, column))
 {
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const CBTF_Protocol_SymbolTable& message)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const LinkedObjectImpl& other)
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-LinkedObjectImpl::~LinkedObjectImpl()
-{
-    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl& LinkedObjectImpl::operator=(const LinkedObjectImpl& other)
+Statement::Statement(const Statement& other) :
+    dm_impl(new StatementImpl(*other.dm_impl))
 {
-    if (this != &other)
-    {
-        // ...
-    }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+Statement::~Statement()
+{
+    delete dm_impl;
+}
+
+
+        
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+Statement& Statement::operator=(const Statement& other)
+{
+    *dm_impl = *other.dm_impl;
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator<(const LinkedObjectImpl& other) const
+bool Statement::operator<(const Statement& other) const
 {
-    // ...
-
-    return false;
+    return *dm_impl < *other.dm_impl;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-bool LinkedObjectImpl::operator==(const LinkedObjectImpl& other) const
+bool Statement::operator==(const Statement& other) const
 {
-    // ...
-
-    return false;
+    return *dm_impl == *other.dm_impl;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObjectImpl::operator CBTF_Protocol_SymbolTable() const
+LinkedObject Statement::getLinkedObject() const
 {
-    CBTF_Protocol_SymbolTable message;
-
-    // ...
-
-    return message;
+    return dm_impl->getLinkedObject();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-boost::filesystem::path LinkedObjectImpl::getPath() const
+boost::filesystem::path Statement::getPath() const
 {
-    // ...
-
-    return boost::filesystem::path();
+    return dm_impl->getPath();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-uint64_t LinkedObjectImpl::getChecksum() const
+unsigned int Statement::getLine() const
 {
-    // ...
-
-    return 0;
+    return dm_impl->getLine();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctions() const
+unsigned int Statement::getColumn() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getColumn();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsAt(
-    const Address& address
-    ) const
+std::set<AddressRange> Statement::getAddressRanges() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getAddressRanges();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsByName(
-    const std::string& name
-    ) const
+std::set<Function> Statement::getFunctions() const
 {
-    // ...
-
-    return std::set<Function>();
+    return dm_impl->getFunctions();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatements() const
+void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsAt(
-    const Address& address
-    ) const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsBySourceFile(
-    const boost::filesystem::path& path
-    ) const
-{
-    // ...
-    
-    return std::set<Statement>();
+    dm_impl->addAddressRanges(ranges);
 }

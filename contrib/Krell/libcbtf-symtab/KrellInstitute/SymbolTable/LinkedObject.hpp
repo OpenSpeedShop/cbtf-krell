@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -23,9 +21,11 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
+#include <boost/operators.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/Address.h>
+#include <KrellInstitute/SymbolTable/Address.hpp>
 #include <set>
+#include <stdint.h>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -40,7 +40,8 @@ namespace KrellInstitute { namespace SymbolTable {
     /**
      * A single executable or library (a "linked object").
      */
-    class LinkedObject
+    class LinkedObject :
+        public boost::totally_ordered<LinkedObject>
     {
 
     public:
@@ -49,7 +50,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * Construct a linked object from its full path name. The constructed
          * linked object initially has no symbols (functions, statements, etc.)
          *
-         * @param path     Full path name of this linked object.
+         * @param path    Full path name of this linked object.
          */
         LinkedObject(const boost::filesystem::path& path);
         
@@ -79,6 +80,24 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject& operator=(const LinkedObject& other);
 
         /**
+         * Is this linked object less than another one?
+         *
+         * @param other    Linked object to be compared.
+         * @return         Boolean "true" if this linked object is less than the
+         *                 linked object to be compared, or "false" otherwise.
+         */
+        bool operator<(const LinkedObject& other) const;
+
+        /**
+         * Is this linked object equal to another one?
+         *
+         * @param other    Linked object to be compared.
+         * @return         Boolean "true" if the linked objects are equal,
+         *                 or "false" otherwise.
+         */
+        bool operator==(const LinkedObject& other) const;
+
+        /**
          * Type conversion to a CBTF_Protocol_SymbolTable.
          *
          * @return    Message containing this linked object.
@@ -91,6 +110,19 @@ namespace KrellInstitute { namespace SymbolTable {
          * @return    Full path name of this linked object.
          */
         boost::filesystem::path getPath() const;
+
+        /**
+         * Get the checksum for this linked object.
+         *
+         * @return    Checksum for this linked object.
+         *
+         * @note    The exact algorithm used to calculate the checksum is left
+         *          unspecified, but can be expected to be something similar to
+         *          CRC-64-ISO. This checksum is either calculated automagically
+         *          upon the construction of a new LinkedObject, or extracted
+         *          from the CBTF_Protocol_SymbolTable, as appropriate.
+         */
+        uint64_t getChecksum() const;
 
         /**
          * Get the functions contained within this linked object. An empty set
@@ -161,7 +193,7 @@ namespace KrellInstitute { namespace SymbolTable {
         std::set<Statement> getStatementsBySourceFile(
             const boost::filesystem::path& path
             ) const;
-        
+
     private:
 
         /**

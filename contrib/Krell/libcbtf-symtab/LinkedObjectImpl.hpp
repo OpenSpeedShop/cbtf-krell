@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -28,6 +26,7 @@
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <set>
+#include <stdint.h>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
@@ -57,11 +56,20 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Replace this linked object with a copy of another one. */
         LinkedObjectImpl& operator=(const LinkedObjectImpl& other);
 
+        /** Is this linked object less than another one? */
+        bool operator<(const LinkedObjectImpl& other) const;
+
+        /** Is this linked object equal to another one? */
+        bool operator==(const LinkedObjectImpl& other) const;
+
         /** Type conversion to a CBTF_Protocol_SymbolTable. */
         operator CBTF_Protocol_SymbolTable() const;
         
         /** Get the full path name of this linked object. */
         boost::filesystem::path getPath() const;
+
+        /** Get the checksum for this linked object. */
+        uint64_t getChecksum() const;
 
         /** Get the functions contained within this linked object. */
         std::set<Function> getFunctions() const;

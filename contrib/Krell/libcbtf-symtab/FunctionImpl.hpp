@@ -1,7 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -23,25 +20,33 @@
 
 #pragma once
 
-#include <boost/operators.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <set>
 #include <string>
 
-namespace KrellInstitute { namespace SymbolTable { namespace impl {
-
-    class LinkedObject;
-    class Statement;
+namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
      * Implementation details of the Function class. Anything that
      * would normally be a private member of Function is instead a
      * member of FunctionImpl.
      */
-    class FunctionImpl :
-        public boost::totally_ordered<FunctionImpl>
+    class FunctionImpl
     {
-
+        
     public:
+
+        /**
+         * Construct a function witin the given linked object from its mangled
+         * name.
+         */
+        FunctionImpl(const LinkedObject& linked_object,
+                     const std::string& name);
+        
+        /** Construct a function from an existing function. */
+        FunctionImpl(const FunctionImpl& other);
         
         /** Destructor. */
         virtual ~FunctionImpl();
@@ -63,12 +68,18 @@ namespace KrellInstitute { namespace SymbolTable { namespace impl {
         
         /** Get the demangled name of this function. */
         std::string getDemangledName(const bool& all = true) const;
+
+        /** Get the address ranges associated with this function. */
+        std::set<AddressRange> getAddressRanges() const;
         
         /** Get the definitions of this function. */
         std::set<Statement> getDefinitions() const;
 
         /** Get the statements associated with this function. */
         std::set<Statement> getStatements() const;
+
+        /** Associate the specified address ranges with this function. */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
         
     private:
         
@@ -76,4 +87,4 @@ namespace KrellInstitute { namespace SymbolTable { namespace impl {
         
     }; // class FunctionImpl
 
-} } // namespace KrellInstitute::SymbolTable
+} } } // namespace KrellInstitute::SymbolTable::Impl

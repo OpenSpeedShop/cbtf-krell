@@ -1,6 +1,4 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 // Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
@@ -32,7 +30,7 @@ using namespace KrellInstitute::SymbolTable::Impl;
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObject(const boost::filesystem::path& path) :
+LinkedObject::LinkedObject(const boost::filesystem::path& path) :
     dm_impl(new LinkedObjectImpl(path))
 {
 }
@@ -42,7 +40,7 @@ LinkedObject(const boost::filesystem::path& path) :
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObject(const CBTF_Protocol_SymbolTable& message) :
+LinkedObject::LinkedObject(const CBTF_Protocol_SymbolTable& message) :
     dm_impl(new LinkedObjectImpl(message))
 {
 }
@@ -52,7 +50,7 @@ LinkedObject(const CBTF_Protocol_SymbolTable& message) :
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-LinkedObject(const LinkedObject& other) :
+LinkedObject::LinkedObject(const LinkedObject& other) :
     dm_impl(new LinkedObjectImpl(other))
 {
 }
@@ -83,7 +81,27 @@ LinkedObject& LinkedObject::operator=(const LinkedObject& other)
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-SymbolTable::operator CBTF_Protocol_SymbolTable() const
+bool LinkedObject::operator<(const LinkedObject& other) const
+{
+    return *dm_impl < *other.dm_impl;
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+bool LinkedObject::operator==(const LinkedObject& other) const
+{
+    return *dm_impl == *other.dm_impl;
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+LinkedObject::operator CBTF_Protocol_SymbolTable() const
 {
     return *dm_impl;
 }
@@ -96,6 +114,16 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
 boost::filesystem::path LinkedObject::getPath() const
 {
     return dm_impl->getPath();
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+uint64_t LinkedObject::getChecksum() const
+{
+    return dm_impl->getChecksum();
 }
 
 
@@ -157,7 +185,7 @@ std::set<Statement> LinkedObject::getStatementsAt(const Address& address) const
 //------------------------------------------------------------------------------
 std::set<Statement> LinkedObject::getStatementsBySourceFile(
     const boost::filesystem::path& path
-    )
+    ) const
 {
     return dm_impl->getStatementsBySourceFile(path);
 }

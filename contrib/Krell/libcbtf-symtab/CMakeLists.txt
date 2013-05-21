@@ -1,5 +1,4 @@
 ################################################################################
-# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 # Copyright (c) 2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -42,18 +41,16 @@ add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/Address.hpp
     AddressBitmap.hpp AddressBitmap.cpp
     KrellInstitute/SymbolTable/AddressRange.hpp
+    KrellInstitute/SymbolTable/Function.hpp Function.cpp
+    FunctionImpl.hpp FunctionImpl.cpp
     KrellInstitute/SymbolTable/Interval.hpp
+    KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
+    LinkedObjectImpl.hpp LinkedObjectImpl.cpp
+    KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
+    StatementImpl.hpp StatementImpl.cpp
     KrellInstitute/SymbolTable/Time.hpp
     KrellInstitute/SymbolTable/TimeInterval.hpp
     )
-
-#    KrellInstitute/SymbolTable/Extent.hpp
-#    KrellInstitute/SymbolTable/Function.hpp Function.cpp
-#    FunctionImpl.hpp FunctionImpl.cpp
-#    KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
-#    LinkedObjectImpl.hpp LinkedObjectImpl.cpp
-#    KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
-#    StatementImpl.hpp StatementImpl.cpp
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

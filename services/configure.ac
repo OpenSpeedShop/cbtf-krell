@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
 ################################################################################
 
 AC_INIT([services], [1.0])
-AC_COPYRIGHT([[Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.]])
+AC_COPYRIGHT([[Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
@@ -25,7 +25,7 @@ AM_CONFIG_HEADER([config.h])
 
 AH_TOP([
 /*******************************************************************************
-** Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+** Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -397,10 +397,10 @@ AC_SUBST(BUILD_RUNTIME)
 
 if test "$build_targeted" == 0 ; then
 
-AC_PKG_BINUTILS()
-AC_PKG_LIBMONITOR()
-AC_PKG_LIBUNWIND()
-AC_PKG_PAPI()
+AX_BINUTILS()
+AX_LIBMONITOR()
+AX_LIBUNWIND()
+AX_PAPI()
 AX_LW_MRNET()
 AX_MESSAGES()
 
@@ -415,10 +415,10 @@ AM_CONDITIONAL(HAVE_TARGET_MESSAGES, false)
 fi
 
 if test "$build_targeted" == 1 ; then
-AC_PKG_TARGET_BINUTILS()
-AC_PKG_TARGET_LIBMONITOR()
-AC_PKG_TARGET_LIBUNWIND()
-AC_PKG_TARGET_PAPI
+AX_TARGET_BINUTILS()
+AX_TARGET_LIBMONITOR()
+AX_TARGET_LIBUNWIND()
+AX_TARGET_PAPI
 AX_TARGET_MESSAGES()
 AX_TARGET_LW_MRNET()
 fi

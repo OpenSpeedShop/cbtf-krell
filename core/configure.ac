@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
 ################################################################################
 
 AC_INIT([core], [1.0])
-AC_COPYRIGHT([[Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.]])
+AC_COPYRIGHT([[Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
@@ -25,7 +25,7 @@ AM_CONFIG_HEADER([config.h])
 
 AH_TOP([
 /*******************************************************************************
-** Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+** Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -394,10 +394,10 @@ AC_SUBST(BUILD_RUNTIME)
 # Check for Additional Packages
 ################################################################################
 
-AC_PKG_BINUTILS()
-AC_PKG_LIBMONITOR()
-AC_PKG_LIBUNWIND()
-AC_PKG_PAPI()
+AX_BINUTILS()
+AX_LIBMONITOR()
+AX_LIBUNWIND()
+AX_PAPI()
 
 
 if test "$build_targeted" = 0 ; then
@@ -421,6 +421,7 @@ AX_MRNET()
 AX_CBTF()
 AX_CBTF_XML()
 AX_CBTF_MRNET()
+AX_LIBELF()
 AX_LIBDWARF()
 AX_DYNINST()
 AX_PKG_MPI()
@@ -429,13 +430,13 @@ AX_PKG_MPI()
 AX_MESSAGES()
 AX_CBTF_SERVICES()
 
-AC_PKG_TARGET_BINUTILS()
-AC_PKG_TARGET_LIBDWARF()
-AC_PKG_TARGET_LIBMONITOR()
-AC_PKG_TARGET_LIBUNWIND()
-AC_PKG_TARGET_PAPI()
+AX_TARGET_BINUTILS()
+#AC_PKG_TARGET_LIBDWARF()
+AX_TARGET_LIBMONITOR()
+AX_TARGET_LIBUNWIND()
+AX_TARGET_PAPI()
 AC_PKG_TARGET_MRNET()
-AC_PKG_TARGET_DYNINST()
+AX_TARGET_DYNINST()
 
 AC_PKG_TARGET_BOOST()
 AC_PKG_TARGET_BOOST_SYSTEM()
@@ -450,7 +451,7 @@ if test "$TARGET_LIBXERCES_C_LIBS" = "-lxerces-c" ; then
   AX_TARGET_XERCESC_VERSION()
 fi
 
-AC_PKG_TARGET_DYNINST()
+AX_TARGET_DYNINST()
 
 AX_TARGET_CBTF()
 AX_TARGET_CBTF_XML()

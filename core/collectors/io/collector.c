@@ -60,6 +60,9 @@ const char* const cbtf_collector_unique_id = "io";
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
+#if defined(PROFILE)
+const unsigned OverheadFrameCount = 2;
+#else
 #if defined(CBTF_SERVICE_USE_OFFLINE)
 const unsigned OverheadFrameCount = 1;
 #else
@@ -67,6 +70,7 @@ const unsigned OverheadFrameCount = 1;
 const unsigned OverheadFrameCount = 2 /*3*/;
 #else
 const unsigned OverheadFrameCount = 2;
+#endif
 #endif
 #endif
 
@@ -519,6 +523,9 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 #if defined(PROFILE)
 
     bool_t stack_already_exists = FALSE;
+
+    if(stacktrace_size > 0)
+	stacktrace[0] = function;
 
     int j;
     int stackindex = 0;

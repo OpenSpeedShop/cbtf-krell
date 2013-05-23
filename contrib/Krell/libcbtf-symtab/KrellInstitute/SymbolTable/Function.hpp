@@ -144,7 +144,7 @@ namespace KrellInstitute { namespace SymbolTable {
         std::set<Statement> getStatements() const;
 
         /**
-         * Associate the specified address ranges with this function. 
+         * Associate the given address ranges with this function. 
          *
          * @param ranges    Address ranges to associate with this function.
          *

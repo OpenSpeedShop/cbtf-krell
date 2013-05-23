@@ -41,6 +41,8 @@ add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/Address.hpp
     AddressBitmap.hpp AddressBitmap.cpp
     KrellInstitute/SymbolTable/AddressRange.hpp
+    KrellInstitute/SymbolTable/AddressSpace.hpp AddressSpace.cpp
+    AddressSpaceImpl.hpp AddressSpaceImpl.cpp
     KrellInstitute/SymbolTable/Function.hpp Function.cpp
     FunctionImpl.hpp FunctionImpl.cpp
     KrellInstitute/SymbolTable/Interval.hpp

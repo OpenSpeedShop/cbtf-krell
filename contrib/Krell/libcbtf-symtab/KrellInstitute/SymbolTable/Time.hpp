@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <boost/assert.h>
+#include <boost/assert.hpp>
 #include <boost/operators.hpp>
 #include <iostream>
 #include <KrellInstitute/Messages/Time.h>

@@ -78,7 +78,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Get the statements associated with this function. */
         std::set<Statement> getStatements() const;
 
-        /** Associate the specified address ranges with this function. */
+        /** Associate the given address ranges with this function. */
         void addAddressRanges(const std::set<AddressRange>& ranges);
         
     private:

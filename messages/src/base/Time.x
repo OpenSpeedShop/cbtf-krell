@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2011 Krell Institute. All Rights Reserved.
+** Copyright (c) 2011,2013 Krell Institute. All Rights Reserved.
 **
 ** This program is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU General Public License as published by the Free Software
@@ -35,3 +35,17 @@
  * times while not running out the clock until sometime in the year 2554.
  */
 typedef uint64_t CBTF_Protocol_Time;
+
+
+
+/**
+ * Time interval.
+ *
+ * A single, open-ended, time interval: [begin, end). Used in many different
+ * places for representing a single contiguous period of time.
+ */
+struct CBTF_Protocol_TimeInterval
+{
+    CBTF_Protocol_Time begin;  /**< Beginning of the time interval. */
+    CBTF_Protocol_Time end;    /**< End of the time interval. */
+};

@@ -50,6 +50,7 @@ add_library(cbtf-symtab SHARED
     LinkedObjectImpl.hpp LinkedObjectImpl.cpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
     StatementImpl.hpp StatementImpl.cpp
+    SymbolTable.hpp SymbolTable.cpp
     KrellInstitute/SymbolTable/Time.hpp
     KrellInstitute/SymbolTable/TimeInterval.hpp
     )

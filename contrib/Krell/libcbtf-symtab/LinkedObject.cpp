@@ -189,3 +189,12 @@ std::set<Statement> LinkedObject::getStatementsBySourceFile(
 {
     return dm_impl->getStatementsBySourceFile(path);
 }
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LinkedObject::LinkedObject(Impl::LinkedObjectImpl* impl) :
+    dm_impl(impl)
+{
+}

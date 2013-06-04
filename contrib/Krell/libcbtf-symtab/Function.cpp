@@ -155,3 +155,12 @@ void Function::addAddressRanges(const std::set<AddressRange>& ranges)
 {
     dm_impl->addAddressRanges(ranges);
 }
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+Function::Function(Impl::FunctionImpl* impl) :
+    dm_impl(impl)
+{
+}

@@ -165,6 +165,23 @@ namespace KrellInstitute { namespace SymbolTable {
          * @sa http://en.wikipedia.org/wiki/Opaque_pointer
          */
         Impl::FunctionImpl* dm_impl;
+
+    public:
+
+        /**
+         * Construct a function from its implementation details.
+         *
+         * @param impl    Opaque pointer to this function's
+         *                internal implementation details.
+         *
+         * @note    This is a public method but not really part of the public
+         *          interface. It exists because the implementation sometimes
+         *          needs it. There is minimal potential for abuse since only
+         *          the implementation has access to the implementation class
+         *          and anyone who circumvents this via casting will get what
+         *          they deserve.
+         */
+        Function(Impl::FunctionImpl* impl);
         
     }; // class Function
         

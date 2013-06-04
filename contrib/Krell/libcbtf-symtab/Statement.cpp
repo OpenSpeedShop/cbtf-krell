@@ -158,3 +158,12 @@ void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
 {
     dm_impl->addAddressRanges(ranges);
 }
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+Statement::Statement(Impl::StatementImpl* impl) :
+    dm_impl(impl)
+{
+}

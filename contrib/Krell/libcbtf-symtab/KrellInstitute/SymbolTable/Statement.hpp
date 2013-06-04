@@ -167,6 +167,23 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         Impl::StatementImpl* dm_impl;
 
+    public:
+
+        /**
+         * Construct a statement from its implementation details.
+         *
+         * @param impl    Opaque pointer to this statement's
+         *                internal implementation details.
+         *
+         * @note    This is a public method but not really part of the public
+         *          interface. It exists because the implementation sometimes
+         *          needs it. There is minimal potential for abuse since only
+         *          the implementation has access to the implementation class
+         *          and anyone who circumvents this via casting will get what
+         *          they deserve.
+         */
+        Statement(Impl::StatementImpl* impl);
+        
     }; // class Statement
     
 } } // namespace KrellInstitute::SymbolTable

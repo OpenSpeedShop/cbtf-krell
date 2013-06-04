@@ -26,6 +26,8 @@
 #include <set>
 #include <string>
 
+#include "SymbolTable.hpp"
+
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
@@ -82,6 +84,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         void addAddressRanges(const std::set<AddressRange>& ranges);
         
     private:
+
+        /** Symbol table containing this function. */
+        SymbolTable::Handle dm_symbol_table;
         
         // ...
         

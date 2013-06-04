@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "SymbolTable.hpp"
+
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
@@ -93,6 +95,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
 
+        /** Symbol table for this linked object. */
+        SymbolTable::Handle dm_symbol_table;
+        
         // ...
 
     }; // class LinkedObjectImpl

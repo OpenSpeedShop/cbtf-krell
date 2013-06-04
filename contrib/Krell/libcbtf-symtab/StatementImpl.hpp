@@ -26,6 +26,8 @@
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <set>
 
+#include "SymbolTable.hpp"
+
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
@@ -85,6 +87,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
 
+        /** Symbol table containing this statement. */
+        SymbolTable::Handle dm_symbol_table;
+        
         // ...
 
     }; // class StatementImpl

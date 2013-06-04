@@ -21,7 +21,6 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
@@ -33,8 +32,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
      * <em>real</em> implementation details for the LinkedObject, Function, and
      * Statement classes.
      */
-    class SymbolTable :
-        private boost::noncopyable
+    class SymbolTable
     {
 
     public:
@@ -57,10 +55,32 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param messsage    Message containing this symbol table.
          */
         SymbolTable(const CBTF_Protocol_SymbolTable& message);
+        
+        /**
+         * Construct a symbol table from an existing symbol table.
+         *
+         * @param other    Symbol table to be copied.
+         */
+        SymbolTable(const SymbolTable& other);
 
         /** Destructor. */
         virtual ~SymbolTable();
 
+        /**
+         * Replace this symbol table with a copy of another one.
+         *
+         * @param other    Symbol table to be copied.
+         * @return         Resulting (this) symbol table.
+         */
+        SymbolTable& operator=(const SymbolTable& other);
+
+        /**
+         * Type conversion to a CBTF_Protocol_SymbolTable.
+         *
+         * @return    Message containing this symbol table.
+         */
+        operator CBTF_Protocol_SymbolTable() const;
+        
         /**
          * Get the full path name of this symbol table's linked object.
          *

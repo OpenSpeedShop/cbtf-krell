@@ -43,6 +43,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     public:
 
+        /** Construct a linked object from its symbol table. */
+        LinkedObjectImpl(const SymbolTable::Handle& symbol_table);
+
         /** Construct a linked object from its full path name. */
         LinkedObjectImpl(const boost::filesystem::path& path);
         
@@ -66,7 +69,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
         /** Type conversion to a CBTF_Protocol_SymbolTable. */
         operator CBTF_Protocol_SymbolTable() const;
-        
+
+        /** Create a deep copy of this linked object. */
+        LinkedObjectImpl clone() const;
+
         /** Get the full path name of this linked object. */
         boost::filesystem::path getPath() const;
 
@@ -95,10 +101,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
 
-        /** Symbol table for this linked object. */
+        /** Symbol table containing this linked object. */
         SymbolTable::Handle dm_symbol_table;
-        
-        // ...
 
     }; // class LinkedObjectImpl
         

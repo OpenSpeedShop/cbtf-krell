@@ -26,53 +26,56 @@ using namespace KrellInstitute::SymbolTable::Impl;
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const boost::filesystem::path& path)
+LinkedObjectImpl::LinkedObjectImpl(const SymbolTable::Handle& symbol_table) :
+    dm_symbol_table(symbol_table)
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const CBTF_Protocol_SymbolTable& message)
+LinkedObjectImpl::LinkedObjectImpl(const boost::filesystem::path& path) :
+    dm_symbol_table(new SymbolTable(path))
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-LinkedObjectImpl::LinkedObjectImpl(const LinkedObjectImpl& other)
+LinkedObjectImpl::LinkedObjectImpl(const CBTF_Protocol_SymbolTable& message) :
+    dm_symbol_table(new SymbolTable(message))
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+//------------------------------------------------------------------------------
+LinkedObjectImpl::LinkedObjectImpl(const LinkedObjectImpl& other) :
+    dm_symbol_table(other.dm_symbol_table)
+{
+}
+
+
+
+//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 LinkedObjectImpl::~LinkedObjectImpl()
 {
-    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 LinkedObjectImpl& LinkedObjectImpl::operator=(const LinkedObjectImpl& other)
 {
     if (this != &other)
     {
-        // ...
+        dm_symbol_table = other.dm_symbol_table;
     }
     return *this;
 }
@@ -104,39 +107,40 @@ bool LinkedObjectImpl::operator==(const LinkedObjectImpl& other) const
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 LinkedObjectImpl::operator CBTF_Protocol_SymbolTable() const
 {
-    CBTF_Protocol_SymbolTable message;
+    return *dm_symbol_table;
+}
 
-    // ...
 
-    return message;
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LinkedObjectImpl LinkedObjectImpl::clone() const
+{
+    return LinkedObjectImpl(
+        SymbolTable::Handle(new SymbolTable(*dm_symbol_table))
+        );
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 boost::filesystem::path LinkedObjectImpl::getPath() const
 {
-    // ...
-
-    return boost::filesystem::path();
+    return dm_symbol_table->getPath();
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 uint64_t LinkedObjectImpl::getChecksum() const
 {
-    // ...
-
-    return 0;
+    return dm_symbol_table->getChecksum();
 }
 
 

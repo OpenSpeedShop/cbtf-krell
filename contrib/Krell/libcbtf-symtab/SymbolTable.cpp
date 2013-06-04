@@ -52,9 +52,52 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
+SymbolTable::SymbolTable(const SymbolTable& other) :
+    dm_path(other.dm_path),
+    dm_checksum(other.dm_checksum)
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
 SymbolTable::~SymbolTable()
 {
     // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+SymbolTable& SymbolTable::operator=(const SymbolTable& other)
+{
+    if (this != &other)
+    {
+        dm_path = other.dm_path;
+        dm_checksum = other.dm_checksum;
+
+        // ...
+    }
+    return *this;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+SymbolTable::operator CBTF_Protocol_SymbolTable() const
+{
+    CBTF_Protocol_SymbolTable message;
+
+    // ...
+
+    return message;
 }
 
 

@@ -111,6 +111,16 @@ LinkedObject::operator CBTF_Protocol_SymbolTable() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
+LinkedObject LinkedObject::clone() const
+{
+    return LinkedObject(dm_impl->clone());
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
 boost::filesystem::path LinkedObject::getPath() const
 {
     return dm_impl->getPath();

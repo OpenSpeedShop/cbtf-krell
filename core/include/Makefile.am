@@ -31,8 +31,6 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/Extent.hpp \
 	KrellInstitute/Core/Interval.hpp \
 	KrellInstitute/Core/LinkedObjectEntry.hpp \
-	KrellInstitute/Core/LoopInfo.hpp \
-	KrellInstitute/Core/LoopInfoVector.hpp \
 	KrellInstitute/Core/Path.hpp \
 	KrellInstitute/Core/PCData.hpp \
 	KrellInstitute/Core/StackTrace.hpp \

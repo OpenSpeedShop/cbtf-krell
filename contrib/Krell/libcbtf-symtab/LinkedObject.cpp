@@ -51,7 +51,7 @@ LinkedObject::LinkedObject(const CBTF_Protocol_SymbolTable& message) :
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::LinkedObject(const LinkedObject& other) :
-    dm_impl(new LinkedObjectImpl(other))
+    dm_impl(new LinkedObjectImpl(*other.dm_impl))
 {
 }
 

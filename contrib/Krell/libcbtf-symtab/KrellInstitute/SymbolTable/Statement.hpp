@@ -63,6 +63,10 @@ namespace KrellInstitute { namespace SymbolTable {
          * Construct a statement from an existing statement.
          *
          * @param other    Statement to be copied.
+         *
+         * @note    This method creates a second reference to the existing
+         *          statement rather than a deep copy of it. Use clone()
+         *          when a deep copy is required.
          */
         Statement(const Statement& other);
        
@@ -74,6 +78,10 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @param other    Statement to be copied.
          * @return         Resulting (this) statement.
+         *
+         * @note    This method replaces this statement with a reference
+         *          to the existing statement rather than a deep copy of
+         *          it. Use clone() when a deep copy is required.
          */
         Statement& operator=(const Statement& other);
 
@@ -94,6 +102,14 @@ namespace KrellInstitute { namespace SymbolTable {
          *                 or "false" otherwise.
          */
         bool operator==(const Statement& other) const;
+
+        /**
+         * Create a deep copy of this statement.
+         *
+         * @param linked_object    Linked object containing the deep copy.
+         * @return                 Deep copy of this statement.
+         */
+        Statement clone(LinkedObject& linked_object) const;
 
         /**
          * Get the linked object containing this statement.

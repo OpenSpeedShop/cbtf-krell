@@ -64,6 +64,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Is this statement equal to another one? */
         bool operator==(const StatementImpl& other) const;
 
+        /** Create a deep copy of this statement. */
+        StatementImpl clone(LinkedObject& linked_object) const;
+
         /** Get the linked object containing this statement. */
         LinkedObject getLinkedObject() const;
         

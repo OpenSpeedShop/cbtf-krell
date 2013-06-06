@@ -19,6 +19,7 @@
 /** @file Definition of the FunctionImpl class. */
 
 #include "FunctionImpl.hpp"
+#include "LinkedObjectImpl.hpp"
 
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
@@ -35,7 +36,7 @@ FunctionImpl::FunctionImpl(const LinkedObject& linked_object,
 }
 
 
-        
+
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
@@ -97,11 +98,18 @@ bool FunctionImpl::operator==(const FunctionImpl& other) const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-LinkedObject FunctionImpl::getLinkedObject() const
+FunctionImpl FunctionImpl::clone(LinkedObject& linked_object) const
 {
     // ...
-    
-    // return LinkedObject();
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LinkedObject FunctionImpl::getLinkedObject() const
+{
+    return LinkedObject(new LinkedObjectImpl(dm_symbol_table));
 }
 
 

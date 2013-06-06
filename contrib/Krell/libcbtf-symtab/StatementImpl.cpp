@@ -18,6 +18,7 @@
 
 /** @file Definition of the StatementImpl class. */
 
+#include "LinkedObjectImpl.hpp"
 #include "StatementImpl.hpp"
 
 using namespace KrellInstitute::SymbolTable;
@@ -99,11 +100,18 @@ bool StatementImpl::operator==(const StatementImpl& other) const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-LinkedObject StatementImpl::getLinkedObject() const
+StatementImpl StatementImpl::clone(LinkedObject& linked_object) const
 {
     // ...
+}
 
-    // return LinkedObject();
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LinkedObject StatementImpl::getLinkedObject() const
+{
+    return LinkedObject(new LinkedObjectImpl(dm_symbol_table));
 }
 
 

@@ -94,6 +94,16 @@ bool Statement::operator==(const Statement& other) const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
+Statement Statement::clone(LinkedObject& linked_object) const
+{
+    return Statement(new StatementImpl(dm_impl->clone(linked_object)));
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
 LinkedObject Statement::getLinkedObject() const
 {
     return dm_impl->getLinkedObject();

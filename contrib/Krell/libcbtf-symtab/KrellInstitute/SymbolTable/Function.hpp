@@ -56,6 +56,10 @@ namespace KrellInstitute { namespace SymbolTable {
          * Construct a function from an existing function.
          *
          * @param other    Function to be copied.
+         *
+         * @note    This method creates a second reference to the existing
+         *          function rather than a deep copy of it. Use clone()
+         *          when a deep copy is required.
          */
         Function(const Function& other);
         
@@ -67,6 +71,10 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @param other    Function to be copied.
          * @return         Resulting (this) function.
+         *
+         * @note    This method replaces this function with a reference
+         *          to the existing function rather than a deep copy of
+         *          it. Use clone() when a deep copy is required.
          */
         Function& operator=(const Function& other);
 
@@ -87,6 +95,14 @@ namespace KrellInstitute { namespace SymbolTable {
          *                 or "false" otherwise.
          */
         bool operator==(const Function& other) const;
+
+        /**
+         * Create a deep copy of this function.
+         *
+         * @param linked_object    Linked object containing the deep copy.
+         * @return                 Deep copy of this function.
+         */
+        Function clone(LinkedObject& linked_object) const;
 
         /**
          * Get the linked object containing this function.

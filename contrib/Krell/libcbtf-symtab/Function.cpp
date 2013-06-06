@@ -91,6 +91,16 @@ bool Function::operator==(const Function& other) const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
+Function Function::clone(LinkedObject& linked_object) const
+{
+    return Function(new FunctionImpl(dm_impl->clone(linked_object)));
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
 LinkedObject Function::getLinkedObject() const
 {
     return dm_impl->getLinkedObject();

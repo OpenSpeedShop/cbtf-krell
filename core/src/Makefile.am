@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -89,6 +89,12 @@ libcbtf_core_mrnet_la_LIBADD = \
 	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
 
+if HAVE_ALPS
+libcbtf_core_mrnet_la_CXXFLAGS += @ALPS_CPPFLAGS@ 
+libcbtf_core_mrnet_la_LDFLAGS += @ALPS_LDFLAGS@
+libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
+endif
+
 else
 if HAVE_TARGET_STATIC
 libcbtf_core_la_CXXFLAGS = \
@@ -156,6 +162,12 @@ libcbtf_core_mrnet_la_LIBADD = \
 	@TARGET_MESSAGES_PERFDATA_LIBS@ \
 	@TARGET_MRNET_LIBS@ \
 	@LIBLTDL@
+
+if HAVE_ALPS
+libcbtf_core_mrnet_la_CXXFLAGS += @ALPS_CPPFLAGS@ 
+libcbtf_core_mrnet_la_LDFLAGS += @ALPS_LDFLAGS@
+libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
+endif
 
 #endif for HAVE_TARGET_STATIC
 endif
@@ -231,6 +243,12 @@ libcbtf_core_mrnet_la_LIBADD = \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@MRNET_LIBS@ \
 	@LIBLTDL@
+
+if HAVE_ALPS
+libcbtf_core_mrnet_la_CXXFLAGS += @ALPS_CPPFLAGS@ 
+libcbtf_core_mrnet_la_LDFLAGS += @ALPS_LDFLAGS@
+libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
+endif
 
 endif
 

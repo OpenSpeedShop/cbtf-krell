@@ -51,7 +51,7 @@ AC_DEFUN([AX_ALPS], [
 
     found_alps=0
 
-    ALPS_LIBS="-lalps"
+    ALPS_LIBS="-lalps -lalpslli -lalpsutil"
 
     alps_saved_CPPFLAGS=$CPPFLAGS
     alps_saved_LDFLAGS=$LDFLAGS

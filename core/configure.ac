@@ -399,6 +399,7 @@ AX_LIBMONITOR()
 AX_LIBUNWIND()
 AX_PAPI()
 
+AX_ALPS()
 
 if test "$build_targeted" = 0 ; then
 

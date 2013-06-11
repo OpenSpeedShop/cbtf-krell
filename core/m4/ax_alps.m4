@@ -27,31 +27,16 @@ AC_DEFUN([AX_ALPS], [
                                [alps installation @<:@/usr@:>@]),
                 alps_dir=$withval, alps_dir="/usr")
 
-    AC_ARG_WITH([alps-libdir],
-                AS_HELP_STRING([--with-alps-libdir=LIB_DIR],
-                [Force given directory for alps libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your alps libraries are located.]),
-                [
-                if test -d $withval 
-                then
-                        ac_alps_lib_path="$withval"
-                else
-                        AC_MSG_ERROR(--with-alps-libdir expected directory name)
-                fi ], 
-                [ac_alps_lib_path=""])
-
-
-    ALPS_CPPFLAGS="-I$alps_dir/include"
-
-    if test "x$ac_alps_lib_path" == "x"; then
-       ALPS_LDFLAGS="-L$alps_dir/lib/alps"
+    if test "x$libdwarf_dir" == "x/usr"; then
+      ALPS_CPPFLAGS=""
     else
-       ALPS_LDFLAGS="-L$ac_alps_lib_path"
+      ALPS_CPPFLAGS="-I$alps_dir/include"
     fi
 
+    ALPS_LDFLAGS="-L$alps_dir/lib/alps"
+    ALPS_LIBS="-lalps -lalpslli -lalpsutil"
 
     found_alps=0
-
-    ALPS_LIBS="-lalps -lalpslli -lalpsutil"
 
     alps_saved_CPPFLAGS=$CPPFLAGS
     alps_saved_LDFLAGS=$LDFLAGS

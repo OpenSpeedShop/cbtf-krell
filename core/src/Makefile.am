@@ -222,9 +222,9 @@ libcbtf_core_symtabapi_la_LDFLAGS = \
 
 
 libcbtf_core_symtabapi_la_LIBADD = \
-	@LIBDWARF_LIBS@ \
-	@DYNINST_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
+	@LIBDWARF_LIBS@ \
+	@DYNINST_SYMTABAPI_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_core_mrnet_la_CXXFLAGS = \
@@ -257,7 +257,6 @@ libcbtf_core_la_SOURCES = \
 	AddressBuffer.cpp \
 	Blob.cpp \
 	Exception.cpp \
-	ExtentGroup.cpp \
 	LinkedObjectEntry.cpp \
 	Path.cpp \
 	PCData.cpp \

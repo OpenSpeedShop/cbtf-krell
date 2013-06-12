@@ -112,8 +112,6 @@ CollectionPlugin_la_LDFLAGS = \
 
 CollectionPlugin_la_LIBADD = \
 	-lcbtf-core \
-	-lcbtf-core-bfd \
-	-lcbtf-core-symtabapi \
 	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
 	-lcbtf-messages-collector \
@@ -139,6 +137,5 @@ CollectionPlugin_la_SOURCES = \
 	BlobComponent.cpp \
 	LinkedObjectComponent.cpp \
 	MRNetConverters.cpp \
-	SymbolComponent.cpp \
 	ThreadEventComponent.cpp
 

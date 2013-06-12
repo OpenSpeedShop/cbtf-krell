@@ -20,7 +20,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/operators.hpp>
-#include <mrnet/MRNet.h>
+//#include <mrnet/MRNet.h>
 #include <typeinfo>
 #include <string>
 #include <sstream>
@@ -157,6 +157,21 @@ bool is_debug_aggregator_events_enabled =
 				data.stacktraces.stacktraces_val, buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
                      reinterpret_cast<char*>(&data));
+	} else if (id == "iop") {
+	    std::cerr << "IOP now call StacktraceData::aggregateAddressCounts " << std::endl;
+            CBTF_io_profile_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+	    for(unsigned i = 0; i < data.time.time_len; ++i) {
+		if (data.time.time_val[i] > 0) {
+		    std::cerr << "IOP time at " << i << " is " << data.time.time_val[i] << std::endl;
+		}
+	    }
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "iot") {
             CBTF_io_exttrace_data data;
             memset(&data, 0, sizeof(data));
@@ -259,6 +274,9 @@ private:
             );
         declareInput<boost::shared_ptr<CBTF_io_trace_data> >(
             "io", boost::bind(&AddressAggregator::ioHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_io_profile_data> >(
+            "iop", boost::bind(&AddressAggregator::iopHandler, this, _1)
             );
         declareInput<boost::shared_ptr<CBTF_io_exttrace_data> >(
             "iot", boost::bind(&AddressAggregator::iotHandler, this, _1)
@@ -416,6 +434,19 @@ private:
     }
 
     /** Handler for the "iot" input.*/
+    void iopHandler(const boost::shared_ptr<CBTF_io_profile_data>& in)
+    {
+        CBTF_io_profile_data *data = in.get();
+
+	StacktraceData stdata;
+	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
+				data->stacktraces.stacktraces_val,
+				abuffer);
+
+        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+    }
+
+    /** Handler for the "iot" input.*/
     void iotHandler(const boost::shared_ptr<CBTF_io_exttrace_data>& in)
     {
         CBTF_io_exttrace_data *data = in.get();
@@ -523,8 +554,10 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
+        } else if (collectorID == "io" || collectorID == "iot" ||
+		   collectorID == "iop" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
+	    //std::cerr << "IOP CALL aggregateSTTraceData" << std::endl;
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
@@ -625,7 +658,8 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             aggregateSTSampleData(collectorID, dblob, abuffer, interval);
 	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
+        } else if (collectorID == "io" || collectorID == "iot" ||
+		   collectorID == "iop" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {

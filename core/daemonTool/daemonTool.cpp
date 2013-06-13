@@ -94,8 +94,8 @@ class DaemonTool
 	filesystem::path toolpath(tool);
 	if (toolpath.is_complete()) {
 	    registerXML(toolpath);
-	    //realtoolname = toolpath.stem().string();
-	    realtoolname = toolpath.stem();
+	    filesystem::path realfile = toolpath.stem();
+	    realtoolname = realfile.string(); 
 	} else {
 	    // search default path for xml defined by XMLDIR.
 	    // TODO: provide a CBTF_XML_PATH environment variable

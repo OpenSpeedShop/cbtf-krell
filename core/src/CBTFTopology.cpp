@@ -64,7 +64,21 @@ CBTFTopology::~CBTFTopology()
 {
 }
 
-
+std::string CBTFTopology::createCSVstring(std::list<std::string>& list )
+{
+    std::list<std::string>::iterator ListIter;
+    std::string outString;
+    for (ListIter = list.begin(); ListIter != list.end(); ListIter++) {
+        if (ListIter != list.begin()) outString += ",";
+        if (getIsCray()) {
+            outString += unFormatCrayNid(*ListIter);
+        } else {
+            outString += *ListIter;
+        }
+    }
+    outString += " ";
+    return outString;
+}
 
 int CBTFTopology::getCrayFENid( void )
 {
@@ -342,6 +356,158 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
     }
 }
 
+void CBTFTopology::parsePBSEnv()
+{
+    char *ptr, *envval;
+    long t;
+    bool has_pbs = true;
+    envval = getenv("PBS_JOBID");
+    if (envval == NULL) {
+	has_pbs = false;
+    } else {
+	t = strtol(envval, &ptr, 10);
+	if (ptr == envval || t < 0) {
+	    // problem
+	    has_pbs = false;
+	} else {
+	    dm_pbs_jobid = t;
+	}
+    }
+
+    envval = getenv("PBS_NUM_NODES");
+    if (envval == NULL) {
+	has_pbs = false;
+    } else {
+	t = strtol(envval, &ptr, 10);
+	if (ptr == envval || t < 0) {
+	    // problem
+	    has_pbs = false;
+	} else {
+	    dm_pbs_num_nodes = t;
+	    dm_num_app_nodes = t;
+	}
+    }
+
+    envval = getenv("PBS_NUM_PPN");
+    if (envval == NULL) {
+	has_pbs = false;
+    } else {
+	std::string strval = envval;
+	int loc = strval.find_first_of("(,");
+	std::string val = strval.substr(0,loc);
+	t = strtol(val.c_str(), &ptr, 10);
+	if (ptr == val || t < 0) {
+	    // problem
+	    has_pbs = false;
+	} else {
+	    dm_procs_per_node = t;
+	}
+    }
+
+    envval = getenv("PBS_NP");
+    if (envval == NULL) {
+	has_pbs = false;
+    } else {
+	t = strtol(envval, &ptr, 10);
+	if (ptr == envval || t < 0) {
+	    // problem
+	    has_pbs = false;
+	} else {
+	    dm_pbs_job_tasks = t;
+	}
+    }
+
+    envval = getenv("PBS_NODEFILE");
+    if (envval == NULL) {
+	has_pbs = false;
+    } else {
+	std::set<std::string> nodenames;
+        std::string pbsnodefile(envval);
+	std::ifstream inFile(pbsnodefile.data());
+	if(inFile.is_open()) {
+	    std::string line;
+	    while(std::getline(inFile, line))
+	    {
+		nodenames.insert(line);
+	    }
+	}
+
+	std::set<std::string>::const_iterator nodesiter;
+	if (getIsCray()) {
+            for (nodesiter = nodenames.begin();
+	         nodesiter != nodenames.end(); nodesiter++) {
+                long t;
+                char *ptr;
+                t = strtol(nodesiter->c_str(), &ptr, 10); 
+                dm_nodelist.push_back(formatCrayNid("nid", t));
+	    }
+	} else {
+              // VERFIY
+            for (nodesiter = nodenames.begin();
+	         nodesiter != nodenames.end(); nodesiter++) {
+                  dm_nodelist.push_back(*nodesiter);
+	    }
+	}
+    }
+
+
+    is_pbs_valid = has_pbs;
+
+    if (is_pbs_valid && dm_pbs_num_nodes > 1) {
+	long needed_cps = 0;
+	if (dm_top_fanout != 0)
+	    needed_cps = dm_procs_per_node / dm_top_fanout;
+	else
+	    needed_cps = dm_pbs_job_tasks / dm_procs_per_node;
+	
+	long numcpnodes = needed_cps / dm_procs_per_node;
+	long numcpnodesX = needed_cps % dm_procs_per_node;
+	if (numcpnodesX > 0 )
+	     numcpnodes++;
+
+	if (!dm_colocate_mrnet_procs)
+	    dm_num_app_nodes -= numcpnodes;
+#if 0
+	 std::cerr << "dm_pbs_num_nodes " << dm_pbs_num_nodes
+	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	 std::cerr << " needed_cps " << needed_cps << std::endl;
+	 std::cerr << "numcpnodes " << numcpnodes << std::endl;
+	 std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	 std::cerr << "fanout " << dm_top_fanout << std::endl;
+#endif
+	std::list<std::string>::iterator NodeListIter;
+	int counter = 0;
+	bool need_cp_node = true;
+        for (NodeListIter = dm_nodelist.begin();
+	     NodeListIter != dm_nodelist.end(); NodeListIter++) {
+
+	    if (need_cp_node || dm_colocate_mrnet_procs) {
+                dm_cp_nodelist.push_back(*NodeListIter);
+		//std::cerr << "NEED CP || dm_colocate_mrnet_procs dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
+	    } else {
+                dm_app_nodelist.push_back(*NodeListIter);
+		//std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
+	    }
+
+	    counter++;
+#if 0
+	    std::cerr << " counter:" << counter << " needed_cps:" << needed_cps
+		    << " !dm_colocate_mrnet_procs:" << !dm_colocate_mrnet_procs
+		    << std::endl;
+#endif
+	    if (counter == numcpnodes )
+	    {
+
+#if 0
+		std::cerr << "DONE WITH CP's"
+		    << std::endl;
+#endif
+
+		need_cp_node = false;
+	    }
+	}
+    }
+}
 
 // parse and validate a slurm environment for creating a topology.
 void CBTFTopology::parseSlurmEnv()
@@ -358,7 +524,6 @@ void CBTFTopology::parseSlurmEnv()
 	if (ptr == envval || t < 0) {
 	    // problem
 	    has_slurm = false;
-	    ;
 	} else {
 	    dm_slurm_jobid = t;
 	}
@@ -372,7 +537,6 @@ void CBTFTopology::parseSlurmEnv()
 	if (ptr == envval || t < 0) {
 	    // problem
 	    has_slurm = false;
-	    ;
 	} else {
 	    dm_slurm_num_nodes = t;
 	    dm_num_app_nodes = t;
@@ -405,7 +569,6 @@ void CBTFTopology::parseSlurmEnv()
 	if (ptr == val || t < 0) {
 	    // problem
 	    has_slurm = false;
-	    ;
 	} else {
 	    dm_procs_per_node = t;
 	}
@@ -421,7 +584,6 @@ void CBTFTopology::parseSlurmEnv()
 	if (ptr == envval || t < 0) {
 	    // problem
 	    has_slurm = false;
-	    ;
 	} else {
 	    dm_slurm_job_tasks = t;
 	}
@@ -519,9 +681,20 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     }
     setFENodeStr(fehostname);
 
-    parseSlurmEnv();
+
+    char *job_envval ;
+    if ((job_envval = getenv("SLURM_JOB_ID")) != NULL) {
+      parseSlurmEnv();
+    } else if ((job_envval = getenv("PBS_JOBID")) != NULL) {
+      parsePBSEnv();
+    }
+    
+    // Better not be both slurm and pbs in env! (unlikely though it may be).
     if (isSlurmValid()) {
 	std::cerr << "Creating topology file for slurm frontend node " << fehostname << std::endl;
+	setDepth(2);
+    } else if (isPBSValid()) {
+	std::cerr << "Creating topology file for pbs frontend node " << fehostname << std::endl;
 	setDepth(2);
     } else {
 	// default to the localhost simple toplogy.
@@ -537,6 +710,31 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 
     createTopology();
 }
+
+#if 0
+std::string CBTFTopology::getAprunList()
+{
+    std::list<std::string> applicNodeList;
+    applicNodeList = getAppNodeList();
+    std::list<std::string>::iterator applicNodeListIter;
+    std::string return_str = "-L";
+    for (applicNodeListIter = applicNodeList.begin(); applicNodeListIter != applicNodeList.end(); applicNodeListIter++) {
+       if (applicNodeListIter != applicNodeList.begin()) {
+         return_str.append(",");
+       }
+       std::string tmp_str = *applicNodeListIter;
+       tmp_str.erase (0,3);
+       std::string::size_type pos = tmp_str.find_first_not_of('0',0);
+       if(pos > 0) {
+          tmp_str.erase(0,pos);     
+       }    
+       return_str.append(tmp_str);
+    }
+    return_str.append(" ");
+    return return_str;
+    
+}
+#endif
 
 // The basis of this code was inspired by the STAT tool FE.
 void CBTFTopology::createTopology()

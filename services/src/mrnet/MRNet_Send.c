@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) The Krell Institute. 2011  All Rights Reserved.
+** Copyright (c) The Krell Institute. 2011-2013  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -103,9 +103,10 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
     const char* connfile = getenv("CBTF_MRNETBE_CONNECTIONS");
     if (connfile == NULL) {
-	const char* homedir = getenv("HOME");
+	const char* connections_dir = getenv("PWD");
 	char buf[4096];
-	sprintf(buf,"%s%s",homedir,"/.cbtf/attachBE_connections");
+	//sprintf(buf,"%s%s",connections_dir,"/.cbtf/attachBE_connections");
+	sprintf(buf,"%s%s",connections_dir,"/attachBE_connections");
 	connfile = strdup(buf);
     }
 

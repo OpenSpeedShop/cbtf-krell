@@ -65,6 +65,15 @@ struct SlurmEnvInfo
 
 };
 
+struct PBSEnvInfo
+{
+    std::string job_id;
+    std::string num_nodes;
+    std::string node_list;
+    std::string max_cpus_per_node;
+
+};
+
 #define CBTF_MAX_FANOUT 64
 
 typedef enum {
@@ -92,6 +101,10 @@ class CBTFTopology {
 	    void PrintTopology( TopologyNode*, std::ostringstream&);
 	    void BuildFlattenedTopology( unsigned int,
                         int , std::set<std::string>& );
+
+	    // Cray specific.
+	    // setup a list of application nodes for aprun.
+            std::string getAprunList();
 
 	    void setNodeList(const std::string&);
 
@@ -126,7 +139,18 @@ class CBTFTopology {
 		return ostr.str();
 	    };
 
+            std::string unFormatCrayNid(const std::string& nidstr) {
+                std::string out = nidstr;
+                out.erase(0, out.find_first_not_of("nid"));
+                out.erase(0, out.find_first_not_of("0"));
+                return out;
+            }; 
+
+            std::string createCSVstring(std::list<std::string> &);
+
+
 	    void parseSlurmEnv();
+	    void parsePBSEnv();
 
 	    void setTopologyStr(const std::string& topology) {
 		dm_topology = topology;
@@ -255,6 +279,10 @@ class CBTFTopology {
 		return is_slurm_valid;
 	    };
 
+	    bool isPBSValid() {
+		return is_pbs_valid;
+	    };
+
 	    void setAttachBEMode(const bool& val) {
 		attach_be_mode = val;
 	    };
@@ -269,6 +297,10 @@ class CBTFTopology {
 
 	    bool colocateMRNetProcs() {
 		return dm_colocate_mrnet_procs;
+	    };
+
+	    std::list<std::string> getAppNodeList() {
+		return dm_app_nodelist;
 	    };
 
 	    typedef enum {
@@ -287,14 +319,17 @@ class CBTFTopology {
 	    MRN::Tree * dm_tree;
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
-	    bool is_slurm_valid, dm_is_cray;
+	    bool is_pbs_valid, is_slurm_valid, dm_is_cray;
 	    bool attach_be_mode, dm_colocate_mrnet_procs;
 	    long dm_slurm_jobid, dm_slurm_num_nodes, dm_slurm_job_tasks;
+	    long dm_pbs_jobid, dm_pbs_num_nodes, dm_pbs_job_tasks;
 	    std::list<std::string> dm_cp_nodelist;
-	    std::list<std::string> dm_app_nodelist;
-	    std::list<std::string> dm_nodelist;
 
+ 	    std::list<std::string> dm_app_nodelist;
+ 	    std::list<std::string> dm_nodelist;
+ 
 };
-
+ 
 } }
 #endif
+

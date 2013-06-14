@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -143,14 +143,14 @@ int main(int argc, char** argv)
 
 
     // create a default for topology file.
-    char const* home = getenv("HOME");
+    char const* curr_dir = getenv("PWD");
 
-    std::string cbtf_path(home);
-    cbtf_path += "/.cbtf";
-
+    std::string cbtf_path(curr_dir);
 
     struct stat sb;
 
+#if 0
+    cbtf_path += "/.cbtf";
     if (!(stat(cbtf_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
       int ret = mkdir(cbtf_path.c_str(), 0755);
       if (ret != 0 && errno != EEXIST) {
@@ -159,12 +159,20 @@ int main(int argc, char** argv)
       }
     }
 
-    std::string default_topology(home);
+    std::string default_topology(curr_dir);
     default_topology += "/.cbtf/cbtf_topology";
 
     // create a default for connections file.
-    std::string default_connections(home);
+    std::string default_connections(curr_dir);
     default_connections += "/.cbtf/attachBE_connections";
+#else
+    std::string default_topology(curr_dir);
+    default_topology += "/cbtf_topology";
+
+    // create a default for connections file.
+    std::string default_connections(curr_dir);
+    default_connections += "/attachBE_connections";
+#endif
 
     std::string default_arch("");
 
@@ -217,11 +225,12 @@ int main(int argc, char** argv)
     }
 
     bool finished = false;
+    std::string aprunLlist ="";
 
     // TODO: pass numBE to CBTFTopology and record as the number
     // of application processes.
+    CBTFTopology cbtftopology;
     if (topology.empty()) {
-      CBTFTopology cbtftopology;
       if (arch == "cray") {
           cbtftopology.autoCreateTopology(BE_CRAY_ATTACH);
       } else {
@@ -272,7 +281,19 @@ int main(int argc, char** argv)
     } else if(child == 0){
         if (!mpiexecutable.empty()) {
 
-	    size_t pos = program.find(mpiexecutable);
+	    size_t pos;
+	    if (cbtftopology.getIsCray()) {
+		if (std::string::npos != program.find("aprun")) {
+		    // Add in the -L list of nodes if aprun is present 
+		    // and we are not co-locating
+		    std::list<std::string> nodes = cbtftopology.getAppNodeList();
+		    std::string appNodesForAprun = "-L " + cbtftopology.createCSVstring(nodes); 
+		    pos = program.find("aprun ") + 6;
+		    program.insert(pos, appNodesForAprun);
+		}
+	    }
+
+	    pos = program.find(mpiexecutable);
             SymtabAPISymbols stapi_symbols;
 
             // Determine if libmpi is present in the application in order to call out the proper

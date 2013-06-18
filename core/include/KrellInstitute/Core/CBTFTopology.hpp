@@ -275,10 +275,16 @@ class CBTFTopology {
 		return dm_num_cp_nodes;
 	    };
 
+	    void setSlurmValid( const bool& val) {
+		is_slurm_valid = val;
+	    };
 	    bool isSlurmValid() {
 		return is_slurm_valid;
 	    };
 
+	    void setPBSValid( const bool& val) {
+		is_pbs_valid = val;
+	    };
 	    bool isPBSValid() {
 		return is_pbs_valid;
 	    };

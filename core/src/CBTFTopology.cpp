@@ -685,8 +685,13 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     char *job_envval ;
     if ((job_envval = getenv("SLURM_JOB_ID")) != NULL) {
       parseSlurmEnv();
+      setPBSValid(false);
     } else if ((job_envval = getenv("PBS_JOBID")) != NULL) {
       parsePBSEnv();
+      setSlurmValid(false);
+    } else {
+      setPBSValid(false);
+      setSlurmValid(false);
     }
     
     // Better not be both slurm and pbs in env! (unlikely though it may be).
@@ -710,31 +715,6 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 
     createTopology();
 }
-
-#if 0
-std::string CBTFTopology::getAprunList()
-{
-    std::list<std::string> applicNodeList;
-    applicNodeList = getAppNodeList();
-    std::list<std::string>::iterator applicNodeListIter;
-    std::string return_str = "-L";
-    for (applicNodeListIter = applicNodeList.begin(); applicNodeListIter != applicNodeList.end(); applicNodeListIter++) {
-       if (applicNodeListIter != applicNodeList.begin()) {
-         return_str.append(",");
-       }
-       std::string tmp_str = *applicNodeListIter;
-       tmp_str.erase (0,3);
-       std::string::size_type pos = tmp_str.find_first_not_of('0',0);
-       if(pos > 0) {
-          tmp_str.erase(0,pos);     
-       }    
-       return_str.append(tmp_str);
-    }
-    return_str.append(" ");
-    return return_str;
-    
-}
-#endif
 
 // The basis of this code was inspired by the STAT tool FE.
 void CBTFTopology::createTopology()

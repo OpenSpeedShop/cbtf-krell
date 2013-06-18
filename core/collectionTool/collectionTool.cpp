@@ -147,32 +147,13 @@ int main(int argc, char** argv)
 
     std::string cbtf_path(curr_dir);
 
-    struct stat sb;
 
-#if 0
-    cbtf_path += "/.cbtf";
-    if (!(stat(cbtf_path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode))) {
-      int ret = mkdir(cbtf_path.c_str(), 0755);
-      if (ret != 0 && errno != EEXIST) {
-        fprintf(stderr,"collectionTool: could not create cbtf directory `%s': %s",
-                cbtf_path.c_str(), strerror(errno));
-      }
-    }
-
-    std::string default_topology(curr_dir);
-    default_topology += "/.cbtf/cbtf_topology";
-
-    // create a default for connections file.
-    std::string default_connections(curr_dir);
-    default_connections += "/.cbtf/attachBE_connections";
-#else
     std::string default_topology(curr_dir);
     default_topology += "/cbtf_topology";
 
     // create a default for connections file.
     std::string default_connections(curr_dir);
     default_connections += "/attachBE_connections";
-#endif
 
     std::string default_arch("");
 

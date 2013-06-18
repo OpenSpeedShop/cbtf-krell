@@ -339,7 +339,7 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                         dm_nodelist.push_back(formatCrayNid(baseNodeName,num1));
 		    } else {
 		        std::ostringstream ostr;
-                        ostr << baseNodeName << num1;
+                        ostr << baseNodeName << numString;
                         dm_nodelist.push_back(ostr.str());
 		    }
                 }

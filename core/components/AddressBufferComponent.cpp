@@ -96,6 +96,8 @@ private:
         emitOutput<MRN::PacketPtr>(
             "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%auld %auld", addr,bufsize,counts,bufsize))
             );
+	if (addr) free(addr);
+	if (counts) free(counts);
     }
     
 }; // class ConvertAddressBufferToPacket

@@ -115,7 +115,7 @@ private:
 		    << " state threads " << tstatevec.size() << std::endl;
 	    }
 #endif
-	    emitOutput<ThreadState>("out", (ThreadState) message->state);
+	    //emitOutput<ThreadState>("out", (ThreadState) message->state);
 	    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >("xdr_out", in);
 
 	    if (tvec.size() == tstatevec.size()) {

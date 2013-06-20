@@ -514,8 +514,6 @@ private:
     /** Handler for the "CBTF_Protocol_Blob" input.*/
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
-        CBTF_Protocol_Blob *B = in.get();
-	Blob myblob(B->data.data_len, B->data.data_val);
 
 	//std::cerr << "ENTER AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
 
@@ -523,6 +521,12 @@ private:
 	    std::cerr << "EXIT AddressAggregator::cbtf_protocol_blob_Handler: data length 0" << std::endl;
 	    abort();
 	}
+
+	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
+
+        CBTF_Protocol_Blob *B = in.get();
+	Blob myblob(B->data.data_len, B->data.data_val);
 
 	// decode this blobs data header
         CBTF_DataHeader header;
@@ -546,6 +550,7 @@ private:
 	// find the actual data blob after the header
 	unsigned data_size = myblob.getSize() - header_size;
 	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
+        xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), reinterpret_cast<char*>(&header));
 	Blob dblob(data_size,data_ptr);
 
 	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
@@ -569,8 +574,6 @@ private:
 	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT Addressbuffer" << std::endl;
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
 
-	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
-	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
     }
 
     /** Pass Through Handler for the "CBTF_Protocol_Blob" input.*/

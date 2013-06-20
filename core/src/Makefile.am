@@ -257,6 +257,7 @@ libcbtf_core_la_SOURCES = \
 	AddressBuffer.cpp \
 	Blob.cpp \
 	Exception.cpp \
+	ExtentGroup.cpp \
 	LinkedObjectEntry.cpp \
 	Path.cpp \
 	PCData.cpp \

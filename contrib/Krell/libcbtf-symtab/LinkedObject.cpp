@@ -131,7 +131,7 @@ boost::filesystem::path LinkedObject::getPath() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-uint64_t LinkedObject::getChecksum() const
+boost::uint64_t LinkedObject::getChecksum() const
 {
     return dm_impl->getChecksum();
 }

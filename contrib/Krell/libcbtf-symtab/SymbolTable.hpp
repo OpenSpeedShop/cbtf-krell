@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <boost/cstdint.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
@@ -99,7 +100,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          upon the construction of a new SymbolTable, or extracted
          *          from the CBTF_Protocol_SymbolTable, as appropriate.
          */
-        uint64_t getChecksum() const;
+        boost::uint64_t getChecksum() const;
 
         // ...
 
@@ -109,7 +110,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         boost::filesystem::path dm_path;
 
         /** Checksum for this symbol table's linked object. */
-        uint64_t dm_checksum;
+        boost::uint64_t dm_checksum;
 
         // ...
 

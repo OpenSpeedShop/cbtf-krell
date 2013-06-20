@@ -21,11 +21,11 @@
 #pragma once
 
 #include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <iostream>
 #include <KrellInstitute/Messages/Time.h>
 #include <limits>
-#include <stdint.h>
 #include <time.h>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -38,7 +38,7 @@ namespace KrellInstitute { namespace SymbolTable {
      * while not running out the clock until sometime in the year 2554.
      */
     class Time :
-        public boost::addable<Time, int64_t>,
+        public boost::addable<Time, boost::int64_t>,
         public boost::totally_ordered<Time>,
         public boost::unit_steppable<Time>
     {
@@ -48,7 +48,7 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Construct the earliest possible time. */
         static Time TheBeginning()
         {
-            return Time(std::numeric_limits<uint64_t>::min());
+            return Time(std::numeric_limits<boost::uint64_t>::min());
         }
 
         /** Create the current time. */
@@ -56,15 +56,15 @@ namespace KrellInstitute { namespace SymbolTable {
         {
             struct timespec now;
             BOOST_VERIFY(clock_gettime(CLOCK_REALTIME, &now) == 0);
-            return Time((static_cast<uint64_t>(now.tv_sec) *
-                         static_cast<uint64_t>(1000000000)) +
-                        static_cast<uint64_t>(now.tv_nsec));
+            return Time((static_cast<boost::uint64_t>(now.tv_sec) *
+                         static_cast<boost::uint64_t>(1000000000)) +
+                        static_cast<boost::uint64_t>(now.tv_nsec));
         }
         
         /** Create the last possible time. */
         static Time TheEnd()
         {
-            return Time(std::numeric_limits<uint64_t>::max());
+            return Time(std::numeric_limits<boost::uint64_t>::max());
         }
         
         /** Default constructor. */
@@ -105,9 +105,9 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Add a signed offset to this time. */
-        Time& operator+=(const int64_t& offset)
+        Time& operator+=(const boost::int64_t& offset)
         {
-            uint64_t result = dm_value + offset;
+            boost::uint64_t result = dm_value + offset;
             BOOST_ASSERT((offset > 0) || (result <= dm_value));
             BOOST_ASSERT((offset < 0) || (result >= dm_value));
             dm_value += offset;
@@ -122,9 +122,9 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Subtract another time from this time. */
-        int64_t operator-(const Time& other) const
+        boost::int64_t operator-(const Time& other) const
         {
-            int64_t difference = dm_value - other.dm_value;
+            boost::int64_t difference = dm_value - other.dm_value;
             BOOST_ASSERT((*this > other) || (difference <= 0));
             BOOST_ASSERT((*this < other) || (difference >= 0));
             return difference;
@@ -147,7 +147,7 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
         
         /** Value of this time. */
-        uint64_t dm_value;
+        boost::uint64_t dm_value;
         
     }; // class Time
 

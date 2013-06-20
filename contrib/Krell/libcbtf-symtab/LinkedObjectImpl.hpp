@@ -20,12 +20,12 @@
 
 #pragma once
 
+#include <boost/cstdint.hpp>
 #include <boost/filesystem.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
-#include <stdint.h>
 #include <string>
 
 #include "SymbolTable.hpp"
@@ -76,7 +76,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         boost::filesystem::path getPath() const;
 
         /** Get the checksum for this linked object. */
-        uint64_t getChecksum() const;
+        boost::uint64_t getChecksum() const;
 
         /** Visit the functions contained within this linked object. */
         void visitFunctions(FunctionVisitor& visitor) const;

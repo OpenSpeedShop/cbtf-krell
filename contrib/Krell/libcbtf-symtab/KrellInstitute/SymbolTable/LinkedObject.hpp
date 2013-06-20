@@ -20,13 +20,13 @@
 
 #pragma once
 
+#include <boost/cstdint.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
-#include <stdint.h>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -135,7 +135,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          upon the construction of a new LinkedObject, or extracted
          *          from the CBTF_Protocol_SymbolTable, as appropriate.
          */
-        uint64_t getChecksum() const;
+        boost::uint64_t getChecksum() const;
         
         /**
          * Visit the functions contained within this linked object.

@@ -138,7 +138,7 @@ boost::filesystem::path LinkedObjectImpl::getPath() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-uint64_t LinkedObjectImpl::getChecksum() const
+boost::uint64_t LinkedObjectImpl::getChecksum() const
 {
     return dm_symbol_table->getChecksum();
 }

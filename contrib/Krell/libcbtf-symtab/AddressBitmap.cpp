@@ -20,8 +20,8 @@
 
 #include <algorithm>
 #include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
 #include <cstdlib>
-#include <stdint.h>
 
 #include "AddressBitmap.hpp"
 
@@ -46,11 +46,13 @@ AddressBitmap::AddressBitmap(const CBTF_Protocol_AddressBitmap& message) :
     dm_range(message.range),
     dm_bitmap(AddressRange(message.range).getWidth(), false)
 {
-    uint64_t size = std::max<uint64_t>(1, ((dm_range.getWidth() - 1) / 8) + 1);
+    boost::uint64_t size = std::max<boost::uint64_t>(
+        1, ((dm_range.getWidth() - 1) / 8) + 1
+        );
 
     BOOST_VERIFY(message.bitmap.data.data_len == size);
     
-    for (uint64_t i = 0; i < dm_range.getWidth(); ++i)
+    for (boost::uint64_t i = 0; i < dm_range.getWidth(); ++i)
     {
         dm_bitmap[i] = message.bitmap.data.data_val[i / 8] & (1 << (i % 8));
     }
@@ -62,7 +64,9 @@ AddressBitmap::AddressBitmap(const CBTF_Protocol_AddressBitmap& message) :
 //------------------------------------------------------------------------------
 AddressBitmap::operator CBTF_Protocol_AddressBitmap() const
 {
-    uint64_t size = std::max<uint64_t>(1, ((dm_range.getWidth() - 1) / 8) + 1);
+    boost::uint64_t size = std::max<boost::uint64_t>(
+        1, ((dm_range.getWidth() - 1) / 8) + 1
+        );
     
     CBTF_Protocol_AddressBitmap message;
     message.range = dm_range;
@@ -71,7 +75,7 @@ AddressBitmap::operator CBTF_Protocol_AddressBitmap() const
 
     memset(message.bitmap.data.data_val, 0, size);
 
-    for (uint64_t i = 0; i < dm_range.getWidth(); ++i)
+    for (boost::uint64_t i = 0; i < dm_range.getWidth(); ++i)
     {
         if (dm_bitmap[i])
         {

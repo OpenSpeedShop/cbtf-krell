@@ -21,12 +21,12 @@
 #pragma once
 
 #include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <boost/operators.hpp>
 #include <iostream>
 #include <KrellInstitute/Messages/Address.h>
 #include <limits>
-#include <stdint.h>
 
 namespace KrellInstitute { namespace SymbolTable {
         
@@ -36,7 +36,7 @@ namespace KrellInstitute { namespace SymbolTable {
      * sacrificing storage efficiency when 32-bit addresses are processed.
      */
     class Address :
-        public boost::addable<Address, int64_t>,
+        public boost::addable<Address, boost::int64_t>,
         public boost::totally_ordered<Address>,
         public boost::unit_steppable<Address>
     {
@@ -46,13 +46,13 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Construct the lowest possible address. */
         static Address TheLowest()
         {
-            return Address(std::numeric_limits<uint64_t>::min());
+            return Address(std::numeric_limits<boost::uint64_t>::min());
         }
         
         /** Construct the highest possible address. */
         static Address TheHighest()
         {
-            return Address(std::numeric_limits<uint64_t>::max());
+            return Address(std::numeric_limits<boost::uint64_t>::max());
         }
         
         /** Default constructor. */
@@ -93,9 +93,9 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Add a signed offset to this address. */
-        Address& operator+=(const int64_t& offset)
+        Address& operator+=(const boost::int64_t& offset)
         {
-            uint64_t result = dm_value + offset;
+            boost::uint64_t result = dm_value + offset;
             BOOST_ASSERT((offset > 0) || (result <= dm_value));
             BOOST_ASSERT((offset < 0) || (result >= dm_value));
             dm_value += offset;
@@ -110,9 +110,9 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Subtract another address from this address. */
-        int64_t operator-(const Address& other) const
+        boost::int64_t operator-(const Address& other) const
         {
-            int64_t difference = dm_value - other.dm_value;
+            boost::int64_t difference = dm_value - other.dm_value;
             BOOST_ASSERT((*this > other) || (difference <= 0));
             BOOST_ASSERT((*this < other) || (difference >= 0));
             return difference;
@@ -129,7 +129,7 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
         
         /** Value of this address. */
-        uint64_t dm_value;
+        boost::uint64_t dm_value;
         
     }; // class Address
         

@@ -113,7 +113,7 @@ boost::filesystem::path SymbolTable::getPath() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-uint64_t SymbolTable::getChecksum() const
+boost::uint64_t SymbolTable::getChecksum() const
 {
     return dm_checksum;
 }

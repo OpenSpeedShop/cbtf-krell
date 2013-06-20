@@ -21,13 +21,13 @@
 #pragma once
 
 #include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <functional>
 #include <iostream>
 #include <limits>
-#include <stdint.h>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -181,10 +181,10 @@ namespace KrellInstitute { namespace SymbolTable {
         }
         
         /** Get the width of this interval. */
-        uint64_t getWidth() const
+        boost::uint64_t getWidth() const
         {
-            return static_cast<uint64_t>(dm_end) - 
-                static_cast<uint64_t>(dm_begin);
+            return static_cast<boost::uint64_t>(dm_end) - 
+                static_cast<boost::uint64_t>(dm_begin);
         }
         
         /** Does this interval contain a value? */

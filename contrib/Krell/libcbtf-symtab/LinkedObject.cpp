@@ -141,9 +141,9 @@ uint64_t LinkedObject::getChecksum() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObject::getFunctions() const
+void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
 {
-    return dm_impl->getFunctions();
+    dm_impl->visitFunctions(visitor);
 }
 
 
@@ -151,9 +151,10 @@ std::set<Function> LinkedObject::getFunctions() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObject::getFunctionsAt(const Address& address) const
+void LinkedObject::visitFunctionsAt(const Address& address,
+                                    FunctionVisitor& visitor) const
 {
-    return dm_impl->getFunctionsAt(address);
+    dm_impl->visitFunctionsAt(address, visitor);
 }
 
 
@@ -161,43 +162,43 @@ std::set<Function> LinkedObject::getFunctionsAt(const Address& address) const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObject::getFunctionsByName(
-    const std::string& name
+void LinkedObject::visitFunctionsByName(const std::string& name,
+                                        FunctionVisitor& visitor) const
+{
+    dm_impl->visitFunctionsByName(name, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void LinkedObject::visitStatements(StatementVisitor& visitor) const
+{
+    dm_impl->visitStatements(visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void LinkedObject::visitStatementsAt(const Address& address,
+                                     StatementVisitor& visitor) const
+{
+    dm_impl->visitStatementsAt(address, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void LinkedObject::visitStatementsBySourceFile(
+    const boost::filesystem::path& path, StatementVisitor& visitor
     ) const
 {
-    return dm_impl->getFunctionsByName(name);
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObject::getStatements() const
-{
-    return dm_impl->getStatements();
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObject::getStatementsAt(const Address& address) const
-{
-    return dm_impl->getStatementsAt(address);
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObject::getStatementsBySourceFile(
-    const boost::filesystem::path& path
-    ) const
-{
-    return dm_impl->getStatementsBySourceFile(path);
+    dm_impl->visitStatementsBySourceFile(path, visitor);
 }
 
 

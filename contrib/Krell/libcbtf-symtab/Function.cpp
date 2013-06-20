@@ -101,6 +101,16 @@ Function Function::clone(LinkedObject& linked_object) const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
+void Function::addAddressRanges(const std::set<AddressRange>& ranges)
+{
+    dm_impl->addAddressRanges(ranges);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
 LinkedObject Function::getLinkedObject() const
 {
     return dm_impl->getLinkedObject();
@@ -141,9 +151,9 @@ std::set<AddressRange> Function::getAddressRanges() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Statement> Function::getDefinitions() const
+void Function::visitDefinitions(StatementVisitor& visitor) const
 {
-    return dm_impl->getDefinitions();
+    dm_impl->visitDefinitions(visitor);
 }
 
 
@@ -151,19 +161,9 @@ std::set<Statement> Function::getDefinitions() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<Statement> Function::getStatements() const
+void Function::visitStatements(StatementVisitor& visitor) const
 {
-    return dm_impl->getStatements();
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-void Function::addAddressRanges(const std::set<AddressRange>& ranges)
-{
-    dm_impl->addAddressRanges(ranges);
+    dm_impl->visitStatements(visitor);
 }
 
 

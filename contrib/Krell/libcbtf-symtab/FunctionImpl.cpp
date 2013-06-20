@@ -106,6 +106,16 @@ FunctionImpl FunctionImpl::clone(LinkedObject& linked_object) const
 
 
 //------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void FunctionImpl::addAddressRanges(const std::set<AddressRange>& ranges)
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 LinkedObject FunctionImpl::getLinkedObject() const
 {
@@ -153,11 +163,9 @@ std::set<AddressRange> FunctionImpl::getAddressRanges() const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-std::set<Statement> FunctionImpl::getDefinitions() const
+void FunctionImpl::visitDefinitions(StatementVisitor& visitor) const
 {
     // ...
-
-    return std::set<Statement>();
 }
 
 
@@ -165,19 +173,7 @@ std::set<Statement> FunctionImpl::getDefinitions() const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-std::set<Statement> FunctionImpl::getStatements() const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-void FunctionImpl::addAddressRanges(const std::set<AddressRange>& ranges)
+void FunctionImpl::visitStatements(StatementVisitor& visitor) const
 {
     // ...
 }

@@ -91,41 +91,6 @@ AddressSpace::operator CBTF_Protocol_LinkedObjectGroup() const
 //------------------------------------------------------------------------------
 // Let the implementation do the real work.
 //------------------------------------------------------------------------------
-std::set<LinkedObject> AddressSpace::getLinkedObjects() const
-{
-    return dm_impl->getLinkedObjects();
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-boost::optional<LinkedObject> AddressSpace::getLinkedObjectAt(
-    const Address& address,
-    const Time& time
-    ) const
-{
-    return dm_impl->getLinkedObjectAt(address, time);
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
-std::set<LinkedObject> AddressSpace::getLinkedObjectsByPath(
-    const boost::filesystem::path& path
-    ) const
-{
-    return dm_impl->getLinkedObjectsByPath(path);
-}
-
-
-
-//------------------------------------------------------------------------------
-// Let the implementation do the real work.
-//------------------------------------------------------------------------------
 void AddressSpace::addLinkedObject(const LinkedObject& linked_object,
                                    const AddressRange& range,
                                    const TimeInterval& interval)
@@ -151,4 +116,37 @@ void AddressSpace::apply(const CBTF_Protocol_LoadedLinkedObject& message)
 void AddressSpace::apply(const CBTF_Protocol_UnloadedLinkedObject& message)
 {
     dm_impl->apply(message);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void AddressSpace::visitLinkedObjects(LinkedObjectVisitor& visitor) const
+{
+    dm_impl->visitLinkedObjects(visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void AddressSpace::visitLinkedObjectsAt(const AddressRange& range,
+                                        const TimeInterval& interval,
+                                        LinkedObjectVisitor& visitor) const
+{
+    dm_impl->visitLinkedObjectsAt(range, interval, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+// Let the implementation do the real work.
+//------------------------------------------------------------------------------
+void AddressSpace::visitLinkedObjectsByPath(const boost::filesystem::path& path,
+                                            LinkedObjectVisitor& visitor) const
+{
+    dm_impl->visitLinkedObjectsByPath(path, visitor);
 }

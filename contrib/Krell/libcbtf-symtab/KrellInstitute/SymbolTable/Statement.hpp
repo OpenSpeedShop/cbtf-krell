@@ -23,11 +23,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <set>
 
 namespace KrellInstitute { namespace SymbolTable {
 
-    class Function;
     class LinkedObject;
 
     namespace Impl {
@@ -112,6 +112,18 @@ namespace KrellInstitute { namespace SymbolTable {
         Statement clone(LinkedObject& linked_object) const;
 
         /**
+         * Associate the given address ranges with this statement.
+         *
+         * @param ranges    Address ranges to associate with this statement.
+         *
+         * @note    The addresses specified are relative to the beginning of
+         *          the linked object containing this statement rather than
+         *          an absolute address from the address space of a specific
+         *          process.
+         */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
+
+        /**
          * Get the linked object containing this statement.
          *
          * @return    Linked object containing this statement.
@@ -153,24 +165,12 @@ namespace KrellInstitute { namespace SymbolTable {
         std::set<AddressRange> getAddressRanges() const;
 
         /**
-         * Get the functions containing this statement. An empty set is
-         * returned if no function contains this statement.
+         * Visit the functions containing this statement.
          *
-         * @return    Functions containing this statement.
+         * @param visitor    Visitor invoked for each function containing
+         *                   this statement.
          */
-        std::set<Function> getFunctions() const;
-
-        /**
-         * Associate the given address ranges with this statement.
-         *
-         * @param ranges    Address ranges to associate with this statement.
-         *
-         * @note    The addresses specified are relative to the beginning of
-         *          the linked object containing this statement rather than
-         *          an absolute address from the address space of a specific
-         *          process.
-         */
-        void addAddressRanges(const std::set<AddressRange>& ranges);
+        void visitFunctions(FunctionVisitor& visitor) const;
 
     private:
 

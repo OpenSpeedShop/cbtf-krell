@@ -44,11 +44,14 @@ add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/AddressSpace.hpp AddressSpace.cpp
     AddressSpaceImpl.hpp AddressSpaceImpl.cpp
     KrellInstitute/SymbolTable/Function.hpp Function.cpp
+    KrellInstitute/SymbolTable/FunctionVisitor.hpp
     FunctionImpl.hpp FunctionImpl.cpp
     KrellInstitute/SymbolTable/Interval.hpp
     KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
+    KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp
     LinkedObjectImpl.hpp LinkedObjectImpl.cpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
+    KrellInstitute/SymbolTable/StatementVisitor.hpp
     StatementImpl.hpp StatementImpl.cpp
     SymbolTable.hpp SymbolTable.cpp
     KrellInstitute/SymbolTable/Time.hpp

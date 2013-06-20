@@ -24,14 +24,12 @@
 #include <boost/operators.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
-#include <set>
+#include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
+#include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <stdint.h>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
-
-    class Function;
-    class Statement;
 
     namespace Impl {
         class LinkedObjectImpl;
@@ -138,77 +136,75 @@ namespace KrellInstitute { namespace SymbolTable {
          *          from the CBTF_Protocol_SymbolTable, as appropriate.
          */
         uint64_t getChecksum() const;
-
+        
         /**
-         * Get the functions contained within this linked object. An empty set
-         * is returned if no functions are found within this linked object.
+         * Visit the functions contained within this linked object.
          *
-         * @return    Functions contained within this linked object.
+         * @param visitor    Visitor invoked for each function contained
+         *                   within this linked object.
          */
-        std::set<Function> getFunctions() const;
+        void visitFunctions(FunctionVisitor& visitor) const;
 
         /**
-         * Get the functions contained within this linked object at the given
-         * address. An empty set is returned if no functions are found within
-         * this linked object at that address.
+         * Visit the functions contained within this linked object at the given
+         * address.
          *
          * @param address    Address to be found.
-         * @return           Functions contained within this linked object
-         *                   at that address.
+         * @param visitor    Visitor invoked for each function contained
+         *                   within this linked object at that address.
          *
          * @note    The address specified must be relative to the beginning of
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        std::set<Function> getFunctionsAt(const Address& address) const;
-
-        /**
-         * Get the functions contained within this linked object with the given
-         * name. An empty set is returned if no functions are found within this
-         * linked object with that name.
-         *
-         * @param name    Name of the function to find.
-         * @return        Functions contained within this linked object
-         *                with that name.
-         */
-        std::set<Function> getFunctionsByName(const std::string& name) const;
+        void visitFunctionsAt(const Address& address,
+                              FunctionVisitor& visitor) const;
         
         /**
-         * Get the statements contained within this linked object. An empty set
-         * is returned if no statements are found within this linked object.
+         * Visit the functions contained within this linked object with the
+         * given name.
          *
-         * @return    Statements contained within this linked object.
+         * @param name       Name of the function to find.
+         * @param visitor    Visitor invoked for each function contained
+         *                   within this linked object with that name.
          */
-        std::set<Statement> getStatements() const;
-
+        void visitFunctionsByName(const std::string& name,
+                                  FunctionVisitor& visitor) const;
+        
         /**
-         * Get the statements contained within this linked object at the given
-         * address. An empty set is returned if no statements are found within
-         * this linked object at that address.
+         * Visit the statements contained within this linked object.
+         *
+         * @param visitor    Visitor invoked for each statement contained
+         *                   within this linked object.
+         */
+        void visitStatements(StatementVisitor& visitor) const;
+        
+        /**
+         * Visit the statements contained within this linked object at the
+         * given address.
          *
          * @param address    Address to be found.
-         * @return           Statements contained within this linked object
-         *                   at that address.
+         * @param visitor    Visitor invoked for each statement contained
+         *                   within this linked object at that address.
          *
          * @note    The address specified must be relative to the beginning of
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        std::set<Statement> getStatementsAt(const Address& address) const;
+        void visitStatementsAt(const Address& address,
+                               StatementVisitor& vistor) const;
         
         /**
-         * Get the statements contained within this linked object for the
-         * given source file. An empty set is returned if no statements are
-         * found within this linked object for that source file.
+         * Visit the statements contained within this linked object for the
+         * given source file.
          *
-         * @param path    Source file for which to obtain statements.
-         * @return        Statements contained within this linked object
-         *                for that source file.
+         * @param path       Source file for which to visit statements.
+         * @param visitor    Visitor invoked for each statement contained
+         *                   within this linked object for that source file.
          */
-        std::set<Statement> getStatementsBySourceFile(
-            const boost::filesystem::path& path
-            ) const;
-
+        void visitStatementsBySourceFile(const boost::filesystem::path& path,
+                                         StatementVisitor& visitor) const;
+        
     private:
 
         /**

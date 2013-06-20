@@ -148,11 +148,9 @@ uint64_t LinkedObjectImpl::getChecksum() const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctions() const
+void LinkedObjectImpl::visitFunctions(FunctionVisitor& visitor) const
 {
     // ...
-
-    return std::set<Function>();
 }
 
 
@@ -160,65 +158,52 @@ std::set<Function> LinkedObjectImpl::getFunctions() const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsAt(
-    const Address& address
+void LinkedObjectImpl::visitFunctionsAt(const Address& address,
+                                        FunctionVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void LinkedObjectImpl::visitFunctionsByName(const std::string& name,
+                                            FunctionVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void LinkedObjectImpl::visitStatements(StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void LinkedObjectImpl::visitStatementsAt(const Address& address,
+                                         StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void LinkedObjectImpl::visitStatementsBySourceFile(
+    const boost::filesystem::path& path, StatementVisitor& visitor
     ) const
 {
     // ...
-
-    return std::set<Function>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Function> LinkedObjectImpl::getFunctionsByName(
-    const std::string& name
-    ) const
-{
-    // ...
-
-    return std::set<Function>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatements() const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsAt(
-    const Address& address
-    ) const
-{
-    // ...
-
-    return std::set<Statement>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<Statement> LinkedObjectImpl::getStatementsBySourceFile(
-    const boost::filesystem::path& path
-    ) const
-{
-    // ...
-    
-    return std::set<Statement>();
 }

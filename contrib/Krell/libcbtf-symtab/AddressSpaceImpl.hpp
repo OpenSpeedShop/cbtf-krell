@@ -21,14 +21,11 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
-#include <KrellInstitute/SymbolTable/Time.hpp>
+#include <KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp>
 #include <KrellInstitute/SymbolTable/TimeInterval.hpp>
-#include <set>
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
@@ -56,34 +53,15 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param other    Address space to be copied.
          */
         AddressSpaceImpl(const AddressSpaceImpl& other);
-        
+
         /** Destructor. */
         virtual ~AddressSpaceImpl();
-        
+
         /** Replace this address space with a copy of another one. */
         AddressSpaceImpl& operator=(const AddressSpaceImpl& other);
 
         /** Type conversion to a CBTF_Protocol_LinkedObjectGroup. */
         operator CBTF_Protocol_LinkedObjectGroup() const;
-
-        /** Get the linked objects contained within this address space. */
-        std::set<LinkedObject> getLinkedObjects() const;
-
-        /**
-         * Get the linked object contained within this address space at the
-         * given address and time.
-         */
-        boost::optional<LinkedObject> getLinkedObjectAt(
-            const Address& address, const Time& time = Time::Now()
-            ) const;
-
-        /**
-         * Get the linked objects contained within this address space for the
-         * given path.
-         */
-        std::set<LinkedObject> getLinkedObjectsByPath(
-            const boost::filesystem::path& path
-            ) const;
 
         /**
          * Add the given linked object to this address space at the specified
@@ -94,7 +72,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
                              const TimeInterval& interval = TimeInterval(
                                  Time::TheBeginning(), Time::TheEnd()
                                  ));
-        
+
         /**
          * Apply the given message, describing the load of a linked object,
          * to this address space.
@@ -106,9 +84,27 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * to this address space.
          */
         void apply(const CBTF_Protocol_UnloadedLinkedObject& message);
-        
+
+        /** Visit the linked objects contained within this address space. */
+        void visitLinkedObjects(LinkedObjectVisitor& visitor) const;
+
+        /**
+         * Visit the linked objects contained within this address space that
+         * intersect the given address range and time interval.
+         */
+        void visitLinkedObjectsAt(const AddressRange& range,
+                                  const TimeInterval& interval,
+                                  LinkedObjectVisitor& visitor) const;
+
+        /**
+         * Visit the linked objects contained within this address space for
+         * the given path.
+         */
+        void visitLinkedObjectsByPath(const boost::filesystem::path& path,
+                                      LinkedObjectVisitor& visitor) const;
+
     private:
-        
+
         // ...
 
     }; // class AddressSpaceImpl

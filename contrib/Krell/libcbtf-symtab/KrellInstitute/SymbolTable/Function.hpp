@@ -22,13 +22,13 @@
 
 #include <boost/operators.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
     class LinkedObject;
-    class Statement;
 
     namespace Impl {
         class FunctionImpl;
@@ -105,6 +105,18 @@ namespace KrellInstitute { namespace SymbolTable {
         Function clone(LinkedObject& linked_object) const;
 
         /**
+         * Associate the given address ranges with this function. 
+         *
+         * @param ranges    Address ranges to associate with this function.
+         *
+         * @note    The addresses specified are relative to the beginning of
+         *          the linked object containing this function rather than
+         *          an absolute address from the address space of a specific
+         *          process.
+         */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
+
+        /**
          * Get the linked object containing this function.
          *
          * @return    Linked object containing this function.
@@ -144,32 +156,20 @@ namespace KrellInstitute { namespace SymbolTable {
         std::set<AddressRange> getAddressRanges() const;
 
         /**
-         * Get the definitions of this function. An empty set is returned if
-         * no definitions of this function are found.
+         * Visit the definitions of this function.
          *
-         * @return    Definitions of this function.
+         * @param visitor    Visitor invoked for each defintion of this
+         *                   function.
          */
-        std::set<Statement> getDefinitions() const;
+        void visitDefinitions(StatementVisitor& visitor) const;
 
         /**
-         * Get the statements associated with this function. An empty set
-         * is returned if no statements are associated with this function.
+         * Visit the statements associated with this function.
          *
-         * @return    Statements associated with this function.
+         * @param visitor    Visitor invoked for each statement associated 
+         *                   with this function.
          */
-        std::set<Statement> getStatements() const;
-
-        /**
-         * Associate the given address ranges with this function. 
-         *
-         * @param ranges    Address ranges to associate with this function.
-         *
-         * @note    The addresses specified are relative to the beginning of
-         *          the linked object containing this function rather than
-         *          an absolute address from the address space of a specific
-         *          process.
-         */
-        void addAddressRanges(const std::set<AddressRange>& ranges);
+        void visitStatements(StatementVisitor& visitor) const;
 
     private:
 

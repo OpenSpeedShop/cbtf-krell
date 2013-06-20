@@ -21,14 +21,11 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
-#include <KrellInstitute/SymbolTable/Time.hpp>
+#include <KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp>
 #include <KrellInstitute/SymbolTable/TimeInterval.hpp>
-#include <set>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -89,41 +86,6 @@ namespace KrellInstitute { namespace SymbolTable {
         operator CBTF_Protocol_LinkedObjectGroup() const;
 
         /**
-         * Get the linked objects contained within this address space. An empty
-         * set is returned if no linked objects are found within this address
-         * space.
-         *
-         * @return    Linked Objects contained within this address space.
-         */
-        std::set<LinkedObject> getLinkedObjects() const;
-
-        /**
-         * Get the linked object contained within this address space at the
-         * given address and time. An empty optional is returned if no linked
-         * objects are found within this address space at that address and time.
-         *
-         * @param address    Address to be found.
-         * @param time       Time to be found. Has a default value of "now".
-         * @return           Linked object contained within this address space
-         *                   at that address and time.
-         */
-        boost::optional<LinkedObject> getLinkedObjectAt(
-            const Address& address, const Time& time = Time::Now()
-            ) const;
-
-        /**
-         * Get the linked objects contained within this address space for the
-         * given path. An empty set is returned if no linked objects are found
-         * within this address space for that path.
-         *
-         * @param path    Path for which to obtain linked objects.
-         * @return        Linked objects contained within 
-         */
-        std::set<LinkedObject> getLinkedObjectsByPath(
-            const boost::filesystem::path& path
-            ) const;
-
-        /**
          * Add the given linked object to this address space at the specified
          * address range for the given time interval.
          *
@@ -161,6 +123,39 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         void apply(const CBTF_Protocol_UnloadedLinkedObject& message);
 
+        /**
+         * Visit the linked objects contained within this address space.
+         *
+         * @param visitor    Visitor invoked for each linked object contained
+         *                   within this address space.
+         */
+        void visitLinkedObjects(LinkedObjectVisitor& visitor) const;
+        
+        /**
+         * Visit the linked objects contained within this address space that
+         * intersect the given address range and time interval.
+         *
+         * @param range       Address range to be found.
+         * @param interval    Time interval to be found.
+         * @param visitor     Visitor invoked for each linked object contained
+         *                    within this address space that intersect that
+         *                    address range and time interval.
+         */
+        void visitLinkedObjectsAt(const AddressRange& range,
+                                  const TimeInterval& interval,
+                                  LinkedObjectVisitor& visitor) const;
+
+        /**
+         * Visit the linked objects contained within this address space for
+         * the given path.
+         *
+         * @param path       Path for which to visit linked objects.
+         * @param visitor    Visitor invoked for each linked object contained
+         *                   within this address space for that path.
+         */
+        void visitLinkedObjectsByPath(const boost::filesystem::path& path,
+                                      LinkedObjectVisitor& visitor) const;
+        
     private:
 
         /**

@@ -22,7 +22,7 @@
 
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
-#include <KrellInstitute/SymbolTable/Statement.hpp>
+#include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
 #include <string>
 
@@ -64,7 +64,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
         /** Create a deep copy of this function. */
         FunctionImpl clone(LinkedObject& linked_object) const;
-        
+
+        /** Associate the given address ranges with this function. */
+        void addAddressRanges(const std::set<AddressRange>& ranges);
+                
         /** Get the linked object containing this function. */
         LinkedObject getLinkedObject() const;
 
@@ -77,15 +80,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Get the address ranges associated with this function. */
         std::set<AddressRange> getAddressRanges() const;
         
-        /** Get the definitions of this function. */
-        std::set<Statement> getDefinitions() const;
+        /** Visit the definitions of this function. */
+        void visitDefinitions(StatementVisitor& visitor) const;
 
-        /** Get the statements associated with this function. */
-        std::set<Statement> getStatements() const;
+        /** Visit the statements associated with this function. */
+        void visitStatements(StatementVisitor& visitor) const;
 
-        /** Associate the given address ranges with this function. */
-        void addAddressRanges(const std::set<AddressRange>& ranges);
-        
     private:
 
         /** Symbol table containing this function. */

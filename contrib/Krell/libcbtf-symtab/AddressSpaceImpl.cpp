@@ -98,47 +98,6 @@ AddressSpaceImpl::operator CBTF_Protocol_LinkedObjectGroup() const
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-std::set<LinkedObject> AddressSpaceImpl::getLinkedObjects() const
-{
-    // ...
-
-    return std::set<LinkedObject>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-boost::optional<LinkedObject> AddressSpaceImpl::getLinkedObjectAt(
-    const Address& address,
-    const Time& time
-    ) const
-{
-    // ...
-
-    return boost::optional<LinkedObject>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-std::set<LinkedObject> AddressSpaceImpl::getLinkedObjectsByPath(
-    const boost::filesystem::path& path
-    ) const
-{
-    // ...
-
-    return std::set<LinkedObject>();
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
 void AddressSpaceImpl::addLinkedObject(const LinkedObject& linked_object,
                                        const AddressRange& range,
                                        const TimeInterval& interval)
@@ -162,6 +121,40 @@ void AddressSpaceImpl::apply(const CBTF_Protocol_LoadedLinkedObject& message)
 // ...
 //------------------------------------------------------------------------------
 void AddressSpaceImpl::apply(const CBTF_Protocol_UnloadedLinkedObject& message)
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void AddressSpaceImpl::visitLinkedObjects(LinkedObjectVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void AddressSpaceImpl::visitLinkedObjectsAt(const AddressRange& range,
+                                            const TimeInterval& interval,
+                                            LinkedObjectVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void AddressSpaceImpl::visitLinkedObjectsByPath(
+    const boost::filesystem::path& path, LinkedObjectVisitor& visitor
+    ) const
 {
     // ...
 }

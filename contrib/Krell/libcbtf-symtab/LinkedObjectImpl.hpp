@@ -23,9 +23,8 @@
 #include <boost/filesystem.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
-#include <KrellInstitute/SymbolTable/Function.hpp>
-#include <KrellInstitute/SymbolTable/Statement.hpp>
-#include <set>
+#include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
+#include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <stdint.h>
 #include <string>
 
@@ -79,26 +78,28 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Get the checksum for this linked object. */
         uint64_t getChecksum() const;
 
-        /** Get the functions contained within this linked object. */
-        std::set<Function> getFunctions() const;
+        /** Visit the functions contained within this linked object. */
+        void visitFunctions(FunctionVisitor& visitor) const;
 
-        /** Get the functions at the given address. */
-        std::set<Function> getFunctionsAt(const Address& address) const;
+        /** Visit the functions at the given address. */
+        void visitFunctionsAt(const Address& address,
+                              FunctionVisitor& visitor) const;
 
-        /** Get the functions with the given name. */
-        std::set<Function> getFunctionsByName(const std::string& name) const;
+        /** Visit the functions with the given name. */
+        void visitFunctionsByName(const std::string& name,
+                                  FunctionVisitor& visitor) const;
 
-        /** Get the statements contained within this linked object. */
-        std::set<Statement> getStatements() const;
+        /** Visit the statements contained within this linked object. */
+        void visitStatements(StatementVisitor& visitor) const;
 
-        /** Get the statements at the given address. */
-        std::set<Statement> getStatementsAt(const Address& address) const;
+        /** Visit the statements at the given address. */
+        void visitStatementsAt(const Address& address,
+                               StatementVisitor& visitor) const;
 
-        /** Get the statements for the given source file. */
-        std::set<Statement> getStatementsBySourceFile(
-            const boost::filesystem::path& path
-            ) const;
-
+        /** Visit the statements for the given source file. */
+        void visitStatementsBySourceFile(const boost::filesystem::path& path,
+                                         StatementVisitor& visitor) const;
+        
     private:
 
         /** Symbol table containing this linked object. */

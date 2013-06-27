@@ -697,10 +697,17 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     // Better not be both slurm and pbs in env! (unlikely though it may be).
     if (isSlurmValid()) {
 	std::cerr << "Creating topology file for slurm frontend node " << fehostname << std::endl;
-	setDepth(2);
+	if (isAttachBEMode())
+	    setDepth(2);
+	else
+	    setDepth(3);
+
     } else if (isPBSValid()) {
 	std::cerr << "Creating topology file for pbs frontend node " << fehostname << std::endl;
-	setDepth(2);
+	if (isAttachBEMode())
+	    setDepth(2);
+	else
+	    setDepth(3);
     } else {
 	// default to the localhost simple toplogy.
 	std::cerr << "Creating topology file for frontend host " << fehostname << std::endl;
@@ -710,7 +717,7 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 	setNumAppNodes(1);
 	setDepth(1);
 	setFanout(1);
-	setNumProcsPerNode(2);
+	setNumProcsPerNode(4);
     }
 
     createTopology();
@@ -755,7 +762,7 @@ void CBTFTopology::createTopology()
 
     // FE will launch BE's. i.e. daemon type tools.
     if (!isAttachBEMode()) {
-	desiredDepth = 1;
+	desiredDepth = 2;
     }
 
     //std::cerr << "CreateTopology desiredDepth  " << desiredDepth << std::endl;

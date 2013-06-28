@@ -42,19 +42,18 @@ StatementImpl::StatementImpl(const LinkedObject& linked_object,
 //------------------------------------------------------------------------------
 // ...
 //------------------------------------------------------------------------------
-StatementImpl::StatementImpl(const StatementImpl& other)
+StatementImpl::StatementImpl(const StatementImpl& other) :
+    dm_symbol_table(other.dm_symbol_table),
+    dm_unique_identifier(other.dm_unique_identifier)
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 StatementImpl::~StatementImpl()
 {
-    // ...
 }
 
 
@@ -66,7 +65,8 @@ StatementImpl& StatementImpl::operator=(const StatementImpl& other)
 {
     if (this != &other)
     {
-        // ...
+        dm_symbol_table = other.dm_symbol_table;
+        dm_unique_identifier = other.dm_unique_identifier;
     }
     return *this;
 }

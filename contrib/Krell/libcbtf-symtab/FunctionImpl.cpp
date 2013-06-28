@@ -38,33 +38,31 @@ FunctionImpl::FunctionImpl(const LinkedObject& linked_object,
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-FunctionImpl::FunctionImpl(const FunctionImpl& other)
+FunctionImpl::FunctionImpl(const FunctionImpl& other) :
+    dm_symbol_table(other.dm_symbol_table),
+    dm_unique_identifier(other.dm_unique_identifier)
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 FunctionImpl::~FunctionImpl()
 {
-    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 FunctionImpl& FunctionImpl::operator=(const FunctionImpl& other)
 {
     if (this != &other)
     {
-        // ...
+        dm_symbol_table = other.dm_symbol_table;
+        dm_unique_identifier = other.dm_unique_identifier;
     }
     return *this;
 }

@@ -92,8 +92,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
         /** Symbol table containing this statement. */
         SymbolTable::Handle dm_symbol_table;
-        
-        // ...
+
+        /** Unique identifier of this statement within that symbol table. */
+        SymbolTable::UniqueIdentifier dm_unique_identifier;
 
     }; // class StatementImpl
 

@@ -25,6 +25,12 @@
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "AddressBitmap.hpp"
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
@@ -41,6 +47,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Type of handle (smart pointer) to a symbol table. */
         typedef boost::shared_ptr<SymbolTable> Handle;
         
+        /**
+         * Type of unique identifier used to refer to functions, statements,
+         * etc. in a symbol table.
+         */
+        typedef boost::uint32_t UniqueIdentifier;
+
         /**
          * Construct a symbol table from the full path name of its linked
          * object. The constructed symbol table initially has no symbols
@@ -106,14 +118,58 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
 
+        /**
+         * Type of associative container used to search for the functions,
+         * statements, etc. overlapping a given address range.
+         */
+        typedef std::multimap<AddressRange, UniqueIdentifier> AddressRangeIndex;
+        
+        /** Structure representing one function in the symbol table. */
+        struct FunctionItem
+        {
+            /** Mangled name of this function. */
+            std::string dm_mangled_name;
+            
+            /** Bitmap containing this function's addresses. */
+            AddressBitmap dm_address_bitmap;
+            
+        }; // struct FunctionItem
+
+        /** Structure representing one statement in the symbol table. */
+        struct StatementItem
+        {
+            /** Full path name of this statement's source file. */
+            boost::filesystem::path dm_path;
+            
+            /** Line number of this statement. */
+            unsigned int dm_line;
+            
+            /** Column number of this statement. */
+            unsigned int dm_column;
+            
+            /** Bitmap containing this statement's addresses. */
+            AddressBitmap dm_address_bitmap;
+            
+        }; // struct StatementItem
+        
         /** Full path name of this symbol table's linked object. */
         boost::filesystem::path dm_path;
-
+        
         /** Checksum for this symbol table's linked object. */
         boost::uint64_t dm_checksum;
 
-        // ...
+        /** List of functions in this symbol table. */
+        std::vector<FunctionItem> dm_functions;
+
+        /** Index used to find functions by addresses. */
+        AddressRangeIndex dm_functions_index;
+
+        /** List of statements in this symbol table. */
+        std::vector<StatementItem> dm_statements;
+
+        /** Index used to find statements by addresses. */
+        AddressRangeIndex dm_statements_index;
 
     }; // class SymbolTable
-            
+
 } } } // namespace KrellInstitute::SymbolTable::Impl

@@ -30,7 +30,11 @@ using namespace KrellInstitute::SymbolTable::Impl;
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const boost::filesystem::path& path) :
     dm_path(path),
-    dm_checksum(0)
+    dm_checksum(0),
+    dm_functions(),
+    dm_functions_index(),
+    dm_statements(),
+    dm_statements_index()
 {
     // ...
 }
@@ -42,7 +46,11 @@ SymbolTable::SymbolTable(const boost::filesystem::path& path) :
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
     dm_path(message.linked_object.path),
-    dm_checksum(message.linked_object.checksum)
+    dm_checksum(message.linked_object.checksum),
+    dm_functions(),
+    dm_functions_index(),
+    dm_statements(),
+    dm_statements_index()
 {
     // ...
 }
@@ -50,29 +58,28 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const SymbolTable& other) :
     dm_path(other.dm_path),
-    dm_checksum(other.dm_checksum)
+    dm_checksum(other.dm_checksum),
+    dm_functions(other.dm_functions),
+    dm_functions_index(other.dm_functions_index),
+    dm_statements(other.dm_statements),
+    dm_statements_index(other.dm_statements_index)
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 SymbolTable::~SymbolTable()
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 SymbolTable& SymbolTable::operator=(const SymbolTable& other)
 {
@@ -80,8 +87,10 @@ SymbolTable& SymbolTable::operator=(const SymbolTable& other)
     {
         dm_path = other.dm_path;
         dm_checksum = other.dm_checksum;
-
-        // ...
+        dm_functions = other.dm_functions;
+        dm_functions_index = other.dm_functions_index;
+        dm_statements = other.dm_statements;
+        dm_statements_index = other.dm_statements_index;
     }
     return *this;
 }

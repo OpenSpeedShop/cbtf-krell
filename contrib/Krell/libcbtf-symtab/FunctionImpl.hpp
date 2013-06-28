@@ -58,7 +58,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
         /** Is this function less than another one? */
         bool operator<(const FunctionImpl& other) const;
-
+        
         /** Is this function equal to another one? */
         bool operator==(const FunctionImpl& other) const;
 
@@ -91,7 +91,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Symbol table containing this function. */
         SymbolTable::Handle dm_symbol_table;
         
-        // ...
+        /** Unique identifer of this function within that symbol table. */
+        SymbolTable::UniqueIdentifier dm_unique_identifier;
         
     }; // class FunctionImpl
 

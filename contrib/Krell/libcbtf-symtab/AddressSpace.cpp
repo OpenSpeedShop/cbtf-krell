@@ -20,133 +20,138 @@
 
 #include <KrellInstitute/SymbolTable/AddressSpace.hpp>
 
-#include "AddressSpaceImpl.hpp"
-
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
-AddressSpace::AddressSpace() :
-    dm_impl(new AddressSpaceImpl())
+AddressSpace::AddressSpace()
 {
+    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
-AddressSpace::AddressSpace(const CBTF_Protocol_LinkedObjectGroup& message) :
-    dm_impl(new AddressSpaceImpl(message))
+AddressSpace::AddressSpace(const CBTF_Protocol_LinkedObjectGroup& message)
 {
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
-AddressSpace::AddressSpace(const AddressSpace& other) :
-    dm_impl(new AddressSpaceImpl(other))
+AddressSpace::AddressSpace(const AddressSpace& other)
 {
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 AddressSpace::~AddressSpace()
 {
-    delete dm_impl;
+    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 AddressSpace& AddressSpace::operator=(const AddressSpace& other)
 {
-    *dm_impl = *other.dm_impl;
+    if (this != &other)
+    {
+        // ...
+    }
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 AddressSpace::operator CBTF_Protocol_LinkedObjectGroup() const
 {
-    return *dm_impl;
+    CBTF_Protocol_LinkedObjectGroup message;
+    
+    // ...
+    
+    return message;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::addLinkedObject(const LinkedObject& linked_object,
                                    const AddressRange& range,
                                    const TimeInterval& interval)
 {
-    return dm_impl->addLinkedObject(linked_object, range, interval);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::apply(const CBTF_Protocol_LoadedLinkedObject& message)
 {
-    dm_impl->apply(message);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::apply(const CBTF_Protocol_UnloadedLinkedObject& message)
 {
-    dm_impl->apply(message);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::visitLinkedObjects(LinkedObjectVisitor& visitor) const
 {
-    dm_impl->visitLinkedObjects(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::visitLinkedObjectsAt(const AddressRange& range,
                                         const TimeInterval& interval,
                                         LinkedObjectVisitor& visitor) const
 {
-    dm_impl->visitLinkedObjectsAt(range, interval, visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void AddressSpace::visitLinkedObjectsByPath(const boost::filesystem::path& path,
                                             LinkedObjectVisitor& visitor) const
 {
-    dm_impl->visitLinkedObjectsByPath(path, visitor);
+    // ...
 }

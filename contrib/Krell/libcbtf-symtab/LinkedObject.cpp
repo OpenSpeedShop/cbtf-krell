@@ -20,192 +20,190 @@
 
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 
-#include "LinkedObjectImpl.hpp"
+#include "SymbolTable.hpp"
 
 using namespace KrellInstitute::SymbolTable;
-using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::LinkedObject(const boost::filesystem::path& path) :
-    dm_impl(new LinkedObjectImpl(path))
+    dm_symbol_table(new Impl::SymbolTable(path))
 {
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::LinkedObject(const CBTF_Protocol_SymbolTable& message) :
-    dm_impl(new LinkedObjectImpl(message))
+    dm_symbol_table(new Impl::SymbolTable(message))
 {
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::LinkedObject(const LinkedObject& other) :
-    dm_impl(new LinkedObjectImpl(*other.dm_impl))
+    dm_symbol_table(other.dm_symbol_table)
 {
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::~LinkedObject()
 {
-    delete dm_impl;
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject& LinkedObject::operator=(const LinkedObject& other)
 {
-    *dm_impl = *other.dm_impl;
+    if (this != &other)
+    {
+        dm_symbol_table = other.dm_symbol_table;
+    }
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool LinkedObject::operator<(const LinkedObject& other) const
 {
-    return *dm_impl < *other.dm_impl;
+    // ...
+
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool LinkedObject::operator==(const LinkedObject& other) const
 {
-    return *dm_impl == *other.dm_impl;
+    // ...
+
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject::operator CBTF_Protocol_SymbolTable() const
 {
-    return *dm_impl;
+    return *dm_symbol_table;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject LinkedObject::clone() const
 {
-    return LinkedObject(dm_impl->clone());
+    return LinkedObject(
+        Impl::SymbolTable::Handle(new Impl::SymbolTable(*dm_symbol_table))
+        );
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 boost::filesystem::path LinkedObject::getPath() const
 {
-    return dm_impl->getPath();
+    return dm_symbol_table->getPath();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 boost::uint64_t LinkedObject::getChecksum() const
 {
-    return dm_impl->getChecksum();
+    return dm_symbol_table->getChecksum();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
 {
-    dm_impl->visitFunctions(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctionsAt(const Address& address,
                                     FunctionVisitor& visitor) const
 {
-    dm_impl->visitFunctionsAt(address, visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctionsByName(const std::string& name,
                                         FunctionVisitor& visitor) const
 {
-    dm_impl->visitFunctionsByName(name, visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatements(StatementVisitor& visitor) const
 {
-    dm_impl->visitStatements(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatementsAt(const Address& address,
                                      StatementVisitor& visitor) const
 {
-    dm_impl->visitStatementsAt(address, visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatementsBySourceFile(
     const boost::filesystem::path& path, StatementVisitor& visitor
     ) const
 {
-    dm_impl->visitStatementsBySourceFile(path, visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject::LinkedObject(Impl::LinkedObjectImpl* impl) :
-    dm_impl(impl)
+LinkedObject::LinkedObject(Impl::SymbolTable::Handle symbol_table) :
+    dm_symbol_table(symbol_table)
 {
 }

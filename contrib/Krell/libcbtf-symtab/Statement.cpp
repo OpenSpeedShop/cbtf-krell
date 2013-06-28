@@ -18,44 +18,44 @@
 
 /** @file Definition of the Statement class. */
 
+#include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 
-#include "StatementImpl.hpp"
+#include "SymbolTable.hpp"
 
 using namespace KrellInstitute::SymbolTable;
-using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 Statement::Statement(const LinkedObject& linked_object,
                      const boost::filesystem::path& path,
                      const unsigned int& line,
                      const unsigned int& column) :
-    dm_impl(new StatementImpl(linked_object, path, line, column))
+    dm_symbol_table(),
+    dm_unique_identifier()
 {
+    // ...
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Statement::Statement(const Statement& other) :
-    dm_impl(new StatementImpl(*other.dm_impl))
+    dm_symbol_table(other.dm_symbol_table),
+    dm_unique_identifier(other.dm_unique_identifier)
 {
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Statement::~Statement()
 {
-    delete dm_impl;
 }
 
 
@@ -65,115 +65,134 @@ Statement::~Statement()
 //------------------------------------------------------------------------------
 Statement& Statement::operator=(const Statement& other)
 {
-    *dm_impl = *other.dm_impl;
+    if (this != &other)
+    {
+        dm_symbol_table = other.dm_symbol_table;
+        dm_unique_identifier = other.dm_unique_identifier;
+    }
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool Statement::operator<(const Statement& other) const
 {
-    return *dm_impl < *other.dm_impl;
+    // ...
+
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool Statement::operator==(const Statement& other) const
 {
-    return *dm_impl == *other.dm_impl;
+    // ...
+
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 Statement Statement::clone(LinkedObject& linked_object) const
 {
-    return Statement(new StatementImpl(dm_impl->clone(linked_object)));
+    // ...
+
+    return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_impl->addAddressRanges(ranges);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject Statement::getLinkedObject() const
 {
-    return dm_impl->getLinkedObject();
+    return LinkedObject(dm_symbol_table);
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 boost::filesystem::path Statement::getPath() const
 {
-    return dm_impl->getPath();
+    // ...
+
+    return boost::filesystem::path();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 unsigned int Statement::getLine() const
 {
-    return dm_impl->getLine();
+    // ...
+
+    return 0;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 unsigned int Statement::getColumn() const
 {
-    return dm_impl->getColumn();
+    // ...
+
+    return 0;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 std::set<AddressRange> Statement::getAddressRanges() const
 {
-    return dm_impl->getAddressRanges();
+    // ...
+
+    return std::set<AddressRange>();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void Statement::visitFunctions(FunctionVisitor& visitor) const
 {
-    dm_impl->visitFunctions(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::Statement(Impl::StatementImpl* impl) :
-    dm_impl(impl)
+Statement::Statement(Impl::SymbolTable::Handle symbol_table,
+                     Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+    dm_symbol_table(symbol_table),
+    dm_unique_identifier(unique_identifier)
 {
 }

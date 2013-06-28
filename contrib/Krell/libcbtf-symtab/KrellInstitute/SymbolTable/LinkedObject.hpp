@@ -23,6 +23,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
+#include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
@@ -31,8 +32,11 @@
 
 namespace KrellInstitute { namespace SymbolTable {
 
+    class Function;
+    class Statement;
+
     namespace Impl {
-        class LinkedObjectImpl;
+        class SymbolTable;
     }
 
     /**
@@ -41,7 +45,9 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject :
         public boost::totally_ordered<LinkedObject>
     {
-
+        friend class Function;
+        friend class Statement;
+        
     public:
 
         /**
@@ -208,30 +214,14 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
 
         /**
-         * Opaque pointer to this object's internal implementation details.
-         * Provides information hiding, improves binary compatibility, and
-         * reduces compile times.
+         * Construct a linked object from its symbol table.
          *
-         * @sa http://en.wikipedia.org/wiki/Opaque_pointer
+         * @param symbol_table    Symbol table containing this linked object.
          */
-        Impl::LinkedObjectImpl* dm_impl;
-
-    public:
-
-        /**
-         * Construct a linked object from its implementation details.
-         *
-         * @param impl    Opaque pointer to this linked object's
-         *                internal implementation details.
-         *
-         * @note    This is a public method but not really part of the public
-         *          interface. It exists because the implementation sometimes
-         *          needs it. There is minimal potential for abuse since only
-         *          the implementation has access to the implementation class
-         *          and anyone who circumvents this via casting will get what
-         *          they deserve.
-         */
-        LinkedObject(Impl::LinkedObjectImpl* impl);
+        LinkedObject(boost::shared_ptr<Impl::SymbolTable> symbol_table);
+        
+        /** Symbol table containing this linked object. */
+        boost::shared_ptr<Impl::SymbolTable> dm_symbol_table;
         
     }; // class LinkedObject
         

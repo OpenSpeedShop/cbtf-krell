@@ -35,9 +35,9 @@
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
-     * Symbol table for a single executable or library. This class provides the
-     * <em>real</em> implementation details for the LinkedObject, Function, and
-     * Statement classes.
+     * Symbol table for a single executable or library. This class provides
+     * the underlying implementation details for the LinkedObject, Function,
+     * and Statement classes.
      */
     class SymbolTable
     {

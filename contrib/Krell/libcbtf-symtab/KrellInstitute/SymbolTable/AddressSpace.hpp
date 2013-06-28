@@ -29,10 +29,6 @@
 
 namespace KrellInstitute { namespace SymbolTable {
 
-    namespace Impl {
-        class AddressSpaceImpl;
-    }
-
     /**
      * In-memory address space of a process.
      */
@@ -158,14 +154,7 @@ namespace KrellInstitute { namespace SymbolTable {
         
     private:
 
-        /**
-         * Opaque pointer to this object's internal implementation details.
-         * Provides information hiding, improves binary compatibility, and
-         * reduces compile times.
-         *
-         * @sa http://en.wikipedia.org/wiki/Opaque_pointer
-         */
-        Impl::AddressSpaceImpl* dm_impl;
+        // ...
 
     }; // class AddressSpace
         

@@ -19,158 +19,174 @@
 /** @file Definition of the Function class. */
 
 #include <KrellInstitute/SymbolTable/Function.hpp>
+#include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 
-#include "FunctionImpl.hpp"
+#include "SymbolTable.hpp"
 
 using namespace KrellInstitute::SymbolTable;
-using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 Function::Function(const LinkedObject& linked_object, const std::string& name) :
-    dm_impl(new FunctionImpl(linked_object, name))
+    dm_symbol_table(),
+    dm_unique_identifier()
 {
+    // ..
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Function::Function(const Function& other) :
-    dm_impl(new FunctionImpl(*other.dm_impl))
+    dm_symbol_table(other.dm_symbol_table),
+    dm_unique_identifier(other.dm_unique_identifier)
 {
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Function::~Function()
 {
-    delete dm_impl;
 }
 
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Function& Function::operator=(const Function& other)
 {
-    *dm_impl = *other.dm_impl;
+    if (this != &other)
+    {
+        dm_symbol_table = other.dm_symbol_table;
+        dm_unique_identifier = other.dm_unique_identifier;
+    }
     return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool Function::operator<(const Function& other) const
 {
-    return *dm_impl < *other.dm_impl;
+    // ...
+    
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 bool Function::operator==(const Function& other) const
 {
-    return *dm_impl == *other.dm_impl;
+    // ...
+
+    return false;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 Function Function::clone(LinkedObject& linked_object) const
 {
-    return Function(new FunctionImpl(dm_impl->clone(linked_object)));
+    // ...
+    
+    return *this;
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void Function::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_impl->addAddressRanges(ranges);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 LinkedObject Function::getLinkedObject() const
 {
-    return dm_impl->getLinkedObject();
+    return LinkedObject(dm_symbol_table);
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 std::string Function::getMangledName() const
 {
-    return dm_impl->getMangledName();
+    // ...
+
+    return std::string();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 std::string Function::getDemangledName(const bool& all) const
 {
-    return dm_impl->getDemangledName(all);
+    // ...
+
+    return std::string();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 std::set<AddressRange> Function::getAddressRanges() const
 {
-    return dm_impl->getAddressRanges();
+    // ...
+
+    return std::set<AddressRange>();
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void Function::visitDefinitions(StatementVisitor& visitor) const
 {
-    dm_impl->visitDefinitions(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
+// ...
 //------------------------------------------------------------------------------
 void Function::visitStatements(StatementVisitor& visitor) const
 {
-    dm_impl->visitStatements(visitor);
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Function::Function(Impl::FunctionImpl* impl) :
-    dm_impl(impl)
+Function::Function(Impl::SymbolTable::Handle symbol_table,
+                   Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+    dm_symbol_table(symbol_table),
+    dm_unique_identifier(unique_identifier)
 {
 }

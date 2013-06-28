@@ -31,7 +31,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject;
 
     namespace Impl {
-        class StatementImpl;
+        class SymbolTable;
     }
 
     /**
@@ -175,30 +175,20 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
 
         /**
-         * Opaque pointer to this object's internal implementation details.
-         * Provides information hiding, improves binary compatibility, and
-         * reduces compile times.
+         * Construct a statement from its symbol table and unique identifier.
          *
-         * @sa http://en.wikipedia.org/wiki/Opaque_pointer
+         * @param symbol_table         Symbol table containing this statement.
+         * @param unique_identifier    Unique identifier for this statement
+         *                             within that symbol table.
          */
-        Impl::StatementImpl* dm_impl;
+        Statement(boost::shared_ptr<Impl::SymbolTable> symbol_table,
+                  boost::uint32_t unique_identifier);
 
-    public:
-
-        /**
-         * Construct a statement from its implementation details.
-         *
-         * @param impl    Opaque pointer to this statement's
-         *                internal implementation details.
-         *
-         * @note    This is a public method but not really part of the public
-         *          interface. It exists because the implementation sometimes
-         *          needs it. There is minimal potential for abuse since only
-         *          the implementation has access to the implementation class
-         *          and anyone who circumvents this via casting will get what
-         *          they deserve.
-         */
-        Statement(Impl::StatementImpl* impl);
+        /** Symbol table containing this statement. */
+        boost::shared_ptr<Impl::SymbolTable> dm_symbol_table;
+        
+        /** Unique identifier for this statement within that symbol table. */
+        boost::uint32_t dm_unique_identifier;
         
     }; // class Statement
     

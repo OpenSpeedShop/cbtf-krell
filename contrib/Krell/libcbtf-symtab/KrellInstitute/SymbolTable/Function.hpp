@@ -20,7 +20,9 @@
 
 #pragma once
 
+#include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
+#include <boost/shared_ptr.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
@@ -31,7 +33,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject;
 
     namespace Impl {
-        class FunctionImpl;
+        class SymbolTable;
     }
 
     /**
@@ -174,30 +176,20 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
 
         /**
-         * Opaque pointer to this object's internal implementation details.
-         * Provides information hiding, improves binary compatibility, and
-         * reduces compile times.
+         * Construct a function from its symbol table and unique identifier.
          *
-         * @sa http://en.wikipedia.org/wiki/Opaque_pointer
+         * @param symbol_table         Symbol table containing this function.
+         * @param unique_identifier    Unique identifier for this function
+         *                             within that symbol table.
          */
-        Impl::FunctionImpl* dm_impl;
+        Function(boost::shared_ptr<Impl::SymbolTable> symbol_table,
+                 boost::uint32_t unique_identifier);
 
-    public:
-
-        /**
-         * Construct a function from its implementation details.
-         *
-         * @param impl    Opaque pointer to this function's
-         *                internal implementation details.
-         *
-         * @note    This is a public method but not really part of the public
-         *          interface. It exists because the implementation sometimes
-         *          needs it. There is minimal potential for abuse since only
-         *          the implementation has access to the implementation class
-         *          and anyone who circumvents this via casting will get what
-         *          they deserve.
-         */
-        Function(Impl::FunctionImpl* impl);
+        /** Symbol table containing this function. */
+        boost::shared_ptr<Impl::SymbolTable> dm_symbol_table;
+        
+        /** Unique identifier for this function within that symbol table. */
+        boost::uint32_t dm_unique_identifier;
         
     }; // class Function
         

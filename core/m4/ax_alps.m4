@@ -27,7 +27,7 @@ AC_DEFUN([AX_ALPS], [
                                [alps installation @<:@/usr@:>@]),
                 alps_dir=$withval, alps_dir="/usr")
 
-    if test "x$libdwarf_dir" == "x/usr"; then
+    if test "x$alps_dir" == "x/usr"; then
       ALPS_CPPFLAGS=""
     else
       ALPS_CPPFLAGS="-I$alps_dir/include"

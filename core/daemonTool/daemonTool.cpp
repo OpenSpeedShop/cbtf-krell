@@ -236,7 +236,7 @@ int main(int argc, char** argv)
 
     unsigned int numBE;
     string topology;
-    string tool;
+    string tool,arch;
     string toolargs;
     
     program_options::options_description desc("daemonTool options");
@@ -256,6 +256,9 @@ int main(int argc, char** argv)
          program_options::value<string>(&topology)->
          default_value(default_topology),
          "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen). If no topology is specified one will be created. Default is to auto create a topology and choose the full number of nodes available to you for the numBE option.")
+        ("arch",
+            boost::program_options::value<std::string>(&arch)->default_value(""),
+            "automatic topology type defaults to a standard cluster.  These options are specific to a Cray or BlueGene. [cray | bluegene]")
 
         ("numBE",
          program_options::value<unsigned int>(&numBE)->default_value(1),
@@ -305,7 +308,11 @@ int main(int argc, char** argv)
 	    // subset of the cluster. TODO: Have the slurm parser
 	    // autocreate this if numBE was not set on the command line.
 	    CBTFTopology cbtftopology;
-	    cbtftopology.autoCreateTopology(BE_START);
+	    if (arch == "cray") {
+	        cbtftopology.autoCreateTopology(BE_CRAY_START);
+	    } else {
+	        cbtftopology.autoCreateTopology(BE_START);
+	    }
 	    topology = cbtftopology.getTopologyFileName();
 	    std::cerr << "Generated topology file: " << topology << std::endl;
 	}

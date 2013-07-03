@@ -663,6 +663,9 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 	setAttachBEMode(true);
     } else if (mode == BE_START) {
 	setAttachBEMode(false);
+    } else if (mode == BE_CRAY_START) {
+	setAttachBEMode(false);
+	setIsCray(true);
     } else if (mode == BE_CRAY_ATTACH) {
 	setAttachBEMode(true);
 	setIsCray(true);

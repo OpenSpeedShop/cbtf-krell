@@ -79,7 +79,8 @@ struct PBSEnvInfo
 typedef enum {
     BE_ATTACH = 0,
     BE_START,
-    BE_CRAY_ATTACH
+    BE_CRAY_ATTACH,
+    BE_CRAY_START
 } MRNetStartMode;
 
 typedef enum {

@@ -51,10 +51,10 @@ class DaemonTool
     
     void start(const string& topology,
                const string& tool,
-               const string& toolargs,
-               const unsigned int& numBE)
+               const string& toolargs
+               )
     {
-        dm_thread = thread(&DaemonTool::run, this, topology, tool, toolargs, numBE);
+        dm_thread = thread(&DaemonTool::run, this, topology, tool, toolargs);
     }
 
     void join()
@@ -67,8 +67,8 @@ class DaemonTool
     // and Backend network must be defined. (expand on this).
     void run(const string& topology,
              const string& tool,
-             const string& toolargs,
-             const unsigned int& numBE)
+             const string& toolargs
+             )
     {
         //
         // The tool argument is a string that represents a CBTF distributed
@@ -234,7 +234,6 @@ int main(int argc, char** argv)
     // Parse the command-line arguments using Boost.Program_options.
     //
 
-    unsigned int numBE;
     string topology;
     string tool,arch;
     string toolargs;
@@ -246,26 +245,21 @@ int main(int argc, char** argv)
 
         ("tool",
          program_options::value<string>(&tool)->default_value(""),
-         "Name specifying tool to execute. This is the name of the tool xml specification. e.g. If the tool is defined by mytool.xml, use --tool mytool. In this case the default search path for cbtf XML files will be used. You can specify the full pathname. e.g. /foo/bar/abc.xml and the tool abc will be launched.")
+         "Name specifying tool to execute. This is the name of the tool xml specification. e.g. If the tool is defined by mytool.xml, use --tool mytool. In this case the default search path for cbtf XML files will be used. You can specify the full pathname. e.g. --tool /foo/bar/abc.xml and the tool abc will be launched.")
 
         ("toolargs",
          program_options::value<string>(&toolargs)->default_value(""),
-         "arguments to tool.  If more than one argument, this value must be in double quotes. e.g. --toolargs \"arg1 arg2\".")
+         "Arguments to tool. If more than one argument, this value must be in double quotes. e.g. --toolargs \"arg1 arg2\".")
         
         ("topology",
          program_options::value<string>(&topology)->
          default_value(default_topology),
-         "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen). If no topology is specified one will be created. Default is to auto create a topology and choose the full number of nodes available to you for the numBE option.")
+         "Path name to a valid mrnet topology file. (i.e. from mrnet_topgen). If no topology is specified one will be created. Default is to auto create a topology and use the full number of nodes available to you.")
         ("arch",
             boost::program_options::value<std::string>(&arch)->default_value(""),
-            "automatic topology type defaults to a standard cluster.  These options are specific to a Cray or BlueGene. [cray | bluegene]")
+            "Automatic topology type defaults to a standard cluster. These options are specific to a Cray or BlueGene.\n[cray | bluegene]")
+	;
 
-        ("numBE",
-         program_options::value<unsigned int>(&numBE)->default_value(1),
-         "Number of desired mrnet backends. Default is 1, This typically should "
-         "match the number of nodes in your job allocation.")
-        ;
-    
     program_options::variables_map vm;
 
     // Handle any regular options
@@ -289,7 +283,6 @@ int main(int argc, char** argv)
     }
     
     std::cout << "Running tool " << tool 
-         << "\nNumber of mrnet backends: "  << numBE
          << std::endl;
     
     //
@@ -303,11 +296,10 @@ int main(int argc, char** argv)
 
 	if (topology.empty()) {
 	    // For a daemon tool we typically wish to run one instance
-	    // per node in a cluster.  So numBE should be set to the
-	    // number of nodes you wish to monitor on.  Can be a
-	    // subset of the cluster. TODO: Have the slurm parser
-	    // autocreate this if numBE was not set on the command line.
+	    // per node in a cluster.  This is specified by the number
+	    // of leaf nodes in the topology file.
 	    CBTFTopology cbtftopology;
+	    //would be nice to auto detect cray here...
 	    if (arch == "cray") {
 	        cbtftopology.autoCreateTopology(BE_CRAY_START);
 	    } else {
@@ -319,7 +311,7 @@ int main(int argc, char** argv)
 
 	// kick of the boost thread that runs the tool...
 	DaemonTool dt;
-	dt.start(topology, tool, toolargs, numBE);
+	dt.start(topology, tool, toolargs);
 	dt.join();
     } 
 }

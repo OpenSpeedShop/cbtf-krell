@@ -18,6 +18,8 @@
 
 /** @file Definition of the SymbolTable class. */
 
+#include <boost/assert.hpp>
+
 #include "SymbolTable.hpp"
 
 using namespace KrellInstitute::SymbolTable;
@@ -125,4 +127,251 @@ boost::filesystem::path SymbolTable::getPath() const
 boost::uint64_t SymbolTable::getChecksum() const
 {
     return dm_checksum;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::addFunction(
+    const std::string& name
+    )
+{
+    dm_functions.push_back(FunctionItem(name));    
+    return dm_functions.size() - 1;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
+                                           const std::set<AddressRange>& ranges)
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::addStatement(
+    const boost::filesystem::path& path,
+    const unsigned int& line,
+    const unsigned int& column
+    )
+{
+    dm_statements.push_back(StatementItem(path, line, column));
+    return dm_statements.size() - 1;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::addStatementAddressRanges(
+    const UniqueIdentifier& uid, const std::set<AddressRange>& ranges
+    )
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
+    const SymbolTable& symbol_table, const UniqueIdentifier& uid
+    )
+{
+    // ...
+
+    return 0;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
+    const SymbolTable& symbol_table, const UniqueIdentifier& uid
+    )
+{
+    // ...
+
+    return 0;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::string SymbolTable::getFunctionMangledName(
+    const UniqueIdentifier& uid
+    ) const
+{
+    BOOST_VERIFY(uid < dm_functions.size());
+    return dm_functions[uid].dm_name;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
+    const UniqueIdentifier& uid
+    ) const
+{
+    // ...
+
+    return std::set<AddressRange>();
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+boost::filesystem::path SymbolTable::getStatementPath(
+    const UniqueIdentifier& uid
+    ) const
+{
+    BOOST_VERIFY(uid < dm_statements.size());
+    return dm_statements[uid].dm_path;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+unsigned int SymbolTable::getStatementLine(const UniqueIdentifier& uid) const
+{
+    BOOST_VERIFY(uid < dm_statements.size());
+    return dm_statements[uid].dm_line;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+unsigned int SymbolTable::getStatementColumn(const UniqueIdentifier& uid) const
+{
+    BOOST_VERIFY(uid < dm_statements.size());
+    return dm_statements[uid].dm_column;
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+std::set<AddressRange> SymbolTable::getStatementAddressRanges(
+    const UniqueIdentifier& uid
+    ) const
+{
+    // ...
+
+    return std::set<AddressRange>();
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctions(FunctionVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctionsAt(const Address& address,
+                                   FunctionVisitor& visitor) const
+{
+    // ...
+}
+
+
+       
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctionsByName(const std::string& name,
+                                       FunctionVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
+                                           StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+        
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
+                                          StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitStatements(StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitStatementsAt(const Address& address,
+                                    StatementVisitor& visitor) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitStatementsBySourceFile(
+    const boost::filesystem::path& path, StatementVisitor& visitor
+    ) const
+{
+    // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// ...
+//------------------------------------------------------------------------------
+void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
+                                          FunctionVisitor& visitor) const
+{
+    // ...
 }

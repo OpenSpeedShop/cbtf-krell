@@ -133,16 +133,11 @@ namespace KrellInstitute { namespace SymbolTable {
         std::string getMangledName() const;
         
         /**
-         * Get the demangled name of this function. An optional boolean flag
-         * is used to specify if all available information (including const,
-         * volatile, function arguments, etc.) should be included in the
-         * demangled name or not.
+         * Get the demangled name of this function.
          *
-         * @param all    Boolean "true" if all available information should be
-         *               included in the demangled name, or "false" otherwise.
          * @return       Demangled name of this function.
          */
-        std::string getDemangledName(const bool& all = true) const;
+        std::string getDemangledName() const;
 
         /**
          * Get the address ranges associated with this function. An empty set

@@ -201,12 +201,12 @@ namespace KrellInstitute { namespace SymbolTable {
                                StatementVisitor& vistor) const;
         
         /**
-         * Visit the statements contained within this linked object for the
+         * Visit the statements contained within this linked object in the
          * given source file.
-         *
-         * @param path       Source file for which to visit statements.
+         *  
+         * @param path       Source file to be found.
          * @param visitor    Visitor invoked for each statement contained
-         *                   within this linked object for that source file.
+         *                   within this linked object in that source file.
          */
         void visitStatementsBySourceFile(const boost::filesystem::path& path,
                                          StatementVisitor& visitor) const;

@@ -28,16 +28,14 @@ using namespace KrellInstitute::SymbolTable;
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 Statement::Statement(const LinkedObject& linked_object,
                      const boost::filesystem::path& path,
                      const unsigned int& line,
                      const unsigned int& column) :
-    dm_symbol_table(),
-    dm_unique_identifier()
+    dm_symbol_table(linked_object.dm_symbol_table),
+    dm_unique_identifier(dm_symbol_table->addStatement(path, line, column))
 {
-    // ...
 }
 
 
@@ -61,7 +59,6 @@ Statement::~Statement()
 
         
 //------------------------------------------------------------------------------
-// Let the implementation do the real work.
 //------------------------------------------------------------------------------
 Statement& Statement::operator=(const Statement& other)
 {
@@ -76,47 +73,54 @@ Statement& Statement::operator=(const Statement& other)
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 bool Statement::operator<(const Statement& other) const
 {
-    // ...
-
-    return false;
+    if (dm_symbol_table < other.dm_symbol_table)
+    {
+        return true;
+    }
+    else if (other.dm_symbol_table < dm_symbol_table)
+    {
+        return false;
+    }
+    else
+    {
+        return dm_unique_identifier < other.dm_unique_identifier;
+    }
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 bool Statement::operator==(const Statement& other) const
 {
-    // ...
-
-    return false;
+    return (dm_symbol_table == other.dm_symbol_table) &&
+        (dm_unique_identifier == other.dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 Statement Statement::clone(LinkedObject& linked_object) const
 {
-    // ...
-
-    return *this;
+    return Statement(
+        linked_object.dm_symbol_table,
+        linked_object.dm_symbol_table->cloneStatement(
+            *dm_symbol_table, dm_unique_identifier
+            )
+        );
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    // ...
+    dm_symbol_table->addStatementAddressRanges(dm_unique_identifier, ranges);
 }
 
 
@@ -131,59 +135,46 @@ LinkedObject Statement::getLinkedObject() const
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 boost::filesystem::path Statement::getPath() const
 {
-    // ...
-
-    return boost::filesystem::path();
+    return dm_symbol_table->getStatementPath(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 unsigned int Statement::getLine() const
 {
-    // ...
-
-    return 0;
+    return dm_symbol_table->getStatementLine(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 unsigned int Statement::getColumn() const
 {
-    // ...
-
-    return 0;
+    return dm_symbol_table->getStatementColumn(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 std::set<AddressRange> Statement::getAddressRanges() const
 {
-    // ...
-
-    return std::set<AddressRange>();
+    return dm_symbol_table->getStatementAddressRanges(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void Statement::visitFunctions(FunctionVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitStatementFunctions(dm_unique_identifier, visitor);
 }
 
 

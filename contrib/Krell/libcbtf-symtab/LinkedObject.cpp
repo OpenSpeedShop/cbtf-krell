@@ -75,25 +75,19 @@ LinkedObject& LinkedObject::operator=(const LinkedObject& other)
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 bool LinkedObject::operator<(const LinkedObject& other) const
 {
-    // ...
-
-    return false;
+    return dm_symbol_table < other.dm_symbol_table;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 bool LinkedObject::operator==(const LinkedObject& other) const
 {
-    // ...
-
-    return false;
+    return dm_symbol_table == other.dm_symbol_table;
 }
 
 
@@ -137,66 +131,60 @@ boost::uint64_t LinkedObject::getChecksum() const
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitFunctions(visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctionsAt(const Address& address,
                                     FunctionVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitFunctionsAt(address, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctionsByName(const std::string& name,
                                         FunctionVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitFunctionsByName(name, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatements(StatementVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitStatements(visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatementsAt(const Address& address,
                                      StatementVisitor& visitor) const
 {
-    // ...
+    dm_symbol_table->visitStatementsAt(address, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatementsBySourceFile(
     const boost::filesystem::path& path, StatementVisitor& visitor
     ) const
 {
-    // ...
+    dm_symbol_table->visitStatementsBySourceFile(path, visitor);
 }
 
 

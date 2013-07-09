@@ -45,6 +45,13 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param range    Address range covered by this address bitmap.
          */
         AddressBitmap(const AddressRange& range);
+
+        /**
+         * Construct an address bitmap from a set of addresses.
+         *
+         * @param addresses    Set of addresses in this address bitmap.
+         */
+        AddressBitmap(const std::set<Address>& addresses);
         
         /**
          * Construct an address bitmap from a CBTF_Protocol_AddressBitmap.

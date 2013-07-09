@@ -42,6 +42,21 @@ AddressBitmap::AddressBitmap(const AddressRange& range) :
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+AddressBitmap::AddressBitmap(const std::set<Address>& addresses) :
+    dm_range(*(addresses.begin()), *(addresses.rbegin()) + 1),
+    dm_bitmap(dm_range.getWidth(), false)
+{
+    for (std::set<Address>::const_iterator
+             i = addresses.begin(); i != addresses.end(); ++i)
+    {
+        setValue(*i, true);
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 AddressBitmap::AddressBitmap(const CBTF_Protocol_AddressBitmap& message) :
     dm_range(message.range),
     dm_bitmap(AddressRange(message.range).getWidth(), false)

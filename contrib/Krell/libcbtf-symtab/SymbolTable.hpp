@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <boost/bimap.hpp>
+#include <boost/bimap/multiset_of.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
@@ -28,7 +30,6 @@
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -346,7 +347,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * Type of associative container used to search for the functions,
          * statements, etc. overlapping a given address range.
          */
-        typedef std::multimap<AddressRange, UniqueIdentifier> AddressRangeIndex;
+        typedef boost::bimap<
+            boost::bimaps::multiset_of<AddressRange>,
+            boost::bimaps::multiset_of<UniqueIdentifier>
+            > AddressRangeIndex;
         
         /** Structure representing one function in the symbol table. */
         struct FunctionItem

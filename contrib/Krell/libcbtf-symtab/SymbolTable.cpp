@@ -399,29 +399,77 @@ void SymbolTable::addStatementAddressRanges(
 
 
 //------------------------------------------------------------------------------
-// ...
+// By implementing the cloning as a SymbolTable method, rather than externally
+// inside of Function, we avoid partitioning the cloned function's address
+// ranges into address bitmaps because the original partitioning is copied.
 //------------------------------------------------------------------------------
 SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
     const SymbolTable& symbol_table, const UniqueIdentifier& uid
     )
 {
-    // ...
+    BOOST_VERIFY(uid < symbol_table.dm_functions.size());
 
-    return 0;
+    // Create a clone of the original function's FunctionItem
+
+    const FunctionItem& original = symbol_table.dm_functions[uid];
+    dm_functions.push_back(FunctionItem(original.dm_name));
+
+    UniqueIdentifier clone_uid = dm_functions.size() - 1;
+    
+    FunctionItem& clone = dm_functions[clone_uid];
+    clone.dm_addresses = original.dm_addresses;
+    
+    // Update the index used to find functions by addresses
+    
+    std::set<AddressRange> ranges = extract(clone.dm_addresses);
+    
+    for (std::set<AddressRange>::const_iterator
+             i = ranges.begin(); i != ranges.end(); ++i)
+    {
+        dm_functions_index.left.insert(std::make_pair(*i, clone_uid));
+    }
+
+    // Return the unique identifier of the cloned function
+    return clone_uid;
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
+// By implementing the cloning as a SymbolTable method, rather than externally
+// inside of Statement, we avoid partitioning the cloned statement's address
+// ranges into address bitmaps because the original partitioning is copied.
 //------------------------------------------------------------------------------
 SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
     const SymbolTable& symbol_table, const UniqueIdentifier& uid
     )
 {
-    // ...
+    BOOST_VERIFY(uid < symbol_table.dm_statements.size());
+
+    // Create a clone of the original statement's StatementItem
+
+    const StatementItem& original = symbol_table.dm_statements[uid];
+    dm_statements.push_back(
+        StatementItem(original.dm_path, original.dm_line, original.dm_column)
+        );
+
+    UniqueIdentifier clone_uid = dm_statements.size() - 1;
     
-    return 0;
+    StatementItem& clone = dm_statements[clone_uid];
+    clone.dm_addresses = original.dm_addresses;
+    
+    // Update the index used to find statements by addresses
+    
+    std::set<AddressRange> ranges = extract(clone.dm_addresses);
+    
+    for (std::set<AddressRange>::const_iterator
+             i = ranges.begin(); i != ranges.end(); ++i)
+    {
+        dm_statements_index.left.insert(std::make_pair(*i, clone_uid));
+    }
+
+    // Return the unique identifier of the cloned statement
+    return clone_uid;
 }
 
 

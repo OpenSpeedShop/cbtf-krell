@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // psPlugin.cpp defines the components for the psTool
 // LACC #:  LA-CC-13-051
-// Copyright (C) 2013 Michael Mason; HPC-3, LANL
+// Copyright (c) 2013 Michael Mason; HPC-3, LANL
+// Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

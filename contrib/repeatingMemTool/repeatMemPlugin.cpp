@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // repeatMemPlugin.cpp defines components for repeating Mem Tool
 // LACC #:  LA-CC-13-051
-// Copyright (C) 2013 Michael Mason, Anthony J. (TJ) Machado; HPC-3, LANL
+// Copyright (c) 2013 Michael Mason, Anthony J. (TJ) Machado; HPC-3, LANL
+// Copyright (c) 2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public

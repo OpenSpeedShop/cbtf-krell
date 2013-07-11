@@ -19,8 +19,11 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
+#include <boost/crc.hpp>
 #include <boost/dynamic_bitset.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <deque>
+#include <iostream>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 
@@ -185,7 +188,14 @@ namespace {
 
 
 //------------------------------------------------------------------------------
-// ...
+// If the given path names an accessible regular file, calculate a checksum for
+// that file using "CRC-64" as specified in:
+//
+//     http://reveng.sourceforge.net/crc-catalogue/17plus.htm#crc.cat-bits.64
+//
+// Comments below note the names of the template parameters to the crc_optimized
+// class as listed in Boost documentation, and their correspondence to fields in
+// the above-mentioned document (in parentheses).
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const boost::filesystem::path& path) :
     dm_path(path),
@@ -195,7 +205,31 @@ SymbolTable::SymbolTable(const boost::filesystem::path& path) :
     dm_statements(),
     dm_statements_index()
 {
-    // ...
+    if (boost::filesystem::is_regular_file(path))
+    {
+        char buffer[1 * 1024 * 1024 /* 1 MB */];
+
+        boost::crc_optimal<
+            64,                 // Bits (width)
+            0x42f0e1eba9ea3693, // TruncPoly (poly)
+            0x0000000000000000, // InitRem (init)
+            0x0000000000000000, // FinalXor (xorout)
+            false,              // ReflectIn (refin)
+            false               // ReflectRem (refout)
+            > crc;
+
+        boost::filesystem::ifstream stream(path, std::ios::binary);
+        
+        while (!stream.eof())
+        {
+            std::streamsize n = stream.readsome(buffer, sizeof(buffer));
+            crc.process_bytes(buffer, n);
+        }
+        
+        stream.close();
+
+        dm_checksum = static_cast<boost::uint64_t>(crc.checksum());
+    }
 }
 
 

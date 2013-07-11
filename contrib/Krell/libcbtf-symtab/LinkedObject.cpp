@@ -141,20 +141,10 @@ void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void LinkedObject::visitFunctionsAt(const Address& address,
-                                    FunctionVisitor& visitor) const
+void LinkedObject::visitFunctions(const AddressRange& range,
+                                  FunctionVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctionsAt(address, visitor);
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void LinkedObject::visitFunctionsByName(const std::string& name,
-                                        FunctionVisitor& visitor) const
-{
-    dm_symbol_table->visitFunctionsByName(name, visitor);
+    dm_symbol_table->visitFunctions(range, visitor);
 }
 
 
@@ -170,21 +160,10 @@ void LinkedObject::visitStatements(StatementVisitor& visitor) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void LinkedObject::visitStatementsAt(const Address& address,
-                                     StatementVisitor& visitor) const
+void LinkedObject::visitStatements(const AddressRange& range,
+                                   StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitStatementsAt(address, visitor);
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void LinkedObject::visitStatementsBySourceFile(
-    const boost::filesystem::path& path, StatementVisitor& visitor
-    ) const
-{
-    dm_symbol_table->visitStatementsBySourceFile(path, visitor);
+    dm_symbol_table->visitStatements(range, visitor);
 }
 
 

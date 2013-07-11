@@ -23,10 +23,10 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/multiset_of.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
@@ -43,7 +43,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
      * the underlying implementation details for the LinkedObject, Function,
      * and Statement classes.
      */
-    class SymbolTable
+    class SymbolTable :
+        public boost::enable_shared_from_this<SymbolTable>
     {
 
     public:
@@ -132,9 +133,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param uid       Unique identifier of the function.
          * @param ranges    Address ranges to associate with that function.
          *
-         * @note    The addresses specified are relative to the beginning of
-         *          this symbol table rather than an absolute address from the
-         *          address space of a specific process.
+         * @note    The addresses specified must be relative to the beginning
+         *          of this symbol table rather than an absolute address from
+         *          the address space of a specific process.
          */
         void addFunctionAddressRanges(const UniqueIdentifier& uid,
                                       const std::set<AddressRange>& ranges);
@@ -157,9 +158,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param uid       Unique identifier of the statement.
          * @param ranges    Address ranges to associate with that statement.
          *
-         * @note    The addresses specified are relative to the beginning of
-         *          this symbol table rather than an absolute address from the
-         *          address space of a specific process.
+         * @note    The addresses specified must be relative to the beginning
+         *          of this symbol table rather than an absolute address from
+         *          the address space of a specific process.
          */
         void addStatementAddressRanges(const UniqueIdentifier& uid,
                                        const std::set<AddressRange>& ranges);
@@ -253,33 +254,26 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /**
          * Visit the functions contained within this symbol table.
          *
-         * @param visitor    Visitor invoked for each function contained
-         *                   within this symbol table.
+         * @param visitor    Visitor invoked for each function
+         *                   contained within this symbol table.
          */
-        void visitFunctions(FunctionVisitor& visitor) const;
+        void visitFunctions(FunctionVisitor& visitor);
 
         /**
-         * Visit the functions at the given address.
+         * Visit the functions contained within this symbol table intersecting
+         * the given address range.
          *
-         * @param address    Address to be found.
-         * @param visitor    Visitor invoked for each function at that address.
+         * @param range      Address range to be found.
+         * @param visitor    Visitor invoked for each function contained within
+         *                   this symbol table intersecting that address range.
          *
-         * @note    The address specified must be relative to the beginning of
-         *          this symbol table rather than an absolute address from the
-         *          address space of a specific process.
+         * @note    The addresses specified must be relative to the beginning
+         *          of this symbol table rather than an absolute address from
+         *          the address space of a specific process.
          */
-        void visitFunctionsAt(const Address& address,
-                              FunctionVisitor& visitor) const;
-       
-        /**
-         * Visit the functions with the given name.
-         *
-         * @param name       Name of the function to be found.
-         * @param visitor    Visitor invoked for each function with that name.
-         */
-        void visitFunctionsByName(const std::string& name,
-                                  FunctionVisitor& visitor) const;
-
+        void visitFunctions(const AddressRange& range,
+                            FunctionVisitor& visitor);
+        
         /**
          * Visit the definitions of the given function.
          *
@@ -288,7 +282,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   function.
          */
         void visitFunctionDefinitions(const UniqueIdentifier& uid,
-                                      StatementVisitor& visitor) const;
+                                      StatementVisitor& visitor);
         
         /**
          * Visit the statements associated with the given function.
@@ -298,39 +292,31 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   with that function.
          */
         void visitFunctionStatements(const UniqueIdentifier& uid,
-                                     StatementVisitor& visitor) const;
+                                     StatementVisitor& visitor);
 
         /**
          * Visit the statements contained within this symbol table.
          *
-         * @param visitor    Visitor invoked for each statement contained
-         *                   within this symbol table.
+         * @param visitor    Visitor invoked for each statement
+         *                   contained within this symbol table.
          */
-        void visitStatements(StatementVisitor& visitor) const;
+        void visitStatements(StatementVisitor& visitor);
 
         /**
-         * Visit the statements at the given address.
+         * Visit the statements contained within this symbol table intersecting
+         * the given address range.
          *
-         * @param address    Address to be found.
-         * @param visitor    Visitor invoked for each statement at that address.
+         * @param range      Address range to be found.
+         * @param visitor    Visitor invoked for each statement contained within
+         *                   this symbol table intersecting that address range.
          *
-         * @note    The address specified must be relative to the beginning of
-         *          this symbol table rather than an absolute address from the
-         *          address space of a specific process.
+         * @note    The addresses specified must be relative to the beginning
+         *          of this symbol table rather than an absolute address from
+         *          the address space of a specific process.
          */
-        void visitStatementsAt(const Address& address,
-                               StatementVisitor& visitor) const;
+        void visitStatements(const AddressRange& range,
+                             StatementVisitor& visitor);
 
-        /**
-         * Visit the statements in the given source file.
-         *
-         * @param path       Source file to be found.
-         * @param visitor    Visitor invoked for each statement in that
-         *                   source file.
-         */
-        void visitStatementsBySourceFile(const boost::filesystem::path& path,
-                                         StatementVisitor& visitor) const;
-        
         /**
          * Visit the functions containing the given statement.
          *
@@ -339,7 +325,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   that statement.
          */
         void visitStatementFunctions(const UniqueIdentifier& uid,
-                                     FunctionVisitor& visitor) const;
+                                     FunctionVisitor& visitor);
         
     private:
 

@@ -78,7 +78,7 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Construct an interval containing a single value. */
         Interval(const T& value) :
             dm_begin(value),
-            dm_end(value + 1)
+            dm_end(value + static_cast<boost::int64_t>(1))
         {
             BOOST_ASSERT(dm_begin <= dm_end);
         }

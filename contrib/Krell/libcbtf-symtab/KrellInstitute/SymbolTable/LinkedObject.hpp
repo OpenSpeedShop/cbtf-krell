@@ -25,10 +25,9 @@
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
-#include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -146,70 +145,48 @@ namespace KrellInstitute { namespace SymbolTable {
         /**
          * Visit the functions contained within this linked object.
          *
-         * @param visitor    Visitor invoked for each function contained
-         *                   within this linked object.
+         * @param visitor    Visitor invoked for each function
+         *                   contained within this linked object.
          */
         void visitFunctions(FunctionVisitor& visitor) const;
 
         /**
-         * Visit the functions contained within this linked object at the given
-         * address.
+         * Visit the functions contained within this linked object intersecting
+         * the given address range.
          *
-         * @param address    Address to be found.
-         * @param visitor    Visitor invoked for each function contained
-         *                   within this linked object at that address.
+         * @param range      Address range to be found.
+         * @param visitor    Visitor invoked for each function contained within
+         *                   this linked object intersecting that address range.
          *
-         * @note    The address specified must be relative to the beginning of
+         * @note    The addresses specified must be relative to the beginning of
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        void visitFunctionsAt(const Address& address,
-                              FunctionVisitor& visitor) const;
-        
-        /**
-         * Visit the functions contained within this linked object with the
-         * given name.
-         *
-         * @param name       Name of the function to find.
-         * @param visitor    Visitor invoked for each function contained
-         *                   within this linked object with that name.
-         */
-        void visitFunctionsByName(const std::string& name,
-                                  FunctionVisitor& visitor) const;
+        void visitFunctions(const AddressRange& range,
+                            FunctionVisitor& visitor) const;
         
         /**
          * Visit the statements contained within this linked object.
          *
-         * @param visitor    Visitor invoked for each statement contained
-         *                   within this linked object.
+         * @param visitor    Visitor invoked for each statement
+         *                   contained within this linked object.
          */
         void visitStatements(StatementVisitor& visitor) const;
         
         /**
-         * Visit the statements contained within this linked object at the
-         * given address.
+         * Visit the statements contained within this linked object intersecting
+         * the given address range.
          *
-         * @param address    Address to be found.
-         * @param visitor    Visitor invoked for each statement contained
-         *                   within this linked object at that address.
+         * @param range      Address range to be found.
+         * @param visitor    Visitor invoked for each statement contained within
+         *                   this linked object intersecting that address range.
          *
-         * @note    The address specified must be relative to the beginning of
+         * @note    The addresses specified must be relative to the beginning of
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        void visitStatementsAt(const Address& address,
-                               StatementVisitor& vistor) const;
-        
-        /**
-         * Visit the statements contained within this linked object in the
-         * given source file.
-         *  
-         * @param path       Source file to be found.
-         * @param visitor    Visitor invoked for each statement contained
-         *                   within this linked object in that source file.
-         */
-        void visitStatementsBySourceFile(const boost::filesystem::path& path,
-                                         StatementVisitor& visitor) const;
+        void visitStatements(const AddressRange& range,
+                             StatementVisitor& vistor) const;
         
     private:
 

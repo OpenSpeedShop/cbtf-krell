@@ -42,6 +42,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class Function :
         public boost::totally_ordered<Function>
     {
+        friend class Impl::SymbolTable;
 
     public:
 

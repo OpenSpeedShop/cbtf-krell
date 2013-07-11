@@ -19,7 +19,10 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include <deque>
+#include <KrellInstitute/SymbolTable/Function.hpp>
+#include <KrellInstitute/SymbolTable/Statement.hpp>
 
 #include "SymbolTable.hpp"
 
@@ -44,13 +47,13 @@ namespace {
         for (std::vector<AddressBitmap>::const_iterator
                  i = bitmaps.begin(); i != bitmaps.end(); ++i)
         {
-            std::set<AddressRange> bitmap_ranges = i->getContiguousRanges(true);
-            ranges.insert(bitmap_ranges.begin(), bitmap_ranges.end());
+            std::set<AddressRange> i_ranges = i->getContiguousRanges(true);
+            ranges.insert(i_ranges.begin(), i_ranges.end());
         }
         
         return ranges;
     }
-    
+
     /**
      * Partition address ranges into address bitmaps. Addresses for functions
      * and statements are stored as pairings of an address range and a bitmap,
@@ -176,7 +179,7 @@ namespace {
         // Return the final results to the caller        
         return bitmaps;
     }
-      
+
 } // namespace <anonymous>
 
 
@@ -543,97 +546,185 @@ std::set<AddressRange> SymbolTable::getStatementAddressRanges(
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-void SymbolTable::visitFunctions(FunctionVisitor& visitor) const
+void SymbolTable::visitFunctions(FunctionVisitor& visitor)
 {
-    // ...
+    bool terminate = false;
+    Function value(shared_from_this(), 0);
+    
+    for (UniqueIdentifier i = 0, iEnd = dm_functions.size(); 
+         !terminate && (i != iEnd); 
+         ++i)
+    {
+        value.dm_unique_identifier = i;
+        terminate |= visitor(value);
+    }
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-void SymbolTable::visitFunctionsAt(const Address& address,
-                                   FunctionVisitor& visitor) const
+void SymbolTable::visitFunctions(const AddressRange& range,
+                                 FunctionVisitor& visitor)
 {
-    // ...
+    bool terminate = false;
+    Function value(shared_from_this(), 0);
+    boost::dynamic_bitset<> visited(dm_functions.size());
+
+    for (AddressRangeIndex::left_map::const_iterator
+             i = dm_functions_index.left.lower_bound(range),
+             iEnd = dm_functions_index.left.upper_bound(range);
+         !terminate && (i != iEnd);
+         ++i)
+    {
+        if ((i->second < visited.size()) && !visited[i->second])
+        {
+            visited[i->second] = true;
+            value.dm_unique_identifier = i->second;
+            terminate |= visitor(value);
+        }
+    }
 }
 
 
        
 //------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-void SymbolTable::visitFunctionsByName(const std::string& name,
-                                       FunctionVisitor& visitor) const
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
-                                           StatementVisitor& visitor) const
+                                           StatementVisitor& visitor)
 {
-    // ...
+    BOOST_VERIFY(uid < dm_functions.size());
+
+    bool terminate = false;
+    Statement value(shared_from_this(), 0);
+    boost::dynamic_bitset<> visited(dm_statements.size());
+    
+    std::set<AddressRange> ranges = extract(dm_functions[uid].dm_addresses);
+
+    for (AddressRangeIndex::left_map::const_iterator
+             i = dm_functions_index.left.lower_bound(*ranges.begin()),
+             iEnd = dm_functions_index.left.upper_bound(*ranges.begin());
+         !terminate && (i != iEnd);
+         ++i)
+    {
+        if ((i->second < visited.size()) && !visited[i->second])
+        {
+            visited[i->second] = true;
+            value.dm_unique_identifier = i->second;
+            terminate |= visitor(value);
+        }
+    }
 }
 
 
         
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
-                                          StatementVisitor& visitor) const
+                                          StatementVisitor& visitor)
 {
-    // ...
+    BOOST_VERIFY(uid < dm_functions.size());
+
+    bool terminate = false;
+    Statement value(shared_from_this(), 0);
+    boost::dynamic_bitset<> visited(dm_statements.size());
+    
+    std::set<AddressRange> ranges = extract(dm_functions[uid].dm_addresses);
+    
+    for (std::set<AddressRange>::const_iterator
+             i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
+    {
+        for (AddressRangeIndex::left_map::const_iterator
+                 j = dm_statements_index.left.lower_bound(*i),
+                 jEnd = dm_statements_index.left.upper_bound(*i);
+             !terminate && (j != jEnd);
+             ++j)
+        {
+            if ((j->second < visited.size()) && !visited[j->second])
+            {
+                visited[j->second] = true;
+                value.dm_unique_identifier = j->second;
+                terminate |= visitor(value);
+            }
+        }
+    }
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-void SymbolTable::visitStatements(StatementVisitor& visitor) const
+void SymbolTable::visitStatements(StatementVisitor& visitor)
 {
-    // ...
+    bool terminate = false;
+    Statement value(shared_from_this(), 0);
+    
+    for (UniqueIdentifier i = 0, iEnd = dm_statements.size();
+         !terminate && (i != iEnd); 
+         ++i)
+    {
+        value.dm_unique_identifier = i;
+        terminate |= visitor(value);
+    }
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
-void SymbolTable::visitStatementsAt(const Address& address,
-                                    StatementVisitor& visitor) const
+void SymbolTable::visitStatements(const AddressRange& range,
+                                  StatementVisitor& visitor)
 {
-    // ...
+    bool terminate = false;
+    Statement value(shared_from_this(), 0);
+    boost::dynamic_bitset<> visited(dm_statements.size());
+    
+    for (AddressRangeIndex::left_map::const_iterator
+             i = dm_statements_index.left.lower_bound(range),
+             iEnd = dm_statements_index.left.upper_bound(range);
+         !terminate && (i != iEnd);
+         ++i)
+    {
+        if ((i->second < visited.size()) && !visited[i->second])
+        {
+            visited[i->second] = true;
+            value.dm_unique_identifier = i->second;
+            terminate |= visitor(value);
+        }
+    }
 }
 
 
 
 //------------------------------------------------------------------------------
-// ...
-//------------------------------------------------------------------------------
-void SymbolTable::visitStatementsBySourceFile(
-    const boost::filesystem::path& path, StatementVisitor& visitor
-    ) const
-{
-    // ...
-}
-
-
-
-//------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
-                                          FunctionVisitor& visitor) const
+                                          FunctionVisitor& visitor)
 {
-    // ...
+    BOOST_VERIFY(uid < dm_statements.size());
+
+    bool terminate = false;
+    Function value(shared_from_this(), 0);
+    boost::dynamic_bitset<> visited(dm_functions.size());
+    
+    std::set<AddressRange> ranges = extract(dm_statements[uid].dm_addresses);
+    
+    for (std::set<AddressRange>::const_iterator
+             i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
+    {
+        for (AddressRangeIndex::left_map::const_iterator
+                 j = dm_functions_index.left.lower_bound(*i),
+                 jEnd = dm_functions_index.left.upper_bound(*i);
+             !terminate && (j != jEnd);
+             ++j)
+        {
+            if ((j->second < visited.size()) && !visited[j->second])
+            {
+                visited[j->second] = true;
+                value.dm_unique_identifier = j->second;
+                terminate |= visitor(value);
+            }
+        }
+    }
 }

@@ -43,7 +43,8 @@ AddressBitmap::AddressBitmap(const AddressRange& range) :
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 AddressBitmap::AddressBitmap(const std::set<Address>& addresses) :
-    dm_range(*(addresses.begin()), *(addresses.rbegin()) + 1),
+    dm_range(*(addresses.begin()),
+             *(addresses.rbegin()) + static_cast<boost::int64_t>(1)),
     dm_bitmap(dm_range.getWidth(), false)
 {
     for (std::set<Address>::const_iterator

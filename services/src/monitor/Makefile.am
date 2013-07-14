@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -19,46 +19,6 @@
 pkglibdir = ${libdir}/KrellInstitute/Collectors
 lib_LTLIBRARIES = libcbtf-services-monitor.la
 
-if BUILD_TARGETED
-if HAVE_TARGET_SHARED
-libcbtf_services_monitor_la_CFLAGS = \
-	-I$(top_srcdir)/include \
-	@MESSAGES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_services_monitor_la_LDFLAGS = \
-	@MESSAGES_LDFLAGS@ \
-	@TARGET_LIBMONITOR_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_services_monitor_la_LIBADD = \
-	@TARGET_LIBMONITOR_LIBS@ \
-	@LIBLTDL@
-else
-if HAVE_TARGET_STATIC
-libcbtf_services_monitor_la_CFLAGS = \
-	-static \
-	-I$(top_srcdir)/include \
-	@MESSAGES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_services_monitor_la_LDFLAGS = \
-	-static \
-	@MESSAGES_LDFLAGS@ \
-	@TARGET_LIBMONITOR_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_services_monitor_la_LIBADD = \
-	@TARGET_LIBMONITOR_LIBS@ \
-	@LIBLTDL@
-endif
-endif
-
-# else for not targeted (below) targeted above
-else
-
 libcbtf_services_monitor_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
@@ -73,7 +33,6 @@ libcbtf_services_monitor_la_LDFLAGS = \
 libcbtf_services_monitor_la_LIBADD = \
 	@LIBMONITOR_LIBS@ \
 	@LIBLTDL@
-endif
 
 libcbtf_services_monitor_la_SOURCES = \
 	Monitor.c

@@ -18,7 +18,6 @@
 
 xmldir = $(datadir)/KrellInstitute/xml
 
-if !BUILD_TARGETED
 bin_PROGRAMS = collectionTool
 
 collectionTool_CXXFLAGS = \
@@ -64,6 +63,5 @@ collectionTool_LDADD = \
 
 collectionTool_SOURCES = \
 	collectionTool.cpp
-endif
 
 

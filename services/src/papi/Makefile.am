@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,42 +18,6 @@
 
 lib_LTLIBRARIES = libcbtf-services-papi.la
 
-if BUILD_TARGETED
-if HAVE_TARGET_SHARED
-libcbtf_services_papi_la_CFLAGS = \
-	-I$(top_srcdir)/include \
-	@TARGET_PAPI_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_services_papi_la_LDFLAGS = \
-	 @TARGET_PAPI_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_services_papi_la_LIBADD = \
-	@TARGET_PAPI_LIBS@ \
-	@LIBLTDL@
-else
-if HAVE_TARGET_STATIC
-libcbtf_services_papi_la_CFLAGS = \
-	-static \
-	-I$(top_srcdir)/include \
-	@TARGET_PAPI_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_services_papi_la_LDFLAGS = \
-	-static \
-	 @TARGET_PAPI_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_services_papi_la_LIBADD = \
-	@TARGET_PAPI_LIBS@ \
-	@LIBLTDL@
-endif
-endif
-
-# else for not targeted (below) targeted above
-else
-
 libcbtf_services_papi_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	@PAPI_CPPFLAGS@ \
@@ -66,7 +30,6 @@ libcbtf_services_papi_la_LDFLAGS = \
 libcbtf_services_papi_la_LIBADD = \
 	@PAPI_LIBS@ \
 	@LIBLTDL@
-endif
 
 libcbtf_services_papi_la_SOURCES = \
 	PapiAPI.c

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -65,9 +65,11 @@ AC_DEFUN([AX_CBTF_SERVICES], [
 
     services_saved_CPPFLAGS=$CPPFLAGS
     services_saved_LDFLAGS=$LDFLAGS
+    services_saved_LIBS=$LIBS
 
     CPPFLAGS="$CPPFLAGS $CBTF_SERVICES_CPPFLAGS"
-    LDFLAGS="$LDFLAGS $CBTF_SERVICES_LDFLAGS $CBTF_SERVICES_COMMON_LIBS -lrt -lpthread"
+    LDFLAGS="$LDFLAGS $CBTF_SERVICES_LDFLAGS"
+    LIBS="$CBTF_SERVICES_COMMON_LIBS -lrt -lpthread"
 
     AC_MSG_CHECKING([for CBTF SERVICES library and headers])
 
@@ -81,6 +83,7 @@ AC_DEFUN([AX_CBTF_SERVICES], [
 
     CPPFLAGS=$services_saved_CPPFLAGS
     LDFLAGS=$services_saved_LDFLAGS
+    LIBS=$services_saved_LIBS
 
     AC_SUBST(CBTF_SERVICES_CPPFLAGS)
     AC_SUBST(CBTF_SERVICES_LDFLAGS)
@@ -98,87 +101,4 @@ AC_DEFUN([AX_CBTF_SERVICES], [
     AC_SUBST(CBTF_SERVICES_UNWIND_LIBS)
 
 ])
-
-
-
-################################################################################
-# Check for TARGET CBTF SERVICES 
-################################################################################
-
-AC_DEFUN([AX_TARGET_CBTF_SERVICES], [
-
-    AC_ARG_WITH(target-cbtf-services,
-            AC_HELP_STRING([--with-target-cbtf-services=DIR],
-                           [CBTF target services library installation @<:@/opt@:>@]),
-                target_services_dir=$withval, target_services_dir="/zzz"
-		)
-
-    TARGET_CBTF_SERVICES_CPPFLAGS="-I$target_services_dir/include"
-    TARGET_CBTF_SERVICES_LDFLAGS="-L$target_services_dir/$abi_libdir"
-    TARGET_CBTF_SERVICES_BINUTILS_LIBS="-lcbtf-services-binutils"
-    TARGET_CBTF_SERVICES_COMMON_LIBS="-lcbtf-services-common"
-    TARGET_CBTF_SERVICES_DATA_LIBS="-lcbtf-services-data"
-    TARGET_CBTF_SERVICES_FILEIO_LIBS="-lcbtf-services-fileio"
-    TARGET_CBTF_SERVICES_FPE_LIBS="-lcbtf-services-fpe"
-    TARGET_CBTF_SERVICES_MONITOR_LIBS="-lcbtf-services-monitor"
-    TARGET_CBTF_SERVICES_MRNET_LIBS="-lcbtf-services-mrnet"
-    TARGET_CBTF_SERVICES_OFFLINE_LIBS="-lcbtf-services-offline"
-    TARGET_CBTF_SERVICES_PAPI_LIBS="-lcbtf-services-papi"
-    TARGET_CBTF_SERVICES_SEND_LIBS="-lcbtf-services-send"
-    TARGET_CBTF_SERVICES_TIMER_LIBS="-lcbtf-services-timer"
-    TARGET_CBTF_SERVICES_UNWIND_LIBS="-lcbtf-services-unwind"
-
-
-    TARGET_CBTF_SERVICES_LIBS="$TARGET_CBTF_SERVICES_BINUTILS_LIBS $TARGET_CBTF_SERVICES_COMMON_LIBS $TARGET_CBTF_SERVICES_DATA_LIBS $TARGET_CBTF_SERVICES_FILEIO_LIBS $TARGET_CBTF_SERVICES_FPE_LIBS $TARGET_CBTF_SERVICES_MONITOR_LIBS $TARGET_CBTF_SERVICES_MRNET_LIBS $TARGET_CBTF_SERVICES_OFFLINE_LIBS $TARGET_CBTF_SERVICES_PAPI_LIBS $TARGET_CBTF_SERVICES_SEND_LIBS $TARGET_CBTF_SERVICES_TIMER_LIBS $TARGET_CBTF_SERVICES_UNWIND_LIBS"
-
-    target_services_saved_CPPFLAGS=$CPPFLAGS
-    target_services_saved_LDFLAGS=$LDFLAGS
-
-#    CPPFLAGS="$CPPFLAGS $TARGET_CBTF_SERVICES_CPPFLAGS"
-#    LDFLAGS="$LDFLAGS $TARGET_CBTF_SERVICES_LDFLAGS $TARGET_CBTF_SERVICES_COMMON_LIBS -lrt -lpthread"
-
-    AC_MSG_CHECKING([for Targeted CBTF services library and headers])
-
-    if [ test -f $target_services_dir/$abi_libdir/libcbtf-services-common.a ]; then
-        AC_MSG_RESULT(yes)
-    else
-        TARGET_CBTF_SERVICES_CPPFLAGS=""
-        TARGET_CBTF_SERVICES_LDFLAGS=""
-        TARGET_CBTF_SERVICES_BINUTILS_LIBS=""
-        TARGET_CBTF_SERVICES_COMMON_LIBS=""
-        TARGET_CBTF_SERVICES_DATA_LIBS=""
-        TARGET_CBTF_SERVICES_FILEIO_LIBS=""
-        TARGET_CBTF_SERVICES_FPE_LIBS=""
-        TARGET_CBTF_SERVICES_MONITOR_LIBS=""
-        TARGET_CBTF_SERVICES_MRNET_LIBS=""
-        TARGET_CBTF_SERVICES_OFFLINE_LIBS=""
-        TARGET_CBTF_SERVICES_PAPI_LIBS=""
-        TARGET_CBTF_SERVICES_SEND_LIBS=""
-        TARGET_CBTF_SERVICES_TIMER_LIBS=""
-        TARGET_CBTF_SERVICES_UNWIND_LIBS=""
-        TARGET_CBTF_SERVICES_LIBS=""
-        AC_MSG_RESULT(no)
-        #AC_MSG_ERROR([CBTF services library could not be found.])
-    fi
-
-#    CPPFLAGS=$target_services_saved_CPPFLAGS
-#    LDFLAGS=$target_services_saved_LDFLAGS
-
-    AC_SUBST(TARGET_CBTF_SERVICES_CPPFLAGS)
-    AC_SUBST(TARGET_CBTF_SERVICES_LDFLAGS)
-    AC_SUBST(TARGET_CBTF_SERVICES_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_BINUTILS_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_COMMON_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_DATA_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_FILEIO_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_FPE_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_MONITOR_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_MRNET_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_PAPI_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_SEND_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_TIMER_LIBS)
-    AC_SUBST(TARGET_CBTF_SERVICES_UNWIND_LIBS)
-
-])
-
 

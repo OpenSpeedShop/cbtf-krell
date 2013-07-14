@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -24,29 +24,15 @@ if !BUILD_RUNTIME
 dist_bin_SCRIPTS += cbtfrun cbtflink
 BUILT_FILES += cbtfrun cbtflink
 endif
-if HAVE_TARGET_SHARED
-dist_bin_SCRIPTS += cbtfrun cbtflink
-BUILT_FILES += cbtfrun cbtflink
-endif
 
 CLEANFILES = $(BUILT_FILES)
 
-if BUILD_TARGETED 
-monitor_dir=$(TARGET_LIBMONITOR_DIR)
-unwind_dir=$(TARGET_LIBUNWIND_DIR)
-papi_dir=$(TARGET_PAPI_DIR)
-mrnet_dir=$(TARGET_MRNET_DIR)
-else
 monitor_dir=$(LIBMONITOR_DIR)
 unwind_dir=$(LIBUNWIND_DIR)
 papi_dir=$(PAPI_DIR)
 mrnet_dir=$(MRNET_DIR)
-endif
 
 if !BUILD_RUNTIME
-cbtfrun: cbtfrun.in
-endif
-if HAVE_TARGET_SHARED
 cbtfrun: cbtfrun.in
 endif
 	@rm -f cbtfrun

@@ -34,7 +34,7 @@ AC_DEFUN([AX_CBTF_XML], [
     cbtf_xml_saved_LDFLAGS=$LDFLAGS
     cbtf_xml_saved_LIBS=$LIBS
 
-    CPPFLAGS="$CPPFLAGS $CBTF_XML_CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $CBTF_XML_CPPFLAGS $BOOST_CPPFLAGS"
     LDFLAGS="$CXXFLAGS $CBTF_LDFLAGS $CBTF_XML_LDFLAGS $LIBXERCES_C_LDFLAGS $BOOST_LDFLAGS"
     LIBS="$CBTF_LIBS $CBTF_XML_LIBS $LIBXERCES_C $BOOST_FILESYSTEM_LIB $BOOST_SYSTEM_LIB $BOOST_THREAD_LIB"
 
@@ -63,57 +63,4 @@ AC_DEFUN([AX_CBTF_XML], [
     AC_SUBST(CBTF_XML_LIBS)
 
 ])
-
-
-AC_DEFUN([AX_TARGET_CBTF_XML], [
-
-    AC_ARG_WITH(target-cbtf-xml,
-                AC_HELP_STRING([--with-target-cbtf-xml=DIR],
-                               [CBTF XML library installation @<:@/usr@:>@]),
-                target_cbtf_xml_dir=$withval, target_cbtf_xml_dir="/usr")
-
-    TARGET_CBTF_XML_CPPFLAGS="-I$target_cbtf_xml_dir/include"
-    TARGET_CBTF_XML_LDFLAGS="-L$target_cbtf_xml_dir/$abi_libdir"
-    TARGET_CBTF_XML_LIBS="$TARGET_BOOST_SYSTEM_LIB $TARGET_BOOST_FILESYSTEM_LIB $TARGET_BOOST_THREAD_LIB $TARGET_LIBXERCES_C $TARGET_XML_LIBS -lcbtf -lcbtf-xml"
-    TARGET_CBTF_XML_DIR="$target_cbtf_xml_dir"
-
-    AC_MSG_CHECKING([for Targetted CBTF XML support])
-
-    found_target_cbtf=0
-    if test -f $target_cbtf_xml_dir/$abi_libdir/libcbtf-xml.so -o -f $target_cbtf_xml_dir/$abi_libdir/libcbtf-xml.a ; then
-       found_target_cbtf=1
-       TARGET_CBTF_XML_LDFLAGS="-L$target_cbtf_xml_dir/$abi_libdir"
-    elif test -f  $target_cbtf_xml_dir/$alt_abi_libdir/libcbtf-xml.so -o -f $target_cbtf_xml_dir/$alt_abi_libdir/libcbtf-xml.a ; then
-       found_target_cbtf=1
-       TARGET_CBTF_XML_LDFLAGS="-L$target_cbtf_xml_dir/$alt_abi_libdir"
-    fi
-
-    if test $found_target_cbtf == 0 && test "$target_cbtf_xml_dir" == "/zzz" ; then
-      AM_CONDITIONAL(HAVE_TARGET_CBTF_XML, false)
-      TARGET_CBTF_XML_CPPFLAGS=""
-      TARGET_CBTF_XML_LDFLAGS=""
-      TARGET_CBTF_XML_LIBS=""
-      TARGET_CBTF_XML_DIR=""
-      AC_MSG_RESULT(no)
-    elif test $found_target_cbtf == 1 ; then
-      AM_CONDITIONAL(HAVE_TARGET_CBTF_XML, true)
-      AC_DEFINE(HAVE_TARGET_CBTF_XML, 1, [Define to 1 if you have a target version of CBTF.])
-      AC_MSG_RESULT(yes)
-    else
-      AM_CONDITIONAL(HAVE_TARGET_CBTF_XML, false)
-      TARGET_CBTF_XML_CPPFLAGS=""
-      TARGET_CBTF_XML_LDFLAGS=""
-      TARGET_CBTF_XML_LIBS=""
-      TARGET_CBTF_XML_DIR=""
-      AC_MSG_RESULT(no)
-    fi
-
-    AC_SUBST(TARGET_CBTF_XML_CPPFLAGS)
-    AC_SUBST(TARGET_CBTF_XML_LDFLAGS)
-    AC_SUBST(TARGET_CBTF_XML_LIBS)
-    AC_SUBST(TARGET_CBTF_XML_DIR)
-
-])
-
-
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2007-2011 The Krell Institue. All Rights Reserved.
+** Copyright (c) 2007-2013 The Krell Institue. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -26,6 +26,7 @@
  *
  */
 
+#include "config.h"
 #include <bfd.h>
 #include "bfd.h"
 #include <string.h>

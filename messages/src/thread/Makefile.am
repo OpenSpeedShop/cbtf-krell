@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,16 +17,9 @@
 ################################################################################
 
 lib_LTLIBRARIES = libcbtf-messages-thread.la
-# If build for target only add converters if target is also shared
-if BUILD_TARGETED
 
-if HAVE_TARGET_SHARED
-lib_LTLIBRARIES += libcbtf-messages-converters-thread.la
-endif
-else
 # for non targeted, always build the converters
 lib_LTLIBRARIES += libcbtf-messages-converters-thread.la
-endif
 
 BUILT_SOURCES = \
 	ThreadControl.h ThreadControl.c
@@ -46,7 +39,6 @@ libcbtf_messages_thread_la_SOURCES = \
 	ThreadControl.x \
 	$(BUILT_SOURCES)
 
-if !BUILD_TARGETED
 libcbtf_messages_converters_thread_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/base \
@@ -65,51 +57,6 @@ libcbtf_messages_converters_thread_la_LIBADD = \
 
 libcbtf_messages_converters_thread_la_SOURCES = \
 	Converters.cpp
-else
-if HAVE_TARGET_SHARED
-libcbtf_messages_converters_thread_la_CXXFLAGS = \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/src/base \
-	@TARGET_BOOST_CPPFLAGS@ \
-	@TARGET_MRNET_CPPFLAGS@ \
-	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_messages_converters_thread_la_LDFLAGS = \
-	@TARGET_MRNET_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_messages_converters_thread_la_LIBADD = \
-	@TARGET_MRNET_LIBS@ \
-	@LIBLTDL@
-
-libcbtf_messages_converters_thread_la_SOURCES = \
-	Converters.cpp
-endif
-
-if HAVE_TARGET_STATIC
-libcbtf_messages_converters_thread_la_CXXFLAGS = \
-	-static \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/src/base \
-	@TARGET_BOOST_CPPFLAGS@ \
-	@TARGET_MRNET_CPPFLAGS@ \
-	@TARGET_CBTF_CPPFLAGS@ @TARGET_CBTF_MRNET_CPPFLAGS@ \
-	@LTDLINCL@ 
-
-libcbtf_messages_converters_thread_la_LDFLAGS = \
-	-static \
-	@TARGET_MRNET_LDFLAGS@ \
-	-version-info 0:0:0
-
-libcbtf_messages_converters_thread_la_LIBADD = \
-	@TARGET_MRNET_LIBS@ \
-	@LIBLTDL@
-
-libcbtf_messages_converters_thread_la_SOURCES = \
-	Converters.cpp
-endif
-endif
 
 xdr_headers = \
 	ThreadControl.h

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
 ################################################################################
 
 AC_INIT([messages], [1.0])
-AC_COPYRIGHT([[Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.]])
+AC_COPYRIGHT([[Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.]])
 
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE ([foreign])
@@ -26,7 +26,7 @@ AM_CONFIG_HEADER([config.h])
 
 AH_TOP([
 /*******************************************************************************
-** Copyright (c) 2010-2012 Krell Institute. All Rights Reserved.
+** Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -145,33 +145,9 @@ AC_CHECK_HEADER(pthread.h, [ AC_CHECK_LIB(pthread, pthread_create, [
 ]) ])
 
 
-################################################################################
-# Target SHARED LIBRAY BUILD Specification
-################################################################################
-#
-# Option: --enable-target-shared=yes
-#
-AC_MSG_CHECKING(for target shared libraries build specification)
-AC_ARG_ENABLE([target-shared],
-    [AS_HELP_STRING([--enable-target-shared],
-        [Enable support on target architecture for building shared libraries [default=no]])],
-    [enable_target_shared=yes],
-    [enable_target_shared=no])
-
-if test "x$enable_target_shared" = xyes ; then
-    AC_MSG_RESULT(yes)
-    AM_CONDITIONAL(HAVE_TARGET_SHARED, true)
-    AC_DEFINE([HAVE_TARGET_SHARED], [1],
-        [Enable support on target architecture for shared libraries.])
-else
-    AC_MSG_RESULT(no)
-    AM_CONDITIONAL(HAVE_TARGET_SHARED, false)
-fi
-
-AC_SUBST(HAVE_TARGET_SHARED)
 
 ################################################################################
-# Target O/S Specification
+# Begin Target O/S Specification
 ################################################################################
 
 target_os=$host
@@ -250,10 +226,12 @@ esac
 AC_SUBST(BUILD_TARGETED)
 AC_SUBST(TARGET_OS)
 
+################################################################################
+# End Target O/S Specification
+################################################################################
+
 AM_CONDITIONAL(HAVE_XERCES, false)
 AM_CONDITIONAL(HAVE_MRNET, false)
-
-if test "$build_targeted" = 0 ; then
 
 AX_BOOST_BASE([1.35.0])
 AX_BOOST_SYSTEM()
@@ -268,16 +246,6 @@ AX_CBTF()
 AX_CBTF_XML()
 AX_MRNET()
 AX_CBTF_MRNET()
-
-fi
-
-AC_PKG_TARGET_MRNET()
-AC_PKG_TARGET_BOOST()
-
-AC_PKG_TARGET_XERCESC()
-AX_TARGET_CBTF()
-AX_TARGET_CBTF_MRNET()
-
 
 AC_CONFIG_FILES([
     Makefile

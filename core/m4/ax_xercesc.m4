@@ -1,3 +1,20 @@
+################################################################################
+## Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+##
+## This program is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 2 of the License, or (at your option) any later
+## version.
+##
+## This program is distributed in the hope that it will be useful, but WITHOUT
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+## FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+## details.
+##
+## You should have received a copy of the GNU General Public License along with
+## this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+## Place, Suite 330, Boston, MA  02111-1307  USA
+#################################################################################
 
 AC_DEFUN([AX_XERCESC], [
 
@@ -83,68 +100,6 @@ AC_DEFUN([AX_XERCESC], [
     AC_SUBST(LIBXERCES_C_LDFLAGS)
     AC_SUBST(LIBXERCES_C)
     AC_SUBST(LTLIBXERCES_C)
-
-])
-
-#############################################################################################
-# Check for XercesC for Target Architecture 
-#############################################################################################
-
-AC_DEFUN([AC_PKG_TARGET_XERCESC], [
-
-    AC_ARG_WITH(target-libxerces-c-prefix,
-                AC_HELP_STRING([--with-target-libxerces-c-prefix=DIR],
-                               [xercesc target architecture installation @<:@/opt@:>@]),
-                target_xercesc_dir=$withval, target_xercesc_dir="/zzz")
-
-    AC_MSG_CHECKING([for Targetted Xercesc support])
-
-    found_target_xercesc=0
-    if test -f $target_xercesc_dir/$abi_libdir/libxerces-c.so -o -f $target_xercesc_dir/$abi_libdir/libxerces-c.a; then
-       found_target_xercesc=1
-       TARGET_LIBXERCES_C_LDFLAGS="-L$target_xercesc_dir/$abi_libdir"
-       TARGET_LIBXERCES_C_LIB="$target_xercesc_dir/$abi_libdir"
-    elif test -f $target_xercesc_dir/$alt_abi_libdir/libxerces-c.so -o -f $target_xercesc_dir/$alt_abi_libdir/libxerces-c.a; then
-       found_target_xercesc=1
-       TARGET_LIBXERCES_C_LDFLAGS="-L$target_xercesc_dir/$alt_abi_libdir"
-       TARGET_LIBXERCES_C_LIB="$target_xercesc_dir/$abi_libdir"
-    fi
-
-    if test $found_target_xercesc == 0 && test "$target_xercesc_dir" == "/zzz" ; then
-      AM_CONDITIONAL(HAVE_TARGET_LIBXERCES_C, false)
-      TARGET_LIBXERCES_C_CPPFLAGS=""
-      TARGET_LIBXERCES_C_LDFLAGS=""
-      TARGET_LIBXERCES_C_LIBS=""
-      TARGET_LIBXERCES_C=""
-      TARGET_LIBXERCES_C_LIB=""
-      TARGET_LIBXERCES_C_DIR=""
-      AC_MSG_RESULT(no)
-    elif test $found_target_xercesc == 1 ; then
-      AC_MSG_RESULT(yes)
-      AM_CONDITIONAL(HAVE_TARGET_LIBXERCES_C, true)
-      AC_DEFINE(HAVE_TARGET_LIBXERCES_C, 1, [Define to 1 if you have a target version of LIBXERCES_C.])
-      TARGET_LIBXERCES_C_CPPFLAGS="-I$target_xercesc_dir/include/xercesc -I$target_xercesc_dir/include/"
-      TARGET_LIBXERCES_C="-lxerces-c"
-      TARGET_LIBXERCES_C_LIBS="-lxerces-c"
-      TARGET_LIBXERCES_C_LIB="-lxerces-c"
-      TARGET_LIBXERCES_C_DIR="$target_xercesc_dir"
-    else 
-      AM_CONDITIONAL(HAVE_TARGET_LIBXERCES_C, false)
-      TARGET_LIBXERCES_C_CPPFLAGS=""
-      TARGET_LIBXERCES_C_LDFLAGS=""
-      TARGET_LIBXERCES_C_LIBS=""
-      TARGET_LIBXERCES_C=""
-      TARGET_LIBXERCES_C_LIB=""
-      TARGET_LIBXERCES_C_DIR=""
-      AC_MSG_RESULT(no)
-    fi
-
-    AC_SUBST(TARGET_LIBXERCES_C)
-    AC_SUBST(TARGET_LIBXERCES_C_LIB)
-    AC_SUBST(TARGET_LIBXERCES_C_CPPFLAGS)
-    AC_SUBST(TARGET_LIBXERCES_C_LDFLAGS)
-    AC_SUBST(TARGET_LIBXERCES_C_LIBS)
-    AC_SUBST(TARGET_LIBXERCES_C_DIR)
 
 ])
 

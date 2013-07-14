@@ -144,33 +144,6 @@ AC_CHECK_HEADER(pthread.h, [ AC_CHECK_LIB(pthread, pthread_create, [
 ]) ])
 
 ################################################################################
-# Target PTHREADS Availability Specification
-################################################################################
-#
-# Option: --enable-target-pthreads=yes
-# Requires libpthread.
-#
-AC_MSG_CHECKING(for target pthread support specification)
-AC_ARG_ENABLE([target-pthreads],
-    [AS_HELP_STRING([--enable-target-pthreads],
-        [Enable support on target architecture for pthreads [default=yes]])],
-    [], [enable_target_pthreads=yes])
-
-AM_CONDITIONAL([HAVE_TARGET_TEST_POSIX_THREADS],
-    [test x$enable_target_pthreads = xyes])
-
-if test "x$enable_target_pthreads" = xyes ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([HAVE_TARGET_POSIX_THREADS], [1],
-        [Enable support on the target architecture for pthreads.])
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_SUBST(HAVE_TARGET_POSIX_THREADS)
-
-
-################################################################################
 # Check for TLS option, default to implicit
 ################################################################################
 
@@ -195,7 +168,7 @@ case "$TLS" in
 esac
 
 ################################################################################
-# Target O/S Specification
+# Begin Target O/S Specification
 ################################################################################
 
 target_os=$host
@@ -272,99 +245,9 @@ esac
 
 AC_SUBST(BUILD_TARGETED)
 AC_SUBST(TARGET_OS)
-
 ################################################################################
-# Target DLOPEN Availability Specification
+# End Target O/S Specification
 ################################################################################
-#
-# Option: --enable-target_dlopen=yes
-#
-AC_MSG_CHECKING(for target dlopen support specification)
-AC_ARG_ENABLE([target_dlopen],
-    [AS_HELP_STRING([--enable-target_dlopen],
-        [include support on the target architecture for dlopen [default=yes]])],
-    [], [enable_target_dlopen=yes])
-
-if test "x$enable_target_dlopen" = xyes ; then
-    AC_DEFINE([HAVE_TARGET_DLOPEN], [1],
-        [Enable support on the target architecture for dlopen.])
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_SUBST(HAVE_TARGET_DLOPEN)
-
-################################################################################
-# Target SIGNALS Availability Specification
-################################################################################
-#
-# Option: --enable-target-signals=yes
-#
-AC_MSG_CHECKING(for target signal support specification)
-AC_ARG_ENABLE([target-signals],
-    [AS_HELP_STRING([--enable-target-signals],
-        [Enable support on target architecture for signals [default=yes]])],
-    [],
-    [enable_target_signals=yes])
-
-if test "x$enable_target_signals" = xyes ; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([HAVE_TARGET_SIGNALS], [1],
-        [Enable support on target architecture for signals.])
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_SUBST(HAVE_TARGET_SIGNALS)
-
-################################################################################
-# Target FORK Availability Specification
-################################################################################
-#
-# Option: --enable-target-fork=yes
-# Requires fork and exec families.
-#
-AC_MSG_CHECKING(for target fork support specification)
-AC_ARG_ENABLE([target-fork],
-    [AS_HELP_STRING([--enable-target-fork],
-        [Enable support on target architecture for fork and exec families [default=yes]])],
-    [], [enable_target_fork=yes])
-
-if test "x$enable_target_fork" = xyes ; then
-    AC_DEFINE([HAVE_TARGET_FORK], [1],
-        [Enable support on target architecture for fork and exec families.])
-    AC_MSG_RESULT(yes)
-else
-    AC_MSG_RESULT(no)
-fi
-
-AC_SUBST(HAVE_TARGET_FORK)
-
-################################################################################
-# Target SHARED LIBRAY BUILD Specification
-################################################################################
-#
-# Option: --enable-target-shared=yes
-#
-AC_MSG_CHECKING(for target shared libraries build specification)
-AC_ARG_ENABLE([target-shared],
-    [AS_HELP_STRING([--enable-target-shared],
-        [Enable support on target architecture for building shared libraries [default=no]])],
-    [enable_target_shared=yes],
-    [enable_target_shared=no])
-
-if test "x$enable_target_shared" = xyes ; then
-    AC_MSG_RESULT(yes)
-    AM_CONDITIONAL(HAVE_TARGET_SHARED, true)
-    AC_DEFINE([HAVE_TARGET_SHARED], [1],
-        [Enable support on target architecture for shared libraries.])
-else
-    AC_MSG_RESULT(no)
-    AM_CONDITIONAL(HAVE_TARGET_SHARED, false)
-fi
-
-AC_SUBST(HAVE_TARGET_SHARED)
 
 ################################################################################
 # build runtime collector software only
@@ -392,36 +275,12 @@ AC_SUBST(BUILD_RUNTIME)
 # Check for Additional Packages
 ################################################################################
 
-#AM_CONDITIONAL(HAVE_BINUTILS, false)
-
-
-if test "$build_targeted" == 0 ; then
-
 AX_BINUTILS()
 AX_LIBMONITOR()
 AX_LIBUNWIND()
 AX_PAPI()
 AX_LW_MRNET()
 AX_MESSAGES()
-
-AM_CONDITIONAL(HAVE_TARGET_BINUTILS, false)
-AM_CONDITIONAL(HAVE_TARGET_LIBMONITOR, false)
-AM_CONDITIONAL(HAVE_TARGET_LIBUNWIND, false)
-AM_CONDITIONAL(HAVE_TARGET_PAPI, false)
-AM_CONDITIONAL(HAVE_TARGET_PAPI_SHARED, false)
-AM_CONDITIONAL(HAVE_TARGET_LW_MRNET, false)
-AM_CONDITIONAL(HAVE_TARGET_MRNET, false)
-AM_CONDITIONAL(HAVE_TARGET_MESSAGES, false)
-fi
-
-if test "$build_targeted" == 1 ; then
-AX_TARGET_BINUTILS()
-AX_TARGET_LIBMONITOR()
-AX_TARGET_LIBUNWIND()
-AX_TARGET_PAPI
-AX_TARGET_MESSAGES()
-AX_TARGET_LW_MRNET()
-fi
 
 AC_CONFIG_FILES([
     Makefile

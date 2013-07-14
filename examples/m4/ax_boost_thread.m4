@@ -94,6 +94,12 @@ AC_DEFUN([AX_BOOST_THREAD],
 			AC_SUBST(BOOST_CPPFLAGS)
 
 			AC_DEFINE(HAVE_BOOST_THREAD,,[define if the Boost::Thread library is available])
+
+            boost_in_usr=no
+            if test "x$BOOST_LDFLAGS" = "x"; then
+                boost_in_usr=yes
+                BOOST_LDFLAGS="-L/usr/lib*"
+            fi
             BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
 
 			LDFLAGS_SAVE=$LDFLAGS
@@ -103,15 +109,17 @@ AC_DEFUN([AX_BOOST_THREAD],
                           break;
                           ;;
                         esac
+
+
             if test "x$ax_boost_user_thread_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_thread*.so* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_thread.*\)\.so.*$;\1;'` `ls $BOOSTLIBDIR/libboost_thread*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_thread.*\)\.a*$;\1;'`; do
+		for libextension in `ls $BOOSTLIBDIR/libboost_thread*.{so,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_thread.*\)\.so.*$;\1;' -e 's;^lib\(boost_thread.*\)\.a*$;\1;'` ; do
                      ax_lib=${libextension}
 				    AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_THREAD_LIB="-l$ax_lib"; AC_SUBST(BOOST_THREAD_LIB) link_thread="yes"; break],
                                  [link_thread="no"])
   				done
                 if test "x$link_thread" != "xyes"; then
-                for libextension in `ls $BOOSTLIBDIR/boost_thread*.dll* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_thread.*\)\.dll.*$;\1;'` `ls $BOOSTLIBDIR/boost_thread*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_thread.*\)\.a*$;\1;'` ; do
+		    for libextension in `ls $BOOSTLIBDIR/boost_thread*.{dll,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_thread.*\)\.dll.*$;\1;' -e 's;^\(boost_thread.*\)\.a*$;\1;'` ; do
                      ax_lib=${libextension}
 				    AC_CHECK_LIB($ax_lib, exit,
                                  [BOOST_THREAD_LIB="-l$ax_lib"; AC_SUBST(BOOST_THREAD_LIB) link_thread="yes"; break],
@@ -143,65 +151,9 @@ AC_DEFUN([AX_BOOST_THREAD],
 		CPPFLAGS="$CPPFLAGS_SAVED"
     	LDFLAGS="$LDFLAGS_SAVED"
 	fi
-])
 
-
-#############################################################################################
-# Check for Boost Thread for Target Architecture 
-#############################################################################################
-
-AC_DEFUN([AC_PKG_TARGET_BOOST_THREAD], [
-
-    AC_ARG_WITH(target-boost-thread,
-                AC_HELP_STRING([--with-target-boost-thread=DIR],
-                               [Boost thread target architecture installation @<:@/opt@:>@]),
-                target_boost_thread_dir=$withval, target_boost_thread_dir="/zzz")
-
-    AC_MSG_CHECKING([for Targetted Boost Thread support])
-
-    found_target_boost_thread=0
-    if test -f $target_boost_thread_dir/$abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread.a -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$abi_libdir/libboost_thread.a; then
-       found_target_boost_thread=1
-       TARGET_BOOST_THREAD_LDFLAGS="-L$target_boost_thread_dir/$abi_libdir"
-       TARGET_BOOST_THREAD_LIB="$target_boost_thread_dir/$abi_libdir"
-    elif test -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.a -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.so -o -f $target_boost_thread_dir/$alt_abi_libdir/libboost_thread.a; then
-       found_target_boost_thread=1
-       TARGET_BOOST_THREAD_LDFLAGS="-L$target_boost_thread_dir/$alt_abi_libdir"
-       TARGET_BOOST_THREAD_LIB="$target_boost_thread_dir/$abi_libdir"
-    fi
-
-    if test $found_target_boost_thread == 0 && test "$target_boost_thread_dir" == "/zzz" ; then
-      AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, false)
-      TARGET_BOOST_THREAD_CPPFLAGS=""
-      TARGET_BOOST_THREAD_LDFLAGS=""
-      TARGET_BOOST_THREAD_LIBS=""
-      TARGET_BOOST_THREAD_LIB=""
-      TARGET_BOOST_THREAD_DIR=""
-      AC_MSG_RESULT(no)
-    elif test $found_target_boost_thread == 1 ; then
-      AC_MSG_RESULT(yes)
-      AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, true)
-      AC_DEFINE(HAVE_TARGET_BOOST_THREAD, 1, [Define to 1 if you have a target version of BOOST_THREAD.])
-      TARGET_BOOST_THREAD_CPPFLAGS="-I$target_boost_thread_dir/include/boost"
-      TARGET_BOOST_THREAD_LIBS="-lboost_thread"
-      TARGET_BOOST_THREAD_LIB="-lboost_thread"
-      TARGET_BOOST_THREAD_DIR="$target_boost_thread_dir"
-      TARGET_BOOST_DIR="$target_boost_thread_dir"
-    else 
-      AM_CONDITIONAL(HAVE_TARGET_BOOST_THREAD, false)
-      TARGET_BOOST_THREAD_CPPFLAGS=""
-      TARGET_BOOST_THREAD_LDFLAGS=""
-      TARGET_BOOST_THREAD_LIBS=""
-      TARGET_BOOST_THREAD_LIB=""
-      TARGET_BOOST_THREAD_DIR=""
-      AC_MSG_RESULT(no)
-    fi
-
-    AC_SUBST(TARGET_BOOST_THREAD_LIB)
-    AC_SUBST(TARGET_BOOST_THREAD_CPPFLAGS)
-    AC_SUBST(TARGET_BOOST_THREAD_LDFLAGS)
-    AC_SUBST(TARGET_BOOST_THREAD_LIBS)
-    AC_SUBST(TARGET_BOOST_THREAD_DIR)
-
+                       if test "x$boost_in_usr" = "xyes"; then
+                            BOOST_LDFLAGS=""
+                        fi
 ])
 

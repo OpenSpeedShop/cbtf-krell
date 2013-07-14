@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2012 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -53,13 +53,6 @@ staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-mrnet-mpi.la libmpit-mpich2-mo
 endif
 endif
 endif
-
-#if HAVE_TARGET_MPICH2
-#if HAVE_TARGET_LIBMONITOR
-#if HAVE_TARGET_SHARED
-#endif
-#endif
-#endif
 
 if HAVE_MVAPICH
 if HAVE_LIBMONITOR
@@ -288,77 +281,6 @@ lib_monitor_mrnet_mpi_sources = \
 
 endif
 endif
-
-if HAVE_TARGET_LIBMONITOR
-if HAVE_TARGET_SHARED
-monitor_fileio_CFLAGS_generate = \
-	-DCBTF_SERVICE_USE_OFFLINE \
-	-DCBTF_SERVICE_USE_FILEIO \
-	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	$(1)
-
-monitor_fileio_LDFLAGS_generate = \
-	@TARGET_CBTF_SERVICES_LDFLAGS@ \
-	@TARGET_LIBMONITOR_LDFLAGS@ \
-	@TARGET_LIBUNWIND_LDFLAGS@ \
-	$(1) \
-	-no-undefined -avoid-version
-
-monitor_fileio_LIBADD_generate = \
-	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_LIBUNWIND_LIBS@ \
-	-lcbtf-services-common \
-	-lcbtf-services-monitor \
-	-lcbtf-services-offline \
-	-lcbtf-services-unwind \
-	-lcbtf-services-timer \
-	$(1) \
-	-lrt -lpthread
-
-monitor_fileio_sources = \
-	$(WRAPPER_SOURCES) \
-	$(COLLECTOR_SOURCES)
-
-endif
-
-lib_monitor_fileio_CFLAGS_generate = \
-	-static \
-	-DCBTF_SERVICE_USE_OFFLINE \
-	-DCBTF_SERVICE_USE_FILEIO \
-	-DCBTF_STATIC \
-	@TARGET_CBTF_SERVICES_CPPFLAGS@ \
-	@TARGET_LIBMONITOR_CPPFLAGS@ \
-	@TARGET_LIBUNWIND_CPPFLAGS@ \
-	@TARGET_MESSAGES_CPPFLAGS@ \
-	$(1)
-
-lib_monitor_fileio_LDFLAGS_generate = \
-	-static \
-	@TARGET_CBTF_SERVICES_LDFLAGS@ \
-	@TARGET_LIBMONITOR_LDFLAGS@ \
-	@TARGET_LIBUNWIND_LDFLAGS@ \
-	$(1) \
-	-no-undefined
-
-lib_monitor_fileio_LIBADD_generate = \
-	@TARGET_LIBMONITOR_LIBS@ \
-	@TARGET_LIBUNWIND_LIBS@ \
-	-lcbtf-services-common \
-	-lcbtf-services-monitor \
-	-lcbtf-services-offline \
-	-lcbtf-services-unwind \
-	-lcbtf-services-timer \
-	$(1) \
-	-lrt -lpthread
-
-lib_monitor_fileio_sources = \
-	$(WRAPPER_SOURCES) \
-	$(COLLECTOR_SOURCES)
-
-endif
-
 
 if HAVE_MPICH
 if HAVE_LIBMONITOR
@@ -657,16 +579,8 @@ endif
 endif
 endif
 
-#
-# If we have targetted MPI then use those variables.  Can not build both from same configure.
-#
-if HAVE_TARGET_MPI
-ANY_MPI_IMPL = @DEFAULT_TARGET_MPI_IMPL@
-ANY_MPI_HEADER = $(TARGET_$(ANY_MPI_IMPL)_HEADER)
-else
 ANY_MPI_IMPL = @DEFAULT_MPI_IMPL@
 ANY_MPI_HEADER = $($(ANY_MPI_IMPL)_HEADER)
-endif
 
 CLEANFILES = $(BUILT_FILES)
 

@@ -235,7 +235,6 @@ SymbolTable::SymbolTable(const boost::filesystem::path& path) :
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
     dm_path(message.linked_object.path),
@@ -245,7 +244,78 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
     dm_statements(),
     dm_statements_index()
 {
-    // ...
+    //
+    // Iterate over each function in the given CBTF_Protocol_SymbolTable and
+    // construct the corresponding entries in this symbol table. Most of the
+    // code here is virtually identical to that in the methods addFunction()
+    // and addFunctionAddressRanges(). The later, in particular, is inlined
+    // because AddressBitmap is constructable from CBTF_Protocol_AddressBitmap
+    // directly without going through an intermediate set of address ranges.
+    //
+    
+    for (u_int i = 0; i < message.functions.functions_len; ++i)
+    {
+        const CBTF_Protocol_FunctionEntry& entry =
+            message.functions.functions_val[i];
+        
+        dm_functions.push_back(FunctionItem(entry.name));
+
+        UniqueIdentifier uid = dm_functions.size() - 1;
+
+        for (u_int j = 0; j < entry.bitmaps.bitmaps_len; ++j)
+        {            
+            dm_functions[uid].dm_addresses.push_back(
+                AddressBitmap(entry.bitmaps.bitmaps_val[j])
+                );
+        }
+        
+        std::set<AddressRange> all_ranges = 
+            extract(dm_functions[uid].dm_addresses);
+
+        for (std::set<AddressRange>::const_iterator
+                 j = all_ranges.begin(); j != all_ranges.end(); ++j)
+        {
+            dm_functions_index.left.insert(std::make_pair(*j, uid));
+        }
+    }
+
+    //
+    // Iterate over each statement in the given CBTF_Protocol_SymbolTable
+    // and construct the corresponding entries in this symbol table. Almost
+    // identical to the loops above, and the same inlining comments apply.
+    //
+
+    for (u_int i = 0; i < message.statements.statements_len; ++i)
+    {
+        const CBTF_Protocol_StatementEntry& entry =
+            message.statements.statements_val[i];
+
+        // TODO: Do something with "entry.path.checksum"???
+        
+        dm_statements.push_back(
+            StatementItem(entry.path.path,
+                          static_cast<unsigned int>(entry.line),
+                          static_cast<unsigned int>(entry.column))
+            );
+        
+        UniqueIdentifier uid = dm_statements.size() - 1;
+
+        for (u_int j = 0; j < entry.bitmaps.bitmaps_len; ++j)
+        {            
+            dm_statements[uid].dm_addresses.push_back(
+                AddressBitmap(entry.bitmaps.bitmaps_val[j])
+                );
+        }
+        
+        std::set<AddressRange> all_ranges = 
+            extract(dm_statements[uid].dm_addresses);
+
+        for (std::set<AddressRange>::const_iterator
+                 j = all_ranges.begin(); j != all_ranges.end(); ++j)
+        {
+            dm_statements_index.left.insert(std::make_pair(*j, uid));
+        }
+    }
 }
 
 
@@ -291,14 +361,98 @@ SymbolTable& SymbolTable::operator=(const SymbolTable& other)
 
 
 //------------------------------------------------------------------------------
-// ...
 //------------------------------------------------------------------------------
 SymbolTable::operator CBTF_Protocol_SymbolTable() const
 {
     CBTF_Protocol_SymbolTable message;
 
-    // ...
+    message.linked_object.path = strdup(dm_path.c_str());
+    message.linked_object.checksum = dm_checksum;
 
+    //
+    // Allocate an appropriately sized array of CBTF_Protocol_FunctionEntry
+    // within the message. Iterate over each function in this symbol table,
+    // copying them into the message.
+    //
+
+    message.functions.functions_len = dm_functions.size();
+    
+    message.functions.functions_val =
+        reinterpret_cast<CBTF_Protocol_FunctionEntry*>(
+            malloc(std::max(1U, message.functions.functions_len) *
+                   sizeof(CBTF_Protocol_FunctionEntry))
+            );
+    
+    for (std::vector<FunctionItem>::size_type
+             i = 0; i < dm_functions.size(); ++i)
+    {
+        const FunctionItem& item = dm_functions[i];
+        
+        CBTF_Protocol_FunctionEntry& entry = 
+            message.functions.functions_val[i];
+        
+        entry.name = strdup(item.dm_name.c_str());
+        
+        entry.bitmaps.bitmaps_len = item.dm_addresses.size();
+        
+        entry.bitmaps.bitmaps_val =
+            reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
+                malloc(std::max(1U, entry.bitmaps.bitmaps_len) *
+                       sizeof(CBTF_Protocol_AddressBitmap))
+                );
+        
+        for (std::vector<AddressBitmap>::size_type
+                 j = 0; j < item.dm_addresses.size(); ++j)
+        {
+            entry.bitmaps.bitmaps_val[j] = item.dm_addresses[j];
+        }
+    }
+    
+    //
+    // Allocate an appropriately sized array of CBTF_Protocol_StatementEntry
+    // within the message. Iterate over each statement in this symbol table,
+    // copying them into the message.
+    //
+
+    message.statements.statements_len = dm_statements.size();
+
+    message.statements.statements_val =
+        reinterpret_cast<CBTF_Protocol_StatementEntry*>(
+            malloc(std::max(1U, message.statements.statements_len) *
+                   sizeof(CBTF_Protocol_StatementEntry))
+            );
+    
+    for (std::vector<StatementItem>::size_type
+             i = 0; i < dm_statements.size(); ++i)
+    {
+        const StatementItem& item = dm_statements[i];
+        
+        CBTF_Protocol_StatementEntry& entry = 
+            message.statements.statements_val[i];
+
+        entry.path.path = strdup(item.dm_path.c_str());
+        entry.path.checksum = 0;
+        entry.line = static_cast<int>(item.dm_line);
+        entry.column = static_cast<int>(item.dm_column);
+
+        // TODO: Do something real with "entry.path.checksum"???
+        
+        entry.bitmaps.bitmaps_len = item.dm_addresses.size();
+        
+        entry.bitmaps.bitmaps_val =
+            reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
+                malloc(std::max(1U, entry.bitmaps.bitmaps_len) *
+                       sizeof(CBTF_Protocol_AddressBitmap))
+                );
+        
+        for (std::vector<AddressBitmap>::size_type
+                 j = 0; j < item.dm_addresses.size(); ++j)
+        {
+            entry.bitmaps.bitmaps_val[j] = item.dm_addresses[j];
+        }
+    }
+    
+    // Return the completed CBTF_Protocol_SymbolTable to the caller
     return message;
 }
 

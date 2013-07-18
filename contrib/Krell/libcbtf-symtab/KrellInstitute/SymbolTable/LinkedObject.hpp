@@ -65,32 +65,6 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject(const CBTF_Protocol_SymbolTable& message);
 
         /**
-         * Construct a linked object from an existing linked object.
-         *
-         * @param other    Linked object to be copied.
-         *
-         * @note    This method creates a second reference to the existing
-         *          linked object rather than a deep copy of it. Use clone()
-         *          when a deep copy is required.
-         */
-        LinkedObject(const LinkedObject& other);
-        
-        /** Destructor. */
-        virtual ~LinkedObject();
-        
-        /**
-         * Replace this linked object with a copy of another one.
-         *
-         * @param other    Linked object to be copied.
-         * @return         Resulting (this) linked object.
-         *
-         * @note    This method replaces this linked object with a reference
-         *          to the existing linked object rather than a deep copy of
-         *          it. Use clone() when a deep copy is required.
-         */
-        LinkedObject& operator=(const LinkedObject& other);
-
-        /**
          * Is this linked object less than another one?
          *
          * @param other    Linked object to be compared.

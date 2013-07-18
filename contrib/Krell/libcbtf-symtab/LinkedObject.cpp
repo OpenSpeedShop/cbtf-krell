@@ -46,36 +46,6 @@ LinkedObject::LinkedObject(const CBTF_Protocol_SymbolTable& message) :
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject::LinkedObject(const LinkedObject& other) :
-    dm_symbol_table(other.dm_symbol_table)
-{
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-LinkedObject::~LinkedObject()
-{
-}
-
-
-        
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-LinkedObject& LinkedObject::operator=(const LinkedObject& other)
-{
-    if (this != &other)
-    {
-        dm_symbol_table = other.dm_symbol_table;
-    }
-    return *this;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 bool LinkedObject::operator<(const LinkedObject& other) const
 {
     return dm_symbol_table < other.dm_symbol_table;

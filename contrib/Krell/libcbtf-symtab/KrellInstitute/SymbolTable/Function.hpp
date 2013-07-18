@@ -56,32 +56,6 @@ namespace KrellInstitute { namespace SymbolTable {
         Function(const LinkedObject& linked_object, const std::string& name);
         
         /**
-         * Construct a function from an existing function.
-         *
-         * @param other    Function to be copied.
-         *
-         * @note    This method creates a second reference to the existing
-         *          function rather than a deep copy of it. Use clone()
-         *          when a deep copy is required.
-         */
-        Function(const Function& other);
-        
-        /** Destructor. */
-        virtual ~Function();
-        
-        /**
-         * Replace this function with a copy of another one.
-         *
-         * @param other    Function to be copied.
-         * @return         Resulting (this) function.
-         *
-         * @note    This method replaces this function with a reference
-         *          to the existing function rather than a deep copy of
-         *          it. Use clone() when a deep copy is required.
-         */
-        Function& operator=(const Function& other);
-
-        /**
          * Is this function less than another one?
          *
          * @param other    Function to be compared.

@@ -60,32 +60,6 @@ namespace KrellInstitute { namespace SymbolTable {
                   const unsigned int& column);
 
         /**
-         * Construct a statement from an existing statement.
-         *
-         * @param other    Statement to be copied.
-         *
-         * @note    This method creates a second reference to the existing
-         *          statement rather than a deep copy of it. Use clone()
-         *          when a deep copy is required.
-         */
-        Statement(const Statement& other);
-       
-        /** Destructor. */
-        virtual ~Statement();
-        
-        /**
-         * Replace this statement with a copy of another one.
-         *
-         * @param other    Statement to be copied.
-         * @return         Resulting (this) statement.
-         *
-         * @note    This method replaces this statement with a reference
-         *          to the existing statement rather than a deep copy of
-         *          it. Use clone() when a deep copy is required.
-         */
-        Statement& operator=(const Statement& other);
-
-        /**
          * Is this statement less than another one?
          *
          * @param other    Statement to be compared.

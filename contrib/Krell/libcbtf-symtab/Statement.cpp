@@ -42,38 +42,6 @@ Statement::Statement(const LinkedObject& linked_object,
         
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::Statement(const Statement& other) :
-    dm_symbol_table(other.dm_symbol_table),
-    dm_unique_identifier(other.dm_unique_identifier)
-{
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-Statement::~Statement()
-{
-}
-
-
-        
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-Statement& Statement::operator=(const Statement& other)
-{
-    if (this != &other)
-    {
-        dm_symbol_table = other.dm_symbol_table;
-        dm_unique_identifier = other.dm_unique_identifier;
-    }
-    return *this;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 bool Statement::operator<(const Statement& other) const
 {
     if (dm_symbol_table < other.dm_symbol_table)

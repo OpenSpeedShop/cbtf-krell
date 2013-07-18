@@ -52,24 +52,6 @@ namespace KrellInstitute { namespace SymbolTable {
         AddressSpace(const CBTF_Protocol_LinkedObjectGroup& message);
 
         /**
-         * Construct an address space from an existing address space.
-         *
-         * @param other    Address space to be copied.
-         */
-        AddressSpace(const AddressSpace& other);
-        
-        /** Destructor. */
-        virtual ~AddressSpace();
-        
-        /**
-         * Replace this address space with a copy of another one.
-         *
-         * @param other    Address space to be copied.
-         * @return         Resulting (this) address space.
-         */
-        AddressSpace& operator=(const AddressSpace& other);
-
-        /**
          * Type conversion to a CBTF_Protocol_LinkedObjectGroup.
          *
          * @return    Message containing this address space.

@@ -41,38 +41,6 @@ Function::Function(const LinkedObject& linked_object, const std::string& name) :
         
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Function::Function(const Function& other) :
-    dm_symbol_table(other.dm_symbol_table),
-    dm_unique_identifier(other.dm_unique_identifier)
-{
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-Function::~Function()
-{
-}
-
-
-        
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-Function& Function::operator=(const Function& other)
-{
-    if (this != &other)
-    {
-        dm_symbol_table = other.dm_symbol_table;
-        dm_unique_identifier = other.dm_unique_identifier;
-    }
-    return *this;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 bool Function::operator<(const Function& other) const
 {
     if (dm_symbol_table < other.dm_symbol_table)

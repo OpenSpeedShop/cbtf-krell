@@ -74,24 +74,6 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         SymbolTable(const CBTF_Protocol_SymbolTable& message);
         
         /**
-         * Construct a symbol table from an existing symbol table.
-         *
-         * @param other    Symbol table to be copied.
-         */
-        SymbolTable(const SymbolTable& other);
-
-        /** Destructor. */
-        virtual ~SymbolTable();
-
-        /**
-         * Replace this symbol table with a copy of another one.
-         *
-         * @param other    Symbol table to be copied.
-         * @return         Resulting (this) symbol table.
-         */
-        SymbolTable& operator=(const SymbolTable& other);
-
-        /**
          * Type conversion to a CBTF_Protocol_SymbolTable.
          *
          * @return    Message containing this symbol table.

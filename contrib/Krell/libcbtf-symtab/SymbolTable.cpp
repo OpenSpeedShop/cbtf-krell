@@ -282,44 +282,6 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-SymbolTable::SymbolTable(const SymbolTable& other) :
-    dm_name(other.dm_name),
-    dm_functions(other.dm_functions),
-    dm_functions_index(other.dm_functions_index),
-    dm_statements(other.dm_statements),
-    dm_statements_index(other.dm_statements_index)
-{
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-SymbolTable::~SymbolTable()
-{
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-SymbolTable& SymbolTable::operator=(const SymbolTable& other)
-{
-    if (this != &other)
-    {
-        dm_name = other.dm_name;
-        dm_functions = other.dm_functions;
-        dm_functions_index = other.dm_functions_index;
-        dm_statements = other.dm_statements;
-        dm_statements_index = other.dm_statements_index;
-    }
-    return *this;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 SymbolTable::operator CBTF_Protocol_SymbolTable() const
 {
     CBTF_Protocol_SymbolTable message;

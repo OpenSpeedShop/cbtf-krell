@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <set>
 
@@ -45,18 +45,17 @@ namespace KrellInstitute { namespace SymbolTable {
     public:
 
         /**
-         * Construct a statement within the given linked object from its source
-         * file, line, and column numbers. The constructed statement initially
+         * Construct a statement within the given linked object from its
+         * source file, line, and column numbers. The statement initially
          * has no address ranges.
          *
          * @param linked_object    Linked object containing this statement.
-         * @param path             Full path name of this statement's source
-         *                         file.
+         * @param name             Name of this statement's source file.
          * @param line             Line number of this statement.
          * @param column           Column number of this statement.
          */
         Statement(const LinkedObject& linked_object,
-                  const boost::filesystem::path& path,
+                  const FileName& name,
                   const unsigned int& line,
                   const unsigned int& column);
 
@@ -132,11 +131,11 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject getLinkedObject() const;
         
         /**
-         * Get the full path name of this statement's source file.
+         * Get the name of this statement's source file.
          *
-         * @return    Full path name of this statement's source file.
+         * @return    Name of this statement's source file.
          */
-        boost::filesystem::path getPath() const;
+        FileName getName() const;
 
         /**
          * Get the line number of this statement.

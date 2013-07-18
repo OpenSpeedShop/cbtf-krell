@@ -48,7 +48,7 @@ namespace KrellInstitute { namespace SymbolTable {
 
         /**
          * Construct a function within the given linked object from its mangled
-         * name. The constructed function initially has no address ranges.
+         * name. The function initially has no address ranges.
          *
          * @param linked_object    Linked object containing this function.
          * @param name             Mangled name of this function.

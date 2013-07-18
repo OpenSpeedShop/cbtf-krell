@@ -21,11 +21,11 @@
 #pragma once
 
 #include <boost/cstdint.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 
@@ -50,12 +50,12 @@ namespace KrellInstitute { namespace SymbolTable {
     public:
 
         /**
-         * Construct a linked object from its full path name. The constructed
-         * linked object initially has no symbols (functions, statements, etc.)
+         * Construct a linked object from its name. This linked object initially
+         * has no symbols (functions, statements, etc.)
          *
-         * @param path    Full path name of this linked object.
+         * @param name    Name of this linked object.
          */
-        LinkedObject(const boost::filesystem::path& path);
+        LinkedObject(const FileName& name);
         
         /**
          * Construct a linked object from a CBTF_Protocol_SymbolTable.
@@ -123,25 +123,12 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject clone() const;
 
         /**
-         * Get the full path name of this linked object.
+         * Get the name of this linked object.
          *
-         * @return    Full path name of this linked object.
+         * @return    Name of this linked object.
          */
-        boost::filesystem::path getPath() const;
+        FileName getName() const;
 
-        /**
-         * Get the checksum for this linked object.
-         *
-         * @return    Checksum for this linked object.
-         *
-         * @note    The exact algorithm used to calculate the checksum is left
-         *          unspecified, but can be expected to be something similar to
-         *          CRC-64-ISO. This checksum is either calculated automagically
-         *          upon the construction of a new LinkedObject, or extracted
-         *          from the CBTF_Protocol_SymbolTable, as appropriate.
-         */
-        boost::uint64_t getChecksum() const;
-        
         /**
          * Visit the functions contained within this linked object.
          *

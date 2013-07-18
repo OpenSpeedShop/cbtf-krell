@@ -19,11 +19,8 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
-#include <boost/crc.hpp>
 #include <boost/dynamic_bitset.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <deque>
-#include <iostream>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 
@@ -188,48 +185,14 @@ namespace {
 
 
 //------------------------------------------------------------------------------
-// If the given path names an accessible regular file, calculate a checksum for
-// that file using "CRC-64" as specified in:
-//
-//     http://reveng.sourceforge.net/crc-catalogue/17plus.htm#crc.cat-bits.64
-//
-// Comments below note the names of the template parameters to the crc_optimized
-// class as listed in Boost documentation, and their correspondence to fields in
-// the above-mentioned document (in parentheses).
 //------------------------------------------------------------------------------
-SymbolTable::SymbolTable(const boost::filesystem::path& path) :
-    dm_path(path),
-    dm_checksum(0),
+SymbolTable::SymbolTable(const FileName& name) :
+    dm_name(name),
     dm_functions(),
     dm_functions_index(),
     dm_statements(),
     dm_statements_index()
 {
-    if (boost::filesystem::is_regular_file(path))
-    {
-        char buffer[1 * 1024 * 1024 /* 1 MB */];
-
-        boost::crc_optimal<
-            64,                 // Bits (width)
-            0x42f0e1eba9ea3693, // TruncPoly (poly)
-            0x0000000000000000, // InitRem (init)
-            0x0000000000000000, // FinalXor (xorout)
-            false,              // ReflectIn (refin)
-            false               // ReflectRem (refout)
-            > crc;
-
-        boost::filesystem::ifstream stream(path, std::ios::binary);
-        
-        while (!stream.eof())
-        {
-            std::streamsize n = stream.readsome(buffer, sizeof(buffer));
-            crc.process_bytes(buffer, n);
-        }
-        
-        stream.close();
-
-        dm_checksum = static_cast<boost::uint64_t>(crc.checksum());
-    }
 }
 
 
@@ -237,8 +200,7 @@ SymbolTable::SymbolTable(const boost::filesystem::path& path) :
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
-    dm_path(message.linked_object.path),
-    dm_checksum(message.linked_object.checksum),
+    dm_name(message.linked_object),
     dm_functions(),
     dm_functions_index(),
     dm_statements(),
@@ -290,10 +252,8 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
         const CBTF_Protocol_StatementEntry& entry =
             message.statements.statements_val[i];
 
-        // TODO: Do something with "entry.path.checksum"???
-        
         dm_statements.push_back(
-            StatementItem(entry.path.path,
+            StatementItem(entry.path,
                           static_cast<unsigned int>(entry.line),
                           static_cast<unsigned int>(entry.column))
             );
@@ -323,8 +283,7 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const SymbolTable& other) :
-    dm_path(other.dm_path),
-    dm_checksum(other.dm_checksum),
+    dm_name(other.dm_name),
     dm_functions(other.dm_functions),
     dm_functions_index(other.dm_functions_index),
     dm_statements(other.dm_statements),
@@ -348,8 +307,7 @@ SymbolTable& SymbolTable::operator=(const SymbolTable& other)
 {
     if (this != &other)
     {
-        dm_path = other.dm_path;
-        dm_checksum = other.dm_checksum;
+        dm_name = other.dm_name;
         dm_functions = other.dm_functions;
         dm_functions_index = other.dm_functions_index;
         dm_statements = other.dm_statements;
@@ -366,8 +324,7 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
 {
     CBTF_Protocol_SymbolTable message;
 
-    message.linked_object.path = strdup(dm_path.c_str());
-    message.linked_object.checksum = dm_checksum;
+    message.linked_object = dm_name;
 
     //
     // Allocate an appropriately sized array of CBTF_Protocol_FunctionEntry
@@ -390,7 +347,7 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
         
         CBTF_Protocol_FunctionEntry& entry = 
             message.functions.functions_val[i];
-        
+ 
         entry.name = strdup(item.dm_name.c_str());
         
         entry.bitmaps.bitmaps_len = item.dm_addresses.size();
@@ -430,12 +387,9 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
         CBTF_Protocol_StatementEntry& entry = 
             message.statements.statements_val[i];
 
-        entry.path.path = strdup(item.dm_path.c_str());
-        entry.path.checksum = 0;
+        entry.path = item.dm_name;
         entry.line = static_cast<int>(item.dm_line);
         entry.column = static_cast<int>(item.dm_column);
-
-        // TODO: Do something real with "entry.path.checksum"???
         
         entry.bitmaps.bitmaps_len = item.dm_addresses.size();
         
@@ -460,18 +414,9 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-boost::filesystem::path SymbolTable::getPath() const
+const FileName& SymbolTable::getName() const
 {
-    return dm_path;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-boost::uint64_t SymbolTable::getChecksum() const
-{
-    return dm_checksum;
+    return dm_name;
 }
 
 
@@ -534,12 +479,12 @@ void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymbolTable::UniqueIdentifier SymbolTable::addStatement(
-    const boost::filesystem::path& path,
+    const FileName& name,
     const unsigned int& line,
     const unsigned int& column
     )
 {
-    dm_statements.push_back(StatementItem(path, line, column));
+    dm_statements.push_back(StatementItem(name, line, column));
     return dm_statements.size() - 1;
 }
 
@@ -641,7 +586,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
 
     const StatementItem& original = symbol_table.dm_statements[uid];
     dm_statements.push_back(
-        StatementItem(original.dm_path, original.dm_line, original.dm_column)
+        StatementItem(original.dm_name, original.dm_line, original.dm_column)
         );
 
     UniqueIdentifier clone_uid = dm_statements.size() - 1;
@@ -667,7 +612,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-std::string SymbolTable::getFunctionMangledName(
+const std::string& SymbolTable::getFunctionMangledName(
     const UniqueIdentifier& uid
     ) const
 {
@@ -691,12 +636,10 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-boost::filesystem::path SymbolTable::getStatementPath(
-    const UniqueIdentifier& uid
-    ) const
+const FileName& SymbolTable::getStatementName(const UniqueIdentifier& uid) const
 {
     BOOST_VERIFY(uid < dm_statements.size());
-    return dm_statements[uid].dm_path;
+    return dm_statements[uid].dm_name;
 }
 
 

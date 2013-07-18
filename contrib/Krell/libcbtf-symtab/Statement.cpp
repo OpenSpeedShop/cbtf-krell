@@ -30,11 +30,11 @@ using namespace KrellInstitute::SymbolTable;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 Statement::Statement(const LinkedObject& linked_object,
-                     const boost::filesystem::path& path,
+                     const FileName& name,
                      const unsigned int& line,
                      const unsigned int& column) :
     dm_symbol_table(linked_object.dm_symbol_table),
-    dm_unique_identifier(dm_symbol_table->addStatement(path, line, column))
+    dm_unique_identifier(dm_symbol_table->addStatement(name, line, column))
 {
 }
 
@@ -136,9 +136,9 @@ LinkedObject Statement::getLinkedObject() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-boost::filesystem::path Statement::getPath() const
+FileName Statement::getName() const
 {
-    return dm_symbol_table->getStatementPath(dm_unique_identifier);
+    return dm_symbol_table->getStatementName(dm_unique_identifier);
 }
 
 

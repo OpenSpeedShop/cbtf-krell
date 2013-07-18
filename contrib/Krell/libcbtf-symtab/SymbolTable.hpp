@@ -24,10 +24,10 @@
 #include <boost/bimap/multiset_of.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
@@ -59,13 +59,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         typedef boost::uint32_t UniqueIdentifier;
 
         /**
-         * Construct a symbol table from the full path name of its linked
-         * object. The constructed symbol table initially has no symbols
-         * (functions, statements, etc.)
+         * Construct a symbol table from the name of its linked object. The
+         * symbol table initially has no symbols (functions, statements, etc.)
          *
-         * @param path    Full path name of this symbol table's linked object.
+         * @param name    Name of this symbol table's linked object.
          */
-        SymbolTable(const boost::filesystem::path& path);
+        SymbolTable(const FileName& name);
 
         /**
          * Construct a symbol table from a CBTF_Protocol_SymbolTable.
@@ -98,27 +97,14 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @return    Message containing this symbol table.
          */
         operator CBTF_Protocol_SymbolTable() const;
+
+        /**
+         * Get the name of this symbol table's linked object.
+         *
+         * @return    Name of this symbol table's linked object.
+         */
+        const FileName& getName() const;
         
-        /**
-         * Get the full path name of this symbol table's linked object.
-         *
-         * @return    Full path name of this symbol table's linked object.
-         */
-        boost::filesystem::path getPath() const;
-
-        /**
-         * Get the checksum for this symbol table's linked object.
-         *
-         * @return    Checksum for this symbol table's linked object.
-         *
-         * @note    The exact algorithm used to calculate the checksum is left
-         *          unspecified, but can be expected to be something similar to
-         *          CRC-64-ISO. This checksum is either calculated automagically
-         *          upon the construction of a new SymbolTable, or extracted
-         *          from the CBTF_Protocol_SymbolTable, as appropriate.
-         */
-        boost::uint64_t getChecksum() const;
-
         /**
          * Add a new function to this symbol table.
          *
@@ -143,15 +129,15 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /**
          * Add a new statement to this symbol table.
          *
-         * @param path      Full path name of the statement's source file.
+         * @param name      Name of the statement's source file.
          * @param line      Line number of the statement.
          * @param column    Column number of the statement.
          * @return          Unique identifier of that statement.
          */
-        UniqueIdentifier addStatement(const boost::filesystem::path& path,
+        UniqueIdentifier addStatement(const FileName& name,
                                       const unsigned int& line,
                                       const unsigned int& column);
-
+        
         /**
          * Associate the given address ranges with the given statement.
          *
@@ -191,7 +177,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param uid    Unique identifier of the function.
          * @return       Mangled name of that function.
          */
-        std::string getFunctionMangledName(const UniqueIdentifier& uid) const;
+        const std::string& getFunctionMangledName(
+            const UniqueIdentifier& uid
+            ) const;
 
         /**
          * Get the address ranges associated with the given function. An
@@ -210,14 +198,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             ) const;
         
         /**
-         * Get the full path name of the given statement's source file.
+         * Get the name of the given statement's source file.
          *
          * @param uid    Unique identifier of the statement.
-         * @return       Full path name of that statement's source file.
+         * @return       Name of that statement's source file.
          */
-        boost::filesystem::path getStatementPath(
-            const UniqueIdentifier& uid
-            ) const;
+        const FileName& getStatementName(const UniqueIdentifier& uid) const;
 
         /**
          * Get the line number of the given statement.
@@ -359,8 +345,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /** Structure representing one statement in the symbol table. */
         struct StatementItem
         {
-            /** Full path name of this statement's source file. */
-            boost::filesystem::path dm_path;
+            /** Name of this statement's source file. */
+            FileName dm_name;
             
             /** Line number of this statement. */
             unsigned int dm_line;
@@ -372,10 +358,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             std::vector<AddressBitmap> dm_addresses;
 
             /** Constructor from initial fields. */
-            StatementItem(const boost::filesystem::path& path,
+            StatementItem(const FileName& name,
                           const unsigned int& line,
                           const unsigned int& column) :
-                dm_path(path),
+                dm_name(name),
                 dm_line(line),
                 dm_column(column),
                 dm_addresses()
@@ -384,11 +370,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             
         }; // struct StatementItem
         
-        /** Full path name of this symbol table's linked object. */
-        boost::filesystem::path dm_path;
-        
-        /** Checksum for this symbol table's linked object. */
-        boost::uint64_t dm_checksum;
+        /** Name of this symbol table's linked object. */
+        FileName dm_name;
 
         /** List of functions in this symbol table. */
         std::vector<FunctionItem> dm_functions;

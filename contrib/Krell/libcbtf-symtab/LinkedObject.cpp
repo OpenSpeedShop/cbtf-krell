@@ -28,8 +28,8 @@ using namespace KrellInstitute::SymbolTable;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject::LinkedObject(const boost::filesystem::path& path) :
-    dm_symbol_table(new Impl::SymbolTable(path))
+LinkedObject::LinkedObject(const FileName& name) :
+    dm_symbol_table(new Impl::SymbolTable(name))
 {
 }
 
@@ -114,18 +114,9 @@ LinkedObject LinkedObject::clone() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-boost::filesystem::path LinkedObject::getPath() const
+FileName LinkedObject::getName() const
 {
-    return dm_symbol_table->getPath();
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-boost::uint64_t LinkedObject::getChecksum() const
-{
-    return dm_symbol_table->getChecksum();
+    return dm_symbol_table->getName();
 }
 
 

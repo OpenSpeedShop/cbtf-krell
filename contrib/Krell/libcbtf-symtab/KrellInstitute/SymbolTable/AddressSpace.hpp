@@ -20,12 +20,16 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
+#include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp>
+#include <KrellInstitute/SymbolTable/MappingVisitor.hpp>
 #include <KrellInstitute/SymbolTable/TimeInterval.hpp>
+#include <map>
+#include <vector>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -64,20 +68,6 @@ namespace KrellInstitute { namespace SymbolTable {
         operator CBTF_Protocol_LinkedObjectGroup() const;
 
         /**
-         * Add the given linked object to this address space at the specified
-         * address range for the given time interval.
-         *
-         * @param linked_object    Linked object to add to this addres space.
-         * @param range            Address range of this linked object.
-         * @param interval         Time interval for this linked object.
-         */
-        void addLinkedObject(const LinkedObject& linked_object,
-                             const AddressRange& range,
-                             const TimeInterval& interval = TimeInterval(
-                                 Time::TheBeginning(), Time::TheEnd()
-                                 ));
-        
-        /**
          * Apply the given message, describing the load of a linked object,
          * to this address space.
          *
@@ -87,7 +77,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          thread(s) in the process containing this address space,
          *          the thread names field of the given message is ignored.
          */
-        void apply(const CBTF_Protocol_LoadedLinkedObject& message);
+        void applyMessage(const CBTF_Protocol_LoadedLinkedObject& message);
 
         /**
          * Apply the given message, describing the unload of a linked object,
@@ -99,8 +89,40 @@ namespace KrellInstitute { namespace SymbolTable {
          *          thread(s) in the process containing this address space,
          *          the thread names field of the given message is ignored.
          */
-        void apply(const CBTF_Protocol_UnloadedLinkedObject& message);
+        void applyMessage(const CBTF_Protocol_UnloadedLinkedObject& message);
 
+        /**
+         * Apply the given message, describing the symbol table of a linked
+         * object, to this address space.
+         *
+         * @param message    Message describing a linked object's symbol table.
+         */
+        void applyMessage(const CBTF_Protocol_SymbolTable& message);
+
+        /**
+         * Load the given linked object in this address space at the specified
+         * address range and time.
+         *
+         * @param linked_object    Linked object to be loaded.
+         * @param is_executable    Is this linked object an executable?
+         * @param range            Address range of this linked object.
+         * @param when             Time when this linked object was loaded.
+         */
+        void loadLinkedObject(const LinkedObject& linked_object,
+                              bool is_executable,
+                              const AddressRange& range,
+                              const Time& when = Time::TheBeginning());
+        
+        /**
+         * Unloaded the given linked object from this address space at the
+         * specified time.
+         *
+         * @param linked_object    Linked object to be unloaded.
+         * @param when             Time when this linked object was unloaded.
+         */
+        void unloadLinkedObject(const LinkedObject& linked_object,
+                                const Time& when = Time::TheEnd());
+        
         /**
          * Visit the linked objects contained within this address space.
          *
@@ -108,36 +130,66 @@ namespace KrellInstitute { namespace SymbolTable {
          *                   within this address space.
          */
         void visitLinkedObjects(LinkedObjectVisitor& visitor) const;
+
+        /**
+         * Visit the mappings contained within this address space.
+         *
+         * @param visitor    Visitor invoked for each mapping contained
+         *                   within this address space.
+         */
+        void visitMappings(MappingVisitor& visitor) const;
         
         /**
-         * Visit the linked objects contained within this address space that
-         * intersect the given address range and time interval.
+         * Visit the mappings contained within this address space intersecting
+         * the given address range and time interval.
          *
          * @param range       Address range to be found.
          * @param interval    Time interval to be found.
-         * @param visitor     Visitor invoked for each linked object contained
+         * @param visitor     Visitor invoked for each mapping contained
          *                    within this address space that intersect that
          *                    address range and time interval.
          */
-        void visitLinkedObjectsAt(const AddressRange& range,
-                                  const TimeInterval& interval,
-                                  LinkedObjectVisitor& visitor) const;
-
-        /**
-         * Visit the linked objects contained within this address space for
-         * the given path.
-         *
-         * @param path       Path for which to visit linked objects.
-         * @param visitor    Visitor invoked for each linked object contained
-         *                   within this address space for that path.
-         */
-        void visitLinkedObjectsByPath(const boost::filesystem::path& path,
-                                      LinkedObjectVisitor& visitor) const;
+        void visitMappings(const AddressRange& range,
+                           const TimeInterval& interval,
+                           MappingVisitor& visitor) const;
         
     private:
 
-        // ...
-
+        /** Structure representing one mapping into an address space. */
+        struct MappingItem
+        {
+            /** Linked object being mapped into the address space. */
+            LinkedObject dm_linked_object;
+            
+            /** Is that linked object an executable? */
+            bool dm_is_executable;
+            
+            /** Address range of that linked object in the address space. */
+            AddressRange dm_range;
+            
+            /** Time interval for this linked object in the address space. */
+            TimeInterval dm_interval;
+            
+            /** Constructor from initial fields. */
+            MappingItem(const LinkedObject& linked_object,
+                        bool is_executable,
+                        const AddressRange& range,
+                        const TimeInterval& interval) :
+                dm_linked_object(linked_object),
+                dm_is_executable(is_executable),
+                dm_range(range),
+                dm_interval(interval)
+            {
+            }
+            
+        }; // struct MappingItem
+        
+        /** (Indexed) List of linked objects in this address space. */
+        std::map<FileName, LinkedObject> dm_linked_objects;
+        
+        /** List of mappings into this address space. */
+        std::vector<MappingItem> dm_mappings;
+        
     }; // class AddressSpace
         
 } } // namespace KrellInstitute::SymbolTable

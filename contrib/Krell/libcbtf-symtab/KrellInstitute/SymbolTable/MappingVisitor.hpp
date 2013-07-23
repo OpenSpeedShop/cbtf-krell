@@ -16,28 +16,35 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Declaration of the LinkedObjectVisitor type. */
+/** @file Declaration of the MappingVisitor type. */
 
 #pragma once
 
 #include <boost/function.hpp>
+
+#include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/TimeInterval.hpp>
 
 namespace KrellInstitute { namespace SymbolTable {
 
     class LinkedObject;
 
     /**
-     * Type of function invoked when visiting one or more LinkedObject objects.
-     * Used with implicit iterations, a reference to the LinkedObject is passed
-     * as a parameter to the function, and the function returns either "true"
-     * to continue the iteration or "false" to terminate it.
-     * 
+     * Type of function invoked when visiting one or more mappings of a linked
+     * object into an address space. Used with implicit iterations, a reference
+     * to the LinkedObject, along with the address range and time interval of
+     * the mapping, are passed as parameters to the function, and the function
+     * returns either "true" to continue the iteration or "false" to terminate
+     * it.
+     *
      * @note    The usage of the term "visitor" here does <em>not</em> refer
      *          to the design pattern of the same name.
      *
      * @sa http://en.wikipedia.org/wiki/Iterator#Implicit_iterators
      * @sa http://en.wikipedia.org/wiki/Visitor_pattern
      */
-    typedef boost::function<bool (const LinkedObject&)> LinkedObjectVisitor;
+    typedef boost::function<
+        bool (const LinkedObject&, const AddressRange&, const TimeInterval&)
+        > MappingVisitor;
     
 } } // namespace KrellInstitute::SymbolTable

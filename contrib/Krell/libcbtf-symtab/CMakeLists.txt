@@ -48,6 +48,7 @@ add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/Interval.hpp
     KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
     KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp
+    KrellInstitute/SymbolTable/MappingVisitor.hpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
     KrellInstitute/SymbolTable/StatementVisitor.hpp
     SymbolTable.hpp SymbolTable.cpp

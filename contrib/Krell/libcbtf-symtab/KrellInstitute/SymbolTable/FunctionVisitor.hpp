@@ -38,6 +38,6 @@ namespace KrellInstitute { namespace SymbolTable {
      * @sa http://en.wikipedia.org/wiki/Iterator#Implicit_iterators
      * @sa http://en.wikipedia.org/wiki/Visitor_pattern
      */
-    typedef boost::function<bool (Function&)> FunctionVisitor;
+    typedef boost::function<bool (const Function&)> FunctionVisitor;
     
 } } // namespace KrellInstitute::SymbolTable

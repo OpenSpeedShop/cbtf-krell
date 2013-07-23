@@ -196,13 +196,13 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Does this interval contain another interval? */
         bool doesContain(const Interval& other) const
         {
-            return contains(other.dm_begin) && contains(other.dm_end - 1);
+            return doesContain(other.dm_begin) && doesContain(other.dm_end - 1);
         }
-
+        
         /** Does this interval intersect another interval? */
         bool doesIntersect(const Interval& other) const
         {
-            return !(*this & other).empty();
+            return !(*this & other).isEmpty();
         }
         
         /** Redirection to an output stream. */

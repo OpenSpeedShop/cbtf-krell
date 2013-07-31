@@ -286,6 +286,20 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
             /* Get the machine name */
             baseNodeName = nodes.substr(0, openBracketPos);
 
+	    // Determine the minumum string length needed to represent
+	    // a node.  used to pad leading 0 characters for these cases:
+	    // mu[0001-1594] or mu[0001-2,0010,0100,1000-1002]
+	    int minLength = 0, tmp = 0;
+            for (i = 0; i < strlen(nodeRange); i++) {
+		if (nodeRange[i] == ',' || nodeRange[i] == '-' ) {
+		   if (minLength < tmp)
+			minLength = tmp;
+		   tmp = 0;
+		} else {
+		   tmp++;
+		}
+	    }
+
             /* Decode the node list string  */
             for (i = 0; i < strlen(nodeRange); i++) {
                 if (nodeRange[i] == ',') {
@@ -304,9 +318,6 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 
                 memcpy(numString, nodeRange + startPos, endPos-startPos + 1);
                 numString[endPos-startPos + 1] = '\0';
-
-
-		int minLength = strlen(numString);
 
                 if (isRange) {
                     isRange = false;

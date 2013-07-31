@@ -20,13 +20,14 @@
 
 #pragma once
 
-#include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <boost/operators.hpp>
 #include <iostream>
 #include <KrellInstitute/Messages/Address.h>
 #include <limits>
+#include <sstream>
+#include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
         
@@ -36,7 +37,8 @@ namespace KrellInstitute { namespace SymbolTable {
      * sacrificing storage efficiency when 32-bit addresses are processed.
      */
     class Address :
-        public boost::addable<Address, boost::int64_t>,
+        public boost::additive<Address>,
+        public boost::additive<Address, int>,
         public boost::totally_ordered<Address>,
         public boost::unit_steppable<Address>
     {
@@ -57,10 +59,10 @@ namespace KrellInstitute { namespace SymbolTable {
         
         /** Default constructor. */
         Address() :
-            dm_value(0x0)
+            dm_value()
         {
         }
-
+        
         /** Construct an address from a CBTF_Protocol_Address (uint64_t). */
         Address(const CBTF_Protocol_Address& message) :
             dm_value(message)
@@ -71,6 +73,14 @@ namespace KrellInstitute { namespace SymbolTable {
         operator CBTF_Protocol_Address() const
         {
             return CBTF_Protocol_Address(dm_value);
+        }
+
+        /** Type conversion to a string. */
+        operator std::string() const
+        {
+            std::ostringstream stream;
+            stream << *this;
+            return stream.str();
         }
 
         /** Is this address less than another one? */
@@ -92,16 +102,20 @@ namespace KrellInstitute { namespace SymbolTable {
             return *this;
         }
 
-        /** Add a signed offset to this address. */
-        Address& operator+=(const boost::int64_t& offset)
+        /** Add another address to this address. */
+        Address& operator+=(const Address& other)
         {
-            boost::uint64_t result = dm_value + offset;
-            BOOST_ASSERT((offset > 0) || (result <= dm_value));
-            BOOST_ASSERT((offset < 0) || (result >= dm_value));
+            dm_value += other.dm_value;
+            return *this;
+        }
+        
+        /** Add a signed integer offset to this address. */
+        Address& operator+=(int offset)
+        {
             dm_value += offset;
             return *this;
         }
-
+        
         /** Decrement this address. */
         Address& operator--()
         {
@@ -110,14 +124,19 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Subtract another address from this address. */
-        boost::int64_t operator-(const Address& other) const
+        Address& operator-=(const Address& other)
         {
-            boost::int64_t difference = dm_value - other.dm_value;
-            BOOST_ASSERT((*this > other) || (difference <= 0));
-            BOOST_ASSERT((*this < other) || (difference >= 0));
-            return difference;
+            dm_value -= other.dm_value;
+            return *this;
         }
-        
+
+        /** Subtract a signed integer offset from this address. */
+        Address& operator-=(int offset)
+        {
+            dm_value -= offset;
+            return *this;
+        }
+                
         /** Redirection to an output stream. */
         friend std::ostream& operator<<(std::ostream& stream,
                                         const Address& address)

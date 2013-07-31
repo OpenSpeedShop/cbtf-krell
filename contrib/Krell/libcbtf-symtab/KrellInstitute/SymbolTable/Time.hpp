@@ -26,6 +26,8 @@
 #include <iostream>
 #include <KrellInstitute/Messages/Time.h>
 #include <limits>
+#include <sstream>
+#include <string>
 #include <time.h>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -38,7 +40,8 @@ namespace KrellInstitute { namespace SymbolTable {
      * while not running out the clock until sometime in the year 2554.
      */
     class Time :
-        public boost::addable<Time, boost::int64_t>,
+        public boost::additive<Time>,
+        public boost::additive<Time, int>,
         public boost::totally_ordered<Time>,
         public boost::unit_steppable<Time>
     {
@@ -69,7 +72,7 @@ namespace KrellInstitute { namespace SymbolTable {
         
         /** Default constructor. */
         Time() :
-            dm_value(0x0)
+            dm_value()
         {
         }
 
@@ -83,6 +86,14 @@ namespace KrellInstitute { namespace SymbolTable {
         operator CBTF_Protocol_Time() const
         {
             return CBTF_Protocol_Time(dm_value);
+        }
+
+        /** Type conversion to a string. */
+        operator std::string() const
+        {
+            std::ostringstream stream;
+            stream << *this;
+            return stream.str();
         }
 
         /** Is this time less than another one? */
@@ -104,16 +115,20 @@ namespace KrellInstitute { namespace SymbolTable {
             return *this;
         }
 
-        /** Add a signed offset to this time. */
-        Time& operator+=(const boost::int64_t& offset)
+        /** Add another time to this time. */
+        Time& operator+=(const Time& other)
         {
-            boost::uint64_t result = dm_value + offset;
-            BOOST_ASSERT((offset > 0) || (result <= dm_value));
-            BOOST_ASSERT((offset < 0) || (result >= dm_value));
+            dm_value += other.dm_value;
+            return *this;
+        }
+        
+        /** Add a signed integer offset to this time. */
+        Time& operator+=(int offset)
+        {
             dm_value += offset;
             return *this;
         }
-
+        
         /** Decrement this time. */
         Time& operator--()
         {
@@ -122,12 +137,17 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Subtract another time from this time. */
-        boost::int64_t operator-(const Time& other) const
+        Time& operator-=(const Time& other)
         {
-            boost::int64_t difference = dm_value - other.dm_value;
-            BOOST_ASSERT((*this > other) || (difference <= 0));
-            BOOST_ASSERT((*this < other) || (difference >= 0));
-            return difference;
+            dm_value -= other.dm_value;
+            return *this;
+        }
+
+        /** Subtract a signed integer offset from this time. */
+        Time& operator-=(int offset)
+        {
+            dm_value -= offset;
+            return *this;
         }
 
         /** Redirection to an output stream. */
@@ -143,7 +163,7 @@ namespace KrellInstitute { namespace SymbolTable {
             stream << buffer;
             return stream;
         }
-	
+        
     private:
         
         /** Value of this time. */

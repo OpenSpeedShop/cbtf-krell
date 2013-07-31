@@ -22,10 +22,12 @@ project(CBTF-SymbolTable)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-find_package(Boost 1.39.0 REQUIRED COMPONENTS filesystem)
+find_package(Boost 1.39.0 REQUIRED 
+  COMPONENTS filesystem system unit_test_framework
+  )
 find_package(CBTF-Messages REQUIRED)
 
-find_package(Threads REQUIRED)
+# find_package(Threads REQUIRED)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64*")
     set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64)
@@ -56,18 +58,27 @@ add_library(cbtf-symtab SHARED
     KrellInstitute/SymbolTable/TimeInterval.hpp
     )
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Boost_INCLUDE_DIRS}
-    ${CBTF_MESSAGES_INCLUDE_DIRS}
-    )
-
 target_link_libraries(cbtf-symtab
+    -lrt
     ${Boost_FILESYSTEM_LIBRARY}
     ${CBTF_MESSAGE_LIBRARIES}
     )
 
 set_target_properties(cbtf-symtab PROPERTIES VERSION 0.0.0)
+
+add_executable(test test.cpp)
+
+target_link_libraries(test
+    cbtf-symtab
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    )
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${Boost_INCLUDE_DIRS}
+    ${CBTF_MESSAGES_INCLUDE_DIRS}
+    )
 
 install(DIRECTORY KrellInstitute DESTINATION include)
 

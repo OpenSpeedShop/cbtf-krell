@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
+#include <boost/system/system_error.hpp>
+#include <errno.h>
 #include <iostream>
 #include <KrellInstitute/Messages/Time.h>
 #include <limits>
@@ -58,7 +59,13 @@ namespace KrellInstitute { namespace SymbolTable {
         static Time Now()
         {
             struct timespec now;
-            BOOST_VERIFY(clock_gettime(CLOCK_REALTIME, &now) == 0);
+
+            if (clock_gettime(CLOCK_REALTIME, &now) != 0)
+            {
+                using namespace boost::system;
+                throw system_error(errno, system_category(), "clock_gettime");
+            }
+
             return Time((static_cast<boost::uint64_t>(now.tv_sec) *
                          static_cast<boost::uint64_t>(1000000000)) +
                         static_cast<boost::uint64_t>(now.tv_nsec));
@@ -155,11 +162,22 @@ namespace KrellInstitute { namespace SymbolTable {
         {
             time_t calendar_time = time.dm_value / 1000000000;
             struct tm broken_down_time;
-            BOOST_VERIFY(localtime_r(&calendar_time,
-                                     &broken_down_time) != NULL);
+
+            if (localtime_r(&calendar_time, &broken_down_time) == NULL)
+            {
+                using namespace boost::system;
+                throw system_error(errno, system_category(), "localtime_r");
+            }
+            
             char buffer[32];
-            BOOST_VERIFY(strftime(buffer, sizeof(buffer),
-                                  "%Y/%m/%d %H:%M:%S", &broken_down_time) > 0);
+            
+            if (strftime(buffer, sizeof(buffer),
+                         "%Y/%m/%d %H:%M:%S", &broken_down_time) == 0)
+            {
+                using namespace boost::system;
+                throw system_error(errno, system_category(), "strftime");
+            }
+            
             stream << buffer;
             return stream;
         }

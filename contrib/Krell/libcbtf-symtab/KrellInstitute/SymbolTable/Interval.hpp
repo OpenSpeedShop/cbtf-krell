@@ -20,14 +20,13 @@
 
 #pragma once
 
-#include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/is_same.hpp>
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <sstream>
+#include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -35,8 +34,8 @@ namespace KrellInstitute { namespace SymbolTable {
     class Time;
 
     /**
-     * A open-ended, integer, interval used to represent either address ranges
-     * or time intervals.
+     * A closed-ended, integer, interval used to represent either address
+     * ranges or time intervals.
      *
      * @param T    Type of the interval's (integer) values.
      * @param M    Type of message used to store an interval of this type.
@@ -49,21 +48,13 @@ namespace KrellInstitute { namespace SymbolTable {
         public boost::orable<Interval<T, M> >,
         public boost::totally_ordered<Interval<T, M> >
     {
-        /**
-         * This template isn't truely generic in that it makes assumptions
-         * regarding the types used to represent the integer values in the
-         * interval and their differences. Check that T is a type that is
-         * known to be supported.
-         */
-        BOOST_STATIC_ASSERT((boost::is_same<T, Address>::value) ||
-                            (boost::is_same<T, Time>::value));
         
     public:
         
         /** Default constructor. */
         Interval() :
-            dm_begin(),
-            dm_end()
+            dm_begin(T() - 1),
+            dm_end(T())
         {
         }
         
@@ -72,23 +63,20 @@ namespace KrellInstitute { namespace SymbolTable {
             dm_begin(begin),
             dm_end(end)
         {
-            BOOST_ASSERT(dm_begin <= dm_end);
         }
         
         /** Construct an interval containing a single value. */
         Interval(const T& value) :
             dm_begin(value),
-            dm_end(value + static_cast<boost::int64_t>(1))
+            dm_end(value)
         {
-            BOOST_ASSERT(dm_begin <= dm_end);
         }
         
         /** Construct an interval from a message. */
         Interval(const M& message) :
             dm_begin(message.begin),
-            dm_end(message.end)
+            dm_end(message.end - 1)
         {
-            BOOST_ASSERT(dm_begin <= dm_end);
         }
         
         /** Type conversion to a message. */
@@ -96,8 +84,16 @@ namespace KrellInstitute { namespace SymbolTable {
         {
             M message;
             message.begin = dm_begin;
-            message.end = dm_end;
+            message.end = dm_end + 1;
             return message;
+        }
+        
+        /** Type conversion to a string. */
+        operator std::string() const
+        {
+            std::ostringstream stream;
+            stream << *this;
+            return stream.str();
         }
         
         /** Is this interval less than another one? */
@@ -123,9 +119,9 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Union this interval with another one. */
         Interval& operator|=(const Interval& other)
         {
-            if (!other.isEmpty())
+            if (!other.empty())
             {
-                if (!isEmpty())
+                if (!empty())
                 {
                     if (dm_begin > other.dm_begin)
                     {
@@ -147,62 +143,68 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Intersect this interval with another one. */
         Interval& operator&=(const Interval& other)
         {
-            if (dm_begin < other.dm_begin)
+            if (!empty())
             {
-                dm_begin = other.dm_begin;
-            }
-            if (dm_end > other.dm_end)
-            {
-                dm_end = other.dm_end;
-            }
-            if (dm_end < dm_begin)
-            {
-                dm_begin = dm_end;
+                if (!other.empty())
+                {
+                    if (dm_begin < other.dm_begin)
+                    {
+                        dm_begin = other.dm_begin;
+                    }
+                    if (dm_end > other.dm_end)
+                    {
+                        dm_end = other.dm_end;
+                    }
+                }
+                else
+                {
+                    *this = other;
+                }
             }
             return *this;
         }
         
         /** Get the beginning of this interval. */
-        const T& getBegin() const
+        const T& begin() const
         { 
             return dm_begin;
         }
-
+        
         /** Get the end of this interval. */
-        const T& getEnd() const
+        const T& end() const
         {
-            return dm_end; 
+            return dm_end;
         }
 
         /** Is this interval empty? */
-        bool isEmpty() const
+        bool empty() const
         {
-            return dm_begin == dm_end;
+            return dm_end < dm_begin;
         }
         
         /** Get the width of this interval. */
-        boost::uint64_t getWidth() const
+        T width() const
         {
-            return static_cast<boost::uint64_t>(dm_end) - 
-                static_cast<boost::uint64_t>(dm_begin);
+            return empty() ? T(0) : (dm_end - dm_begin + 1);
         }
         
         /** Does this interval contain a value? */
-        bool doesContain(const T& value) const
+        bool contains(const T& value) const
         {
-            return (value >= dm_begin) && (value < dm_end);
+            return (value >= dm_begin) && (value <= dm_end);
         }
-
+        
         /** Does this interval contain another interval? */
-        bool doesContain(const Interval& other) const
+        bool contains(const Interval& other) const
         {
-            return doesContain(other.dm_begin) && doesContain(other.dm_end - 1);
+            return !other.empty() &&
+                contains(other.dm_begin) && contains(other.dm_end);
         }
         
         /** Does this interval intersect another interval? */
-        bool doesIntersect(const Interval& other) const
+        bool intersects(const Interval& other) const
         {
-            return !(*this & other).isEmpty();
+            return !(*this & other).empty();
         }
         
         /** Redirection to an output stream. */
@@ -210,7 +212,7 @@ namespace KrellInstitute { namespace SymbolTable {
                                         const Interval& interval)
         {
             stream << "[ " << interval.dm_begin << ", " 
-                   << interval.dm_end << " )";
+                   << interval.dm_end << " ]";
             return stream;
         }
         
@@ -219,7 +221,7 @@ namespace KrellInstitute { namespace SymbolTable {
         /** Closed beginning of this interval. */
         T dm_begin;
         
-        /** Open end of this interval. */
+        /** Closed end of this interval. */
         T dm_end;
         
     }; // class Interval<T, S>
@@ -234,7 +236,7 @@ namespace std {
      * intervals to be put into STL associative containers such that they
      * can be searched for a particular value in logarithmic time. But
      * associative containers cannot search for the value directly. They
-     * can, however, search for the interval [value, value + 1) containing
+     * can, however, search for the interval [value, value] containing
      * only the value. Using the "constructor from a single value" is simple
      * and convenient enough. However, the associative containers would
      * still use the default ordering as defined by Interval's overloaded
@@ -257,7 +259,7 @@ namespace std {
             const KrellInstitute::SymbolTable::Interval<T, S>& rhs
             ) const
         {
-            if (lhs.getEnd() <= rhs.getBegin())
+            if (lhs.end() < rhs.begin())
             {
                 return true;
             }

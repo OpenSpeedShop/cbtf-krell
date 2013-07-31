@@ -61,6 +61,7 @@ add_library(cbtf-symtab SHARED
 target_link_libraries(cbtf-symtab
     -lrt
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
     ${CBTF_MESSAGE_LIBRARIES}
     )
 
@@ -70,7 +71,6 @@ add_executable(test test.cpp)
 
 target_link_libraries(test
     cbtf-symtab
-    ${Boost_SYSTEM_LIBRARY}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     )
 

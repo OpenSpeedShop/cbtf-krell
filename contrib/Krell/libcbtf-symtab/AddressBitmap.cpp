@@ -34,7 +34,7 @@ using namespace KrellInstitute::SymbolTable::Impl;
 //------------------------------------------------------------------------------
 AddressBitmap::AddressBitmap(const AddressRange& range) :
     dm_range(range),
-    dm_bitmap(dm_range.getWidth(), false)
+    dm_bitmap(dm_range.width(), false)
 {
 }
 
@@ -43,8 +43,8 @@ AddressBitmap::AddressBitmap(const AddressRange& range) :
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 AddressBitmap::AddressBitmap(const std::set<Address>& addresses) :
-    dm_range(*(addresses.begin()), *(addresses.rbegin()) + 1),
-    dm_bitmap(dm_range.getWidth(), false)
+    dm_range(*(addresses.begin()), *(addresses.rbegin())),
+    dm_bitmap(dm_range.width(), false)
 {
     for (std::set<Address>::const_iterator
              i = addresses.begin(); i != addresses.end(); ++i)
@@ -59,15 +59,15 @@ AddressBitmap::AddressBitmap(const std::set<Address>& addresses) :
 //------------------------------------------------------------------------------
 AddressBitmap::AddressBitmap(const CBTF_Protocol_AddressBitmap& message) :
     dm_range(message.range),
-    dm_bitmap(AddressRange(message.range).getWidth(), false)
+    dm_bitmap(dm_range.width(), false)
 {
     boost::uint64_t size = std::max<boost::uint64_t>(
-        1, ((dm_range.getWidth() - 1) / 8) + 1
+        1, ((dm_range.width() - 1) / 8) + 1
         );
-
+    
     BOOST_VERIFY(message.bitmap.data.data_len == size);
     
-    for (boost::uint64_t i = 0; i < dm_range.getWidth(); ++i)
+    for (boost::uint64_t i = 0; i < dm_range.width(); ++i)
     {
         dm_bitmap[i] = message.bitmap.data.data_val[i / 8] & (1 << (i % 8));
     }
@@ -80,7 +80,7 @@ AddressBitmap::AddressBitmap(const CBTF_Protocol_AddressBitmap& message) :
 AddressBitmap::operator CBTF_Protocol_AddressBitmap() const
 {
     boost::uint64_t size = std::max<boost::uint64_t>(
-        1, ((dm_range.getWidth() - 1) / 8) + 1
+        1, ((dm_range.width() - 1) / 8) + 1
         );
     
     CBTF_Protocol_AddressBitmap message;
@@ -90,7 +90,7 @@ AddressBitmap::operator CBTF_Protocol_AddressBitmap() const
 
     memset(message.bitmap.data.data_val, 0, size);
 
-    for (boost::uint64_t i = 0; i < dm_range.getWidth(); ++i)
+    for (boost::uint64_t i = 0; i < dm_range.width(); ++i)
     {
         if (dm_bitmap[i])
         {
@@ -116,9 +116,9 @@ const AddressRange& AddressBitmap::getRange() const
 //------------------------------------------------------------------------------
 bool AddressBitmap::getValue(const Address& address) const
 {
-    BOOST_VERIFY(dm_range.doesContain(address));
-
-    return dm_bitmap[address - dm_range.getBegin()];
+    BOOST_VERIFY(dm_range.contains(address));
+    
+    return dm_bitmap[address - dm_range.begin()];
 }
 
 
@@ -127,9 +127,9 @@ bool AddressBitmap::getValue(const Address& address) const
 //------------------------------------------------------------------------------
 void AddressBitmap::setValue(const Address& address, const bool& value)
 {
-    BOOST_VERIFY(dm_range.doesContain(address));
-
-    dm_bitmap[address - dm_range.getBegin()] = value;
+    BOOST_VERIFY(dm_range.contains(address));
+    
+    dm_bitmap[address - dm_range.begin()] = value;
 }
 
 
@@ -145,7 +145,7 @@ std::set<AddressRange> AddressBitmap::getContiguousRanges(
     // Iterate over each address in this address bitmap
     bool in_range = false;
     Address range_begin;    
-    for (Address i = dm_range.getBegin(); i != dm_range.getEnd(); ++i)
+    for (Address i = dm_range.begin(); i <= dm_range.end(); ++i)
     {
         // Is this address the beginning of a range?
         if (!in_range && (getValue(i) == value))
@@ -165,7 +165,7 @@ std::set<AddressRange> AddressBitmap::getContiguousRanges(
     // Does a range end at the end of the address bitmap?
     if (in_range)
     {
-        ranges.insert(AddressRange(range_begin, dm_range.getEnd()));
+        ranges.insert(AddressRange(range_begin, dm_range.end()));
     }
     
     // Return the ranges to the caller
@@ -184,7 +184,7 @@ std::ostream& operator<<(std::ostream& stream, const AddressBitmap& bitmap)
     
     bool has_false = false, has_true = false;
 
-    for (Address i = range.getBegin(); i != range.getEnd(); ++i)
+    for (Address i = range.begin(); i <= range.end(); ++i)
     {
         if (bitmap.getValue(i) == true)
         {
@@ -206,7 +206,7 @@ std::ostream& operator<<(std::ostream& stream, const AddressBitmap& bitmap)
     }
     else
     {
-        for (Address i = range.getBegin(); i != range.getEnd(); ++i)
+        for (Address i = range.begin(); i <= range.end(); ++i)
         {
             stream << (bitmap.getValue(i) ? "1" : "0");
         }

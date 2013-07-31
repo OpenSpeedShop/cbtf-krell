@@ -27,7 +27,7 @@
 namespace KrellInstitute { namespace SymbolTable {
 
     /**
-     * An open-ended time interval. Used to represent a contiguous period of
+     * A closed-ended time interval. Used to represent a contiguous period of
      * time.
      */
     typedef Interval<Time, CBTF_Protocol_TimeInterval> TimeInterval;

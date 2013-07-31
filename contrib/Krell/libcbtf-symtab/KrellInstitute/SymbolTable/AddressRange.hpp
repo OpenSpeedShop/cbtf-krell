@@ -27,7 +27,7 @@
 namespace KrellInstitute { namespace SymbolTable {
 
     /**
-     * An open-ended range of memory addresses. Used to represent a contiguous
+     * A closed-ended range of memory addresses. Used to represent a contiguous
      * portion of an address space.
      */
     typedef Interval<Address, CBTF_Protocol_AddressRange> AddressRange;

@@ -98,7 +98,7 @@ namespace {
         for (std::set<AddressRange>::const_iterator
                  i = ranges.begin(); i != ranges.end(); ++i)
         {
-            for (Address j = i->getBegin(); j != i->getEnd(); ++j)
+            for (Address j = i->begin(); j <= i->end(); ++j)
             {
                 addresses.insert(j);
             }
@@ -147,8 +147,7 @@ namespace {
                  current != i.end();
                  ++prev, ++current)
             {
-                boost::int64_t gap = 
-                    AddressRange(*prev, *current).getWidth() - 1;
+                boost::int64_t gap = AddressRange(*prev, *current).width() - 1;
                 
                 if (gap > widest_gap)
                 {

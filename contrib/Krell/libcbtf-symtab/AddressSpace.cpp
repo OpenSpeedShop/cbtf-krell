@@ -95,8 +95,8 @@ AddressSpace::operator CBTF_Protocol_LinkedObjectGroup() const
         
         entry.linked_object = item.dm_linked_object.getName();
         entry.range = item.dm_range;
-        entry.time_begin = item.dm_interval.getBegin();
-        entry.time_end = item.dm_interval.getEnd();
+        entry.time_begin = item.dm_interval.begin();
+        entry.time_end = item.dm_interval.end();
         entry.is_executable = item.dm_is_executable;
     }
     
@@ -213,9 +213,9 @@ void AddressSpace::unloadLinkedObject(const LinkedObject& linked_object,
              i = dm_mappings.begin(); i != dm_mappings.end(); ++i)
     {
         if ((i->dm_linked_object.getName() == linked_object.getName()) &&
-            (i->dm_interval.getEnd() == Time::TheEnd()))
+            (i->dm_interval.end() == Time::TheEnd()))
         {
-            i->dm_interval = TimeInterval(i->dm_interval.getBegin(), when);
+            i->dm_interval = TimeInterval(i->dm_interval.begin(), when);
         }
     }
 }
@@ -272,8 +272,8 @@ void AddressSpace::visitMappings(const AddressRange& range,
          !terminate && (i != iEnd);
          ++i)
     {
-        if (i->dm_range.doesIntersect(range) &&
-            i->dm_interval.doesIntersect(interval))
+        if (i->dm_range.intersects(range) &&
+            i->dm_interval.intersects(interval))
         {
             terminate |= visitor(i->dm_linked_object,
                                  i->dm_range, i->dm_interval);

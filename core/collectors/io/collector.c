@@ -412,10 +412,14 @@ void io_record_event(const CBTF_io_event* event, uint64_t function)
     unsigned entry = 0, start, i;
 
 #ifdef DEBUG
+#if defined(PROFILE)
+fprintf(stderr,"ENTERED io_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_iop_event),sizeof(stacktrace),tls->nesting_depth);
+#else
 #if defined(EXTENDEDTRACE)
 fprintf(stderr,"ENTERED io_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_iot_event),sizeof(stacktrace),tls->nesting_depth);
 #else
 fprintf(stderr,"ENTERED io_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_io_event),sizeof(stacktrace),tls->nesting_depth);
+#endif
 #endif
 #endif
 
@@ -563,6 +567,8 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 	/* update count for this stack */
 	tls->buffer.count[stackindex] = tls->buffer.count[stackindex] + 1;
 	tls->buffer.time[stackindex] += event->time;
+	// reset do_trace to true.
+	tls->do_trace = TRUE;
 	return;
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2010 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2010-13 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -25,8 +25,25 @@
 #ifndef _CBTF_Runtime_Offline_
 #define _CBTF_Runtime_Offline_
 
-//#include "offline.h"
 #include "KrellInstitute/Messages/OfflineEvents.h"
+
+typedef struct cbtf_dlinfo_t cbtf_dlinfo;
+typedef struct cbtf_dlinfoList_t cbtf_dlinfoList;
+
+struct cbtf_dlinfo_t {
+    uint64_t load_time;
+    uint64_t unload_time;
+    uint64_t addr_begin;
+    uint64_t addr_end;
+    char *name;
+    void *handle;
+};
+
+struct cbtf_dlinfoList_t {
+    cbtf_dlinfo cbtf_dlinfo_entry;
+    cbtf_dlinfoList *cbtf_dlinfo_next;
+};
+
 
 /* Size of buffer (dso blob) to hold the dsos loaded into victim addressspace.
  * Computed in collector offline code as:

@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2010 The Krell Institue. All Rights Reserved.
+** Copyright (c) 2010-13 The Krell Institue. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -42,7 +42,8 @@ typedef enum {
     CBTF_Monitor_Started = 1,
     CBTF_Monitor_Finished,
     CBTF_Monitor_Paused,
-    CBTF_Monitor_Resumed
+    CBTF_Monitor_Resumed,
+    CBTF_Monitor_Not_Started
 } CBTF_Monitor_Status;
 
 typedef enum {

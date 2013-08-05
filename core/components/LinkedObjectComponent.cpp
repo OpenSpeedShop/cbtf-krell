@@ -123,6 +123,7 @@ private:
     void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
     {
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
+#if 0
 	ThreadName tname(message->thread);
 
 	LinkedObjectEntryVec linkedobjects;
@@ -171,10 +172,10 @@ private:
 	    // clear any linkedobjects for which we sent entries for.
 	    linkedobjectvec.clear();
 	}
+#else
 
-	// collector runtimes send this message.  we would rather emit the
-	// linkedobject vector.
-	//emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
+	emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
+#endif
     }
 
     // Handler for dlopen events.

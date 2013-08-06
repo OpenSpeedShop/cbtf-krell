@@ -18,10 +18,11 @@
 
 /** @file Definition of the Function class. */
 
+#include <boost/format.hpp>
 #include <cxxabi.h>
-
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <sstream>
 
 #include "SymbolTable.hpp"
 
@@ -39,6 +40,17 @@ Function::Function(const LinkedObject& linked_object, const std::string& name) :
 
 
         
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+Function::operator std::string() const
+{
+    std::ostringstream stream;
+    stream << *this;
+    return stream.str();    
+}
+
+
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 bool Function::operator<(const Function& other) const
@@ -148,7 +160,7 @@ std::set<AddressRange> Function::getAddressRanges() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Function::visitDefinitions(StatementVisitor& visitor) const
+void Function::visitDefinitions(const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitFunctionDefinitions(dm_unique_identifier, visitor);
 }
@@ -157,9 +169,25 @@ void Function::visitDefinitions(StatementVisitor& visitor) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Function::visitStatements(StatementVisitor& visitor) const
+void Function::visitStatements(const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitFunctionStatements(dm_unique_identifier, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::ostream& KrellInstitute::SymbolTable::operator<<(
+    std::ostream& stream, const Function& function
+    )
+{
+    stream << boost::str(
+        boost::format("Function %u in SymbolTable 0x%016X") % 
+        function.dm_unique_identifier % function.dm_symbol_table.get()
+        );
+    
+    return stream;
 }
 
 

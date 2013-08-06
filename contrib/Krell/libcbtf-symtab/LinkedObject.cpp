@@ -18,7 +18,9 @@
 
 /** @file Definition of the LinkedObject class. */
 
+#include <boost/format.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <sstream>
 
 #include "SymbolTable.hpp"
 
@@ -46,6 +48,26 @@ LinkedObject::LinkedObject(const CBTF_Protocol_SymbolTable& message) :
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+LinkedObject::operator CBTF_Protocol_SymbolTable() const
+{
+    return *dm_symbol_table;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LinkedObject::operator std::string() const
+{
+    std::ostringstream stream;
+    stream << *this;
+    return stream.str();    
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 bool LinkedObject::operator<(const LinkedObject& other) const
 {
     return dm_symbol_table < other.dm_symbol_table;
@@ -58,15 +80,6 @@ bool LinkedObject::operator<(const LinkedObject& other) const
 bool LinkedObject::operator==(const LinkedObject& other) const
 {
     return dm_symbol_table == other.dm_symbol_table;
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-LinkedObject::operator CBTF_Protocol_SymbolTable() const
-{
-    return *dm_symbol_table;
 }
 
 
@@ -93,7 +106,7 @@ FileName LinkedObject::getName() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
+void LinkedObject::visitFunctions(const FunctionVisitor& visitor) const
 {
     dm_symbol_table->visitFunctions(visitor);
 }
@@ -103,7 +116,7 @@ void LinkedObject::visitFunctions(FunctionVisitor& visitor) const
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctions(const AddressRange& range,
-                                  FunctionVisitor& visitor) const
+                                  const FunctionVisitor& visitor) const
 {
     dm_symbol_table->visitFunctions(range, visitor);
 }
@@ -112,7 +125,7 @@ void LinkedObject::visitFunctions(const AddressRange& range,
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void LinkedObject::visitStatements(StatementVisitor& visitor) const
+void LinkedObject::visitStatements(const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitStatements(visitor);
 }
@@ -122,9 +135,24 @@ void LinkedObject::visitStatements(StatementVisitor& visitor) const
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatements(const AddressRange& range,
-                                   StatementVisitor& visitor) const
+                                   const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitStatements(range, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::ostream& KrellInstitute::SymbolTable::operator<<(
+    std::ostream& stream,
+    const LinkedObject& linked_object
+    )
+{
+    stream << boost::str(boost::format("SymbolTable 0x%016X") % 
+                         linked_object.dm_symbol_table.get());
+    
+    return stream;
 }
 
 

@@ -225,7 +225,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param visitor    Visitor invoked for each function
          *                   contained within this symbol table.
          */
-        void visitFunctions(FunctionVisitor& visitor);
+        void visitFunctions(const FunctionVisitor& visitor);
 
         /**
          * Visit the functions contained within this symbol table intersecting
@@ -240,7 +240,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          the address space of a specific process.
          */
         void visitFunctions(const AddressRange& range,
-                            FunctionVisitor& visitor);
+                            const FunctionVisitor& visitor);
         
         /**
          * Visit the definitions of the given function.
@@ -250,7 +250,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   function.
          */
         void visitFunctionDefinitions(const UniqueIdentifier& uid,
-                                      StatementVisitor& visitor);
+                                      const StatementVisitor& visitor);
         
         /**
          * Visit the statements associated with the given function.
@@ -260,7 +260,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   with that function.
          */
         void visitFunctionStatements(const UniqueIdentifier& uid,
-                                     StatementVisitor& visitor);
+                                     const StatementVisitor& visitor);
 
         /**
          * Visit the statements contained within this symbol table.
@@ -268,7 +268,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param visitor    Visitor invoked for each statement
          *                   contained within this symbol table.
          */
-        void visitStatements(StatementVisitor& visitor);
+        void visitStatements(const StatementVisitor& visitor);
 
         /**
          * Visit the statements contained within this symbol table intersecting
@@ -283,7 +283,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          the address space of a specific process.
          */
         void visitStatements(const AddressRange& range,
-                             StatementVisitor& visitor);
+                             const StatementVisitor& visitor);
 
         /**
          * Visit the functions containing the given statement.
@@ -293,7 +293,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *                   that statement.
          */
         void visitStatementFunctions(const UniqueIdentifier& uid,
-                                     FunctionVisitor& visitor);
+                                     const FunctionVisitor& visitor);
         
     private:
 

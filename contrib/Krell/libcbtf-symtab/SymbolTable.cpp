@@ -639,7 +639,7 @@ std::set<AddressRange> SymbolTable::getStatementAddressRanges(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void SymbolTable::visitFunctions(FunctionVisitor& visitor)
+void SymbolTable::visitFunctions(const FunctionVisitor& visitor)
 {
     bool terminate = false;
     Function value(shared_from_this(), 0);
@@ -649,7 +649,7 @@ void SymbolTable::visitFunctions(FunctionVisitor& visitor)
          ++i)
     {
         value.dm_unique_identifier = i;
-        terminate |= visitor(value);
+        terminate |= !visitor(value);
     }
 }
 
@@ -658,7 +658,7 @@ void SymbolTable::visitFunctions(FunctionVisitor& visitor)
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctions(const AddressRange& range,
-                                 FunctionVisitor& visitor)
+                                 const FunctionVisitor& visitor)
 {
     bool terminate = false;
     Function value(shared_from_this(), 0);
@@ -674,7 +674,7 @@ void SymbolTable::visitFunctions(const AddressRange& range,
         {
             visited[i->second] = true;
             value.dm_unique_identifier = i->second;
-            terminate |= visitor(value);
+            terminate |= !visitor(value);
         }
     }
 }
@@ -684,7 +684,7 @@ void SymbolTable::visitFunctions(const AddressRange& range,
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
-                                           StatementVisitor& visitor)
+                                           const StatementVisitor& visitor)
 {
     BOOST_VERIFY(uid < dm_functions.size());
 
@@ -704,7 +704,7 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
         {
             visited[i->second] = true;
             value.dm_unique_identifier = i->second;
-            terminate |= visitor(value);
+            terminate |= !visitor(value);
         }
     }
 }
@@ -714,7 +714,7 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
-                                          StatementVisitor& visitor)
+                                          const StatementVisitor& visitor)
 {
     BOOST_VERIFY(uid < dm_functions.size());
 
@@ -737,7 +737,7 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
             {
                 visited[j->second] = true;
                 value.dm_unique_identifier = j->second;
-                terminate |= visitor(value);
+                terminate |= !visitor(value);
             }
         }
     }
@@ -747,7 +747,7 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void SymbolTable::visitStatements(StatementVisitor& visitor)
+void SymbolTable::visitStatements(const StatementVisitor& visitor)
 {
     bool terminate = false;
     Statement value(shared_from_this(), 0);
@@ -757,7 +757,7 @@ void SymbolTable::visitStatements(StatementVisitor& visitor)
          ++i)
     {
         value.dm_unique_identifier = i;
-        terminate |= visitor(value);
+        terminate |= !visitor(value);
     }
 }
 
@@ -766,7 +766,7 @@ void SymbolTable::visitStatements(StatementVisitor& visitor)
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void SymbolTable::visitStatements(const AddressRange& range,
-                                  StatementVisitor& visitor)
+                                  const StatementVisitor& visitor)
 {
     bool terminate = false;
     Statement value(shared_from_this(), 0);
@@ -782,7 +782,7 @@ void SymbolTable::visitStatements(const AddressRange& range,
         {
             visited[i->second] = true;
             value.dm_unique_identifier = i->second;
-            terminate |= visitor(value);
+            terminate |= !visitor(value);
         }
     }
 }
@@ -792,7 +792,7 @@ void SymbolTable::visitStatements(const AddressRange& range,
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
-                                          FunctionVisitor& visitor)
+                                          const FunctionVisitor& visitor)
 {
     BOOST_VERIFY(uid < dm_statements.size());
 
@@ -815,7 +815,7 @@ void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
             {
                 visited[j->second] = true;
                 value.dm_unique_identifier = j->second;
-                terminate |= visitor(value);
+                terminate |= !visitor(value);
             }
         }
     }

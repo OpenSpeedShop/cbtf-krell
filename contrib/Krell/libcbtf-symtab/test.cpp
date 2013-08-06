@@ -23,8 +23,10 @@
 #define BOOST_TEST_MODULE CBTF-SymbolTable
 
 #include <boost/assign/list_of.hpp>
+#include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
 #include <cstdlib>
 #include <KrellInstitute/SymbolTable/Address.hpp>
@@ -49,7 +51,21 @@ using namespace KrellInstitute::SymbolTable::Impl;
 /** Anonymous namespace hiding implementation details. */
 namespace {
 
-    // ...
+    /** Visitor for accumulating functions. */
+    bool accumulateFunctions(const Function& function,
+                             std::set<Function>& functions)
+    {
+        functions.insert(function);
+        return true;
+    }
+
+    /** Visitor for accumulating statements. */
+    bool accumulateStatements(const Statement& statement,
+                              std::set<Statement>& statements)
+    {
+        statements.insert(statement);
+        return true;
+    }
 
 } // namespace <anonymous>
 
@@ -265,12 +281,12 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
  */
 BOOST_AUTO_TEST_CASE(TestFileName)
 {    
-    FileName name("/path/to/nonexistent/file");
+    FileName name1("/path/to/nonexistent/file");
     
-    BOOST_CHECK_EQUAL(name.path(), "/path/to/nonexistent/file");
-    BOOST_CHECK_EQUAL(name.checksum(), 0);
+    BOOST_CHECK_EQUAL(name1.path(), "/path/to/nonexistent/file");
+    BOOST_CHECK_EQUAL(name1.checksum(), 0);
 
-    BOOST_CHECK_EQUAL(static_cast<std::string>(name),
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name1),
                       "0x0000000000000000: \"/path/to/nonexistent/file\"");
     
 #if defined(BOOST_FILESYSTEM_VERSION) && (BOOST_FILESYSTEM_VERSION == 3)
@@ -312,64 +328,382 @@ BOOST_AUTO_TEST_CASE(TestFileName)
            << "from the earth."
            << std::endl;
     stream.close();
-    FileName nameA = FileName(tmp_path);
+    FileName name2 = FileName(tmp_path);
 
-    BOOST_CHECK_EQUAL(nameA.path(), tmp_path);
-    BOOST_CHECK_EQUAL(nameA.checksum(), 17734875587178274082llu);
+    BOOST_CHECK_EQUAL(name2.path(), tmp_path);
+    BOOST_CHECK_EQUAL(name2.checksum(), 17734875587178274082llu);
 
     stream.open(tmp_path, std::ios::app);
     stream << std::endl
            << "-- President Abraham Lincoln, November 19, 1863"
            << std::endl;
     stream.close();
-    FileName nameB = FileName(tmp_path);
+    FileName name3 = FileName(tmp_path);
 
-    BOOST_CHECK_EQUAL(nameB.path(), tmp_path);
-    BOOST_CHECK_EQUAL(nameB.checksum(), 1506913182069408458llu);
+    BOOST_CHECK_EQUAL(name3.path(), tmp_path);
+    BOOST_CHECK_EQUAL(name3.checksum(), 1506913182069408458llu);
     
     boost::filesystem::remove(tmp_path);
 
-    BOOST_CHECK_NE(name, nameA);
-    BOOST_CHECK_NE(name, nameB);
-    BOOST_CHECK_NE(nameA, nameB);
+    BOOST_CHECK_NE(name1, name2);
+    BOOST_CHECK_NE(name1, name3);
+    BOOST_CHECK_NE(name2, name3);
 
-    BOOST_CHECK_LT(nameB, nameA);
-    BOOST_CHECK_GT(nameA, nameB);
+    BOOST_CHECK_LT(name3, name2);
+    BOOST_CHECK_GT(name2, name3);
 
-    BOOST_CHECK_EQUAL(FileName(static_cast<CBTF_Protocol_FileName>(name)),
-                      name);
-    BOOST_CHECK_EQUAL(FileName(static_cast<CBTF_Protocol_FileName>(nameA)),
-                      nameA);
+    BOOST_CHECK_EQUAL(
+        FileName(static_cast<CBTF_Protocol_FileName>(name1)), name1
+        );
+    BOOST_CHECK_EQUAL(
+        FileName(static_cast<CBTF_Protocol_FileName>(name2)), name2
+        );
 }
 
 
 
 /**
- * Unit test for the Function class.
+ * Unit test for the SymbolTable classes (LinkedObject, Function, Statement).
  */
-BOOST_AUTO_TEST_CASE(TestFunction)
+BOOST_AUTO_TEST_CASE(TestSymbolTable)
 {
+    std::set<AddressRange> addresses;
+
+    LinkedObject linked_object(FileName("/path/to/nonexistent/dso"));
+    
+    BOOST_CHECK_EQUAL(LinkedObject(linked_object), linked_object);
+    BOOST_CHECK_EQUAL(linked_object.getName(),
+                      FileName("/path/to/nonexistent/dso"));
+
+    //
+    // The following functions and statements (along with their corresponding
+    // address ranges) are added to this linked object during the test:
+    //
+    //      function1:  [  0,   7]  [ 13,  27]
+    //      function2:  [113, 127]
+    //      function3:  [  7,  13]  [213, 227]
+    //      function4:  [ 57,  63]
+    //
+    //     statement1:  [  0,   7]  [113, 127]
+    //     statement2:  [ 13,  27]
+    //     statement3:  [ 75, 100]
+    //     statement4:  [213, 227]
+    //
+
+    //
+    // Test adding functions and the LinkedObject::visitFunctions query.
+    //
+
+    std::set<Function> functions;
+    linked_object.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK(functions.empty());
+
+    Function function1(linked_object, "_Z2f1RKf");
+
+    BOOST_CHECK_EQUAL(Function(function1), function1);
+    BOOST_CHECK_EQUAL(function1.getLinkedObject(), linked_object);
+    BOOST_CHECK_EQUAL(function1.getMangledName(), "_Z2f1RKf");
+    BOOST_CHECK_EQUAL(function1.getDemangledName(), "f1(float const&)");
+    BOOST_CHECK(function1.getAddressRanges().empty());
+
+    Function function2(linked_object, "_Z2f2RKf");
+    Function function3(linked_object, "_Z2f3RKf");
+    Function function4(function3.clone(linked_object));
+
+    BOOST_CHECK_NE(function1, function2);
+    BOOST_CHECK_LT(function1, function2);
+    BOOST_CHECK_GT(function3, function2);
+    BOOST_CHECK_NE(function3, function4);
+
+    functions.clear();
+    linked_object.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 4);
+
+    //
+    // Test adding statements and the LinkedObject::visitStatements query.
+    //
+
+    std::set<Statement> statements;
+    linked_object.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK(statements.empty());
+    
+    Statement statement1(linked_object,
+                         FileName("/path/to/nonexistent/source/file"), 1, 1);
+
+    BOOST_CHECK_EQUAL(Statement(statement1), statement1);
+    BOOST_CHECK_EQUAL(statement1.getLinkedObject(), linked_object);
+    BOOST_CHECK_EQUAL(statement1.getName(),
+                      FileName("/path/to/nonexistent/source/file"));
+    BOOST_CHECK_EQUAL(statement1.getLine(), 1);
+    BOOST_CHECK_EQUAL(statement1.getColumn(), 1);
+    BOOST_CHECK(statement1.getAddressRanges().empty());
+
+    Statement statement2(linked_object,
+                         FileName("/path/to/nonexistent/source/file"), 20, 1);
+    Statement statement3(linked_object,
+                         FileName("/path/to/nonexistent/source/file"), 30, 1);
+    Statement statement4(statement3.clone(linked_object));
+    
+    BOOST_CHECK_NE(statement1, statement2);
+    BOOST_CHECK_LT(statement1, statement2);
+    BOOST_CHECK_GT(statement3, statement2);
+    BOOST_CHECK_NE(statement3, statement4);
+
+    statements.clear();
+    linked_object.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 4);
+
+    //
+    // Add address ranges to the functions.
+    //
+
+    addresses = boost::assign::list_of
+        (AddressRange(0, 7))
+        (AddressRange(13, 27));
+    function1.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(113, 127));
+    function2.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(7, 13))
+        (AddressRange(213, 227));
+    function3.addAddressRanges(addresses);
+    
+    addresses = boost::assign::list_of
+        (AddressRange(57, 63));
+    function4.addAddressRanges(addresses);
+    
+    BOOST_CHECK(!function1.getAddressRanges().empty());
+    BOOST_CHECK(!function2.getAddressRanges().empty());
+    BOOST_CHECK(!function3.getAddressRanges().empty());
+    BOOST_CHECK(!function4.getAddressRanges().empty());
+
+    //
+    // Test the LinkedObject::visitFunctions(<address_range>) query.
+    //
+
+    functions.clear();
+    linked_object.visitFunctions(
+        AddressRange(0, 10),
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 2);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    linked_object.visitFunctions(
+        AddressRange(200, 400),
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 1);
+    BOOST_CHECK(functions.find(function1) == functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    linked_object.visitFunctions(
+        AddressRange(8, 10),
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK(functions.empty());
+
+    //
+    // Add address ranges to the statements.
+    //
+
+    addresses = boost::assign::list_of
+        (AddressRange(0, 7))
+        (AddressRange(113, 127));
+    statement1.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(13, 27));
+    statement2.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(75, 100));
+    statement3.addAddressRanges(addresses);
+    
+    addresses = boost::assign::list_of
+        (AddressRange(213, 227));
+    statement4.addAddressRanges(addresses);
+
+    BOOST_CHECK(!statement1.getAddressRanges().empty());
+    BOOST_CHECK(!statement2.getAddressRanges().empty());
+    BOOST_CHECK(!statement3.getAddressRanges().empty());
+    BOOST_CHECK(!statement4.getAddressRanges().empty());
+
+    //
+    // Test the LinkedObject::visitStatements(<address-range>) query.
+    //
+
+    statements.clear();
+    linked_object.visitStatements(
+        AddressRange(0, 20),
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 2);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    linked_object.visitStatements(
+        AddressRange(90, 110),
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) == statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) != statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    linked_object.visitStatements(
+        AddressRange(30, 40),
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK(statements.empty());
+
+    //
+    // Test the Function::visitDefinitions() query.
+    //
+
+    statements.clear();
+    function1.visitDefinitions(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    function2.visitDefinitions(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    function3.visitDefinitions(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    function4.visitDefinitions(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK(statements.empty());
+
+    //
+    // Test the Function::visitStatements() query.
+    //
+
+    statements.clear();
+    function1.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 2);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    function2.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    function3.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 3);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) != statements.end());
+    
+    statements.clear();
+    function4.visitStatements(
+        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        );
+    BOOST_CHECK(statements.empty());
+
+    //
+    // Test the Statement::visitFunctions() query.
+    //
+
+    functions.clear();
+    statement1.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 3);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) != functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    statement2.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 2);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    statement3.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK(functions.empty());
+
+    functions.clear();
+    statement4.visitFunctions(
+        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 1);
+    BOOST_CHECK(functions.find(function1) == functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
     // ...
-}
-
-
-
-/**
- * Unit test for the LinkedObject class.
- */
-BOOST_AUTO_TEST_CASE(TestLinkedObject)
-{
-    // ...
-}
-
-
-
-/**
- * Unit test for the Statement class.
- */
-BOOST_AUTO_TEST_CASE(TestStatement)
-{
-    // ...
+    // TODO: Test LinkedObject::clone()
+    // TODO: Test LinkedOBject::operator<()
+    // TODO: Test conversion to/from CBTF_Protocol_SymbolTable
 }
 
 

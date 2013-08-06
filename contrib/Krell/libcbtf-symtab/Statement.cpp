@@ -18,8 +18,10 @@
 
 /** @file Definition of the Statement class. */
 
+#include <boost/format.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
+#include <sstream>
 
 #include "SymbolTable.hpp"
 
@@ -40,6 +42,17 @@ Statement::Statement(const LinkedObject& linked_object,
 
 
         
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+Statement::operator std::string() const
+{
+    std::ostringstream stream;
+    stream << *this;
+    return stream.str();    
+}
+
+
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 bool Statement::operator<(const Statement& other) const
@@ -140,9 +153,25 @@ std::set<AddressRange> Statement::getAddressRanges() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Statement::visitFunctions(FunctionVisitor& visitor) const
+void Statement::visitFunctions(const FunctionVisitor& visitor) const
 {
     dm_symbol_table->visitStatementFunctions(dm_unique_identifier, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::ostream& KrellInstitute::SymbolTable::operator<<(
+    std::ostream& stream, const Statement& statement
+    )
+{
+    stream << boost::str(
+        boost::format("Statement %u in SymbolTable 0x%016X") % 
+        statement.dm_unique_identifier % statement.dm_symbol_table.get()
+        );
+    
+    return stream;
 }
 
 

@@ -20,11 +20,15 @@
 
 #pragma once
 
+#include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
+#include <boost/shared_ptr.hpp>
+#include <iostream>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <set>
+#include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -58,6 +62,16 @@ namespace KrellInstitute { namespace SymbolTable {
                   const FileName& name,
                   const unsigned int& line,
                   const unsigned int& column);
+
+        /**
+         * Type conversion to a string.
+         *
+         * @return    String describing this statement.
+         *
+         * @note    This type conversion calls the Statement redirection to
+         *          an output stream, and is intended for debugging use only.
+         */
+        operator std::string() const;
 
         /**
          * Is this statement less than another one?
@@ -144,7 +158,22 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each function containing
          *                   this statement.
          */
-        void visitFunctions(FunctionVisitor& visitor) const;
+        void visitFunctions(const FunctionVisitor& visitor) const;
+
+        /**
+         * Redirection to an output stream.
+         *
+         * @param stream      Destination output stream.
+         * @param function    Statement to be redirected.
+         * @return            Destination output stream.
+         *
+         * @note    This redirection dumps only the address of the
+         *          symbol table containing, and unique identifier
+         *          of, the statement. It is intended for debugging
+         *          use.
+         */
+        friend std::ostream& operator<<(std::ostream& stream,
+                                        const Statement& statement);
 
     private:
 

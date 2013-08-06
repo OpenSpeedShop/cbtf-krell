@@ -73,7 +73,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /**
          * Type conversion to a string.
          *
-         * @return    String containing this address bitmap.
+         * @return    String describing this address bitmap.
          */
         operator std::string() const;
 

@@ -23,6 +23,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
+#include <iostream>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
@@ -54,6 +55,16 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param name             Mangled name of this function.
          */
         Function(const LinkedObject& linked_object, const std::string& name);
+
+        /**
+         * Type conversion to a string.
+         *
+         * @return    String describing this function.
+         *
+         * @note    This type conversion calls the Function redirection to
+         *          an output stream, and is intended for debugging use only.
+         */
+        operator std::string() const;
         
         /**
          * Is this function less than another one?
@@ -133,7 +144,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each defintion of this
          *                   function.
          */
-        void visitDefinitions(StatementVisitor& visitor) const;
+        void visitDefinitions(const StatementVisitor& visitor) const;
 
         /**
          * Visit the statements associated with this function.
@@ -141,8 +152,23 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each statement associated 
          *                   with this function.
          */
-        void visitStatements(StatementVisitor& visitor) const;
+        void visitStatements(const StatementVisitor& visitor) const;
 
+        /**
+         * Redirection to an output stream.
+         *
+         * @param stream      Destination output stream.
+         * @param function    Function to be redirected.
+         * @return            Destination output stream.
+         *
+         * @note    This redirection dumps only the address of the
+         *          symbol table containing, and unique identifier
+         *          of, the function. It is intended for debugging
+         *          use.
+         */
+        friend std::ostream& operator<<(std::ostream& stream,
+                                        const Function& function);
+        
     private:
 
         /**

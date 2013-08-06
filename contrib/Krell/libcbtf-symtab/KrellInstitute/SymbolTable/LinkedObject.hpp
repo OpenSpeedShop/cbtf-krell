@@ -23,11 +23,13 @@
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
+#include <iostream>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
+#include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -65,6 +67,23 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject(const CBTF_Protocol_SymbolTable& message);
 
         /**
+         * Type conversion to a CBTF_Protocol_SymbolTable.
+         *
+         * @return    Message containing this linked object.
+         */
+        operator CBTF_Protocol_SymbolTable() const;
+
+        /**
+         * Type conversion to a string.
+         *
+         * @return    String describing this linked object.
+         *
+         * @note    This type conversion calls the LinkedObject redirection to
+         *          an output stream, and is intended for debugging use only.
+         */
+        operator std::string() const;
+
+        /**
          * Is this linked object less than another one?
          *
          * @param other    Linked object to be compared.
@@ -81,13 +100,6 @@ namespace KrellInstitute { namespace SymbolTable {
          *                 or "false" otherwise.
          */
         bool operator==(const LinkedObject& other) const;
-
-        /**
-         * Type conversion to a CBTF_Protocol_SymbolTable.
-         *
-         * @return    Message containing this linked object.
-         */
-        operator CBTF_Protocol_SymbolTable() const;
 
         /**
          * Create a deep copy of this linked object.
@@ -109,7 +121,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each function
          *                   contained within this linked object.
          */
-        void visitFunctions(FunctionVisitor& visitor) const;
+        void visitFunctions(const FunctionVisitor& visitor) const;
 
         /**
          * Visit the functions contained within this linked object intersecting
@@ -124,7 +136,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          address space of a specific process.
          */
         void visitFunctions(const AddressRange& range,
-                            FunctionVisitor& visitor) const;
+                            const FunctionVisitor& visitor) const;
         
         /**
          * Visit the statements contained within this linked object.
@@ -132,7 +144,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each statement
          *                   contained within this linked object.
          */
-        void visitStatements(StatementVisitor& visitor) const;
+        void visitStatements(const StatementVisitor& visitor) const;
         
         /**
          * Visit the statements contained within this linked object intersecting
@@ -147,8 +159,22 @@ namespace KrellInstitute { namespace SymbolTable {
          *          address space of a specific process.
          */
         void visitStatements(const AddressRange& range,
-                             StatementVisitor& vistor) const;
-        
+                             const StatementVisitor& vistor) const;
+
+        /**
+         * Redirection to an output stream.
+         *
+         * @param stream           Destination output stream.
+         * @param linked_object    Linked object to be redirected.
+         * @return                 Destination output stream.
+         *
+         * @note    This redirection dumps only the address of the
+         *          symbol table containing this linked object. It
+         *          is intended for debugging use.
+         */
+        friend std::ostream& operator<<(std::ostream& stream,
+                                        const LinkedObject& linked_object);
+
     private:
 
         /**
@@ -162,5 +188,5 @@ namespace KrellInstitute { namespace SymbolTable {
         boost::shared_ptr<Impl::SymbolTable> dm_symbol_table;
         
     }; // class LinkedObject
-        
+
 } } // namespace KrellInstitute::SymbolTable

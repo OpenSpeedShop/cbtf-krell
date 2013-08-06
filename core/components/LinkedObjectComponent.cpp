@@ -123,7 +123,7 @@ private:
     void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
     {
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
-#if 0
+#if 1
 	ThreadName tname(message->thread);
 
 	LinkedObjectEntryVec linkedobjects;

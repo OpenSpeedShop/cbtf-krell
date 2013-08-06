@@ -26,6 +26,8 @@
 #include <boost/operators.hpp>
 #include <cstring>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <KrellInstitute/Messages/File.h>
 
 namespace KrellInstitute { namespace SymbolTable {
@@ -79,6 +81,14 @@ namespace KrellInstitute { namespace SymbolTable {
             return message;
         }
 
+        /** Type conversion to a string. */
+        operator std::string() const
+        {
+            std::ostringstream stream;
+            stream << *this;
+            return stream.str();
+        }
+
         /** Is this file name less than another one? */
         bool operator<(const FileName& other) const
         {
@@ -111,13 +121,13 @@ namespace KrellInstitute { namespace SymbolTable {
         }
 
         /** Get the full path of the named file. */
-        const boost::filesystem::path& getPath() const
+        const boost::filesystem::path& path() const
         {
             return dm_path;
         }
 
         /** Get the checksum of the named file's contents. */
-        boost::uint64_t getChecksum() const
+        boost::uint64_t checksum() const
         {
             return dm_checksum;
         }
@@ -127,7 +137,7 @@ namespace KrellInstitute { namespace SymbolTable {
                                         const FileName& name)
         {
             stream << boost::str(boost::format("0x%016X") % name.dm_checksum)
-                   << ":" << name.dm_path;
+                   << ": " << name.dm_path;
             return stream;
         }
         

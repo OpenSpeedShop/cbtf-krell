@@ -23,7 +23,10 @@
 #define BOOST_TEST_MODULE CBTF-SymbolTable
 
 #include <boost/assign/list_of.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/test/unit_test.hpp>
+#include <cstdlib>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/AddressSpace.hpp>
@@ -261,8 +264,82 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
  * Unit test for the FileName class.
  */
 BOOST_AUTO_TEST_CASE(TestFileName)
-{
-    // ...
+{    
+    FileName name("/path/to/nonexistent/file");
+    
+    BOOST_CHECK_EQUAL(name.path(), "/path/to/nonexistent/file");
+    BOOST_CHECK_EQUAL(name.checksum(), 0);
+
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name),
+                      "0x0000000000000000: \"/path/to/nonexistent/file\"");
+    
+#if defined(BOOST_FILESYSTEM_VERSION) && (BOOST_FILESYSTEM_VERSION == 3)
+    boost::filesystem::path tmp_path = boost::filesystem::unique_path();    
+#else
+    char model[] = "test.XXXXXX";
+    BOOST_REQUIRE_EQUAL(mkstemp(model), 0);
+    boost::filesystem::path tmp_path(model);
+#endif
+
+    boost::filesystem::ofstream stream(tmp_path);
+    stream << "Four score and seven years ago our fathers brought forth "
+           << "on this continent a new nation, conceived in liberty, and "
+           << "dedicated to the proposition that all men are created equal."
+           << std::endl << std::endl
+           << "Now we are engaged in a great civil war, testing whether "
+           << "that nation, or any nation so conceived and so dedicated, "
+           << "can long endure. We are met on a great battlefield of that "
+           << "war. We have come to dedicate a portion of that field, as "
+           << "a final resting place for those who here gave their lives "
+           << "that that nation might live. It is altogether fitting and "
+           << "proper that we should do this."
+           << std::endl << std::endl
+           << "But, in a larger sense, we can not dedicate, we can not "
+           << "consecrate, we can not hallow this ground. The brave men, "
+           << "living and dead, who struggled here, have consecrated it, "
+           << "far above our poor power to add or detract. The world will "
+           << "little note, nor long remember what we say here, but it can "
+           << "never forget what they did here. It is for us the living, "
+           << "rather, to be dedicated here to the unfinished work which "
+           << "they who fought here have thus far so nobly advanced. It is "
+           << "rather for us to be here dedicated to the great task remaining "
+           << "before us - that from these honored dead we take increased "
+           << "devotion to that cause for which they gave the last full "
+           << "measure of devotion - that we here highly resolve that these "
+           << "dead shall not have died in vain - that this nation, under "
+           << "God, shall have a new birth of freedom - and that government "
+           << "of the people, by the people, for the people, shall not perish "
+           << "from the earth."
+           << std::endl;
+    stream.close();
+    FileName nameA = FileName(tmp_path);
+
+    BOOST_CHECK_EQUAL(nameA.path(), tmp_path);
+    BOOST_CHECK_EQUAL(nameA.checksum(), 17734875587178274082llu);
+
+    stream.open(tmp_path, std::ios::app);
+    stream << std::endl
+           << "-- President Abraham Lincoln, November 19, 1863"
+           << std::endl;
+    stream.close();
+    FileName nameB = FileName(tmp_path);
+
+    BOOST_CHECK_EQUAL(nameB.path(), tmp_path);
+    BOOST_CHECK_EQUAL(nameB.checksum(), 1506913182069408458llu);
+    
+    boost::filesystem::remove(tmp_path);
+
+    BOOST_CHECK_NE(name, nameA);
+    BOOST_CHECK_NE(name, nameB);
+    BOOST_CHECK_NE(nameA, nameB);
+
+    BOOST_CHECK_LT(nameB, nameA);
+    BOOST_CHECK_GT(nameA, nameB);
+
+    BOOST_CHECK_EQUAL(FileName(static_cast<CBTF_Protocol_FileName>(name)),
+                      name);
+    BOOST_CHECK_EQUAL(FileName(static_cast<CBTF_Protocol_FileName>(nameA)),
+                      nameA);
 }
 
 

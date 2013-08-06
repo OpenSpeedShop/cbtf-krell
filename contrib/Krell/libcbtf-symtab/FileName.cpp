@@ -50,10 +50,11 @@ boost::uint64_t FileName::computeChecksum(const boost::filesystem::path& path)
         > crc;
     
     boost::filesystem::ifstream stream(path, std::ios::binary);
-    
-    while (!stream.eof())
+
+    for (std::streamsize n = stream.readsome(buffer, sizeof(buffer));
+         n > 0;
+         n = stream.readsome(buffer, sizeof(buffer)))
     {
-        std::streamsize n = stream.readsome(buffer, sizeof(buffer));
         crc.process_bytes(buffer, n);
     }
     

@@ -20,11 +20,13 @@
 
 #pragma once
 
+#include <boost/operators.hpp>
 #include <iostream>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <set>
+#include <string>
 #include <vector>
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
@@ -33,7 +35,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
      * A bitmap containing one bit per address within an address range. Used
      * to represent a non-contiguous, fragmented, portion of an address space.
      */
-    class AddressBitmap
+    class AddressBitmap :
+        public boost::equality_comparable<AddressBitmap>
     {
 	
     public:
@@ -66,29 +69,51 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @return    Message containing this address bitmap.
          */
         operator CBTF_Protocol_AddressBitmap() const;
+
+        /**
+         * Type conversion to a string.
+         *
+         * @return    String containing this address bitmap.
+         */
+        operator std::string() const;
+
+        /**
+         * Is this address bitmap equal to another one?
+         *
+         * @param other    Address bitmap to be compared.
+         * @return         Boolean "true" if the address bitmaps
+         *                 are equal, or "false" otherwise.
+         */
+        bool operator==(const AddressBitmap& other) const;
         
         /**
          * Get the address range covered by this address bitmap.
          *
          * @return    Address range covered by this address bitmap.
          */
-        const AddressRange& getRange() const;
+        const AddressRange& range() const;
         
         /**
-         * Get the value of the specified address in this address bitmap.
+         * Get the value of the given address in this address bitmap.
          *
          * @param address    Address to get.
          * @return           Value at that address.
+         *
+         * @throw std::invalid_argument    The given address isn't contained
+         *                                 within this bitmap's range.
          */
-        bool getValue(const Address& address) const;
+        bool get(const Address& address) const;
         
         /**
-         * Set the value of the specified address in this address bitmap.
+         * Set the value of the given address in this address bitmap.
          *
          * @param address    Address to be set.
          * @param value      Value to set for this address.
+         *
+         * @throw std::invalid_argument    The given address isn't contained
+         *                                 within this bitmap's range.
          */
-        void setValue(const Address& address, const bool& value);
+        void set(const Address& address, const bool& value);
         
         /**
          * Get the set of contiguous address ranges in this address bitmap 
@@ -97,18 +122,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param value    Value of interest.
          * @return         Set of contiguous address ranges with that value.
          */
-        std::set<AddressRange> getContiguousRanges(const bool& value) const;
+        std::set<AddressRange> ranges(const bool& value) const;
 
-        /**
-         * Redirection to an output stream.
-         *
-         * @param stream    Destination output stream.
-         * @param bitmap    Address bitmap to be redirected.
-         * @return          Destination output stream.
-         */
-        friend std::ostream& operator<<(std::ostream& stream,
-                                        const AddressBitmap& bitmap);
-        
     private:
         
         /** Address range covered by this address bitmap. */
@@ -118,5 +133,15 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         std::vector<bool> dm_bitmap;
         
     }; // class AddressBitmap
-            
+
+    /**
+     * Redirection to an output stream.
+     *
+     * @param stream    Destination output stream.
+     * @param bitmap    Address bitmap to be redirected.
+     * @return          Destination output stream.
+     */
+    std::ostream& operator<<(std::ostream& stream,
+                             const AddressBitmap& bitmap);
+
 } } } // namespace KrellInstitute::SymbolTable::Impl

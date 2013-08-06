@@ -47,7 +47,7 @@ namespace {
         for (std::vector<AddressBitmap>::const_iterator
                  i = bitmaps.begin(); i != bitmaps.end(); ++i)
         {
-            std::set<AddressRange> i_ranges = i->getContiguousRanges(true);
+            std::set<AddressRange> i_ranges = i->ranges(true);
             ranges.insert(i_ranges.begin(), i_ranges.end());
         }
         

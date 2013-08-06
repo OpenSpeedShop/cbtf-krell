@@ -22,6 +22,7 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE CBTF-SymbolTable
 
+#include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 #include <KrellInstitute/SymbolTable/Address.hpp>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
@@ -32,10 +33,13 @@
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <KrellInstitute/SymbolTable/Time.hpp>
 #include <KrellInstitute/SymbolTable/TimeInterval.hpp>
+#include <set>
+#include <stdexcept>
 
 #include "AddressBitmap.hpp"
 
 using namespace KrellInstitute::SymbolTable;
+using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
@@ -57,6 +61,9 @@ BOOST_AUTO_TEST_CASE(TestAddress)
     BOOST_CHECK_NE(Address::TheLowest(), Address::TheHighest());
     BOOST_CHECK_LT(Address::TheLowest(), Address::TheHighest());
     BOOST_CHECK_GT(Address::TheHighest(), Address::TheLowest());
+
+    BOOST_CHECK_EQUAL(Address(static_cast<CBTF_Protocol_Address>(Address(27))),
+                      Address(27));
 
     BOOST_CHECK_EQUAL(--Address::TheLowest(), Address::TheHighest());
     BOOST_CHECK_EQUAL(Address::TheLowest() - 1, Address::TheHighest());
@@ -81,7 +88,57 @@ BOOST_AUTO_TEST_CASE(TestAddress)
  */
 BOOST_AUTO_TEST_CASE(TestAddressBitmap)
 {
-    // ...
+    AddressBitmap bitmap(AddressRange(0, 13));
+
+    BOOST_CHECK_EQUAL(bitmap.range(), AddressRange(0, 13));
+    
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(!bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+    BOOST_CHECK_THROW(bitmap.get(27), std::invalid_argument);
+    bitmap.set(7, true);
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+    BOOST_CHECK_THROW(bitmap.set(27, true), std::invalid_argument);
+    bitmap.set(7, false);
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(!bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+
+    bitmap.set(7, true);
+    std::set<AddressRange> ranges = bitmap.ranges(false);
+    BOOST_CHECK_EQUAL(ranges.size(), 2);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(0, 6));
+    BOOST_CHECK_EQUAL(*(++ranges.begin()), AddressRange(8, 13));
+    ranges = bitmap.ranges(true);
+    BOOST_CHECK_EQUAL(ranges.size(), 1);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(7, 7));
+    bitmap.set(12, true);
+    bitmap.set(13, true);
+    ranges = bitmap.ranges(true);
+    BOOST_CHECK_EQUAL(ranges.size(), 2);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(7, 7));
+    BOOST_CHECK_EQUAL(*(++ranges.begin()), AddressRange(12, 13));
+
+    std::set<Address> addresses = boost::assign::list_of(0)(7)(13)(27);
+    bitmap = AddressBitmap(addresses);
+    BOOST_CHECK_EQUAL(bitmap.range(), AddressRange(0, 27));
+    BOOST_CHECK(bitmap.get(0));
+    BOOST_CHECK(bitmap.get(7));
+    BOOST_CHECK(bitmap.get(13));
+    BOOST_CHECK(bitmap.get(27));
+    BOOST_CHECK(!bitmap.get(1));
+
+    BOOST_CHECK_EQUAL(
+        static_cast<std::string>(bitmap),
+        "[0x0000000000000000, 0x000000000000001B]: 1000000100000100000000000001"
+        );
+
+    BOOST_CHECK_EQUAL(
+        AddressBitmap(static_cast<CBTF_Protocol_AddressBitmap>(bitmap)),
+        bitmap
+        );
 }
 
 
@@ -96,6 +153,13 @@ BOOST_AUTO_TEST_CASE(TestAddressRange)
     BOOST_CHECK_EQUAL(AddressRange(27).begin(), AddressRange(27).end());
     BOOST_CHECK(!AddressRange(0, 1).empty());
     BOOST_CHECK(AddressRange(1, 0).empty());
+
+    BOOST_CHECK_EQUAL(
+        AddressRange(
+            static_cast<CBTF_Protocol_AddressRange>(AddressRange(0, 27))
+            ),
+        AddressRange(0, 27)
+        );
 
     BOOST_CHECK_LT(AddressRange(0, 13), AddressRange(1, 13));
     BOOST_CHECK_LT(AddressRange(0, 13), AddressRange(0, 27));
@@ -153,7 +217,7 @@ BOOST_AUTO_TEST_CASE(TestAddressRange)
     BOOST_CHECK(!AddressRange(13, 0).intersects(AddressRange(27, 7)));
     
     BOOST_CHECK_EQUAL(static_cast<std::string>(AddressRange(13, 27)),
-                      "[ 0x000000000000000D, 0x000000000000001B ]");
+                      "[0x000000000000000D, 0x000000000000001B]");
 
     BOOST_CHECK(!std::less<AddressRange>()(
                     AddressRange(0, 13), AddressRange(7, 27)
@@ -251,6 +315,9 @@ BOOST_AUTO_TEST_CASE(TestTime)
     BOOST_CHECK_GT(t2, t1);
     BOOST_CHECK_LT(t2, Time::TheEnd());
 
+    BOOST_CHECK_EQUAL(Time(static_cast<CBTF_Protocol_Time>(Time(27))),
+                      Time(27));
+
     BOOST_CHECK_EQUAL(--Time::TheBeginning(), Time::TheEnd());
     BOOST_CHECK_EQUAL(Time::TheBeginning() - 1, Time::TheEnd());
 
@@ -279,6 +346,13 @@ BOOST_AUTO_TEST_CASE(TestTimeInterval)
     BOOST_CHECK_EQUAL(TimeInterval(27).begin(), TimeInterval(27).end());
     BOOST_CHECK(!TimeInterval(0, 1).empty());
     BOOST_CHECK(TimeInterval(1, 0).empty());
+
+    BOOST_CHECK_EQUAL(
+        TimeInterval(
+            static_cast<CBTF_Protocol_TimeInterval>(TimeInterval(0, 27))
+            ),
+        TimeInterval(0, 27)
+        );
 
     BOOST_CHECK_LT(TimeInterval(0, 13), TimeInterval(1, 13));
     BOOST_CHECK_LT(TimeInterval(0, 13), TimeInterval(0, 27));
@@ -336,7 +410,7 @@ BOOST_AUTO_TEST_CASE(TestTimeInterval)
     BOOST_CHECK(!TimeInterval(13, 0).intersects(TimeInterval(27, 7)));
     
     BOOST_CHECK_EQUAL(static_cast<std::string>(TimeInterval(13, 27000000000)),
-                      "[ 1969/12/31 18:00:00, 1969/12/31 18:00:27 ]");
+                      "[1969/12/31 18:00:00, 1969/12/31 18:00:27]");
 
     BOOST_CHECK(!std::less<TimeInterval>()(
                     TimeInterval(0, 13), TimeInterval(7, 27)

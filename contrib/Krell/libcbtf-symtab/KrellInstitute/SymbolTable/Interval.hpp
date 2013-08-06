@@ -211,8 +211,8 @@ namespace KrellInstitute { namespace SymbolTable {
         friend std::ostream& operator<<(std::ostream& stream,
                                         const Interval& interval)
         {
-            stream << "[ " << interval.dm_begin << ", " 
-                   << interval.dm_end << " ]";
+            stream << "[" << interval.dm_begin << ", " 
+                   << interval.dm_end << "]";
             return stream;
         }
         

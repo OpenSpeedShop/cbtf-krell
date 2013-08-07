@@ -221,6 +221,9 @@ void *monitor_init_process(int *argc, char **argv, void *data)
     if (getenv("CBTF_ENABLE_MPI_PCONTROL") != NULL) mpi_pcontrol = 1;
     if (getenv("CBTF_START_ENABLED") != NULL) mpi_pcontrol = 1;
 
+    // DPM NOTE:
+    //sleep( 3 );
+
     /* Start with gathering data disabled if environment variable is set */
     if ( mpi_pcontrol && !start_enabled) {
       if (tls->debug) {

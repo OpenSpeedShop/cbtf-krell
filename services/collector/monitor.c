@@ -234,7 +234,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
                 send_process_created_message();
                 send_attached_to_threads_message();
 		cbtf_send_info();
-		cbtf_record_dsos();
+		//cbtf_record_dsos();
 		cbtf_offline_service_start_timer();
 	    }
 	    break;
@@ -378,6 +378,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 
     /* Stop sampling */
     cbtf_timer_service_stop_sampling(NULL);
+    cbtf_record_dsos();
 
     tls->finished = finished;
 
@@ -532,6 +533,7 @@ void cbtf_record_dsos()
     CBTF_InitializeEventHeader(&local_header);
 
     /* Write the thread's initial address space to the appropriate buffer */
+fprintf(stderr,"cbtf_record_dsos calls GETDLINFO\n");
     CBTF_GetDLInfo(getpid(), NULL);
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
@@ -543,6 +545,8 @@ void cbtf_record_dsos()
 	}
 #endif
 	cbtf_offline_send_dsos(tls);
+	// DPM NOTE
+	//sleep( 3 );
     }
 
 }
@@ -577,7 +581,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 	cbtf_offline_pause_sampling(0);
     }
 
-    //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
+    fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
 
     /* Initialize the offline "dso" blob's header */
     CBTF_EventHeader local_header;
@@ -705,7 +709,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-            fprintf(stderr,"cbtf_offline_record_dso BUFFERS OBJS for HOST %s, PID %lld, POSIX_TID %lld\n",
+            fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for HOST %s, PID %lld, POSIX_TID %lld\n",
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid);
 	}

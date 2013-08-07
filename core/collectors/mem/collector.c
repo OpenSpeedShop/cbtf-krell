@@ -79,7 +79,8 @@ const unsigned OverheadFrameCount = 2;
 
 /** Number of event entries in the tracing buffer. */
 /** CBTF_mem_event is 32 bytes */
-#define EventBufferSize (CBTF_BlobSizeFactor * 415)
+//#define EventBufferSize (CBTF_BlobSizeFactor * 415)
+#define EventBufferSize (CBTF_BlobSizeFactor * 300)
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {

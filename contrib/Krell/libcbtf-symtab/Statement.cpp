@@ -184,3 +184,35 @@ Statement::Statement(Impl::SymbolTable::Handle symbol_table,
     dm_unique_identifier(unique_identifier)
 {
 }
+
+
+
+//------------------------------------------------------------------------------
+// The individual comparisons are performed from least to most expensive in
+// order to optimize performance.
+//------------------------------------------------------------------------------
+bool KrellInstitute::SymbolTable::equivalent(const Statement& first,
+                                             const Statement& second)
+{
+    if (first.getLine() != second.getLine())
+    {
+        return false;
+    }
+
+    if (first.getColumn() != second.getColumn())
+    {
+        return false;
+    }
+
+    if (first.getFile() != second.getFile())
+    {
+        return false;
+    }
+
+    if (first.getAddressRanges() != second.getAddressRanges())
+    {
+        return false;
+    }
+
+    return true;
+}

@@ -194,5 +194,19 @@ namespace KrellInstitute { namespace SymbolTable {
         boost::uint32_t dm_unique_identifier;
         
     }; // class Statement
+
+    /**
+     * Are the two given statements equivalent?
+     *
+     * @param first     First statement to be compared.
+     * @param second    Second statement to be compared.
+     * @return          Boolean "true" if the two statements are equivalent,
+     *                  or "false" otherwise.
+     *
+     * @note    Differs from the Statement equality operator in that it
+     *          compares the contents of the two statements rather than
+     *          just their symbol table pointers and unique identifiers.
+     */
+    bool equivalent(const Statement& first, const Statement& second);
     
 } } // namespace KrellInstitute::SymbolTable

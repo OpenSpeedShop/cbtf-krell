@@ -51,28 +51,12 @@ using namespace KrellInstitute::SymbolTable::Impl;
 /** Anonymous namespace hiding implementation details. */
 namespace {
 
-    /** Visitor for accumulating functions. */
-    bool accumulateFunctions(const Function& function,
-                             std::set<Function>& functions)
+    /** Templated visitor for accumulating functions, statements, etc. */
+    template <typename T>
+    bool accumulate(const T& x, std::set<T>& set)
     {
-        functions.insert(function);
+        set.insert(x);
         return true;
-    }
-
-    /** Visitor for accumulating statements. */
-    bool accumulateStatements(const Statement& statement,
-                              std::set<Statement>& statements)
-    {
-        statements.insert(statement);
-        return true;
-    }
-
-    /** Test the (deep) equivalence of two linked objects. */
-    bool equivalent(const LinkedObject& lhs, const LinkedObject& rhs)
-    {
-        // ...
-        
-        return false;
     }
     
 } // namespace <anonymous>
@@ -404,7 +388,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     std::set<Function> functions;
     linked_object.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK(functions.empty());
 
@@ -425,9 +409,12 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     BOOST_CHECK_GT(function3, function2);
     BOOST_CHECK_NE(function3, function4);
 
+    BOOST_CHECK(!equivalent(function1, function2));
+    BOOST_CHECK(equivalent(function3, function4));
+
     functions.clear();
     linked_object.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 4);
 
@@ -437,7 +424,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     std::set<Statement> statements;
     linked_object.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK(statements.empty());
     
@@ -463,9 +450,12 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     BOOST_CHECK_GT(statement3, statement2);
     BOOST_CHECK_NE(statement3, statement4);
 
+    BOOST_CHECK(!equivalent(statement1, statement2));
+    BOOST_CHECK(equivalent(statement3, statement4));
+
     statements.clear();
     linked_object.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 4);
 
@@ -503,7 +493,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     functions.clear();
     linked_object.visitFunctions(
         AddressRange(0, 10),
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 2);
     BOOST_CHECK(functions.find(function1) != functions.end());
@@ -514,7 +504,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     functions.clear();
     linked_object.visitFunctions(
         AddressRange(200, 400),
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 1);
     BOOST_CHECK(functions.find(function1) == functions.end());
@@ -525,7 +515,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     functions.clear();
     linked_object.visitFunctions(
         AddressRange(8, 10),
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK(functions.empty());
 
@@ -562,7 +552,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     statements.clear();
     linked_object.visitStatements(
         AddressRange(0, 20),
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 2);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -573,7 +563,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     statements.clear();
     linked_object.visitStatements(
         AddressRange(90, 110),
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 1);
     BOOST_CHECK(statements.find(statement1) == statements.end());
@@ -584,7 +574,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     statements.clear();
     linked_object.visitStatements(
         AddressRange(30, 40),
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK(statements.empty());
 
@@ -594,7 +584,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function1.visitDefinitions(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 1);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -604,7 +594,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function2.visitDefinitions(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 1);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -614,7 +604,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function3.visitDefinitions(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 1);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -624,7 +614,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function4.visitDefinitions(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK(statements.empty());
 
@@ -634,7 +624,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function1.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 2);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -644,7 +634,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function2.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 1);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -654,7 +644,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     statements.clear();
     function3.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK_EQUAL(statements.size(), 3);
     BOOST_CHECK(statements.find(statement1) != statements.end());
@@ -664,7 +654,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     
     statements.clear();
     function4.visitStatements(
-        boost::bind(accumulateStatements, _1, boost::ref(statements))
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
         );
     BOOST_CHECK(statements.empty());
 
@@ -674,7 +664,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     functions.clear();
     statement1.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 3);
     BOOST_CHECK(functions.find(function1) != functions.end());
@@ -684,7 +674,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     functions.clear();
     statement2.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 2);
     BOOST_CHECK(functions.find(function1) != functions.end());
@@ -694,13 +684,13 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     functions.clear();
     statement3.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK(functions.empty());
 
     functions.clear();
     statement4.visitFunctions(
-        boost::bind(accumulateFunctions, _1, boost::ref(functions))
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK_EQUAL(functions.size(), 1);
     BOOST_CHECK(functions.find(function1) == functions.end());
@@ -722,7 +712,10 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     
     BOOST_CHECK((clone < linked_object) || (linked_object < clone));
     BOOST_CHECK_NE(clone, linked_object);
+
     BOOST_CHECK(equivalent(clone, linked_object));
+    Function function5(clone, "_Z2f5RKf");
+    BOOST_CHECK(!equivalent(clone, linked_object));
 }
 
 

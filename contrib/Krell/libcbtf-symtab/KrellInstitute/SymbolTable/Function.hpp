@@ -188,5 +188,19 @@ namespace KrellInstitute { namespace SymbolTable {
         boost::uint32_t dm_unique_identifier;
         
     }; // class Function
+
+    /**
+     * Are the two given functions equivalent?
+     *
+     * @param first     First function to be compared.
+     * @param second    Second function to be compared.
+     * @return          Boolean "true" if the two functions are equivalent,
+     *                  or "false" otherwise.
+     *
+     * @note    Differs from the Function equality operator in that it
+     *          compares the contents of the two functions rather than
+     *          just their symbol table pointers and unique identifiers.
+     */
+    bool equivalent(const Function& first, const Function& second);
         
 } } // namespace KrellInstitute::SymbolTable

@@ -18,13 +18,80 @@
 
 /** @file Definition of the LinkedObject class. */
 
+#include <boost/bind.hpp>
 #include <boost/format.hpp>
+#include <boost/ref.hpp>
+#include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
 #include "SymbolTable.hpp"
 
 using namespace KrellInstitute::SymbolTable;
+
+
+
+/** Anonymous namespace hiding implementation details. */
+namespace {
+
+    /**
+     * Visitor used to determine if an arbitrary set of visited entities
+     * contains an entity equivalent to the given entity. The visitation
+     * is terminated as soon as such an entity is found.
+     */
+    template <typename T>
+    bool containsEquivalent(const T& entity, const T& x, bool& contains)
+    {
+        contains |= equivalent(x, entity);
+        return !contains;
+    }
+    
+    /**
+     * Visitor for determining if the given linked object contains a function
+     * equivalent to all functions in an arbitrary set of visited functions.
+     * The visitation is terminated as soon as a function is encountered that
+     * doesn't have an equivalent in the given linked object.
+     */
+    bool containsAllFunctions(const LinkedObject& linked_object,
+                              const Function& x,
+                              bool& contains)
+    {
+        bool contains_this = false;
+
+        linked_object.visitFunctions(
+            boost::bind(
+                containsEquivalent<Function>, x, _1, boost::ref(contains_this)
+                )
+            );
+        
+        contains &= contains_this;
+        return contains;
+    }
+    
+    /**
+     * Visitor for determining if the given linked object contains a statement
+     * equivalent to all statements in an arbitrary set of visited statements.
+     * The visitation is terminated as soon as a statement is encountered that
+     * doesn't have an equivalent in the given linked object.
+     */
+    bool containsAllStatements(const LinkedObject& linked_object,
+                               const Statement& x,
+                               bool& contains)
+    {
+        bool contains_this = false;
+        
+        linked_object.visitStatements(
+            boost::bind(
+                containsEquivalent<Statement>, x, _1, boost::ref(contains_this)
+                )
+            );
+        
+        contains &= contains_this;
+        return contains;
+    }
+    
+} // namespace <anonymous>
 
 
 
@@ -162,4 +229,76 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 LinkedObject::LinkedObject(Impl::SymbolTable::Handle symbol_table) :
     dm_symbol_table(symbol_table)
 {
+}
+
+
+
+//------------------------------------------------------------------------------
+// The individual comparisons are performed from least to most expensive in
+// order to optimize performance. The implementation of the comparisons would
+// be signficantly simplified if lambda expresions could be used here...
+//------------------------------------------------------------------------------
+bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
+                                             const LinkedObject& second)
+{
+    // Are the two linked object's files different?
+    if (first.getFile() != second.getFile())
+    {
+        return false;
+    }
+    
+    // Does "second" contain all of the functions in "first"?
+    
+    bool contains = true;
+    
+    first.visitFunctions(
+        boost::bind(containsAllFunctions, second, _1, boost::ref(contains))
+        );
+    
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Does "first" contain all of the functions in "second"?
+
+    contains = true;
+    
+    second.visitFunctions(
+        boost::bind(containsAllFunctions, first, _1, boost::ref(contains))
+        );
+
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Does "second" contain all the statements in "first"?
+    
+    contains = true;
+    
+    first.visitStatements(
+        boost::bind(containsAllStatements, second, _1, boost::ref(contains))
+        );
+
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Does "first" contain all the statements in "second"?
+    
+    contains = true;
+    
+    second.visitStatements(
+        boost::bind(containsAllStatements, first, _1, boost::ref(contains))
+        );
+
+    if (!contains)
+    {
+        return false;
+    }
+
+    // Otherwise the linked objects are equivalent    
+    return true;
 }

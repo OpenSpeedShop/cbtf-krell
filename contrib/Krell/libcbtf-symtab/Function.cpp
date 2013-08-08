@@ -200,3 +200,25 @@ Function::Function(Impl::SymbolTable::Handle symbol_table,
     dm_unique_identifier(unique_identifier)
 {
 }
+
+
+
+//------------------------------------------------------------------------------
+// The individual comparisons are performed from least to most expensive in
+// order to optimize performance.
+//------------------------------------------------------------------------------
+bool KrellInstitute::SymbolTable::equivalent(const Function& first,
+                                             const Function& second)
+{
+    if (first.getMangledName() != second.getMangledName())
+    {
+        return false;
+    }
+
+    if (first.getAddressRanges() != second.getAddressRanges())
+    {
+        return false;
+    }    
+
+    return true;
+}

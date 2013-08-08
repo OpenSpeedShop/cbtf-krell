@@ -189,4 +189,18 @@ namespace KrellInstitute { namespace SymbolTable {
         
     }; // class LinkedObject
 
+    /**
+     * Are the two given linked objects equivalent?
+     *
+     * @param first     First linked objects to be compared.
+     * @param second    Second linked objects to be compared.
+     * @return          Boolean "true" if the two linked objects
+     *                  are equivalent, or "false" otherwise.
+     *
+     * @note    Differs from the LinkedObject equality operator in that it
+     *          compares the contents of the two linked objects rather than
+     *          just their symbol table pointers.
+     */
+    bool equivalent(const LinkedObject& first, const LinkedObject& second);
+
 } } // namespace KrellInstitute::SymbolTable

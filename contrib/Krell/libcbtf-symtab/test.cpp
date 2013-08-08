@@ -67,6 +67,14 @@ namespace {
         return true;
     }
 
+    /** Test the (deep) equivalence of two linked objects. */
+    bool equivalent(const LinkedObject& lhs, const LinkedObject& rhs)
+    {
+        // ...
+        
+        return false;
+    }
+    
 } // namespace <anonymous>
 
 
@@ -372,7 +380,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     LinkedObject linked_object(FileName("/path/to/nonexistent/dso"));
     
     BOOST_CHECK_EQUAL(LinkedObject(linked_object), linked_object);
-    BOOST_CHECK_EQUAL(linked_object.getName(),
+    BOOST_CHECK_EQUAL(linked_object.getFile(),
                       FileName("/path/to/nonexistent/dso"));
 
     //
@@ -438,7 +446,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     BOOST_CHECK_EQUAL(Statement(statement1), statement1);
     BOOST_CHECK_EQUAL(statement1.getLinkedObject(), linked_object);
-    BOOST_CHECK_EQUAL(statement1.getName(),
+    BOOST_CHECK_EQUAL(statement1.getFile(),
                       FileName("/path/to/nonexistent/source/file"));
     BOOST_CHECK_EQUAL(statement1.getLine(), 1);
     BOOST_CHECK_EQUAL(statement1.getColumn(), 1);
@@ -700,10 +708,21 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     BOOST_CHECK(functions.find(function3) != functions.end());
     BOOST_CHECK(functions.find(function4) == functions.end());
 
-    // ...
-    // TODO: Test LinkedObject::clone()
-    // TODO: Test LinkedOBject::operator<()
-    // TODO: Test conversion to/from CBTF_Protocol_SymbolTable
+    //
+    // Test the conversion of LinkedObject to/from CBTF_Protocol_SymbolTable
+    // and LinkedObject::clone().
+    //
+
+    BOOST_CHECK(equivalent(
+        LinkedObject(static_cast<CBTF_Protocol_SymbolTable>(linked_object)),
+        linked_object
+        ));
+
+    LinkedObject clone = linked_object.clone();
+    
+    BOOST_CHECK((clone < linked_object) || (linked_object < clone));
+    BOOST_CHECK_NE(clone, linked_object);
+    BOOST_CHECK(equivalent(clone, linked_object));
 }
 
 

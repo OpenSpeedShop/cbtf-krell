@@ -185,8 +185,8 @@ namespace {
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-SymbolTable::SymbolTable(const FileName& name) :
-    dm_name(name),
+SymbolTable::SymbolTable(const FileName& file) :
+    dm_file(file),
     dm_functions(),
     dm_functions_index(),
     dm_statements(),
@@ -199,7 +199,7 @@ SymbolTable::SymbolTable(const FileName& name) :
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
-    dm_name(message.linked_object),
+    dm_file(message.linked_object),
     dm_functions(),
     dm_functions_index(),
     dm_statements(),
@@ -285,7 +285,7 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
 {
     CBTF_Protocol_SymbolTable message;
 
-    message.linked_object = dm_name;
+    message.linked_object = dm_file;
 
     //
     // Allocate an appropriately sized array of CBTF_Protocol_FunctionEntry
@@ -348,7 +348,7 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
         CBTF_Protocol_StatementEntry& entry = 
             message.statements.statements_val[i];
 
-        entry.path = item.dm_name;
+        entry.path = item.dm_file;
         entry.line = static_cast<int>(item.dm_line);
         entry.column = static_cast<int>(item.dm_column);
         
@@ -375,9 +375,9 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-const FileName& SymbolTable::getName() const
+const FileName& SymbolTable::getFile() const
 {
-    return dm_name;
+    return dm_file;
 }
 
 
@@ -440,12 +440,12 @@ void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymbolTable::UniqueIdentifier SymbolTable::addStatement(
-    const FileName& name,
+    const FileName& file,
     const unsigned int& line,
     const unsigned int& column
     )
 {
-    dm_statements.push_back(StatementItem(name, line, column));
+    dm_statements.push_back(StatementItem(file, line, column));
     return dm_statements.size() - 1;
 }
 
@@ -547,7 +547,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
 
     const StatementItem& original = symbol_table.dm_statements[uid];
     dm_statements.push_back(
-        StatementItem(original.dm_name, original.dm_line, original.dm_column)
+        StatementItem(original.dm_file, original.dm_line, original.dm_column)
         );
 
     UniqueIdentifier clone_uid = dm_statements.size() - 1;
@@ -597,10 +597,10 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-const FileName& SymbolTable::getStatementName(const UniqueIdentifier& uid) const
+const FileName& SymbolTable::getStatementFile(const UniqueIdentifier& uid) const
 {
     BOOST_VERIFY(uid < dm_statements.size());
-    return dm_statements[uid].dm_name;
+    return dm_statements[uid].dm_file;
 }
 
 

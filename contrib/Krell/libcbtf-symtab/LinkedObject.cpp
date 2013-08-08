@@ -30,8 +30,8 @@ using namespace KrellInstitute::SymbolTable;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject::LinkedObject(const FileName& name) :
-    dm_symbol_table(new Impl::SymbolTable(name))
+LinkedObject::LinkedObject(const FileName& file) :
+    dm_symbol_table(new Impl::SymbolTable(file))
 {
 }
 
@@ -97,9 +97,9 @@ LinkedObject LinkedObject::clone() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-FileName LinkedObject::getName() const
+FileName LinkedObject::getFile() const
 {
-    return dm_symbol_table->getName();
+    return dm_symbol_table->getFile();
 }
 
 

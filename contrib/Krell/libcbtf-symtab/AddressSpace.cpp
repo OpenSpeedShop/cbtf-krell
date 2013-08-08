@@ -48,16 +48,16 @@ AddressSpace::AddressSpace(const CBTF_Protocol_LinkedObjectGroup& message) :
     {
         const CBTF_Protocol_LinkedObject& entry =
             message.linkedobjects.linkedobjects_val[i];
-
-        FileName name = entry.linked_object;
+        
+        FileName file = entry.linked_object;
 
         std::map<FileName, LinkedObject>::const_iterator j = 
-            dm_linked_objects.find(name);
+            dm_linked_objects.find(file);
 
         if (j == dm_linked_objects.end())
         {
             j = dm_linked_objects.insert(
-                std::make_pair(name, LinkedObject(name))
+                std::make_pair(file, LinkedObject(file))
                 ).first;
         }
         
@@ -93,7 +93,7 @@ AddressSpace::operator CBTF_Protocol_LinkedObjectGroup() const
         CBTF_Protocol_LinkedObject& entry = 
             message.linkedobjects.linkedobjects_val[i];
         
-        entry.linked_object = item.dm_linked_object.getName();
+        entry.linked_object = item.dm_linked_object.getFile();
         entry.range = item.dm_range;
         entry.time_begin = item.dm_interval.begin();
         entry.time_end = item.dm_interval.end();
@@ -144,13 +144,13 @@ void AddressSpace::applyMessage(
 //------------------------------------------------------------------------------
 void AddressSpace::applyMessage(const CBTF_Protocol_SymbolTable& message)
 {
-    FileName name = message.linked_object;
+    FileName file = message.linked_object;
     
-    std::map<FileName, LinkedObject>::iterator i = dm_linked_objects.find(name);
+    std::map<FileName, LinkedObject>::iterator i = dm_linked_objects.find(file);
     
     if (i == dm_linked_objects.end())
     {
-        dm_linked_objects.insert(std::make_pair(name, LinkedObject(message)));
+        dm_linked_objects.insert(std::make_pair(file, LinkedObject(message)));
     }
     else
     {
@@ -159,7 +159,7 @@ void AddressSpace::applyMessage(const CBTF_Protocol_SymbolTable& message)
         for (std::vector<MappingItem>::iterator
                  j = dm_mappings.begin(); j != dm_mappings.end(); ++j)
         {
-            if (j->dm_linked_object.getName() == name)
+            if (j->dm_linked_object.getFile() == file)
             {
                 j->dm_linked_object = i->second;
             }
@@ -180,12 +180,12 @@ void AddressSpace::loadLinkedObject(const LinkedObject& linked_object,
                                     const Time& when)
 {
     std::map<FileName, LinkedObject>::const_iterator i = 
-        dm_linked_objects.find(linked_object.getName());
+        dm_linked_objects.find(linked_object.getFile());
     
     if (i == dm_linked_objects.end())
     {
         i = dm_linked_objects.insert(
-            std::make_pair(linked_object.getName(), linked_object)
+            std::make_pair(linked_object.getFile(), linked_object)
             ).first;
     }
     
@@ -212,7 +212,7 @@ void AddressSpace::unloadLinkedObject(const LinkedObject& linked_object,
     for (std::vector<MappingItem>::iterator
              i = dm_mappings.begin(); i != dm_mappings.end(); ++i)
     {
-        if ((i->dm_linked_object.getName() == linked_object.getName()) &&
+        if ((i->dm_linked_object.getFile() == linked_object.getFile()) &&
             (i->dm_interval.end() == Time::TheEnd()))
         {
             i->dm_interval = TimeInterval(i->dm_interval.begin(), when);

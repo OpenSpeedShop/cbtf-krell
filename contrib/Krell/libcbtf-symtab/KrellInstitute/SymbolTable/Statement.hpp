@@ -54,12 +54,12 @@ namespace KrellInstitute { namespace SymbolTable {
          * has no address ranges.
          *
          * @param linked_object    Linked object containing this statement.
-         * @param name             Name of this statement's source file.
+         * @param file             Name of this statement's source file.
          * @param line             Line number of this statement.
          * @param column           Column number of this statement.
          */
         Statement(const LinkedObject& linked_object,
-                  const FileName& name,
+                  const FileName& file,
                   const unsigned int& line,
                   const unsigned int& column);
 
@@ -123,7 +123,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @return    Name of this statement's source file.
          */
-        FileName getName() const;
+        FileName getFile() const;
 
         /**
          * Get the line number of this statement.

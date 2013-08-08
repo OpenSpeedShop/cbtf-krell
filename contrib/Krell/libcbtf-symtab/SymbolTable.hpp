@@ -59,12 +59,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         typedef boost::uint32_t UniqueIdentifier;
 
         /**
-         * Construct a symbol table from the name of its linked object. The
-         * symbol table initially has no symbols (functions, statements, etc.)
+         * Construct a symbol table for the named linked object file. The symbol
+         * table initially has no symbols (functions, statements, etc.)
          *
-         * @param name    Name of this symbol table's linked object.
+         * @param file    Name of this symbol table's linked object file.
          */
-        SymbolTable(const FileName& name);
+        SymbolTable(const FileName& file);
 
         /**
          * Construct a symbol table from a CBTF_Protocol_SymbolTable.
@@ -81,11 +81,11 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         operator CBTF_Protocol_SymbolTable() const;
 
         /**
-         * Get the name of this symbol table's linked object.
+         * Get the name of this symbol table's linked object file.
          *
-         * @return    Name of this symbol table's linked object.
+         * @return    Name of this symbol table's linked object file.
          */
-        const FileName& getName() const;
+        const FileName& getFile() const;
         
         /**
          * Add a new function to this symbol table.
@@ -111,12 +111,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         /**
          * Add a new statement to this symbol table.
          *
-         * @param name      Name of the statement's source file.
+         * @param file      Name of the statement's source file.
          * @param line      Line number of the statement.
          * @param column    Column number of the statement.
          * @return          Unique identifier of that statement.
          */
-        UniqueIdentifier addStatement(const FileName& name,
+        UniqueIdentifier addStatement(const FileName& file,
                                       const unsigned int& line,
                                       const unsigned int& column);
         
@@ -185,7 +185,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param uid    Unique identifier of the statement.
          * @return       Name of that statement's source file.
          */
-        const FileName& getStatementName(const UniqueIdentifier& uid) const;
+        const FileName& getStatementFile(const UniqueIdentifier& uid) const;
 
         /**
          * Get the line number of the given statement.
@@ -328,7 +328,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         struct StatementItem
         {
             /** Name of this statement's source file. */
-            FileName dm_name;
+            FileName dm_file;
             
             /** Line number of this statement. */
             unsigned int dm_line;
@@ -340,10 +340,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             std::vector<AddressBitmap> dm_addresses;
 
             /** Constructor from initial fields. */
-            StatementItem(const FileName& name,
+            StatementItem(const FileName& file,
                           const unsigned int& line,
                           const unsigned int& column) :
-                dm_name(name),
+                dm_file(file),
                 dm_line(line),
                 dm_column(column),
                 dm_addresses()
@@ -352,9 +352,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             
         }; // struct StatementItem
         
-        /** Name of this symbol table's linked object. */
-        FileName dm_name;
-
+        /** Name of this symbol table's linked object file. */
+        FileName dm_file;
+            
         /** List of functions in this symbol table. */
         std::vector<FunctionItem> dm_functions;
 

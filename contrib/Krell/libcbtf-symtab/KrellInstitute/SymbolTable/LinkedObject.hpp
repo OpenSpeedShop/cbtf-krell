@@ -52,12 +52,12 @@ namespace KrellInstitute { namespace SymbolTable {
     public:
 
         /**
-         * Construct a linked object from its name. This linked object initially
+         * Construct a linked object from its file. This linked object initially
          * has no symbols (functions, statements, etc.)
          *
-         * @param name    Name of this linked object.
+         * @param file    Name of this linked object's file.
          */
-        LinkedObject(const FileName& name);
+        LinkedObject(const FileName& file);
         
         /**
          * Construct a linked object from a CBTF_Protocol_SymbolTable.
@@ -109,11 +109,11 @@ namespace KrellInstitute { namespace SymbolTable {
         LinkedObject clone() const;
 
         /**
-         * Get the name of this linked object.
+         * Get the name of this linked object's file.
          *
-         * @return    Name of this linked object.
+         * @return    Name of this linked object's file.
          */
-        FileName getName() const;
+        FileName getFile() const;
 
         /**
          * Visit the functions contained within this linked object.

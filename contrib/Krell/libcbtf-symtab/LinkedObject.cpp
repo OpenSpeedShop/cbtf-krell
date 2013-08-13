@@ -246,8 +246,8 @@ bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
     {
         return false;
     }
-    
-    // Does "second" contain all of the functions in "first"?
+
+    // Is "second" missing any of the functions from "first"?
     
     bool contains = true;
     
@@ -259,8 +259,8 @@ bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
     {
         return false;
     }
-    
-    // Does "first" contain all of the functions in "second"?
+
+    // Is "first" missing any of the functions from "second"?
 
     contains = true;
     
@@ -273,7 +273,7 @@ bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
         return false;
     }
     
-    // Does "second" contain all the statements in "first"?
+    // Is "second" missing any of the statements from "first"?
     
     contains = true;
     
@@ -286,7 +286,7 @@ bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
         return false;
     }
     
-    // Does "first" contain all the statements in "second"?
+    // Is "first" missing any of the statements from "second"?
     
     contains = true;
     

@@ -129,7 +129,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each linked object contained
          *                   within this address space.
          */
-        void visitLinkedObjects(LinkedObjectVisitor& visitor) const;
+        void visitLinkedObjects(const LinkedObjectVisitor& visitor) const;
 
         /**
          * Visit the mappings contained within this address space.
@@ -137,7 +137,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param visitor    Visitor invoked for each mapping contained
          *                   within this address space.
          */
-        void visitMappings(MappingVisitor& visitor) const;
+        void visitMappings(const MappingVisitor& visitor) const;
         
         /**
          * Visit the mappings contained within this address space intersecting
@@ -151,7 +151,7 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         void visitMappings(const AddressRange& range,
                            const TimeInterval& interval,
-                           MappingVisitor& visitor) const;
+                           const MappingVisitor& visitor) const;
         
     private:
 
@@ -191,5 +191,15 @@ namespace KrellInstitute { namespace SymbolTable {
         std::vector<MappingItem> dm_mappings;
         
     }; // class AddressSpace
-        
+
+    /**
+     * Are the two given address spaces equivalent?
+     *
+     * @param first     First address space to be compared.
+     * @param second    Second address space to be compared.
+     * @return          Boolean "true" if the two address spaces are
+     *                  equivalent, or "false" otherwise.
+     */
+    bool equivalent(const AddressSpace& first, const AddressSpace& second);
+       
 } } // namespace KrellInstitute::SymbolTable

@@ -18,10 +18,65 @@
 
 /** @file Definition of the AddressSpace class. */
 
+#include <boost/bind.hpp>
+#include <boost/ref.hpp>
 #include <KrellInstitute/SymbolTable/AddressSpace.hpp>
 
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
+
+
+
+/** Anonymous namespace hiding implementation details. */
+namespace {
+
+    /**
+     * Visitor used to determine if an arbitrary set of visited mappings
+     * contains a mapping equivalent to the given mapping. The visitation
+     * is terminated as soon a such a mapping is found.
+     */
+    bool containsEquivalentMapping(const LinkedObject& linked_object,
+                                   const AddressRange& range,
+                                   const TimeInterval& interval,
+                                   const LinkedObject& x_linked_object,
+                                   const AddressRange& x_range,
+                                   const TimeInterval& x_interval,
+                                   bool& contains)
+    {        
+        contains |= ((linked_object.getFile() == x_linked_object.getFile()) &&
+                     (range == x_range) &&
+                     (interval == x_interval));
+        return !contains;
+    }
+    
+    /**
+     * Visitor for determining if the given address space contains a mapping
+     * equivalent to all mappings in an arbitrary set of visited mappings.
+     * The visitation is terminated as soon as a mapping is encountered that
+     * doesn't have an equivalent in the given address space.
+     */
+    bool containsAllMappings(const AddressSpace& address_space,
+                             const LinkedObject& x_linked_object,
+                             const AddressRange& x_range,
+                             const TimeInterval& x_interval,
+                             bool& contains)
+    {
+        bool contains_this = false;
+
+        address_space.visitMappings(
+            x_range, x_interval, boost::bind(
+                containsEquivalentMapping,
+                x_linked_object, x_range, x_interval,
+                _1, _2, _3,
+                boost::ref(contains_this)
+                )
+            );
+        
+        contains &= contains_this;
+        return contains;
+    }
+    
+} // namespace <anonymous>
 
 
 
@@ -224,7 +279,7 @@ void AddressSpace::unloadLinkedObject(const LinkedObject& linked_object,
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void AddressSpace::visitLinkedObjects(LinkedObjectVisitor& visitor) const
+void AddressSpace::visitLinkedObjects(const LinkedObjectVisitor& visitor) const
 {
     bool terminate = false;
     
@@ -241,7 +296,7 @@ void AddressSpace::visitLinkedObjects(LinkedObjectVisitor& visitor) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void AddressSpace::visitMappings(MappingVisitor& visitor) const
+void AddressSpace::visitMappings(const MappingVisitor& visitor) const
 {
     bool terminate = false;
     
@@ -263,7 +318,7 @@ void AddressSpace::visitMappings(MappingVisitor& visitor) const
 //------------------------------------------------------------------------------
 void AddressSpace::visitMappings(const AddressRange& range,
                                  const TimeInterval& interval,
-                                 MappingVisitor& visitor) const
+                                 const MappingVisitor& visitor) const
 {
     bool terminate = false;
     
@@ -279,4 +334,45 @@ void AddressSpace::visitMappings(const AddressRange& range,
                                  i->dm_range, i->dm_interval);
         }
     }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+bool KrellInstitute::SymbolTable::equivalent(const AddressSpace& first,
+                                             const AddressSpace& second)
+{
+    // Is "second" missing any of the mappings from "first"?
+    
+    bool contains = true;
+    
+    first.visitMappings(
+        boost::bind(
+            containsAllMappings, second, _1, _2, _3, boost::ref(contains)
+            )
+        );
+    
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Is "first" missing any of the mappings from "second"?
+
+    contains = true;
+    
+    second.visitMappings(
+        boost::bind(
+            containsAllMappings, first, _1, _2, _3, boost::ref(contains)
+            )
+        );
+    
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Otherwise the address spaces are equivalent
+    return true;
 }

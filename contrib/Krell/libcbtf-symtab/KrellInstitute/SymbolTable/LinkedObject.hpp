@@ -192,8 +192,8 @@ namespace KrellInstitute { namespace SymbolTable {
     /**
      * Are the two given linked objects equivalent?
      *
-     * @param first     First linked objects to be compared.
-     * @param second    Second linked objects to be compared.
+     * @param first     First linked object to be compared.
+     * @param second    Second linked object to be compared.
      * @return          Boolean "true" if the two linked objects
      *                  are equivalent, or "false" otherwise.
      *

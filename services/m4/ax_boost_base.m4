@@ -94,12 +94,14 @@ if test "x$want_boost" = "xyes"; then
     dnl or if you install boost with RPM
     if test "$ac_boost_path" != ""; then
 	BOOST_DETECTED_PATH="$ac_boost_path"
+	BOOST_DIR="$ac_boost_path"
         BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
         BOOST_CPPFLAGS="-I$ac_boost_path/include"
     elif test "$cross_compiling" != yes; then
         for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
             if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
 		BOOST_DETECTED_PATH="$ac_boost_path_tmp"
+		BOOST_DIR="$ac_boost_path_tmp"
                 BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
                 BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
                 break;
@@ -177,6 +179,7 @@ if test "x$want_boost" = "xyes"; then
                 if test "$ac_boost_lib_path" = ""
                 then
                    BOOST_LDFLAGS="-L$best_path/$libsubdir"
+		   BOOST_DIR="$best_path"
                 fi
             fi
 
@@ -190,6 +193,7 @@ if test "x$want_boost" = "xyes"; then
                         AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
                         BOOST_CPPFLAGS="-I$BOOST_ROOT"
                         BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
+		        BOOST_DIR="$BOOST_ROOT"
                     fi
                 fi
             fi
@@ -234,6 +238,7 @@ if test "x$want_boost" = "xyes"; then
     else
         AC_SUBST(BOOST_CPPFLAGS)
         AC_SUBST(BOOST_LDFLAGS)
+        AC_SUBST(BOOST_DIR)
         AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
         # execute ACTION-IF-FOUND (if present):
         ifelse([$2], , :, [$2])

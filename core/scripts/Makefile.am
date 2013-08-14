@@ -31,6 +31,8 @@ monitor_dir=$(LIBMONITOR_DIR)
 unwind_dir=$(LIBUNWIND_DIR)
 papi_dir=$(PAPI_DIR)
 mrnet_dir=$(MRNET_DIR)
+xercesc_dir=$(LIBXERCES_C_DIR)
+boost_dir=$(BOOST_DIR)
 
 if !BUILD_RUNTIME
 cbtfrun: cbtfrun.in
@@ -74,6 +76,8 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 	@sed \
 		-e 's,@@machine_dependent_libdir@@,$(abi_libdir_name),' \
 		-e 's,@@libmrnetdir@@,$(mrnet_dir),' \
+		-e 's,@@boostinstalldir@@,$(boost_dir),' \
+		-e 's,@@krootinstalldir@@,$(xercesc_dir),' \
 		-e 's,@@cbtfinstalldir@@,$(prefix),' \
 			$(srcdir)/cbtf_mrnet_commnode.in > cbtf_mrnet_commnode
 	@chmod 755 cbtf_mrnet_commnode

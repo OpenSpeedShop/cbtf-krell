@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) The Krell Institute 2007-2011. All Rights Reserved.
+** Copyright (c) The Krell Institute 2007-2013. All Rights Reserved.
 ** Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
@@ -533,7 +533,7 @@ void cbtf_record_dsos()
     CBTF_InitializeEventHeader(&local_header);
 
     /* Write the thread's initial address space to the appropriate buffer */
-fprintf(stderr,"cbtf_record_dsos calls GETDLINFO\n");
+    /* fprintf(stderr,"cbtf_record_dsos calls GETDLINFO\n"); */
     CBTF_GetDLInfo(getpid(), NULL);
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
@@ -581,7 +581,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 	cbtf_offline_pause_sampling(0);
     }
 
-    fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
+    /* fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen); */
 
     /* Initialize the offline "dso" blob's header */
     CBTF_EventHeader local_header;

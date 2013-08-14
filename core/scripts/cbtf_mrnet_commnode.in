@@ -12,6 +12,8 @@
 #
 mrnetlibdir=@@libmrnetdir@@/@@machine_dependent_libdir@@
 cbtflibdir=@@cbtfinstalldir@@/@@machine_dependent_libdir@@
+boostlibdir=@@boostinstalldir@@/@@machine_dependent_libdir@@
+krootlibdir=@@krootinstalldir@@/@@machine_dependent_libdir@@
 
 # location of the real mrnet_commnode.
 #
@@ -19,7 +21,7 @@ mrnetcommnode=@@libmrnetdir@@/bin/mrnet_commnode
 
 #set up the LD_LIBRARYPATH
 #
-export LD_LIBRARY_PATH=${mrnetlibdir}:${cbtflibdir}
+export LD_LIBRARY_PATH=${mrnetlibdir}:${cbtflibdir}:${boostlibdir}:${krootlibdir}
 
 # now call the real mrnet_commnode
 #

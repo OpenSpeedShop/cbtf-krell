@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -158,18 +158,22 @@ bool is_debug_aggregator_events_enabled =
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "iop") {
+#if 0
 	    std::cerr << "IOP now call StacktraceData::aggregateAddressCounts " << std::endl;
+#endif
             CBTF_io_profile_data data;
             memset(&data, 0, sizeof(data));
             blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
+#if 0
 	    for(unsigned i = 0; i < data.time.time_len; ++i) {
-		if (data.time.time_val[i] > 0) {
-		    std::cerr << "IOP time at " << i << " is " << data.time.time_val[i] << std::endl;
-		}
+	    	if (data.time.time_val[i] > 0) {
+	    	    std::cerr << "IOP time at " << i << " is " << data.time.time_val[i] << std::endl;
+	    	}
 	    }
+#endif
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "iot") {

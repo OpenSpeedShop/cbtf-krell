@@ -19,7 +19,6 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
-#include <boost/dynamic_bitset.hpp>
 #include <deque>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
@@ -236,7 +235,7 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
         for (std::set<AddressRange>::const_iterator
                  j = all_ranges.begin(); j != all_ranges.end(); ++j)
         {
-            dm_functions_index.left.insert(std::make_pair(*j, uid));
+            dm_functions_index.insert(AddressRangeIndexRow(uid, *j));
         }
     }
 
@@ -272,7 +271,7 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
         for (std::set<AddressRange>::const_iterator
                  j = all_ranges.begin(); j != all_ranges.end(); ++j)
         {
-            dm_statements_index.left.insert(std::make_pair(*j, uid));
+            dm_statements_index.insert(AddressRangeIndexRow(uid, *j));
         }
     }
 }
@@ -423,15 +422,15 @@ void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
     // the existing index entries for this function. Extract the new set of
     // address ranges for this function and add them to the index.
     //
-    
-    dm_functions_index.right.erase(uid);
+
+    dm_functions_index.get<0>().erase(uid);
 
     all_ranges = extract(dm_functions[uid].dm_addresses);
 
     for (std::set<AddressRange>::const_iterator
              i = all_ranges.begin(); i != all_ranges.end(); ++i)
     {
-        dm_functions_index.left.insert(std::make_pair(*i, uid));
+        dm_functions_index.insert(AddressRangeIndexRow(uid, *i));
     }
 }
 
@@ -482,14 +481,14 @@ void SymbolTable::addStatementAddressRanges(
     // address ranges for this statement and add them to the index.
     //
     
-    dm_statements_index.right.erase(uid);
+    dm_statements_index.get<0>().erase(uid);
 
     all_ranges = extract(dm_statements[uid].dm_addresses);
 
     for (std::set<AddressRange>::const_iterator
              i = all_ranges.begin(); i != all_ranges.end(); ++i)
     {
-        dm_statements_index.left.insert(std::make_pair(*i, uid));
+        dm_statements_index.insert(AddressRangeIndexRow(uid, *i));
     }
 }
 
@@ -523,7 +522,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); i != ranges.end(); ++i)
     {
-        dm_functions_index.left.insert(std::make_pair(*i, clone_uid));
+        dm_functions_index.insert(AddressRangeIndexRow(clone_uid, *i));
     }
 
     // Return the unique identifier of the cloned function
@@ -562,7 +561,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); i != ranges.end(); ++i)
     {
-        dm_statements_index.left.insert(std::make_pair(*i, clone_uid));
+        dm_statements_index.insert(AddressRangeIndexRow(clone_uid, *i));
     }
 
     // Return the unique identifier of the cloned statement
@@ -661,22 +660,9 @@ void SymbolTable::visitFunctions(const AddressRange& range,
                                  const FunctionVisitor& visitor)
 {
     bool terminate = false;
-    Function value(shared_from_this(), 0);
     boost::dynamic_bitset<> visited(dm_functions.size());
 
-    for (AddressRangeIndex::left_map::const_iterator
-             i = dm_functions_index.left.lower_bound(range),
-             iEnd = dm_functions_index.left.upper_bound(range);
-         !terminate && (i != iEnd);
-         ++i)
-    {
-        if ((i->second < visited.size()) && !visited[i->second])
-        {
-            visited[i->second] = true;
-            value.dm_unique_identifier = i->second;
-            terminate |= !visitor(value);
-        }
-    }
+    visit(range, visitor, terminate, visited);
 }
 
 
@@ -688,25 +674,14 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
 {
     BOOST_VERIFY(uid < dm_functions.size());
 
-    bool terminate = false;
-    Statement value(shared_from_this(), 0);
-    boost::dynamic_bitset<> visited(dm_statements.size());
+    AddressRange range(
+        extract(dm_functions[uid].dm_addresses).begin()->begin()
+        );
     
-    std::set<AddressRange> ranges = extract(dm_functions[uid].dm_addresses);
+    bool terminate = false;
+    boost::dynamic_bitset<> visited(dm_statements.size());
 
-    for (AddressRangeIndex::left_map::const_iterator
-             i = dm_functions_index.left.lower_bound(*ranges.begin()),
-             iEnd = dm_functions_index.left.upper_bound(*ranges.begin());
-         !terminate && (i != iEnd);
-         ++i)
-    {
-        if ((i->second < visited.size()) && !visited[i->second])
-        {
-            visited[i->second] = true;
-            value.dm_unique_identifier = i->second;
-            terminate |= !visitor(value);
-        }
-    }
+    visit(range, visitor, terminate, visited);
 }
 
 
@@ -719,7 +694,6 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
     BOOST_VERIFY(uid < dm_functions.size());
 
     bool terminate = false;
-    Statement value(shared_from_this(), 0);
     boost::dynamic_bitset<> visited(dm_statements.size());
     
     std::set<AddressRange> ranges = extract(dm_functions[uid].dm_addresses);
@@ -727,19 +701,7 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
     {
-        for (AddressRangeIndex::left_map::const_iterator
-                 j = dm_statements_index.left.lower_bound(*i),
-                 jEnd = dm_statements_index.left.upper_bound(*i);
-             !terminate && (j != jEnd);
-             ++j)
-        {
-            if ((j->second < visited.size()) && !visited[j->second])
-            {
-                visited[j->second] = true;
-                value.dm_unique_identifier = j->second;
-                terminate |= !visitor(value);
-            }
-        }
+        visit(*i, visitor, terminate, visited);
     }
 }
 
@@ -769,22 +731,9 @@ void SymbolTable::visitStatements(const AddressRange& range,
                                   const StatementVisitor& visitor)
 {
     bool terminate = false;
-    Statement value(shared_from_this(), 0);
     boost::dynamic_bitset<> visited(dm_statements.size());
-    
-    for (AddressRangeIndex::left_map::const_iterator
-             i = dm_statements_index.left.lower_bound(range),
-             iEnd = dm_statements_index.left.upper_bound(range);
-         !terminate && (i != iEnd);
-         ++i)
-    {
-        if ((i->second < visited.size()) && !visited[i->second])
-        {
-            visited[i->second] = true;
-            value.dm_unique_identifier = i->second;
-            terminate |= !visitor(value);
-        }
-    }
+
+    visit(range, visitor, terminate, visited);
 }
 
 
@@ -797,7 +746,6 @@ void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
     BOOST_VERIFY(uid < dm_statements.size());
 
     bool terminate = false;
-    Function value(shared_from_this(), 0);
     boost::dynamic_bitset<> visited(dm_functions.size());
     
     std::set<AddressRange> ranges = extract(dm_statements[uid].dm_addresses);
@@ -805,18 +753,72 @@ void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
     {
-        for (AddressRangeIndex::left_map::const_iterator
-                 j = dm_functions_index.left.lower_bound(*i),
-                 jEnd = dm_functions_index.left.upper_bound(*i);
-             !terminate && (j != jEnd);
-             ++j)
+        visit(*i, visitor, terminate, visited);
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visit(const AddressRange& range,
+                        const FunctionVisitor& visitor,
+                        bool& terminate, boost::dynamic_bitset<>& visited)
+{
+    Function value(shared_from_this(), 0);
+
+    AddressRangeIndex::nth_index<1>::type::const_iterator
+        i = dm_functions_index.get<1>().lower_bound(range.begin());
+    
+    if (i != dm_functions_index.get<1>().begin())
+    {
+        --i;
+    }
+    
+    AddressRangeIndex::nth_index<1>::type::const_iterator
+        iEnd = dm_functions_index.get<1>().upper_bound(range.end());
+    
+    for (; !terminate && (i != iEnd); ++i)
+    {
+        if ((i->intersects(range)) && 
+            (i->dm_uid < visited.size()) && !visited[i->dm_uid])
         {
-            if ((j->second < visited.size()) && !visited[j->second])
-            {
-                visited[j->second] = true;
-                value.dm_unique_identifier = j->second;
-                terminate |= !visitor(value);
-            }
+            visited[i->dm_uid] = true;
+            value.dm_unique_identifier = i->dm_uid;
+            terminate |= !visitor(value);
+        }
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visit(const AddressRange& range,
+                        const StatementVisitor& visitor,
+                        bool& terminate, boost::dynamic_bitset<>& visited)
+{
+    Statement value(shared_from_this(), 0);
+
+    AddressRangeIndex::nth_index<1>::type::const_iterator
+        i = dm_statements_index.get<1>().lower_bound(range.begin());
+    
+    if (i != dm_statements_index.get<1>().begin())
+    {
+        --i;
+    }
+    
+    AddressRangeIndex::nth_index<1>::type::const_iterator
+        iEnd = dm_statements_index.get<1>().upper_bound(range.end());
+    
+    for (; !terminate && (i != iEnd); ++i)
+    {
+        if ((i->intersects(range)) && 
+            (i->dm_uid < visited.size()) && !visited[i->dm_uid])
+        {
+            visited[i->dm_uid] = true;
+            value.dm_unique_identifier = i->dm_uid;
+            terminate |= !visitor(value);
         }
     }
 }

@@ -20,10 +20,12 @@
 
 #pragma once
 
-#include <boost/bimap.hpp>
-#include <boost/bimap/multiset_of.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/dynamic_bitset.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/AddressRange.hpp>
@@ -297,15 +299,59 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         
     private:
 
+        /** Structure representing one row in an address range index. */
+        struct AddressRangeIndexRow
+        {
+            /** Unique identifier for an entity within this symbol table. */
+            UniqueIdentifier dm_uid;
+
+            /** Closed beginning of an address range for that entity. */
+            Address dm_begin;
+            
+            /** Closed end of an address range for that entity. */
+            Address dm_end;
+            
+            /** Constructor from initial fields. */
+            AddressRangeIndexRow(const UniqueIdentifier& uid,
+                                 const AddressRange& range) :
+                dm_uid(uid),
+                dm_begin(range.begin()),
+                dm_end(range.end())
+            {
+            }
+            
+            /** Does this address range intersect another address range? */
+            bool intersects(const AddressRange& range) const
+            {
+                return AddressRange(dm_begin, dm_end).intersects(range);
+            }
+            
+        }; // struct AddressRangeIndexRow
+        
         /**
          * Type of associative container used to search for the functions,
          * statements, etc. overlapping a given address range.
          */
-        typedef boost::bimap<
-            boost::bimaps::multiset_of<AddressRange>,
-            boost::bimaps::multiset_of<UniqueIdentifier>
+        typedef boost::multi_index_container<
+            AddressRangeIndexRow,
+            boost::multi_index::indexed_by<
+                boost::multi_index::ordered_non_unique<
+                    boost::multi_index::member<
+                        AddressRangeIndexRow,
+                        UniqueIdentifier,
+                        &AddressRangeIndexRow::dm_uid
+                        >
+                    >,
+                boost::multi_index::ordered_non_unique<
+                    boost::multi_index::member<
+                        AddressRangeIndexRow,
+                        Address,
+                        &AddressRangeIndexRow::dm_begin
+                        >
+                    >
+                >
             > AddressRangeIndex;
-        
+
         /** Structure representing one function in the symbol table. */
         struct FunctionItem
         {
@@ -351,6 +397,16 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             }
             
         }; // struct StatementItem
+
+        /** Visit functions using the index. */
+        void visit(const AddressRange& range,
+                   const FunctionVisitor& visitor,
+                   bool& terminate, boost::dynamic_bitset<>& visited);
+        
+        /** Visit statements using the index. */
+        void visit(const AddressRange& range,
+                   const StatementVisitor& visitor,
+                   bool& terminate, boost::dynamic_bitset<>& visited);
         
         /** Name of this symbol table's linked object file. */
         FileName dm_file;

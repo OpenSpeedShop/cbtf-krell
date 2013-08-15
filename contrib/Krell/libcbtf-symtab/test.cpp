@@ -438,6 +438,14 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     address_space.visitLinkedObjects(
         boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
         );
+    for (std::set<LinkedObject>::const_iterator
+             i = linked_objects.begin(); i != linked_objects.end(); ++i)
+    {
+        if (i->getFile() == linked_object4.getFile())
+        {
+            linked_object4 = *i;
+        }
+    }
     BOOST_CHECK_EQUAL(linked_objects.size(), 4);
     BOOST_CHECK(linked_objects.find(linked_object1) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object2) != linked_objects.end());
@@ -466,8 +474,8 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
         TimeInterval(13, 27),
         boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
         );
-    BOOST_CHECK_EQUAL(mappings.size(), 2);
-    BOOST_CHECK(mappings.find(linked_object1) == mappings.end());
+    BOOST_CHECK_EQUAL(mappings.size(), 3);
+    BOOST_CHECK(mappings.find(linked_object1) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) == mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) != mappings.end());
@@ -733,7 +741,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
 
     functions.clear();
     linked_object.visitFunctions(
-        AddressRange(8, 10),
+        AddressRange(28, 30),
         boost::bind(accumulate<Function>, _1, boost::ref(functions))
         );
     BOOST_CHECK(functions.empty());

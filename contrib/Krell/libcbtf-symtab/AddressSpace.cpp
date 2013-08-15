@@ -282,13 +282,13 @@ void AddressSpace::unloadLinkedObject(const LinkedObject& linked_object,
 void AddressSpace::visitLinkedObjects(const LinkedObjectVisitor& visitor) const
 {
     bool terminate = false;
-    
+
     for (std::map<FileName, LinkedObject>::const_iterator
-             i = dm_linked_objects.begin();
-         !terminate && (i != dm_linked_objects.end());
+             i = dm_linked_objects.begin(), iEnd = dm_linked_objects.end();
+         !terminate && (i != iEnd);
          ++i)
     {
-        terminate |= visitor(i->second);
+        terminate |= !visitor(i->second);
     }
 }
 
@@ -305,7 +305,7 @@ void AddressSpace::visitMappings(const MappingVisitor& visitor) const
          !terminate && (i != iEnd);
          ++i)
     {
-        terminate |= visitor(i->dm_linked_object, i->dm_range, i->dm_interval);
+        terminate |= !visitor(i->dm_linked_object, i->dm_range, i->dm_interval);
     }
 }
 
@@ -330,8 +330,8 @@ void AddressSpace::visitMappings(const AddressRange& range,
         if (i->dm_range.intersects(range) &&
             i->dm_interval.intersects(interval))
         {
-            terminate |= visitor(i->dm_linked_object,
-                                 i->dm_range, i->dm_interval);
+            terminate |= !visitor(i->dm_linked_object,
+                                  i->dm_range, i->dm_interval);
         }
     }
 }

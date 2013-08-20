@@ -19,12 +19,6 @@
 
 noinst_PROGRAMS = testXDR
 testXDR_CXXFLAGS = \
-	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/../../tools/messages/include \
-	-I$(top_srcdir)/../../tools/messages/src/perfdata \
-	-I$(top_srcdir)/../../tools/services/include \
-	-I$(top_srcdir)/../../tools/core/include \
-	-I$(top_srcdir)/../../framework/libcbtf-xml/include \
 	-DBUILDDIR="\"$(abs_builddir)\"" \
 	-DTOPDIR="\"$(top_srcdir)\"" \
 	@BOOST_CPPFLAGS@ \
@@ -33,10 +27,7 @@ testXDR_CXXFLAGS = \
 	@MRNET_CPPFLAGS@
 
 testXDR_LDFLAGS = \
-	-L$(top_srcdir)/src \
-	-L$(top_srcdir)/../../tools/messages/src/base/.libs \
-	-L$(top_srcdir)/../../tools/core/src/.libs \
-	-L$(top_srcdir)/../../framework/build/libcbtf-xml \
+	@MESSAGES_LDFLAGS@ \
 	@BOOST_LDFLAGS@ \
 	@LIBXERCES_C_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
@@ -49,6 +40,7 @@ testXDR_LDADD = \
 	-lcbtf-xml \
         -lcbtf-messages-base -lcbtf-messages-converters-base \
 	-lcbtf-core \
+	@MESSAGES_BASE_LIBS@ \
 	@BOOST_UNIT_TEST_FRAMEWORK_LIB@ \
 	@BOOST_SYSTEM_LIB@ \
 	@BOOST_THREAD_LIB@ \

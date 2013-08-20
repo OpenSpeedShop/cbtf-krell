@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -19,3 +19,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = libltdl include src collectors components collectionTool daemonTool scripts
+
+cmakedir = $(datadir)/KrellInstitute/cmake
+nobase_dist_cmake_DATA = FindCBTF-Core.cmake

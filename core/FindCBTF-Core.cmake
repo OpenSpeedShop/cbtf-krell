@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,9 +16,26 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-ACLOCAL_AMFLAGS = -I m4
+include(FindPackageHandleStandardArgs)
 
-SUBDIRS = libltdl include src collector
+find_library(CBTF_CORE_LIBRARY
+    NAMES libcbtf-core.so
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES lib lib64
+    )
 
-cmakedir = $(datadir)/KrellInstitute/cmake
-nobase_dist_cmake_DATA = FindCBTF-Services.cmake
+find_path(CBTF_CORE_INCLUDE_DIR
+    KrellInstitute/Core/Assert.hpp
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    PATH_SUFFIXES include
+    )
+
+find_package_handle_standard_args(
+    CBTF-Core DEFAULT_MSG
+    CBTF_CORE_LIBRARY CBTF_CORE_INCLUDE_DIR
+    )
+
+set(CBTF_CORE_LIBRARIES ${CBTF_CORE_LIBRARY})
+set(CBTF_CORE_INCLUDE_DIRS ${CBTF_CORE_INCLUDE_DIR})
+
+mark_as_advanced(CBTF_CORE_LIBRARY CBTF_CORE_INCLUDE_DIR)

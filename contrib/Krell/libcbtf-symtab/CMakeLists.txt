@@ -20,8 +20,6 @@ cmake_minimum_required(VERSION 2.8.0)
 
 project(CBTF-SymbolTable)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-
 find_package(Boost 1.39.0 REQUIRED 
   COMPONENTS filesystem system unit_test_framework
   )

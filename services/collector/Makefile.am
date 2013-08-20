@@ -35,6 +35,7 @@ lib_LTLIBRARIES += libcbtf-services-collector-monitor-fileio.la
 libcbtf_services_collector_monitor_fileio_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_FILEIO \
+	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@
 
@@ -57,6 +58,7 @@ lib_LTLIBRARIES += libcbtf-services-collector-monitor-mrnet.la
 libcbtf_services_collector_monitor_mrnet_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
+	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
@@ -83,6 +85,7 @@ libcbtf_services_collector_monitor_mrnet_mpi_la_CFLAGS = \
 	-DCBTF_SERVICE_USE_OFFLINE \
 	-DCBTF_SERVICE_USE_MRNET \
 	-DCBTF_SERVICE_USE_MRNET_MPI \
+	-I$(top_srcdir)/include \
 	@MESSAGES_CPPFLAGS@ \
 	@LIBMONITOR_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@

@@ -17,6 +17,3 @@ cd ..
 cd test
 make clean; make; make install
 cd ..
-cd ../contrib/LANL
-make clean; make; make install
-cd ../..

@@ -86,7 +86,7 @@ install(TARGETS cbtf-symtab
     ARCHIVE DESTINATION lib${LIB_SUFFIX}
     )
 
-install(FILES
+install(
     FILES FindCBTF-Symtab.cmake
     DESTINATION share/KrellInstitute/cmake
     )

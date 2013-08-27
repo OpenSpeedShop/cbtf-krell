@@ -21,8 +21,8 @@ cmake_minimum_required(VERSION 2.8.0)
 project(CBTF-SymbolTable)
 
 find_package(Boost 1.39.0 REQUIRED 
-  COMPONENTS filesystem system unit_test_framework
-  )
+    COMPONENTS filesystem system unit_test_framework
+    )
 find_package(CBTF-Messages REQUIRED)
 
 # find_package(Threads REQUIRED)

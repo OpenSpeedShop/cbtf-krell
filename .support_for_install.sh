@@ -228,10 +228,10 @@ fi
 cd ..
 
 echo "-------------------------------------------------------------"
-echo "-- BUILDING LIBCBTF-SYMTAB ----------------------------------"
+echo "-- BUILDING LIBKRELL-BASE -----------------------------------"
 echo "-------------------------------------------------------------"
 
-cd libcbtf-symtab
+cd libkrell-base
 
 if [ ! -d "build" ]; then
    mkdir build
@@ -248,17 +248,53 @@ cmake -DCMAKE_INSTALL_PREFIX=$CBTF_PREFIX -DLIB_SUFFIX=64 \
     -DCMAKE_MODULE_PATH=$CBTF_PREFIX/share/KrellInstitute/cmake ..
 
 echo "-------------------------------------------------------------"
-echo "-- INSTALLING LIBCBTF-SYMTAB --------------------------------"
+echo "-- INSTALLING LIBKRELL-BASE ---------------------------------"
 echo "-------------------------------------------------------------"
 
 make install
 
 
-if [ -f $CBTF_PREFIX/$LIBDIR/libcbtf-messages-cuda.so -a -f $CBTF_PREFIX/$LIBDIR/KrellInstitute/Collectors/cuda-collector-monitor-mrnet-mpi.so ]; then
-   echo "CBTF LIBCBTF-SYMTAB BUILT SUCCESSFULLY into $CBTF_PREFIX."
+if [ -f $CBTF_PREFIX/$LIBDIR/libkrell-base.so ]; then
+   echo "CBTF LIBKRELL-BASE BUILT SUCCESSFULLY into $CBTF_PREFIX."
 else
-   echo "CBTF LIBCBTF-SYMTAB FAILED TO BUILD - TERMINATING BUILD SCRIPT.  Please check for errors."
-   #exit
+   echo "CBTF LIBKRELL-BASE FAILED TO BUILD - TERMINATING BUILD SCRIPT.  Please check for errors."
+   exit
+fi
+
+cd ..
+
+echo "-------------------------------------------------------------"
+echo "-- BUILDING LIBKRELL-SYMTAB ---------------------------------"
+echo "-------------------------------------------------------------"
+
+cd libkrell-symtab
+
+if [ ! -d "build" ]; then
+   mkdir build
+fi
+
+cd build
+
+export CC=`which gcc`
+export CXX=`which c++`
+export CPLUSPLUS=`which c++`
+
+cmake -DCMAKE_INSTALL_PREFIX=$CBTF_PREFIX -DLIB_SUFFIX=64 \
+    -DCMAKE_LIBRARY_PATH=$CBTF_PREFIX/lib64 \
+    -DCMAKE_MODULE_PATH=$CBTF_PREFIX/share/KrellInstitute/cmake ..
+
+echo "-------------------------------------------------------------"
+echo "-- INSTALLING LIBKRELL-SYMTAB -------------------------------"
+echo "-------------------------------------------------------------"
+
+make install
+
+
+if [ -f $CBTF_PREFIX/$LIBDIR/libkrell-symtab.so ]; then
+   echo "CBTF LIBKRELL-SYMTAB BUILT SUCCESSFULLY into $CBTF_PREFIX."
+else
+   echo "CBTF LIBKRELL-SYMTAB FAILED TO BUILD - TERMINATING BUILD SCRIPT.  Please check for errors."
+   exit
 fi
 
 

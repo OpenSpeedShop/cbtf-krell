@@ -24,9 +24,9 @@
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+#include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
-#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <string>
@@ -57,7 +57,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @param file    Name of this linked object's file.
          */
-        LinkedObject(const FileName& file);
+        LinkedObject(const Base::FileName& file);
         
         /**
          * Construct a linked object from a CBTF_Protocol_SymbolTable.
@@ -113,7 +113,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @return    Name of this linked object's file.
          */
-        FileName getFile() const;
+        Base::FileName getFile() const;
 
         /**
          * Visit the functions contained within this linked object.
@@ -135,7 +135,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        void visitFunctions(const AddressRange& range,
+        void visitFunctions(const Base::AddressRange& range,
                             const FunctionVisitor& visitor) const;
         
         /**
@@ -158,7 +158,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          this linked object rather than an absolute address from the
          *          address space of a specific process.
          */
-        void visitStatements(const AddressRange& range,
+        void visitStatements(const Base::AddressRange& range,
                              const StatementVisitor& vistor) const;
 
         /**

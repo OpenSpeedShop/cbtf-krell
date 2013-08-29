@@ -28,10 +28,7 @@
 #include <sstream>
 #include <string>
 
-namespace KrellInstitute { namespace SymbolTable {
-
-    class Address;
-    class Time;
+namespace KrellInstitute { namespace Base {
 
     /**
      * A closed-ended, integer, interval used to represent either address
@@ -226,7 +223,7 @@ namespace KrellInstitute { namespace SymbolTable {
         
     }; // class Interval<T, S>
         
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base
 
 namespace std {
     
@@ -249,15 +246,13 @@ namespace std {
      * non-overlapping intervals to behave as desired.
      */
     template <typename T, typename S>
-    struct less<KrellInstitute::SymbolTable::Interval<T, S> > :
-        binary_function<const KrellInstitute::SymbolTable::Interval<T, S>&,
-                        const KrellInstitute::SymbolTable::Interval<T, S>&,
+    struct less<KrellInstitute::Base::Interval<T, S> > :
+        binary_function<const KrellInstitute::Base::Interval<T, S>&,
+                        const KrellInstitute::Base::Interval<T, S>&,
                         bool>
     {
-        bool operator()(
-            const KrellInstitute::SymbolTable::Interval<T, S>& lhs,
-            const KrellInstitute::SymbolTable::Interval<T, S>& rhs
-            ) const
+        bool operator()(const KrellInstitute::Base::Interval<T, S>& lhs,
+                        const KrellInstitute::Base::Interval<T, S>& rhs) const
         {
             if (lhs.end() < rhs.begin())
             {
@@ -266,5 +261,5 @@ namespace std {
             return false;
         }
     }; // struct less<Interval<T, S> >
-    
+
 } // namespace std

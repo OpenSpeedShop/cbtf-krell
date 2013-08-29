@@ -22,8 +22,8 @@
 
 #include <boost/function.hpp>
 
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
-#include <KrellInstitute/SymbolTable/TimeInterval.hpp>
+#include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/TimeInterval.hpp>
 
 namespace KrellInstitute { namespace SymbolTable {
 
@@ -44,7 +44,9 @@ namespace KrellInstitute { namespace SymbolTable {
      * @sa http://en.wikipedia.org/wiki/Visitor_pattern
      */
     typedef boost::function<
-        bool (const LinkedObject&, const AddressRange&, const TimeInterval&)
+        bool (const LinkedObject&,
+              const Base::AddressRange&,
+              const Base::TimeInterval&)
         > MappingVisitor;
     
 } } // namespace KrellInstitute::SymbolTable

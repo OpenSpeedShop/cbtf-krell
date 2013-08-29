@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
+# Copyright (c) 2013 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,22 +18,22 @@
 
 include(FindPackageHandleStandardArgs)
 
-find_library(CBTF_SYMTAB_LIBRARY NAMES libcbtf-symtab.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+find_library(KRELL_BASE_LIBRARY NAMES libkrell-base.so
+    HINTS $ENV{KRELL_ROOT}
     PATH_SUFFIXES lib lib64
     )
 
-find_path(CBTF_SYMTAB_INCLUDE_DIR KrellInstitute/SymbolTable/LinkedObject.hpp
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+find_path(KRELL_BASE_INCLUDE_DIR KrellInstitute/Base/Address.hpp
+    HINTS $ENV{KRELL_ROOT}
     PATH_SUFFIXES include
     )
 
 find_package_handle_standard_args(
-    CBTF-Symtab DEFAULT_MSG
-    CBTF_SYMTAB_LIBRARY CBTF_SYMTAB_INCLUDE_DIR
+    Krell-Base DEFAULT_MSG
+    KRELL_BASE_LIBRARY KRELL_BASE_INCLUDE_DIR
     )
 
-set(CBTF_SYMTAB_LIBRARIES ${CBTF_SYMTAB_LIBRARY})
-set(CBTF_SYMTAB_INCLUDE_DIRS ${CBTF_SYMTAB_INCLUDE_DIR})
+set(KRELL_BASE_LIBRARIES ${KRELL_BASE_LIBRARY})
+set(KRELL_BASE_INCLUDE_DIRS ${KRELL_BASE_INCLUDE_DIR})
 
-mark_as_advanced(CBTF_SYMTAB_LIBRARY CBTF_SYMTAB_INCLUDE_DIR)
+mark_as_advanced(KRELL_BASE_LIBRARY KRELL_BASE_INCLUDE_DIR)

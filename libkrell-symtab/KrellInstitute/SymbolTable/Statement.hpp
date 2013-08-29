@@ -24,8 +24,8 @@
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
-#include <KrellInstitute/SymbolTable/FileName.hpp>
+#include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <set>
 #include <string>
@@ -59,7 +59,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param column           Column number of this statement.
          */
         Statement(const LinkedObject& linked_object,
-                  const FileName& file,
+                  const Base::FileName& file,
                   const unsigned int& line,
                   const unsigned int& column);
 
@@ -109,7 +109,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          an absolute address from the address space of a specific
          *          process.
          */
-        void addAddressRanges(const std::set<AddressRange>& ranges);
+        void addAddressRanges(const std::set<Base::AddressRange>& ranges);
 
         /**
          * Get the linked object containing this statement.
@@ -123,8 +123,8 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @return    Name of this statement's source file.
          */
-        FileName getFile() const;
-
+        Base::FileName getFile() const;
+        
         /**
          * Get the line number of this statement.
          *
@@ -150,7 +150,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          an absolute address from the address space of a specific
          *          process.
          */
-        std::set<AddressRange> getAddressRanges() const;
+        std::set<Base::AddressRange> getAddressRanges() const;
 
         /**
          * Visit the functions containing this statement.

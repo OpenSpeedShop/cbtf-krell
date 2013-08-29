@@ -20,11 +20,11 @@
 
 #pragma once
 
+#include <KrellInstitute/Base/Address.hpp>
+#include <KrellInstitute/Base/Interval.hpp>
 #include <KrellInstitute/Messages/Address.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
-#include <KrellInstitute/SymbolTable/Interval.hpp>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace Base {
 
     /**
      * A closed-ended range of memory addresses. Used to represent a contiguous
@@ -32,4 +32,4 @@ namespace KrellInstitute { namespace SymbolTable {
      */
     typedef Interval<Address, CBTF_Protocol_AddressRange> AddressRange;
 
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base

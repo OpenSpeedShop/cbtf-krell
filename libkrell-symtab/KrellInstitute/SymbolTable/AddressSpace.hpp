@@ -20,14 +20,14 @@
 
 #pragma once
 
+#include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
+#include <KrellInstitute/Base/TimeInterval.hpp>
 #include <KrellInstitute/Messages/LinkedObjectEvents.h>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
-#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp>
 #include <KrellInstitute/SymbolTable/MappingVisitor.hpp>
-#include <KrellInstitute/SymbolTable/TimeInterval.hpp>
 #include <map>
 #include <vector>
 
@@ -108,10 +108,12 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param range            Address range of this linked object.
          * @param when             Time when this linked object was loaded.
          */
-        void loadLinkedObject(const LinkedObject& linked_object,
-                              bool is_executable,
-                              const AddressRange& range,
-                              const Time& when = Time::TheBeginning());
+        void loadLinkedObject(
+            const LinkedObject& linked_object,
+            bool is_executable,
+            const Base::AddressRange& range,
+            const Base::Time& when = Base::Time::TheBeginning()
+            );
         
         /**
          * Unloaded the given linked object from this address space at the
@@ -120,8 +122,10 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param linked_object    Linked object to be unloaded.
          * @param when             Time when this linked object was unloaded.
          */
-        void unloadLinkedObject(const LinkedObject& linked_object,
-                                const Time& when = Time::TheEnd());
+        void unloadLinkedObject(
+            const LinkedObject& linked_object,
+            const Base::Time& when = Base::Time::TheEnd()
+            );
         
         /**
          * Visit the linked objects contained within this address space.
@@ -149,8 +153,8 @@ namespace KrellInstitute { namespace SymbolTable {
          *                    within this address space that intersect that
          *                    address range and time interval.
          */
-        void visitMappings(const AddressRange& range,
-                           const TimeInterval& interval,
+        void visitMappings(const Base::AddressRange& range,
+                           const Base::TimeInterval& interval,
                            const MappingVisitor& visitor) const;
         
     private:
@@ -165,16 +169,16 @@ namespace KrellInstitute { namespace SymbolTable {
             bool dm_is_executable;
             
             /** Address range of that linked object in the address space. */
-            AddressRange dm_range;
+            Base::AddressRange dm_range;
             
             /** Time interval for this linked object in the address space. */
-            TimeInterval dm_interval;
+            Base::TimeInterval dm_interval;
             
             /** Constructor from initial fields. */
             MappingItem(const LinkedObject& linked_object,
                         bool is_executable,
-                        const AddressRange& range,
-                        const TimeInterval& interval) :
+                        const Base::AddressRange& range,
+                        const Base::TimeInterval& interval) :
                 dm_linked_object(linked_object),
                 dm_is_executable(is_executable),
                 dm_range(range),
@@ -185,7 +189,7 @@ namespace KrellInstitute { namespace SymbolTable {
         }; // struct MappingItem
         
         /** (Indexed) List of linked objects in this address space. */
-        std::map<FileName, LinkedObject> dm_linked_objects;
+        std::map<Base::FileName, LinkedObject> dm_linked_objects;
         
         /** List of mappings into this address space. */
         std::vector<MappingItem> dm_mappings;

@@ -22,9 +22,9 @@
 
 #include <boost/operators.hpp>
 #include <iostream>
+#include <KrellInstitute/Base/Address.hpp>
+#include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/Address.hpp>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
 #include <set>
 #include <string>
 #include <vector>
@@ -47,14 +47,14 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *
          * @param range    Address range covered by this address bitmap.
          */
-        AddressBitmap(const AddressRange& range);
+        AddressBitmap(const Base::AddressRange& range);
 
         /**
          * Construct an address bitmap from a set of addresses.
          *
          * @param addresses    Set of addresses in this address bitmap.
          */
-        AddressBitmap(const std::set<Address>& addresses);
+        AddressBitmap(const std::set<Base::Address>& addresses);
         
         /**
          * Construct an address bitmap from a CBTF_Protocol_AddressBitmap.
@@ -91,7 +91,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *
          * @return    Address range covered by this address bitmap.
          */
-        const AddressRange& range() const;
+        const Base::AddressRange& range() const;
         
         /**
          * Get the value of the given address in this address bitmap.
@@ -102,7 +102,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @throw std::invalid_argument    The given address isn't contained
          *                                 within this bitmap's range.
          */
-        bool get(const Address& address) const;
+        bool get(const Base::Address& address) const;
         
         /**
          * Set the value of the given address in this address bitmap.
@@ -113,7 +113,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @throw std::invalid_argument    The given address isn't contained
          *                                 within this bitmap's range.
          */
-        void set(const Address& address, const bool& value);
+        void set(const Base::Address& address, const bool& value);
         
         /**
          * Get the set of contiguous address ranges in this address bitmap 
@@ -122,12 +122,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param value    Value of interest.
          * @return         Set of contiguous address ranges with that value.
          */
-        std::set<AddressRange> ranges(const bool& value) const;
+        std::set<Base::AddressRange> ranges(const bool& value) const;
 
     private:
         
         /** Address range covered by this address bitmap. */
-        AddressRange dm_range;
+        Base::AddressRange dm_range;
 
         /** Contents of this address bitmap. */
         std::vector<bool> dm_bitmap;

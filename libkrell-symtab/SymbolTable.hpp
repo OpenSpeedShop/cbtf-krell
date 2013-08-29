@@ -27,9 +27,9 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/shared_ptr.hpp>
+#include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
-#include <KrellInstitute/SymbolTable/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
@@ -66,7 +66,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *
          * @param file    Name of this symbol table's linked object file.
          */
-        SymbolTable(const FileName& file);
+        SymbolTable(const Base::FileName& file);
 
         /**
          * Construct a symbol table from a CBTF_Protocol_SymbolTable.
@@ -87,7 +87,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *
          * @return    Name of this symbol table's linked object file.
          */
-        const FileName& getFile() const;
+        const Base::FileName& getFile() const;
         
         /**
          * Add a new function to this symbol table.
@@ -107,8 +107,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          of this symbol table rather than an absolute address from
          *          the address space of a specific process.
          */
-        void addFunctionAddressRanges(const UniqueIdentifier& uid,
-                                      const std::set<AddressRange>& ranges);
+        void addFunctionAddressRanges(
+            const UniqueIdentifier& uid,
+            const std::set<Base::AddressRange>& ranges
+            );
 
         /**
          * Add a new statement to this symbol table.
@@ -118,7 +120,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param column    Column number of the statement.
          * @return          Unique identifier of that statement.
          */
-        UniqueIdentifier addStatement(const FileName& file,
+        UniqueIdentifier addStatement(const Base::FileName& file,
                                       const unsigned int& line,
                                       const unsigned int& column);
         
@@ -132,8 +134,10 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          of this symbol table rather than an absolute address from
          *          the address space of a specific process.
          */
-        void addStatementAddressRanges(const UniqueIdentifier& uid,
-                                       const std::set<AddressRange>& ranges);
+        void addStatementAddressRanges(
+            const UniqueIdentifier& uid,
+            const std::set<Base::AddressRange>& ranges
+            );
 
         /**
          * Add a copy of the given function to this symbol table.
@@ -177,7 +181,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          this symbol table rather than an absolute address from the
          *          address space of a specific process.
          */
-        std::set<AddressRange> getFunctionAddressRanges(
+        std::set<Base::AddressRange> getFunctionAddressRanges(
             const UniqueIdentifier& uid
             ) const;
         
@@ -187,7 +191,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          * @param uid    Unique identifier of the statement.
          * @return       Name of that statement's source file.
          */
-        const FileName& getStatementFile(const UniqueIdentifier& uid) const;
+        const Base::FileName& getStatementFile(
+            const UniqueIdentifier& uid
+            ) const;
 
         /**
          * Get the line number of the given statement.
@@ -217,7 +223,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          this symbol table rather than an absolute address from the
          *          address space of a specific process.
          */
-        std::set<AddressRange> getStatementAddressRanges(
+        std::set<Base::AddressRange> getStatementAddressRanges(
             const UniqueIdentifier& uid
             ) const;
 
@@ -241,7 +247,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          of this symbol table rather than an absolute address from
          *          the address space of a specific process.
          */
-        void visitFunctions(const AddressRange& range,
+        void visitFunctions(const Base::AddressRange& range,
                             const FunctionVisitor& visitor);
         
         /**
@@ -284,7 +290,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
          *          of this symbol table rather than an absolute address from
          *          the address space of a specific process.
          */
-        void visitStatements(const AddressRange& range,
+        void visitStatements(const Base::AddressRange& range,
                              const StatementVisitor& visitor);
 
         /**
@@ -306,14 +312,14 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             UniqueIdentifier dm_uid;
 
             /** Closed beginning of an address range for that entity. */
-            Address dm_begin;
+            Base::Address dm_begin;
             
             /** Closed end of an address range for that entity. */
-            Address dm_end;
+            Base::Address dm_end;
             
             /** Constructor from initial fields. */
             AddressRangeIndexRow(const UniqueIdentifier& uid,
-                                 const AddressRange& range) :
+                                 const Base::AddressRange& range) :
                 dm_uid(uid),
                 dm_begin(range.begin()),
                 dm_end(range.end())
@@ -321,9 +327,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             }
             
             /** Does this address range intersect another address range? */
-            bool intersects(const AddressRange& range) const
+            bool intersects(const Base::AddressRange& range) const
             {
-                return AddressRange(dm_begin, dm_end).intersects(range);
+                return Base::AddressRange(dm_begin, dm_end).intersects(range);
             }
             
         }; // struct AddressRangeIndexRow
@@ -345,7 +351,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
                 boost::multi_index::ordered_non_unique<
                     boost::multi_index::member<
                         AddressRangeIndexRow,
-                        Address,
+                        Base::Address,
                         &AddressRangeIndexRow::dm_begin
                         >
                     >
@@ -374,7 +380,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         struct StatementItem
         {
             /** Name of this statement's source file. */
-            FileName dm_file;
+            Base::FileName dm_file;
             
             /** Line number of this statement. */
             unsigned int dm_line;
@@ -386,7 +392,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             std::vector<AddressBitmap> dm_addresses;
 
             /** Constructor from initial fields. */
-            StatementItem(const FileName& file,
+            StatementItem(const Base::FileName& file,
                           const unsigned int& line,
                           const unsigned int& column) :
                 dm_file(file),
@@ -399,17 +405,17 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         }; // struct StatementItem
 
         /** Visit functions using the index. */
-        void visit(const AddressRange& range,
+        void visit(const Base::AddressRange& range,
                    const FunctionVisitor& visitor,
                    bool& terminate, boost::dynamic_bitset<>& visited);
         
         /** Visit statements using the index. */
-        void visit(const AddressRange& range,
+        void visit(const Base::AddressRange& range,
                    const StatementVisitor& visitor,
                    bool& terminate, boost::dynamic_bitset<>& visited);
         
         /** Name of this symbol table's linked object file. */
-        FileName dm_file;
+        Base::FileName dm_file;
             
         /** List of functions in this symbol table. */
         std::vector<FunctionItem> dm_functions;

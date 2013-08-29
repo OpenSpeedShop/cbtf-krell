@@ -28,6 +28,7 @@
 
 #include "SymbolTable.hpp"
 
+using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 
 

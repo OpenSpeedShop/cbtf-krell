@@ -27,6 +27,7 @@
 
 #include "AddressBitmap.hpp"
 
+using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
 

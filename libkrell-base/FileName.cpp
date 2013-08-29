@@ -21,9 +21,9 @@
 #include <boost/crc.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <iostream>
-#include <KrellInstitute/SymbolTable/FileName.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
 
-using namespace KrellInstitute::SymbolTable;
+using namespace KrellInstitute::Base;
 
 
 

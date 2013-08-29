@@ -31,7 +31,7 @@
 #include <string>
 #include <time.h>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace Base {
 
     /**
      * All time values are stored in a single 64-bit unsigned integer. These
@@ -189,4 +189,4 @@ namespace KrellInstitute { namespace SymbolTable {
         
     }; // class Time
 
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base

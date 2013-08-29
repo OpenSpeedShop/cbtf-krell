@@ -24,7 +24,7 @@
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
-#include <KrellInstitute/SymbolTable/AddressRange.hpp>
+#include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
 #include <string>
@@ -102,7 +102,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          an absolute address from the address space of a specific
          *          process.
          */
-        void addAddressRanges(const std::set<AddressRange>& ranges);
+        void addAddressRanges(const std::set<Base::AddressRange>& ranges);
 
         /**
          * Get the linked object containing this function.
@@ -136,7 +136,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *          an absolute address from the address space of a specific
          *          process.
          */
-        std::set<AddressRange> getAddressRanges() const;
+        std::set<Base::AddressRange> getAddressRanges() const;
 
         /**
          * Visit the definitions of this function.

@@ -30,7 +30,7 @@
 #include <string>
 #include <KrellInstitute/Messages/File.h>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace Base {
 
     /**
      * Unique name for a file that includes a checksum of the named file's
@@ -156,4 +156,4 @@ namespace KrellInstitute { namespace SymbolTable {
         
     }; // class FileName
             
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base

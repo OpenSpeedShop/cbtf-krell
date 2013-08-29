@@ -20,11 +20,11 @@
 
 #pragma once
 
+#include <KrellInstitute/Base/Interval.hpp>
+#include <KrellInstitute/Base/Time.hpp>
 #include <KrellInstitute/Messages/Time.h>
-#include <KrellInstitute/SymbolTable/Interval.hpp>
-#include <KrellInstitute/SymbolTable/Time.hpp>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace Base {
 
     /**
      * A closed-ended time interval. Used to represent a contiguous period of
@@ -32,4 +32,4 @@ namespace KrellInstitute { namespace SymbolTable {
      */
     typedef Interval<Time, CBTF_Protocol_TimeInterval> TimeInterval;
 
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base

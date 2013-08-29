@@ -22,6 +22,7 @@
 #include <boost/ref.hpp>
 #include <KrellInstitute/SymbolTable/AddressSpace.hpp>
 
+using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
 

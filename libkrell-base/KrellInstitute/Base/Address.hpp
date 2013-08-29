@@ -29,7 +29,7 @@
 #include <sstream>
 #include <string>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace Base {
         
     /**
      * All memory addresses are stored in 64-bit unsigned integers, allowing
@@ -152,4 +152,4 @@ namespace KrellInstitute { namespace SymbolTable {
         
     }; // class Address
         
-} } // namespace KrellInstitute::SymbolTable
+} } // namespace KrellInstitute::Base

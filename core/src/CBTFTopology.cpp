@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012 Krell Institute. All Rights Reserved.
+// Copyright (c) 2012-2013 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -31,6 +31,9 @@
 #include <string>
 #include <map>
 
+#include <iterator>
+#include <cstddef>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -38,6 +41,10 @@
 #include <stdio.h>
 #include <typeinfo>
 #include <limits.h>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE)
 #include <alps/alps.h>
@@ -64,6 +71,67 @@ CBTFTopology::~CBTFTopology()
 {
 }
 
+std::string extract_ranges(std::string nodeListNames) {
+  boost::char_separator<char> sep(",");
+  boost::tokenizer<boost::char_separator<char> > btokens(nodeListNames, sep);
+  std::string S = "";
+  std::string outputList = "";
+  int current, count, next ;
+  bool first_time = true;
+
+//  BOOST_FOREACH (const std::string& t, btokens) {
+  for ( boost::tokenizer<boost::char_separator<char> >::iterator it = btokens.begin(); it != btokens.end(); ++it) {
+
+   if (first_time) {
+
+      S = *it;
+      current = boost::lexical_cast<int>(S);
+      // so bottom of loop reassignment does an effective no op.
+      next = current;
+      outputList.append(boost::lexical_cast<std::string>(current));
+      count = 1;
+      first_time = false;
+
+    } else {
+  
+      S = *it;
+      //boost::replace_all(S," ","");
+      next = boost::lexical_cast<int>(S);
+  
+      if (next == current+1) {
+        ++count;
+      } else {
+        if (count >= 2) {
+          outputList.append("-");
+        } else {
+          outputList.append(",");
+        }
+  
+        if (count > 1) {
+          outputList.append(boost::lexical_cast<std::string>(current));
+          outputList.append(",");
+        }
+        outputList.append(boost::lexical_cast<std::string>(next));
+        count = 1;
+      }
+   } // first time
+
+   current = next;
+
+  } // end foreach
+
+  if (count >= 2) {
+    outputList.append("-");
+    outputList.append(boost::lexical_cast<std::string>(current));
+  } else if (count > 1) {
+    outputList.append(",");
+    outputList.append(boost::lexical_cast<std::string>(current));
+  }
+
+  return outputList;
+
+}
+
 std::string CBTFTopology::createCSVstring(std::list<std::string>& list )
 {
     std::list<std::string>::iterator ListIter;
@@ -76,8 +144,27 @@ std::string CBTFTopology::createCSVstring(std::list<std::string>& list )
             outString += *ListIter;
         }
     }
-    outString += " ";
+    //std::cerr << " outString=" << outString << std::endl;
     return outString;
+}
+
+
+std::string CBTFTopology::createRangeCSVstring(std::list<std::string>& list )
+{
+    std::list<std::string>::iterator ListIter;
+    std::string outString;
+    for (ListIter = list.begin(); ListIter != list.end(); ListIter++) {
+        if (ListIter != list.begin()) outString += ",";
+        if (getIsCray()) {
+            outString += unFormatCrayNid(*ListIter);
+        } else {
+            outString += *ListIter;
+        }
+    }
+    //std::cerr << " outString=" << outString << std::endl;
+    std::string rangeVersion = extract_ranges(outString);
+    //std::cerr << " rangeVersion=" << rangeVersion << std::endl;
+    return rangeVersion ;
 }
 
 int CBTFTopology::getCrayFENid( void )

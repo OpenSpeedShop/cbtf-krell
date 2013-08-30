@@ -148,6 +148,7 @@ class CBTFTopology {
             }; 
 
             std::string createCSVstring(std::list<std::string> &);
+            std::string createRangeCSVstring(std::list<std::string> &);
 
 
 	    void parseSlurmEnv();

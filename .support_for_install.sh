@@ -88,7 +88,7 @@ echo "-------------------------------------------------------------"
 echo "-- BUILDING MESSAGES ----------------------------------"
 echo "-------------------------------------------------------------"
 cd messages
-./bootstrap
+#./bootstrap
 
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
@@ -120,7 +120,7 @@ echo "-------------------------------------------------------------"
 echo "-- BUILDING SERVICES ----------------------------------"
 echo "-------------------------------------------------------------"
 cd services
-./bootstrap
+#./bootstrap
 echo "-- CONFIGURING SERVICES ----------------------------------"
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
@@ -152,7 +152,7 @@ echo "-------------------------------------------------------------"
 echo "-- STARTING TO BUILD CORE ----------------------------------"
 echo "-------------------------------------------------------------"
 cd core
-./bootstrap
+#./bootstrap
 
 echo "-- CONFIGURING CORE ----------------------------------"
 if [ -z "$CBTF_TARGET_ARCH" ];
@@ -185,7 +185,7 @@ echo "-------------------------------------------------------------"
 echo "-- BUILDING EXAMPLES ----------------------------------"
 echo "-------------------------------------------------------------"
 cd examples
-./bootstrap
+#./bootstrap
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
   ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS 
@@ -208,7 +208,7 @@ echo "-------------------------------------------------------------"
 echo "-- BUILDING TEST ----------------------------------"
 echo "-------------------------------------------------------------"
 cd test
-./bootstrap
+#./bootstrap
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
   ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-core=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-mrnet=$CBTF_PREFIX 

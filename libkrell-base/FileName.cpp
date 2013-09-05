@@ -20,15 +20,18 @@
 
 #include <boost/crc.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <iostream>
+#include <boost/format.hpp>
+#include <cstring>
 #include <KrellInstitute/Base/FileName.hpp>
+#include <sstream>
 
 using namespace KrellInstitute::Base;
 
 
 
 //------------------------------------------------------------------------------
-// Compute the checksum of the specified file's contents using "CRC-64" from:
+// If the path names a real file, compute the checksum of that file's contents
+// using "CRC-64" from:
 //
 //     http://reveng.sourceforge.net/crc-catalogue/17plus.htm#crc.cat-bits.64
 //
@@ -36,29 +39,133 @@ using namespace KrellInstitute::Base;
 // class as listed in Boost documentation, and their correspondence to fields in
 // the above-mentioned document (in parentheses).
 //------------------------------------------------------------------------------
-boost::uint64_t FileName::computeChecksum(const boost::filesystem::path& path)
+FileName::FileName(const boost::filesystem::path& path) :
+    dm_path(path),
+    dm_checksum(0)
 {
-    char buffer[1 * 1024 * 1024 /* 1 MB */];
-
-    boost::crc_optimal<
-        64,                 // Bits (width)
-        0x42f0e1eba9ea3693, // TruncPoly (poly)
-        0x0000000000000000, // InitRem (init)
-        0x0000000000000000, // FinalXor (xorout)
-        false,              // ReflectIn (refin)
-        false               // ReflectRem (refout)
-        > crc;
-    
-    boost::filesystem::ifstream stream(path, std::ios::binary);
-
-    for (std::streamsize n = stream.readsome(buffer, sizeof(buffer));
-         n > 0;
-         n = stream.readsome(buffer, sizeof(buffer)))
+    if (boost::filesystem::is_regular_file(path))
     {
-        crc.process_bytes(buffer, n);
+        char buffer[1 * 1024 * 1024 /* 1 MB */];
+
+        boost::crc_optimal<
+            64,                 // Bits (width)
+            0x42f0e1eba9ea3693, // TruncPoly (poly)
+            0x0000000000000000, // InitRem (init)
+            0x0000000000000000, // FinalXor (xorout)
+            false,              // ReflectIn (refin)
+            false               // ReflectRem (refout)
+            > crc;
+    
+        boost::filesystem::ifstream stream(path, std::ios::binary);
+        
+        for (std::streamsize n = stream.readsome(buffer, sizeof(buffer));
+             n > 0;
+             n = stream.readsome(buffer, sizeof(buffer)))
+        {
+            crc.process_bytes(buffer, n);
+        }
+        
+        stream.close();
+        
+        dm_checksum = static_cast<boost::uint64_t>(crc.checksum());
     }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+FileName::FileName(const CBTF_Protocol_FileName& message) :
+    dm_path(message.path),
+    dm_checksum(message.checksum)
+{
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+FileName::operator boost::filesystem::path() const
+{
+    return dm_path;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+FileName::operator CBTF_Protocol_FileName() const
+{
+    CBTF_Protocol_FileName message;
     
-    stream.close();
+    message.path = strdup(dm_path.c_str());
+    message.checksum = dm_checksum;
     
-    return static_cast<boost::uint64_t>(crc.checksum());
+    return message;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+FileName::operator std::string() const
+{
+    std::ostringstream stream;
+    stream << *this;
+    return stream.str();
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+bool FileName::operator<(const FileName& other) const
+{
+    if (dm_path != other.dm_path)
+    {
+        return dm_path < other.dm_path;
+    }
+    else if ((dm_checksum != 0) && (other.dm_checksum != 0))
+    {
+        return dm_checksum < other.dm_checksum;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+bool FileName::operator==(const FileName& other) const
+{
+    if (dm_path != other.dm_path)
+    {
+        return false;
+    }
+    else if ((dm_checksum != 0) && (other.dm_checksum != 0) &&
+             (dm_checksum != other.dm_checksum))
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::ostream& KrellInstitute::Base::operator<<(std::ostream& stream,
+                                               const FileName& name)
+{
+    stream << boost::str(
+        boost::format("0x%016X: %s") % name.checksum() % name.path()
+        );
+    
+    return stream;
 }

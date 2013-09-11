@@ -30,6 +30,7 @@
 #include <KrellInstitute/Base/Address.hpp>
 #include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Base/FileName.hpp>
+#include <KrellInstitute/Base/ThreadName.hpp>
 #include <KrellInstitute/Base/Time.hpp>
 #include <KrellInstitute/Base/TimeInterval.hpp>
 #include <string>
@@ -254,6 +255,84 @@ BOOST_AUTO_TEST_CASE(TestFileName)
         );
     BOOST_CHECK_EQUAL(
         FileName(static_cast<CBTF_Protocol_FileName>(name2)), name2
+        );
+}
+
+
+
+/**
+ * Unit test for the ThreadName class.
+ */
+BOOST_AUTO_TEST_CASE(TestThreadName)
+{
+    ThreadName name1("first.host", 13);
+    ThreadName name2("first.host", 13, 27);
+    ThreadName name3("first.host", 13, 2002);
+    ThreadName name4("first.host", 13, 2002, 2004);
+    ThreadName name5("second.host", 13);
+
+    BOOST_CHECK_EQUAL(name1.host(), name2.host());
+    BOOST_CHECK_EQUAL(name2.host(), name3.host());
+    BOOST_CHECK_EQUAL(name3.host(), name4.host());
+    BOOST_CHECK_NE(name4.host(), name5.host());
+
+    BOOST_CHECK_EQUAL(name1.pid(), name2.pid());
+    BOOST_CHECK_EQUAL(name2.pid(), name3.pid());
+    BOOST_CHECK_EQUAL(name3.pid(), name4.pid());
+    BOOST_CHECK_EQUAL(name4.pid(), name5.pid());
+
+    BOOST_CHECK_EQUAL(static_cast<bool>(name1.tid()), false);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name2.tid()), true);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name3.tid()), true);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name4.tid()), true);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name5.tid()), false);
+    BOOST_CHECK_NE(*name2.tid(), *name3.tid());
+    BOOST_CHECK_EQUAL(*name3.tid(), *name4.tid());
+
+    BOOST_CHECK_EQUAL(static_cast<bool>(name1.rank()), false);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name2.rank()), false);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name3.rank()), false);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name4.rank()), true);
+    BOOST_CHECK_EQUAL(static_cast<bool>(name5.rank()), false);
+    BOOST_CHECK_EQUAL(*name4.rank(), 2004);
+    
+    BOOST_CHECK_NE(name1, name2);
+    BOOST_CHECK_NE(name2, name3);
+    BOOST_CHECK_EQUAL(name3, name4);
+    BOOST_CHECK_NE(name4, name5);
+    BOOST_CHECK_NE(name5, name1);
+
+    BOOST_CHECK_LT(name1, name2);
+    BOOST_CHECK_LT(name2, name3);
+    BOOST_CHECK_EQUAL(name3, name4);
+    BOOST_CHECK_LT(name4, name5);
+    BOOST_CHECK_GT(name5, name1);
+
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name1),
+                      "Host \"first.host\", PID 13");
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name2),
+                      "Host \"first.host\", PID 13, TID 0x000000000000001B");
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name3),
+                      "Host \"first.host\", PID 13, TID 0x00000000000007D2");
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name4),
+                      "MPI Rank 2004, TID 0x00000000000007D2");
+    BOOST_CHECK_EQUAL(static_cast<std::string>(name5),
+                      "Host \"second.host\", PID 13");
+
+    BOOST_CHECK_EQUAL(
+        ThreadName(static_cast<CBTF_Protocol_ThreadName>(name1)), name1
+        );
+    BOOST_CHECK_EQUAL(
+        ThreadName(static_cast<CBTF_Protocol_ThreadName>(name2)), name2
+        );
+    BOOST_CHECK_EQUAL(
+        ThreadName(static_cast<CBTF_Protocol_ThreadName>(name3)), name3
+        );
+    BOOST_CHECK_EQUAL(
+        ThreadName(static_cast<CBTF_Protocol_ThreadName>(name4)), name4
+        );
+    BOOST_CHECK_EQUAL(
+        ThreadName(static_cast<CBTF_Protocol_ThreadName>(name5)), name5
         );
 }
 

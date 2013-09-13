@@ -27,6 +27,7 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/shared_ptr.hpp>
+#include <KrellInstitute/Base/Address.hpp>
 #include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
@@ -311,26 +312,27 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             /** Unique identifier for an entity within this symbol table. */
             UniqueIdentifier dm_uid;
 
-            /** Closed beginning of an address range for that entity. */
-            Base::Address dm_begin;
-            
-            /** Closed end of an address range for that entity. */
-            Base::Address dm_end;
+            /** Address range for that entity. */
+            Base::AddressRange dm_range;
             
             /** Constructor from initial fields. */
             AddressRangeIndexRow(const UniqueIdentifier& uid,
                                  const Base::AddressRange& range) :
                 dm_uid(uid),
-                dm_begin(range.begin()),
-                dm_end(range.end())
+                dm_range(range)
             {
             }
-            
-            /** Does this address range intersect another address range? */
-            bool intersects(const Base::AddressRange& range) const
+
+            /** Key extractor for the address range's begin. */
+            struct range_begin
             {
-                return Base::AddressRange(dm_begin, dm_end).intersects(range);
-            }
+                typedef Base::Address result_type;
+                
+                result_type operator()(const AddressRangeIndexRow& row) const
+                {
+                    return row.dm_range.begin();
+                }
+            };
             
         }; // struct AddressRangeIndexRow
         
@@ -349,11 +351,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
                         >
                     >,
                 boost::multi_index::ordered_non_unique<
-                    boost::multi_index::member<
-                        AddressRangeIndexRow,
-                        Base::Address,
-                        &AddressRangeIndexRow::dm_begin
-                        >
+                    AddressRangeIndexRow::range_begin
                     >
                 >
             > AddressRangeIndex;

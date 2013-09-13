@@ -781,7 +781,7 @@ void SymbolTable::visit(const AddressRange& range,
     
     for (; !terminate && (i != iEnd); ++i)
     {
-        if ((i->intersects(range)) && 
+        if (i->dm_range.intersects(range) &&
             (i->dm_uid < visited.size()) && !visited[i->dm_uid])
         {
             visited[i->dm_uid] = true;
@@ -814,7 +814,7 @@ void SymbolTable::visit(const AddressRange& range,
     
     for (; !terminate && (i != iEnd); ++i)
     {
-        if ((i->intersects(range)) && 
+        if (i->dm_range.intersects(range) && 
             (i->dm_uid < visited.size()) && !visited[i->dm_uid])
         {
             visited[i->dm_uid] = true;

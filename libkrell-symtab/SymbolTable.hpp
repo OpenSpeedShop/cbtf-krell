@@ -323,7 +323,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             {
             }
 
-            /** Key extractor for the address range's begin. */
+            /** Key extractor for the address range's beginning. */
             struct range_begin
             {
                 typedef Base::Address result_type;

@@ -565,14 +565,15 @@ void CBTFTopology::parsePBSEnv()
 
 	if (!dm_colocate_mrnet_procs)
 	    dm_num_app_nodes -= numcpnodes;
-#if 0
-	 std::cerr << "dm_pbs_num_nodes " << dm_pbs_num_nodes
-	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	 std::cerr << " needed_cps " << needed_cps << std::endl;
-	 std::cerr << "numcpnodes " << numcpnodes << std::endl;
-	 std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	 std::cerr << "fanout " << dm_top_fanout << std::endl;
-#endif
+
+        if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
+	   std::cerr << "dm_pbs_num_nodes " << dm_pbs_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "needed_cps " << needed_cps << std::endl;
+	   std::cerr << "numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "fanout " << dm_top_fanout << std::endl;
+        }
+
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
 	bool need_cp_node = true;
@@ -712,14 +713,15 @@ void CBTFTopology::parseSlurmEnv()
 
 	if (!dm_colocate_mrnet_procs)
 	    dm_num_app_nodes -= numcpnodes;
-#if 0
-	 std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes
-	     << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	 std::cerr << " needed_cps " << needed_cps << std::endl;
-	 std::cerr << "numcpnodes " << numcpnodes << std::endl;
-	 std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	 std::cerr << "fanout " << dm_top_fanout << std::endl;
-#endif
+
+        if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
+ 	   std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "needed_cps " << needed_cps << std::endl;
+	   std::cerr << "numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "fanout " << dm_top_fanout << std::endl;
+        }
+
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
 	bool need_cp_node = true;

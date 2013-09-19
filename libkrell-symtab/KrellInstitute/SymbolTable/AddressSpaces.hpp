@@ -134,7 +134,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * Visit the linked objects contained within these address spaces
          * mapped by the given thread.
          *
-         * @param thread     Thread to be found.
+         * @param thread     Name of the thread to be found.
          * @param visitor    Visitor invoked for each linked object contained
          *                   within these address spaces mapped by that thread.
          */
@@ -153,7 +153,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * Visit the mappings contained within these address spaces mapped
          * by the given thread.
          *
-         * @param thread     Thread to be found.
+         * @param thread     Name of the thread to be found.
          * @param visitor    Visitor invoked for each mapping contained
          *                   within these address spaces mapped by that
          *                   thread.
@@ -166,7 +166,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * the given thread and intersecting the given address range and time
          * interval.
          *
-         * @param thread      Thread to be found.
+         * @param thread      Name of the thread to be found.
          * @param range       Address range to be found.
          * @param interval    Time interval to be found.
          * @param visitor     Visitor invoked for each mapping contained

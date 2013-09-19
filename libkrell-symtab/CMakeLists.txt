@@ -38,7 +38,7 @@ endif()
 
 add_library(krell-symtab SHARED
     AddressBitmap.hpp AddressBitmap.cpp
-    KrellInstitute/SymbolTable/AddressSpace.hpp AddressSpace.cpp
+    KrellInstitute/SymbolTable/AddressSpaces.hpp AddressSpaces.cpp
     KrellInstitute/SymbolTable/Function.hpp Function.cpp
     KrellInstitute/SymbolTable/FunctionVisitor.hpp
     KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
@@ -46,6 +46,7 @@ add_library(krell-symtab SHARED
     KrellInstitute/SymbolTable/MappingVisitor.hpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
     KrellInstitute/SymbolTable/StatementVisitor.hpp
+    KrellInstitute/SymbolTable/ThreadVisitor.hpp
     SymbolTable.hpp SymbolTable.cpp
     )
 

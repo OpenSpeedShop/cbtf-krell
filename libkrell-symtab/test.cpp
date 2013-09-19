@@ -27,7 +27,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
-#include <KrellInstitute/SymbolTable/AddressSpace.hpp>
+#include <KrellInstitute/SymbolTable/AddressSpaces.hpp>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
@@ -57,7 +57,8 @@ namespace {
 
     /** Templated visitor for accumulating mappings. */
     bool accumulateMappings(
-        const LinkedObject& x,
+        const ThreadName& thread,
+        const LinkedObject& linked_object,
         const AddressRange& range,
         const TimeInterval& interval,
         std::map<LinkedObject, std::vector<boost::uint64_t> >& set
@@ -68,8 +69,8 @@ namespace {
             (static_cast<boost::uint64_t>(range.end()))
             (static_cast<boost::uint64_t>(interval.begin()))
             (static_cast<boost::uint64_t>(interval.end()));
-
-        set.insert(std::make_pair(x, where));
+        
+        set.insert(std::make_pair(linked_object, where));
         return true;
     }
     
@@ -142,22 +143,26 @@ BOOST_AUTO_TEST_CASE(TestAddressBitmap)
  */
 BOOST_AUTO_TEST_CASE(TestAddressSpace)
 {
-    LinkedObject linked_object1(FileName("/path/to/nonexistent/executable"));
+    ThreadName thread1("nonexistenthost.com", 27);
+    ThreadName thread2("anothernonexistenthost.com", 13);
+
+    LinkedObject linked_object1(FileName("/path/to/nonexistent/executable/1"));
     LinkedObject linked_object2(FileName("/path/to/nonexistent/dso/1"));
     LinkedObject linked_object3(FileName("/path/to/nonexistent/dso/2"));
     LinkedObject linked_object4(FileName("/path/to/nonexistent/dso/3"));
+    LinkedObject linked_object5(FileName("/path/to/nonexistent/executable/2"));
 
-    AddressSpace address_space;
+    AddressSpaces address_spaces;
 
     std::set<LinkedObject> linked_objects;
-    address_space.visitLinkedObjects(
+    address_spaces.visitLinkedObjects(
         boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
         );
     BOOST_CHECK(linked_objects.empty());
 
     std::map<LinkedObject, std::vector<boost::uint64_t> > mappings;
-    address_space.visitMappings(
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+    address_spaces.visitMappings(
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK(mappings.empty());
 
@@ -165,11 +170,12 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     // The following linked objects (along with their corresponding address
     // ranges and time intervals) are added to this address space for the test:
     //
-    //                      AddressRange  TimeInterval
-    //     linked_object1:    [  0,   7]    [ TB,  TE]
-    //     linked_object2:    [ 13,  27]    [ TB,   7]
-    //     linked_object3:    [ 13, 113]    [ 13,  27]
-    //     linked_object4:    [213, 227]    [ 13,  TE]
+    //                               AddressRange  TimeInterval
+    //     thread1, linked_object1:    [  0,   7]    [ TB,  TE]
+    //     thread1, linked_object2:    [ 13,  27]    [ TB,   7]
+    //     thread1, linked_object3:    [ 13, 113]    [ 13,  27]
+    //     thread1, linked_object4:    [213, 227]    [ 13,  TE]
+    //     thread2, linked_object5:    [  0,   7]    [ 13,  27]
     //
     // where "TB" is the earliest possible time, and "TE" is the latest possible
     // time.
@@ -179,18 +185,18 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     // and visitMappings queries.
     //
     
-    address_space.loadLinkedObject(
-        linked_object1, true, AddressRange(0, 7)
+    address_spaces.loadLinkedObject(
+        thread1, linked_object1, AddressRange(0, 7)
         );
-    address_space.loadLinkedObject(
-        linked_object2, false, AddressRange(13, 27)
+    address_spaces.loadLinkedObject(
+        thread1, linked_object2, AddressRange(13, 27)
         );
-    address_space.loadLinkedObject(
-        linked_object3, false, AddressRange(13, 113), Time(13)
+    address_spaces.loadLinkedObject(
+        thread1, linked_object3, AddressRange(13, 113), Time(13)
         );
-
+    
     linked_objects.clear();
-    address_space.visitLinkedObjects(
+    address_spaces.visitLinkedObjects(
         boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
         );
     BOOST_CHECK_EQUAL(linked_objects.size(), 3);
@@ -198,46 +204,50 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     BOOST_CHECK(linked_objects.find(linked_object2) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object3) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object4) == linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object5) == linked_objects.end());
     
     mappings.clear();
-    address_space.visitMappings(
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+    address_spaces.visitMappings(
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK_EQUAL(mappings.size(), 3);
     BOOST_CHECK(mappings.find(linked_object1) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) == mappings.end());
 
     std::vector<boost::uint64_t> where = mappings.find(linked_object3)->second;
     BOOST_CHECK_EQUAL(where[0], 13);
     BOOST_CHECK_EQUAL(where[1], 113);
     BOOST_CHECK_EQUAL(where[2], 13);
     BOOST_CHECK_EQUAL(where[3], Time::TheEnd());
-
+    
     mappings.clear();
-    address_space.visitMappings(
+    address_spaces.visitMappings(
+        thread1,
         AddressRange(14, 27),
         TimeInterval(Time::TheBeginning(), Time::TheEnd()),
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK_EQUAL(mappings.size(), 2);
     BOOST_CHECK(mappings.find(linked_object1) == mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) == mappings.end());
 
     //
     // Test unloading linked objects and the AddressSpace::visitLinkedObjects
     // and visitMappings queries.
     //
 
-    address_space.unloadLinkedObject(linked_object1);
-    address_space.unloadLinkedObject(linked_object2, Time(7));
-    address_space.unloadLinkedObject(linked_object3, Time(27));
-
+    address_spaces.unloadLinkedObject(thread1, linked_object1);
+    address_spaces.unloadLinkedObject(thread1, linked_object2, Time(7));
+    address_spaces.unloadLinkedObject(thread1, linked_object3, Time(27));
+    
     linked_objects.clear();
-    address_space.visitLinkedObjects(
+    address_spaces.visitLinkedObjects(
         boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
         );
     BOOST_CHECK_EQUAL(linked_objects.size(), 3);
@@ -245,16 +255,18 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     BOOST_CHECK(linked_objects.find(linked_object2) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object3) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object4) == linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object5) == linked_objects.end());
 
     mappings.clear();
-    address_space.visitMappings(
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+    address_spaces.visitMappings(
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK_EQUAL(mappings.size(), 3);
     BOOST_CHECK(mappings.find(linked_object1) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) == mappings.end());
 
     where = mappings.find(linked_object3)->second;
     BOOST_CHECK_EQUAL(where[0], 13);
@@ -263,36 +275,111 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     BOOST_CHECK_EQUAL(where[3], 27);
 
     mappings.clear();
-    address_space.visitMappings(
+    address_spaces.visitMappings(
+        thread1,
         AddressRange(14, 27),
         TimeInterval(Time::TheBeginning(), 7),
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK_EQUAL(mappings.size(), 1);
     BOOST_CHECK(mappings.find(linked_object1) == mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) == mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) == mappings.end());
 
+    //
+    // Test the application of CBTF_Protocol_LinkedObjectGroup messages.
+    //
+
+    CBTF_Protocol_LinkedObjectGroup group_message;
+
+    group_message.thread = thread2;
+
+    group_message.linkedobjects.linkedobjects_len = 1;
+    group_message.linkedobjects.linkedobjects_val = 
+        reinterpret_cast<CBTF_Protocol_LinkedObject*>(
+            malloc(sizeof(CBTF_Protocol_LinkedObject))
+            );
+    group_message.linkedobjects.linkedobjects_val[0].linked_object =
+        linked_object5.getFile();
+    group_message.linkedobjects.linkedobjects_val[0].range.begin = 0;
+    group_message.linkedobjects.linkedobjects_val[0].range.end = 7 + 1;
+    group_message.linkedobjects.linkedobjects_val[0].time_begin = 13;
+    group_message.linkedobjects.linkedobjects_val[0].time_end = 27 + 1;
+
+    address_spaces.applyMessage(group_message);
+
+    linked_objects.clear();
+    address_spaces.visitLinkedObjects(
+        boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
+        );
+    for (std::set<LinkedObject>::const_iterator
+             i = linked_objects.begin(); i != linked_objects.end(); ++i)
+    {
+        if (i->getFile() == linked_object5.getFile())
+        {
+            linked_object5 = *i;
+        }
+    }
+    BOOST_CHECK_EQUAL(linked_objects.size(), 4);
+    BOOST_CHECK(linked_objects.find(linked_object1) != linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object2) != linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object3) != linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object4) == linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object5) != linked_objects.end());
+
+    mappings.clear();
+    address_spaces.visitMappings(
+        thread2,
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
+        );
+    BOOST_CHECK_EQUAL(mappings.size(), 1);
+    BOOST_CHECK(mappings.find(linked_object1) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object2) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object3) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object4) == mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) != mappings.end());
+
+    where = mappings.find(linked_object5)->second;
+    BOOST_CHECK_EQUAL(where[0], 0);
+    BOOST_CHECK_EQUAL(where[1], 7);
+    BOOST_CHECK_EQUAL(where[2], 13);
+    BOOST_CHECK_EQUAL(where[3], 27);
+    
     //
     // Test the application of CBTF_Protocol_[Unl|L]oadedLinkedObject messages.
     //
 
     CBTF_Protocol_LoadedLinkedObject loaded_message;
+    
+    loaded_message.threads.names.names_len = 1;
+    loaded_message.threads.names.names_val = 
+        reinterpret_cast<CBTF_Protocol_ThreadName*>(
+            malloc(sizeof(CBTF_Protocol_ThreadName))
+            );
+    loaded_message.threads.names.names_val[0] = thread1;
     loaded_message.time = 13;
     loaded_message.range.begin = 213;
     loaded_message.range.end = 227 + 1;
     loaded_message.linked_object = linked_object4.getFile();
     
     CBTF_Protocol_UnloadedLinkedObject unloaded_message;
+
+    unloaded_message.threads.names.names_len = 1;
+    unloaded_message.threads.names.names_val = 
+        reinterpret_cast<CBTF_Protocol_ThreadName*>(
+            malloc(sizeof(CBTF_Protocol_ThreadName))
+            );
+    unloaded_message.threads.names.names_val[0] = thread1;
     unloaded_message.time = Time::TheEnd();
     unloaded_message.linked_object = linked_object4.getFile();
     
-    address_space.applyMessage(loaded_message);
-    address_space.applyMessage(unloaded_message);
+    address_spaces.applyMessage(loaded_message);
+    address_spaces.applyMessage(unloaded_message);
 
     linked_objects.clear();
-    address_space.visitLinkedObjects(
+    address_spaces.visitLinkedObjects(
         boost::bind(accumulate<LinkedObject>, _1, boost::ref(linked_objects))
         );
     for (std::set<LinkedObject>::const_iterator
@@ -303,21 +390,23 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
             linked_object4 = *i;
         }
     }
-    BOOST_CHECK_EQUAL(linked_objects.size(), 4);
+    BOOST_CHECK_EQUAL(linked_objects.size(), 5);
     BOOST_CHECK(linked_objects.find(linked_object1) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object2) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object3) != linked_objects.end());
     BOOST_CHECK(linked_objects.find(linked_object4) != linked_objects.end());
+    BOOST_CHECK(linked_objects.find(linked_object5) != linked_objects.end());
 
     mappings.clear();
-    address_space.visitMappings(
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+    address_spaces.visitMappings(
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
-    BOOST_CHECK_EQUAL(mappings.size(), 4);
+    BOOST_CHECK_EQUAL(mappings.size(), 5);
     BOOST_CHECK(mappings.find(linked_object1) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) != mappings.end());
+    BOOST_CHECK(mappings.find(linked_object5) != mappings.end());
 
     where = mappings.find(linked_object4)->second;
     BOOST_CHECK_EQUAL(where[0], 213);
@@ -326,28 +415,18 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
     BOOST_CHECK_EQUAL(where[3], Time::TheEnd());
 
     mappings.clear();
-    address_space.visitMappings(
+    address_spaces.visitMappings(
+        thread1,
         AddressRange(Address::TheLowest(), Address::TheHighest()),
         TimeInterval(13, 27),
-        boost::bind(accumulateMappings, _1, _2, _3, boost::ref(mappings))
+        boost::bind(accumulateMappings, _1, _2, _3, _4, boost::ref(mappings))
         );
     BOOST_CHECK_EQUAL(mappings.size(), 3);
     BOOST_CHECK(mappings.find(linked_object1) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object2) == mappings.end());
     BOOST_CHECK(mappings.find(linked_object3) != mappings.end());
     BOOST_CHECK(mappings.find(linked_object4) != mappings.end());
-
-    //
-    // Test the conversion of AddressSpace to/from 
-    // CBTF_Protocol_LinkedObjectGroup.
-    //
-
-    BOOST_CHECK(equivalent(
-        AddressSpace(
-            static_cast<CBTF_Protocol_LinkedObjectGroup>(address_space)
-            ),
-        address_space
-        ));
+    BOOST_CHECK(mappings.find(linked_object5) == mappings.end());
 }
 
 

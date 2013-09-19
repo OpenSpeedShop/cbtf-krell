@@ -44,6 +44,7 @@ add_library(krell-symtab SHARED
     KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
     KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp
     KrellInstitute/SymbolTable/MappingVisitor.hpp
+    KrellInstitute/SymbolTable/Resolver.hpp Resolver.cpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
     KrellInstitute/SymbolTable/StatementVisitor.hpp
     KrellInstitute/SymbolTable/ThreadVisitor.hpp

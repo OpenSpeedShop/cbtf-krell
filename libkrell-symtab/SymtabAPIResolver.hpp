@@ -21,12 +21,15 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
+#include <dyninst/Symtab.h>
 #include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Base/ThreadName.hpp>
 #include <KrellInstitute/Base/TimeInterval.hpp>
 #include <KrellInstitute/SymbolTable/AddressSpaces.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
 #include <KrellInstitute/SymbolTable/Resolver.hpp>
+#include <map>
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
@@ -73,10 +76,14 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
         
+        /** Open the symbol table for the given linked object. */
+        Dyninst::SymtabAPI::Symtab* open(const LinkedObject& linked_object);
+        
         /** Address spaces for which to resolve addresses. */
         AddressSpaces& dm_spaces;
 
-        // ...
+        /** Indexed list of symbol tables opened by this resolver. */
+        std::map<Base::FileName, Dyninst::SymtabAPI::Symtab*> dm_symtabs;
         
     }; // class SymtabAPIResolver
        

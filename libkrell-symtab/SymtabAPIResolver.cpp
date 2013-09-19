@@ -18,7 +18,12 @@
 
 /** @file Definition of the SymtabAPIResolver class. */
 
+#include <boost/format.hpp>
+#include <stdexcept>
+
 #include "SymtabAPIResolver.hpp"
+
+using namespace Dyninst::SymtabAPI;
 
 using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
@@ -29,18 +34,25 @@ using namespace KrellInstitute::SymbolTable::Impl;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 SymtabAPIResolver::SymtabAPIResolver(AddressSpaces& spaces) :
-    dm_spaces(spaces)
+    dm_spaces(spaces),
+    dm_symtabs()
 {
-    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
+// Close all of the symbol tables opened by this resolver. SymtabAPI keeps a
+// reference count for each symbol table internally, and will free the actual
+// pointer when appropriate.
 //------------------------------------------------------------------------------
 SymtabAPIResolver::~SymtabAPIResolver()
 {
-    // ...
+    for (std::map<FileName, Symtab*>::iterator
+             i = dm_symtabs.begin(), iEnd = dm_symtabs.end(); i != iEnd; ++i)
+    {
+        Symtab::closeSymtab(i->second);
+    }
 }
 
 
@@ -61,4 +73,57 @@ void SymtabAPIResolver::operator()(const ThreadName& thread,
                                    const TimeInterval& interval)
 {
     // ...
+}
+
+
+
+//------------------------------------------------------------------------------
+// First search our own indexed list of symbol tables for the name of the given
+// linked object's file. If it isn't found there check whether SymtabAPI has it
+// cached. Finally, if not, open the file using SymtabAPI after first verifying
+// that the file hasn't been modified.
+//------------------------------------------------------------------------------
+Symtab* SymtabAPIResolver::open(const LinkedObject& linked_object)
+{
+    FileName name = linked_object.getFile();
+
+    std::map<FileName, Symtab*>::iterator i = dm_symtabs.find(name);
+    
+    if (i == dm_symtabs.end())
+    {
+        if (name != FileName(name.path()))
+        {
+            throw std::runtime_error(
+                boost::str(
+                    boost::format("The given linked object (%1%) has changed "
+                                  "recently and using it to resolve symbols "
+                                  "may cause incorrect data.") % 
+                    name.path()
+                    ).c_str()
+                );
+        }
+        
+        Symtab* symtab = Symtab::findOpenSymtab(name.path().string());
+        
+        if (symtab == NULL)
+        {
+            Symtab::openFile(symtab, name.path().string());
+            
+            if (symtab == NULL)
+            {
+                throw std::runtime_error(
+                    boost::str(
+                        boost::format("The given linked object (%1%) could not "
+                                      "be opened by SymtabAPI. ") % name.path()
+                        ).c_str()
+                    );
+            }
+            
+            symtab->setTruncateLinePaths(false);
+        }
+        
+        i = dm_symtabs.insert(std::make_pair(name, symtab)).first;
+    }
+    
+    return i->second;
 }

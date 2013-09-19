@@ -64,7 +64,7 @@ target_link_libraries(krell-symtab
     ${Boost_SYSTEM_LIBRARY}
     ${CBTF_MESSAGE_LIBRARIES}
     ${KRELL_BASE_LIBRARIES}
-    ${SYMTABAPI_LIBRARIES}
+    ${SymtabAPI_LIBRARIES}
     )
 
 set_target_properties(krell-symtab PROPERTIES VERSION 0.0.0)

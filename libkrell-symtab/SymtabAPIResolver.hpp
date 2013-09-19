@@ -16,56 +16,48 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Declaration of the Resolver class. */
+/** @file Declaration of the SymtabAPIResolver class. */
 
 #pragma once
 
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Base/ThreadName.hpp>
 #include <KrellInstitute/Base/TimeInterval.hpp>
 #include <KrellInstitute/SymbolTable/AddressSpaces.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Resolver.hpp>
 
-namespace KrellInstitute { namespace SymbolTable {
+namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     /**
-     * Abstract base class for a symbol table resolver that accepts addresses
-     * and adds the corresponding source code function(s), statement(s), etc.
-     * to the appropriate linked object.
+     * Concrete implementation of the Resolver abstract base class that uses
+     * SymtabAPI to resolve addresses.
+     *
+     * @sa http://www.dyninst.org/symtab
      */
-    class Resolver :
-        private boost::noncopyable
+    class SymtabAPIResolver :
+        public Resolver
     {
 
     public:
         
-        /** Type of handle (smart pointer) to a resolver. */
-        typedef boost::shared_ptr<Resolver> Handle;
-        
         /**
-         * Instantiate a resolver for the given address spaces.
+         * Construct a SymtabAPI resolver for the given address spaces.
          *
          * @param spaces    Address spaces for which to resolve addresses.
-         *
-         * @throw std::runtime_error    There are no resolvers available.
-         * 
-         * @note    Because the resolver keeps a reference (rather than a 
-         *          handle) to the address spaces, the caller must insure
-         *          the resolver is released before the address spaces.
          */
-        static Handle instantiate(AddressSpaces& spaces);
+        SymtabAPIResolver(AddressSpaces& spaces);
 
         /** Destructor. */
-        virtual ~Resolver();
-        
+        virtual ~SymtabAPIResolver();
+                
         /**
          * Resolve all addresses in the given linked object.
          *
          * @param linked_object    Linked object to be resolved.
          */
-        virtual void operator()(const LinkedObject& linked_object) = 0;
+        virtual void operator()(const LinkedObject& linked_object);
         
         /**
          * Resolve all addresses in the specified address range for the given
@@ -77,8 +69,15 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         virtual void operator()(const Base::ThreadName& thread,
                                 const Base::AddressRange& range,
-                                const Base::TimeInterval& interval) = 0;
+                                const Base::TimeInterval& interval);
+
+    private:
         
-    }; // class Resolver
+        /** Address spaces for which to resolve addresses. */
+        AddressSpaces& dm_spaces;
+
+        // ...
+        
+    }; // class SymtabAPIResolver
        
-} } // namespace KrellInstitute::SymbolTable
+} } } // namespace KrellInstitute::SymbolTable::Impl

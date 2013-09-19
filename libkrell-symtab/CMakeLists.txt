@@ -20,11 +20,14 @@ cmake_minimum_required(VERSION 2.8.0)
 
 project(Krell-SymbolTable)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+
 find_package(Boost 1.39.0 REQUIRED 
     COMPONENTS filesystem system unit_test_framework
     )
 find_package(CBTF-Messages REQUIRED)
 find_package(Krell-Base REQUIRED)
+find_package(SymtabAPI)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64*")
     set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64)
@@ -34,6 +37,10 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc*")
 elseif(EXISTS /usr/lib64)
     set(LIB_SUFFIX 64)
     set(CMAKE_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+endif()
+
+if(SYMTABAPI_FOUND)
+    set(SYMTABAPI_SOURCES SymtabAPIResolver.hpp SymtabAPIResolver.cpp)
 endif()
 
 add_library(krell-symtab SHARED
@@ -49,6 +56,7 @@ add_library(krell-symtab SHARED
     KrellInstitute/SymbolTable/StatementVisitor.hpp
     KrellInstitute/SymbolTable/ThreadVisitor.hpp
     SymbolTable.hpp SymbolTable.cpp
+    ${SYMTABAPI_SOURCES}
     )
 
 target_link_libraries(krell-symtab
@@ -56,6 +64,7 @@ target_link_libraries(krell-symtab
     ${Boost_SYSTEM_LIBRARY}
     ${CBTF_MESSAGE_LIBRARIES}
     ${KRELL_BASE_LIBRARIES}
+    ${SYMTABAPI_LIBRARIES}
     )
 
 set_target_properties(krell-symtab PROPERTIES VERSION 0.0.0)
@@ -74,6 +83,11 @@ include_directories(
     ${KRELL_BASE_INCLUDE_DIRS}
     )
 
+if(SYMTABAPI_FOUND)
+    include_directories(${SymtabAPI_INCLUDE_DIRS})
+    add_definitions(-DSYMTABAPI_FOUND)
+endif()
+
 install(DIRECTORY KrellInstitute DESTINATION include)
 
 install(TARGETS krell-symtab
@@ -82,4 +96,7 @@ install(TARGETS krell-symtab
     ARCHIVE DESTINATION lib${LIB_SUFFIX}
     )
 
-install(FILES FindKrell-Symtab.cmake DESTINATION share/KrellInstitute/cmake)
+install(
+    FILES FindKrell-Symtab.cmake FindSymtabAPI.cmake
+    DESTINATION share/KrellInstitute/cmake
+    )

@@ -16,36 +16,49 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Definition of the Resolver class. */
+/** @file Definition of the SymtabAPIResolver class. */
 
-#include <KrellInstitute/SymbolTable/Resolver.hpp>
-#include <stdexcept>
-
-#if defined(SYMTABAPI_FOUND)
 #include "SymtabAPIResolver.hpp"
-#endif
 
+using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
 //------------------------------------------------------------------------------
-// Use the SymtabAPI resolver if it is available, otherwise throw an exception.
 //------------------------------------------------------------------------------
-Resolver::Handle Resolver::instantiate(AddressSpaces& spaces)
+SymtabAPIResolver::SymtabAPIResolver(AddressSpaces& spaces) :
+    dm_spaces(spaces)
 {
-#if defined(SYMTABAPI_FOUND)
-    return Handle(new SymtabAPIResolver(spaces));
-#else
-    throw std::runtime_error("There are no resolvers available.");
-#endif    
+    // ...
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Resolver::~Resolver()
+SymtabAPIResolver::~SymtabAPIResolver()
 {
+    // ...
+}
+
+
+                
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymtabAPIResolver::operator()(const LinkedObject& linked_object)
+{
+    // ...
+}
+
+
+        
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymtabAPIResolver::operator()(const ThreadName& thread,
+                                   const AddressRange& range,
+                                   const TimeInterval& interval)
+{
+    // ...
 }

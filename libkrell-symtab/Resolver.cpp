@@ -18,6 +18,7 @@
 
 /** @file Definition of the Resolver class. */
 
+#include <KrellInstitute/Base/Raise.hpp>
 #include <KrellInstitute/SymbolTable/Resolver.hpp>
 #include <stdexcept>
 
@@ -38,7 +39,7 @@ Resolver::Handle Resolver::instantiate(AddressSpaces& spaces)
 #if defined(SYMTABAPI_FOUND)
     return Handle(new SymtabAPIResolver(spaces));
 #else
-    throw std::runtime_error("There are no resolvers available.");
+    raise<std::runtime_error>("There are no resolvers available.");
 #endif    
 }
 

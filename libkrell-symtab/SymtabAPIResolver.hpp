@@ -76,7 +76,17 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
     private:
         
-        /** Open the symbol table for the given linked object. */
+        /**
+         * Open the symbol table for the given linked object.
+         *
+         * @param linked_object    Linked object to be opened.
+         *
+         * @throw std::runtime_error    The given linked object could not be
+         *                              opened by SymtabAPI or has changed
+         *                              recently and using it to resolve
+         *                              symbols may result in the reporting
+         *                              of inaccurate performance data.
+         */
         Dyninst::SymtabAPI::Symtab* open(const LinkedObject& linked_object);
         
         /** Address spaces for which to resolve addresses. */

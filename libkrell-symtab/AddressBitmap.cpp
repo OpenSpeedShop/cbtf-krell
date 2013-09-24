@@ -20,8 +20,8 @@
 
 #include <algorithm>
 #include <boost/cstdint.hpp>
-#include <boost/format.hpp>
 #include <cstdlib>
+#include <KrellInstitute/Base/Raise.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -144,12 +144,9 @@ bool AddressBitmap::get(const Address& address) const
 {
     if (!dm_range.contains(address))
     {
-        throw std::invalid_argument(
-            boost::str(
-                boost::format("The given address (%1%) isn't contained "
-                              "within this bitmap's range (%2%).") %
-                address % dm_range
-                ).c_str()
+        raise<std::invalid_argument>(
+            "The given address (%1%) isn't contained within "
+            "this bitmap's range (%2%).", address, dm_range
             );
     }
     
@@ -164,12 +161,9 @@ void AddressBitmap::set(const Address& address, const bool& value)
 {
     if (!dm_range.contains(address))
     {
-        throw std::invalid_argument(
-            boost::str(
-                boost::format("The given address (%1%) isn't contained "
-                              "within this bitmap's range (%2%).") %
-                address % dm_range
-                ).c_str()
+        raise<std::invalid_argument>(
+            "The given address (%1%) isn't contained within "
+            "this bitmap's range (%2%).", address, dm_range
             );
     }
     

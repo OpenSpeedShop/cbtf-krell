@@ -18,7 +18,7 @@
 
 /** @file Definition of the SymtabAPIResolver class. */
 
-#include <boost/format.hpp>
+#include <KrellInstitute/Base/Raise.hpp>
 #include <stdexcept>
 
 #include "SymtabAPIResolver.hpp"
@@ -28,6 +28,15 @@ using namespace Dyninst::SymtabAPI;
 using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
+
+
+
+/** Anonymous namespace hiding implementation details. */
+namespace {
+
+    // ...
+
+} // namespace <anonymous>
 
 
 
@@ -56,8 +65,9 @@ SymtabAPIResolver::~SymtabAPIResolver()
 }
 
 
-                
+
 //------------------------------------------------------------------------------
+// ...
 //------------------------------------------------------------------------------
 void SymtabAPIResolver::operator()(const LinkedObject& linked_object)
 {
@@ -65,8 +75,9 @@ void SymtabAPIResolver::operator()(const LinkedObject& linked_object)
 }
 
 
-        
+
 //------------------------------------------------------------------------------
+// ...
 //------------------------------------------------------------------------------
 void SymtabAPIResolver::operator()(const ThreadName& thread,
                                    const AddressRange& range,
@@ -92,14 +103,11 @@ Symtab* SymtabAPIResolver::open(const LinkedObject& linked_object)
     if (i == dm_symtabs.end())
     {
         if (name != FileName(name.path()))
-        {
-            throw std::runtime_error(
-                boost::str(
-                    boost::format("The given linked object (%1%) has changed "
-                                  "recently and using it to resolve symbols "
-                                  "may cause incorrect data.") % 
-                    name.path()
-                    ).c_str()
+        {            
+            raise<std::runtime_error>(
+                "The given linked object (%1%) has changed recently and "
+                "using it to resolve symbols may result in the reporting "
+                "of inaccurate performance data.", name.path()
                 );
         }
         
@@ -111,11 +119,9 @@ Symtab* SymtabAPIResolver::open(const LinkedObject& linked_object)
             
             if (symtab == NULL)
             {
-                throw std::runtime_error(
-                    boost::str(
-                        boost::format("The given linked object (%1%) could not "
-                                      "be opened by SymtabAPI. ") % name.path()
-                        ).c_str()
+                raise<std::runtime_error>(
+                    "The given linked object (%1%) could not "
+                    "be opened by SymtabAPI. ", name.path()
                     );
             }
             

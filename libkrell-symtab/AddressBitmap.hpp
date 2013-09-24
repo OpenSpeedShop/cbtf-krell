@@ -34,6 +34,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
     /**
      * A bitmap containing one bit per address within an address range. Used
      * to represent a non-contiguous, fragmented, portion of an address space.
+     *
+     * http://en.wikipedia.org/wiki/Bit_array
      */
     class AddressBitmap :
         public boost::equality_comparable<AddressBitmap>

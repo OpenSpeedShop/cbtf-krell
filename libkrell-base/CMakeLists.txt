@@ -40,6 +40,7 @@ add_library(krell-base SHARED
     KrellInstitute/Base/AddressRange.hpp
     KrellInstitute/Base/FileName.hpp FileName.cpp
     KrellInstitute/Base/Interval.hpp
+    KrellInstitute/Base/Raise.hpp
     KrellInstitute/Base/ThreadName.hpp ThreadName.cpp
     KrellInstitute/Base/Time.hpp
     KrellInstitute/Base/TimeInterval.hpp

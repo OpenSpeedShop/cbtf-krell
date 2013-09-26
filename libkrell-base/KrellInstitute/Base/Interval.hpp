@@ -113,7 +113,7 @@ namespace KrellInstitute { namespace Base {
             return (dm_begin == other.dm_begin) && (dm_end == other.dm_end);
         }
         
-        /** Union this interval with another one. */
+        /** Unite this interval with another one. */
         Interval& operator|=(const Interval& other)
         {
             if (!other.empty())

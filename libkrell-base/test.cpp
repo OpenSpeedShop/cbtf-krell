@@ -115,8 +115,18 @@ BOOST_AUTO_TEST_CASE(TestAddressRange)
     BOOST_CHECK((AddressRange(0, 7) & AddressRange(13, 27)).empty());
     BOOST_CHECK((AddressRange(13, 27) & AddressRange(0, 7)).empty());
     BOOST_CHECK((AddressRange(0, 13) & AddressRange()).empty());
+    //
+    // GCC 4.8.1 and 4.9.0 contain a bug that prevents them from compiling
+    // the following, perfectly legal, code. The only workaround is to not
+    // compile this particular check for those compilers.
+    //
+    // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=57532
+    //   
+#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL == 1) || \
+      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL == 0))    
     BOOST_CHECK((AddressRange() & AddressRange(0, 13)).empty());
-
+#endif
+    
     BOOST_CHECK_EQUAL(AddressRange(0, 13).width(), Address(14));
     BOOST_CHECK_EQUAL(AddressRange(13, 0).width(), Address(0));
 
@@ -422,8 +432,18 @@ BOOST_AUTO_TEST_CASE(TestTimeInterval)
     BOOST_CHECK((TimeInterval(0, 7) & TimeInterval(13, 27)).empty());
     BOOST_CHECK((TimeInterval(13, 27) & TimeInterval(0, 7)).empty());
     BOOST_CHECK((TimeInterval(0, 13) & TimeInterval()).empty());
+    //
+    // GCC 4.8.1 and 4.9.0 contain a bug that prevents them from compiling
+    // the following, perfectly legal, code. The only workaround is to not
+    // compile this particular check for those compilers.
+    //
+    // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=57532
+    //   
+#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL == 1) || \
+      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL == 0))    
     BOOST_CHECK((TimeInterval() & TimeInterval(0, 13)).empty());
-
+#endif
+    
     BOOST_CHECK_EQUAL(TimeInterval(0, 13).width(), Time(14));
     BOOST_CHECK_EQUAL(TimeInterval(13, 0).width(), Time(0));
 

@@ -768,16 +768,16 @@ void SymbolTable::visit(const AddressRange& range,
 {
     Function value(shared_from_this(), 0);
 
-    AddressRangeIndex::nth_index<1>::type::const_iterator
-        i = dm_functions_index.get<1>().lower_bound(range.begin());
+    AddressRangeIndex::nth_index<1>::type::const_iterator i = 
+        dm_functions_index.get<1>().lower_bound(range.begin());
     
     if (i != dm_functions_index.get<1>().begin())
     {
         --i;
     }
     
-    AddressRangeIndex::nth_index<1>::type::const_iterator
-        iEnd = dm_functions_index.get<1>().upper_bound(range.end());
+    AddressRangeIndex::nth_index<1>::type::const_iterator iEnd = 
+        dm_functions_index.get<1>().upper_bound(range.end());
     
     for (; !terminate && (i != iEnd); ++i)
     {
@@ -801,16 +801,16 @@ void SymbolTable::visit(const AddressRange& range,
 {
     Statement value(shared_from_this(), 0);
 
-    AddressRangeIndex::nth_index<1>::type::const_iterator
-        i = dm_statements_index.get<1>().lower_bound(range.begin());
+    AddressRangeIndex::nth_index<1>::type::const_iterator i =
+        dm_statements_index.get<1>().lower_bound(range.begin());
     
     if (i != dm_statements_index.get<1>().begin())
     {
         --i;
     }
     
-    AddressRangeIndex::nth_index<1>::type::const_iterator
-        iEnd = dm_statements_index.get<1>().upper_bound(range.end());
+    AddressRangeIndex::nth_index<1>::type::const_iterator iEnd =
+        dm_statements_index.get<1>().upper_bound(range.end());
     
     for (; !terminate && (i != iEnd); ++i)
     {

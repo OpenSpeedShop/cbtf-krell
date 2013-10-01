@@ -112,8 +112,8 @@ namespace KrellInstitute { namespace Base {
         {
             return (dm_begin == other.dm_begin) && (dm_end == other.dm_end);
         }
-        
-        /** Unite this interval with another one. */
+
+        /** Unite another interval with this one. */
         Interval& operator|=(const Interval& other)
         {
             if (!other.empty())
@@ -136,8 +136,8 @@ namespace KrellInstitute { namespace Base {
             }
             return *this;
         }
-        
-        /** Intersect this interval with another one. */
+
+        /** Intersect another interval with this one. */
         Interval& operator&=(const Interval& other)
         {
             if (!empty())
@@ -191,14 +191,14 @@ namespace KrellInstitute { namespace Base {
             return (value >= dm_begin) && (value <= dm_end);
         }
         
-        /** Does this interval contain another interval? */
+        /** Does this interval contain another one? */
         bool contains(const Interval& other) const
         {
             return !other.empty() &&
                 contains(other.dm_begin) && contains(other.dm_end);
         }
         
-        /** Does this interval intersect another interval? */
+        /** Does this interval intersect another one? */
         bool intersects(const Interval& other) const
         {
             return !(*this & other).empty();

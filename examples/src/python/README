@@ -1,0 +1,9 @@
+simple demos of python code running in cbtf components.
+boost::python
+numpy
+running python scripts on cbtf backends
+
+daemonTool --tool "fullpath to xml tool"  --toolargs "script.py optional args"
+
+eg.
+daemonTool --tool /home/user/cbtf-krell-SF/cbtf-krell/examples/src/python/pyexample.xml --toolargs /home/user/cbtf-krell-SF/cbtf-krell/examples/src/python/numpyMxM.py

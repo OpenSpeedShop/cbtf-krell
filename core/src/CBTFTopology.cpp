@@ -74,18 +74,34 @@ CBTFTopology::~CBTFTopology()
 std::string extract_ranges(std::string nodeListNames) {
   boost::char_separator<char> sep(",");
   boost::tokenizer<boost::char_separator<char> > btokens(nodeListNames, sep);
+  std::set< int64_t> numericNames;
+  std::set< int64_t>:: iterator setit;
   std::string S = "";
   std::string outputList = "";
   int current, count, next ;
   bool first_time = true;
 
-//  BOOST_FOREACH (const std::string& t, btokens) {
+  // Get the numeric values into a set which will be automatically sorted
   for ( boost::tokenizer<boost::char_separator<char> >::iterator it = btokens.begin(); it != btokens.end(); ++it) {
+      current = boost::lexical_cast<int>(*it);
+      numericNames.insert(current);
+  }
+
+  // Print out the numeric values on start-up when debug is turned on
+  if (getenv("OPENSS_DEBUG_DETAILED_STARTUP") != NULL || getenv("CBTF_DEBUG_DETAILED_STARTUP") != NULL) {
+    std::cerr << "DEBUG: CBTFTopology, numericNames.size() " << numericNames.size() << std::endl;
+    for (setit=numericNames.begin(); setit != numericNames.end(); setit++) {
+       std::cerr << "DEBUG: CBTFTopology, numericNames value=" << *setit << std::endl;
+    }
+  }
+  
+  // Loop through the list of numeric values and create range sets when possible
+  for (setit=numericNames.begin(); setit != numericNames.end(); setit++) {
 
    if (first_time) {
 
-      S = *it;
-      current = boost::lexical_cast<int>(S);
+      current = *setit;
+
       // so bottom of loop reassignment does an effective no op.
       next = current;
       outputList.append(boost::lexical_cast<std::string>(current));
@@ -94,9 +110,7 @@ std::string extract_ranges(std::string nodeListNames) {
 
     } else {
   
-      S = *it;
-      //boost::replace_all(S," ","");
-      next = boost::lexical_cast<int>(S);
+      next = *setit;
   
       if (next == current+1) {
         ++count;
@@ -567,11 +581,11 @@ void CBTFTopology::parsePBSEnv()
 	    dm_num_app_nodes -= numcpnodes;
 
         if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
-	   std::cerr << "dm_pbs_num_nodes " << dm_pbs_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	   std::cerr << "needed_cps " << needed_cps << std::endl;
-	   std::cerr << "numcpnodes " << numcpnodes << std::endl;
-	   std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	   std::cerr << "fanout " << dm_top_fanout << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, dm_pbs_num_nodes " << dm_pbs_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, needed_cps " << needed_cps << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, fanout " << dm_top_fanout << std::endl;
         }
 
 	std::list<std::string>::iterator NodeListIter;
@@ -715,11 +729,11 @@ void CBTFTopology::parseSlurmEnv()
 	    dm_num_app_nodes -= numcpnodes;
 
         if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
- 	   std::cerr << "dm_slurm_num_nodes " << dm_slurm_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	   std::cerr << "needed_cps " << needed_cps << std::endl;
-	   std::cerr << "numcpnodes " << numcpnodes << std::endl;
-	   std::cerr << "dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	   std::cerr << "fanout " << dm_top_fanout << std::endl;
+ 	   std::cerr << "DEBUG: CBTFTopology, dm_slurm_num_nodes " << dm_slurm_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, needed_cps " << needed_cps << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "DEBUG: CBTFTopology, fanout " << dm_top_fanout << std::endl;
         }
 
 	std::list<std::string>::iterator NodeListIter;

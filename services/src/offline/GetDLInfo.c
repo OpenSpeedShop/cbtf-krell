@@ -251,7 +251,7 @@ static void lc(ElfW(Addr) base_address, const char *name, mem_region *regions,
 #endif
    
     if (is_load) {
-	offline_record_dlopen(name, regions[0].mem_addr,
+	cbtf_offline_record_dlopen(name, regions[0].mem_addr,
 			      regions[0].mem_addr + regions[0].mem_size,
 			      b_time, e_time);
     } else {
@@ -324,11 +324,11 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	    (strncmp(path, mappedpath, strlen(path)) == 0) ) {
 #ifndef NDEBUG
 	    if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
-		fprintf(stderr,"CBTF_GetDLInfo (offline_record_dlopen) DLOPEN RECORD: %s [%08lx, %08lx]\n",
+		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dlopen) DLOPEN RECORD: %s [%08lx, %08lx]\n",
 		    mappedpath, begin, end);
 	    }
 #endif
-	    offline_record_dlopen(mappedpath, begin, end, b_time, e_time);
+	    cbtf_offline_record_dlopen(mappedpath, begin, end, b_time, e_time);
 	    break;
 	}
 

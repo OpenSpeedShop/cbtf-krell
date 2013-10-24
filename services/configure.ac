@@ -143,6 +143,7 @@ AC_CHECK_HEADER(pthread.h, [ AC_CHECK_LIB(pthread, pthread_create, [
     AC_MSG_FAILURE([cannot locate POSIX thread library and/or headers.])
 ]) ])
 
+
 ################################################################################
 # Check for TLS option, default to implicit
 ################################################################################
@@ -245,31 +246,125 @@ esac
 
 AC_SUBST(BUILD_TARGETED)
 AC_SUBST(TARGET_OS)
-################################################################################
-# End Target O/S Specification
-################################################################################
 
 ################################################################################
-# build runtime collector software only
+# Runtime Target PTHREADS Availability Specification (libmonitor callbacks)
 ################################################################################
 #
-# Option: 
+# Option: --enable-target-pthreads=yes
+# Requires libpthread.
 #
-AC_MSG_CHECKING(for building runtime collectors only)
-AC_ARG_ENABLE([runtime-only],
-    [AS_HELP_STRING([--enable-runtime-only],
-        [Enable support building just the runtime collectors with no client [default=no]])],
-    [], [enable_runtime_only=no])
+AC_MSG_CHECKING(for target pthread support specification)
+AC_ARG_ENABLE([target-pthreads],
+    [AS_HELP_STRING([--enable-target-pthreads],
+        [Enable support on target architecture for pthreads [default=yes]])],
+    [], [enable_target_pthreads=yes])
 
-if test "x$enable_runtime_only" = xyes ; then
-    AM_CONDITIONAL(BUILD_RUNTIME, true)
-    AC_DEFINE(BUILD_RUNTIME, 1, [Define to 1 if you do want only collector runtime support built.])
+AM_CONDITIONAL([HAVE_TARGET_TEST_POSIX_THREADS],
+    [test x$enable_target_pthreads = xyes])
+
+if test "x$enable_target_pthreads" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_TARGET_POSIX_THREADS], [1],
+        [Enable support on the target architecture for pthreads.])
 else
-    AM_CONDITIONAL(BUILD_RUNTIME, false)
-    AC_DEFINE(BUILD_RUNTIME, 0, [Define to 1 if you do not want only collector runtime support built.])
+    AC_MSG_RESULT(no)
 fi
-AC_SUBST(BUILD_RUNTIME)
 
+AC_SUBST(HAVE_TARGET_POSIX_THREADS)
+
+################################################################################
+# Runtime Target DLOPEN Availability Specification (libmonitor callbacks)
+################################################################################
+#
+# Option: --enable-target_dlopen=yes
+#
+AC_MSG_CHECKING(for target dlopen support specification)
+AC_ARG_ENABLE([target_dlopen],
+    [AS_HELP_STRING([--enable-target_dlopen],
+        [include support on the target architecture for dlopen [default=yes]])],
+    [], [enable_target_dlopen=yes])
+
+if test "x$enable_target_dlopen" = xyes ; then
+    AC_DEFINE([HAVE_TARGET_DLOPEN], [1],
+        [Enable support on the target architecture for dlopen.])
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_DLOPEN)
+
+################################################################################
+# Runtime Target SIGNALS Availability Specification
+################################################################################
+#
+# Option: --enable-target-signals=yes
+#
+AC_MSG_CHECKING(for target signal support specification)
+AC_ARG_ENABLE([target-signals],
+    [AS_HELP_STRING([--enable-target-signals],
+        [Enable support on target architecture for signals [default=yes]])],
+    [],
+    [enable_target_signals=yes])
+
+if test "x$enable_target_signals" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AC_DEFINE([HAVE_TARGET_SIGNALS], [1],
+        [Enable support on target architecture for signals.])
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_SIGNALS)
+
+################################################################################
+# Runtime Target FORK Availability Specification (libmonitor callbacks)
+################################################################################
+#
+# Option: --enable-target-fork=yes
+# Requires fork and exec families.
+#
+AC_MSG_CHECKING(for target fork support specification)
+AC_ARG_ENABLE([target-fork],
+    [AS_HELP_STRING([--enable-target-fork],
+        [Enable support on target architecture for fork and exec families [default=yes]])],
+    [], [enable_target_fork=yes])
+
+if test "x$enable_target_fork" = xyes ; then
+    AC_DEFINE([HAVE_TARGET_FORK], [1],
+        [Enable support on target architecture for fork and exec families.])
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_SUBST(HAVE_TARGET_FORK)
+
+################################################################################
+# Runtime Target SHARED LIBRARY BUILD Specification (libmonitor callbacks)
+################################################################################
+#
+# Option: --enable-target-shared=yes
+#
+AC_MSG_CHECKING(for target shared libraries build specification)
+AC_ARG_ENABLE([target-shared],
+    [AS_HELP_STRING([--enable-target-shared],
+        [Enable support on target architecture for building shared libraries [default=no]])],
+    [enable_target_shared=yes],
+    [enable_target_shared=no])
+
+if test "x$enable_target_shared" = xyes ; then
+    AC_MSG_RESULT(yes)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, true)
+    AC_DEFINE([HAVE_TARGET_SHARED], [1],
+        [Enable support on target architecture for shared libraries.])
+else
+    AC_MSG_RESULT(no)
+    AM_CONDITIONAL(HAVE_TARGET_SHARED, false)
+fi
+
+AC_SUBST(HAVE_TARGET_SHARED)
 
 ################################################################################
 # Check for Additional Packages

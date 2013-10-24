@@ -62,7 +62,8 @@ extern void cbtf_offline_defer_sampling(const int flag);
 extern void cbtf_offline_pause_sampling();
 extern void cbtf_offline_resume_sampling();
 
-int CBTF_GetDLInfo(pid_t pid, char *path);
+//int CBTF_GetDLInfo(pid_t pid, char *path);
+int OpenSS_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time);
 void CBTF_InitializeParameters (CBTF_Protocol_Offline_Parameters *info);
 
 #endif /*_CBTF_Runtime_Offline_*/

@@ -693,7 +693,7 @@ if [ -z $CBTF_TARGET_ARCH ] || [ "$CBTF_TARGET_ARCH" == "cray-xk" ] || [ "$CBTF_
    fi
 
    if [ -z $CBTF_DYNINST_VERS ]; then
-      export CBTF_DYNINST_VERS=8.1
+      export CBTF_DYNINST_VERS=8.1.2
       if [ $CBTF_DEBUG_BUILD ]; then
         echo "[install-cbtf: CBTF_DYNINST_VERS was not set, setting CBTF_DYNINST_VERS=$CBTF_DYNINST_VERS"
       fi
@@ -830,7 +830,7 @@ else
    fi
 
    if [ -z $CBTF_TARGET_DYNINST_VERS ]; then
-      export CBTF_TARGET_DYNINST_VERS=8.1
+      export CBTF_TARGET_DYNINST_VERS=8.1.2
       if [ $CBTF_DEBUG_BUILD ]; then
         echo "[install-cbtf: CBTF_TARGET_DYNINST_VERS was not set, setting CBTF_DYNINST_VERS=$CBTF_TARGET_DYNINST_VERS"
       fi

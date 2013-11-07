@@ -261,7 +261,7 @@ else
    exit
 fi
 
-cd ..
+cd ../..
 
 echo "-------------------------------------------------------------"
 echo "-- BUILDING LIBKRELL-SYMTAB ---------------------------------"
@@ -296,6 +296,8 @@ else
    echo "CBTF LIBKRELL-SYMTAB FAILED TO BUILD - TERMINATING BUILD SCRIPT.  Please check for errors."
    exit
 fi
+
+cd ../..
 
 
 echo "-------------------------------------------------------------"

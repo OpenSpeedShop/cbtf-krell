@@ -67,7 +67,7 @@ target_link_libraries(krell-symtab
     ${SymtabAPI_LIBRARIES}
     )
 
-set_target_properties(krell-symtab PROPERTIES VERSION 0.0.0)
+set_target_properties(krell-symtab PROPERTIES VERSION 1.1.0)
 
 add_executable(test test.cpp)
 

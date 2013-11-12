@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2010 Krell Institute. All Rights Reserved.
+    
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+    
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
+    
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+<MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
+
+
+  <Type>pyexample</Type>
+  <Version>1.0.0</Version>
+
+
+  <Stream>
+      <Name>ValuesUpStream</Name>
+      <Tag>10000</Tag>
+  </Stream>
+
+  <Input>
+      <Name>ToolArgs</Name>
+      <To><Input>tool_args</Input></To>
+  </Input>
+
+  <Frontend>
+    <Network>
+      <Type>pyexample_Frontend</Type>
+      <Version>1.0.0</Version>
+
+      <SearchPath>/opt/cbtf-SF/share/KrellInstitute/contrib/Components</SearchPath>
+      <Plugin>pyExample.so</Plugin>
+
+      <!--
+      -->
+      <Component>
+        <Name>PyExampleView</Name>
+        <Type>PyExampleView</Type>
+      </Component>
+
+      <Component>
+        <Name>PyExampleFE</Name>
+        <Type>PyExampleFE</Type>
+      </Component>
+
+      <!--
+      -->
+
+      <Input>
+        <Name>tool_args</Name>
+        <To>
+          <Name>PyExampleFE</Name>
+          <Input>args</Input>
+        </To>
+      </Input>
+
+
+<!--
+     incoming values to view.
+-->
+      <Input>
+        <Name>ValuesIn</Name>
+        <To>
+          <Name>PyExampleView</Name>
+          <Input>ResultVecIn</Input>
+        </To>
+      </Input>
+
+<!--
+     handle arguments passed for this tool.
+-->
+
+      <Output>
+         <Name>Frontend_PyScriptNameOut</Name>
+         <From>
+             <Name>PyExampleFE</Name>
+             <Output>PyScriptNameOut</Output>
+         </From>
+      </Output>
+
+      <Connection>
+        <From>
+            <Name>PyExampleView</Name>
+            <Output>finished</Output>
+        </From>
+        <To>
+            <Name>PyExampleFE</Name>
+            <Input>TerminateIn</Input>
+        </To>
+      </Connection>
+
+    </Network>
+
+    <IncomingUpstream>
+      <Name>ValuesUpStream</Name>
+      <To><Input>ValuesIn</Input></To>
+    </IncomingUpstream>
+
+    <OutgoingDownstream>
+        <Name>PyScriptNameDownStream</Name>
+        <From><Output>Frontend_PyScriptNameOut</Output></From>
+    </OutgoingDownstream>
+
+  </Frontend>
+
+  <Backend>
+    <Network>
+      <Type>pyexample_Backend</Type>
+      <Version>1.0.0</Version>
+      <SearchPath>/opt/cbtf-SF/share/KrellInstitute/contrib/Components</SearchPath>
+      <Plugin>pyExample.so</Plugin>
+
+      <Component>
+        <Name>PyExampleBE</Name>
+        <Type>PyExampleBE</Type>
+      </Component>
+
+      <Input>
+        <Name>Backend_PyScriptNameIn</Name>
+        <To>
+          <Name>PyExampleBE</Name>
+          <Input>PyScriptNameIn</Input>
+        </To>
+      </Input>
+
+      <Output>
+        <Name>BackendValues_Output</Name>
+        <From>
+          <Name>PyExampleBE</Name>
+          <Output>PyExampleStrVecOut</Output>
+        </From>
+      </Output>
+
+    </Network>
+
+    <IncomingDownstream> 
+      <Name>PyScriptNameDownStream</Name>
+      <To><Input>Backend_PyScriptNameIn</Input></To>
+    </IncomingDownstream>
+    
+    <OutgoingUpstream>
+      <Name>ValuesUpStream</Name>
+      <From><Output>BackendValues_Output</Output></From>
+    </OutgoingUpstream>
+
+  </Backend>
+
+</MRNet>

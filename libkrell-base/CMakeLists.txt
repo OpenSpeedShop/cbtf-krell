@@ -53,7 +53,7 @@ target_link_libraries(krell-base
     ${CBTF_MESSAGE_LIBRARIES}
     )
 
-set_target_properties(krell-base PROPERTIES VERSION 0.0.0)
+set_target_properties(krell-base PROPERTIES VERSION 1.1.0)
 
 add_executable(test test.cpp)
 

@@ -253,35 +253,13 @@ AC_SUBST(TARGET_OS)
 ################################################################################
 
 ################################################################################
-# build runtime collector software only
-################################################################################
-#
-# Option: 
-#
-AC_MSG_CHECKING(for building runtime collectors only)
-AC_ARG_ENABLE([runtime-only],
-    [AS_HELP_STRING([--enable-runtime-only],
-        [Enable support building just the runtime collectors with no client [default=no]])],
-    [], [enable_runtime_only=no])
-
-if test "x$enable_runtime_only" = xyes ; then
-    AM_CONDITIONAL(BUILD_RUNTIME, true)
-    AC_DEFINE(BUILD_RUNTIME, 1, [Define to 1 if you do want only collector runtime support built.])
-else
-    AM_CONDITIONAL(BUILD_RUNTIME, false)
-    AC_DEFINE(BUILD_RUNTIME, 0, [Define to 1 if you do not want only collector runtime support built.])
-fi
-AC_SUBST(BUILD_RUNTIME)
-
-
-################################################################################
 # Check for Additional Packages
 ################################################################################
 
-AX_BINUTILS()
+#AX_BINUTILS()
 AX_LIBMONITOR()
-AX_LIBUNWIND()
-AX_PAPI()
+#AX_LIBUNWIND()
+#AX_PAPI()
 
 AX_BOOST_BASE([1.35.0])
 AX_BOOST_DATE_TIME()
@@ -289,10 +267,6 @@ AX_BOOST_SYSTEM()
 AX_BOOST_THREAD()
 AX_BOOST_FILESYSTEM()
 AX_BOOST_PROGRAM_OPTIONS()
-
-
-AX_CBTF()
-
 AX_BOOST_UNIT_TEST_FRAMEWORK()
 
 AX_XERCESC()
@@ -300,12 +274,17 @@ if test "$LIBXERCES_C_LIBS" = "-lxerces-c" ; then
   AX_XERCESC_VERSION()
 fi
 
+AX_CBTF()
 AX_CBTF_XML()
 
+AX_LIBELF()
 AX_LIBDWARF()
 AX_DYNINST()
 AX_MRNET()
 AX_MESSAGES()
+AX_PYTHON()
+AX_PYTHON_DEVEL([>= '2.3'])
+AX_BOOST_PYTHON()
 
 AC_CONFIG_FILES([
     Makefile
@@ -314,7 +293,7 @@ AC_CONFIG_FILES([
     src/Makefile
     src/daemonToolDemo/Makefile
     src/pcsamp/Makefile
-    test/Makefile
+    src/python/Makefile
 ])
 
 AC_OUTPUT

@@ -55,14 +55,17 @@
 #serial 15
 
 AC_DEFUN([AX_BOOST_PYTHON],
-[AC_REQUIRE([AX_PYTHON])dnl
+[AC_REQUIRE([AX_PYTHON_DEVEL])dnl
 AC_CACHE_CHECK(whether the Boost::Python library is available,
 ac_cv_boost_python,
 [AC_LANG_SAVE
  AC_LANG_CPLUSPLUS
  CPPFLAGS_SAVE="$CPPFLAGS"
- if test x$PYTHON_INCLUDE_DIR != x; then
-   CPPFLAGS="-I$PYTHON_INCLUDE_DIR $CPPFLAGS"
+ #if test x$PYTHON_INCLUDE_DIR != x; then
+ #  CPPFLAGS="-I$PYTHON_INCLUDE_DIR $CPPFLAGS"
+ #fi
+ if test x$PYTHON_CPPFLAGS != x; then
+   CPPFLAGS="$PYTHON_CPPFLAGS $CPPFLAGS"
  fi
  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include <boost/python/module.hpp>

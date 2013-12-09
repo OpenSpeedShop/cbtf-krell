@@ -255,6 +255,18 @@ do
             shift ; shift
             ;;
 
+      --with-python-root)
+            test "x$2" != x || die "missing argument: $*"
+            case "$2" in
+                /* )  dir="$2" ;;
+                * )   dir="`pwd`/$2" ;;
+            esac
+            test -d "$dir" || die "unable to find: $dir"
+            export CBTF_PYTHON_ROOT="${dir}"
+            shift ; shift
+            ;;
+
+
       --with-dyninst-root)
             test "x$2" != x || die "missing argument: $*"
             case "$2" in

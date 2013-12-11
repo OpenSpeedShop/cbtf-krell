@@ -28,6 +28,10 @@
 #include "config.h"
 #endif
 
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Mem.h"
 #include "KrellInstitute/Messages/Mem_data.h"
@@ -79,8 +83,9 @@ const unsigned OverheadFrameCount = 2;
 
 /** Number of event entries in the tracing buffer. */
 /** CBTF_mem_event is 32 bytes */
-//#define EventBufferSize (CBTF_BlobSizeFactor * 415)
-#define EventBufferSize (CBTF_BlobSizeFactor * 300)
+// FIXME:  300 was too high given the current stack buffer size
+// and the size of a mem event.  Should find the best fit going forward.
+#define EventBufferSize (CBTF_BlobSizeFactor * 200)
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {

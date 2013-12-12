@@ -37,7 +37,9 @@ endif()
 
 add_library(krell-base SHARED
     KrellInstitute/Base/Address.hpp
+    KrellInstitute/Base/AddressBitmap.hpp AddressBitmap.cpp    
     KrellInstitute/Base/AddressRange.hpp
+    KrellInstitute/Base/AddressSet.hpp AddressSet.cpp
     KrellInstitute/Base/FileName.hpp FileName.cpp
     KrellInstitute/Base/Interval.hpp
     KrellInstitute/Base/Raise.hpp

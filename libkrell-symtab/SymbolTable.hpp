@@ -29,6 +29,7 @@
 #include <boost/shared_ptr.hpp>
 #include <KrellInstitute/Base/Address.hpp>
 #include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/Base/AddressSet.hpp>
 #include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
@@ -36,8 +37,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
-#include "AddressBitmap.hpp"
 
 namespace KrellInstitute { namespace SymbolTable { namespace Impl {
 
@@ -362,8 +361,8 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             /** Mangled name of this function. */
             std::string dm_name;
             
-            /** Bitmap(s) containing this function's addresses. */
-            std::vector<AddressBitmap> dm_addresses;
+            /** Set containing this function's addresses. */
+            Base::AddressSet dm_addresses;
 
             /** Constructor from initial fields. */
             FunctionItem(const std::string& name) :
@@ -385,9 +384,9 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             
             /** Column number of this statement. */
             unsigned int dm_column;
-            
-            /** Bitmap(s) containing this statement's addresses. */
-            std::vector<AddressBitmap> dm_addresses;
+
+            /** Set containing this statement's addresses. */
+            Base::AddressSet dm_addresses;
 
             /** Constructor from initial fields. */
             StatementItem(const Base::FileName& file,

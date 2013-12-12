@@ -21,15 +21,12 @@
 #include <algorithm>
 #include <boost/cstdint.hpp>
 #include <cstdlib>
+#include <KrellInstitute/Base/AddressBitmap.hpp>
 #include <KrellInstitute/Base/Raise.hpp>
 #include <sstream>
 #include <stdexcept>
 
-#include "AddressBitmap.hpp"
-
 using namespace KrellInstitute::Base;
-using namespace KrellInstitute::SymbolTable;
-using namespace KrellInstitute::SymbolTable::Impl;
 
 
 
@@ -212,10 +209,8 @@ std::set<AddressRange> AddressBitmap::ranges(const bool& value) const
  
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-std::ostream& KrellInstitute::SymbolTable::Impl::operator<<(
-    std::ostream& stream,
-    const AddressBitmap& bitmap
-    )
+std::ostream& KrellInstitute::Base::operator<<(std::ostream& stream,
+                                               const AddressBitmap& bitmap)
 {
     const AddressRange& range = bitmap.range();
     

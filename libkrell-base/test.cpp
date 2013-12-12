@@ -22,17 +22,21 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE Krell-Base
 
+#include <boost/assign/list_of.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/test/unit_test.hpp>
 #include <cstdlib>
 #include <functional>
 #include <KrellInstitute/Base/Address.hpp>
+#include <KrellInstitute/Base/AddressBitmap.hpp>
 #include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Base/ThreadName.hpp>
 #include <KrellInstitute/Base/Time.hpp>
 #include <KrellInstitute/Base/TimeInterval.hpp>
+#include <set>
+#include <stdexcept>
 #include <string>
 
 using namespace KrellInstitute::Base;
@@ -66,6 +70,66 @@ BOOST_AUTO_TEST_CASE(TestAddress)
 
     BOOST_CHECK_EQUAL(static_cast<std::string>(Address(13*27)),
                       "0x000000000000015F");
+}
+
+
+
+/**
+ * Unit test for the AddressBitmap class.
+ */
+BOOST_AUTO_TEST_CASE(TestAddressBitmap)
+{
+    AddressBitmap bitmap(AddressRange(0, 13));
+
+    BOOST_CHECK_EQUAL(bitmap.range(), AddressRange(0, 13));
+    
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(!bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+    BOOST_CHECK_THROW(bitmap.get(27), std::invalid_argument);
+    bitmap.set(7, true);
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+    BOOST_CHECK_THROW(bitmap.set(27, true), std::invalid_argument);
+    bitmap.set(7, false);
+    BOOST_CHECK(!bitmap.get(0));
+    BOOST_CHECK(!bitmap.get(7));
+    BOOST_CHECK(!bitmap.get(13));
+
+    bitmap.set(7, true);
+    std::set<AddressRange> ranges = bitmap.ranges(false);
+    BOOST_CHECK_EQUAL(ranges.size(), 2);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(0, 6));
+    BOOST_CHECK_EQUAL(*(++ranges.begin()), AddressRange(8, 13));
+    ranges = bitmap.ranges(true);
+    BOOST_CHECK_EQUAL(ranges.size(), 1);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(7, 7));
+    bitmap.set(12, true);
+    bitmap.set(13, true);
+    ranges = bitmap.ranges(true);
+    BOOST_CHECK_EQUAL(ranges.size(), 2);
+    BOOST_CHECK_EQUAL(*(ranges.begin()), AddressRange(7, 7));
+    BOOST_CHECK_EQUAL(*(++ranges.begin()), AddressRange(12, 13));
+
+    std::set<Address> addresses = boost::assign::list_of(0)(7)(13)(27);
+    bitmap = AddressBitmap(addresses);
+    BOOST_CHECK_EQUAL(bitmap.range(), AddressRange(0, 27));
+    BOOST_CHECK(bitmap.get(0));
+    BOOST_CHECK(bitmap.get(7));
+    BOOST_CHECK(bitmap.get(13));
+    BOOST_CHECK(bitmap.get(27));
+    BOOST_CHECK(!bitmap.get(1));
+
+    BOOST_CHECK_EQUAL(
+        static_cast<std::string>(bitmap),
+        "[0x0000000000000000, 0x000000000000001B]: 1000000100000100000000000001"
+        );
+
+    BOOST_CHECK_EQUAL(
+        AddressBitmap(static_cast<CBTF_Protocol_AddressBitmap>(bitmap)),
+        bitmap
+        );
 }
 
 

@@ -44,7 +44,6 @@ if(SYMTABAPI_FOUND)
 endif()
 
 add_library(krell-symtab SHARED
-    AddressBitmap.hpp AddressBitmap.cpp
     KrellInstitute/SymbolTable/AddressSpaces.hpp AddressSpaces.cpp
     KrellInstitute/SymbolTable/Function.hpp Function.cpp
     KrellInstitute/SymbolTable/FunctionVisitor.hpp

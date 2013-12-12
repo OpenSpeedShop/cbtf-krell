@@ -19,7 +19,6 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
-#include <deque>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 
@@ -28,158 +27,6 @@
 using namespace KrellInstitute::Base;
 using namespace KrellInstitute::SymbolTable;
 using namespace KrellInstitute::SymbolTable::Impl;
-
-
-
-/** Anonymous namespace hiding implementation details. */
-namespace {
-
-    /**
-     * Extract all contiguous address ranges within the given address bitmaps.
-     *
-     * @param bitmaps    Address bitmaps to be extracted.
-     * @return           Contiguous address ranges in those address bitmaps.
-     */
-    std::set<AddressRange> extract(const std::vector<AddressBitmap>& bitmaps)
-    {
-        std::set<AddressRange> ranges;
-        
-        for (std::vector<AddressBitmap>::const_iterator
-                 i = bitmaps.begin(); i != bitmaps.end(); ++i)
-        {
-            std::set<AddressRange> i_ranges = i->ranges(true);
-            ranges.insert(i_ranges.begin(), i_ranges.end());
-        }
-        
-        return ranges;
-    }
-
-    /**
-     * Partition address ranges into address bitmaps. Addresses for functions
-     * and statements are stored as pairings of an address range and a bitmap,
-     * one bit per address in the range, that describe which addresses within
-     * the range are associated with the function or statement. In the common
-     * case where the addresses exhibit a high degree of spatial locality, a
-     * single address range and bitmap is very effective. But there are cases,
-     * such as inlined functions, where the degree of spatial locality can be
-     * minimal. Under such circumstances, a single bitmap can grow very large
-     * and it is more space efficient to use multiple bitmaps that individually
-     * exhibit spatial locality. This function iteratively subdivides all the
-     * addresses until each bitmap exhibits sufficient spatial locality.
-     *
-     * @param ranges    Address ranges to be partitioned.
-     * @return          Address bitmaps representing these address ranges.
-     *
-     * @note    The criteria for subdividing an address set is as follows. The
-     *          widest gap (spacing) between two adjacent addresses within the
-     *          set is found. If the number of bits required to encode the gap
-     *          within a bitmap is greater than the number of bits required to
-     *          create a new address bitmap, the set is partitioned at the gap.
-     */
-    std::vector<AddressBitmap> partition(const std::set<AddressRange>& ranges)
-    {
-        std::vector<AddressBitmap> bitmaps;
-
-        //
-        // Set the partitioning criteria as the minimum number of bits required
-        // for the binary representation of a CBTF_Protocol_AddressBitmap that
-        // contains a single address. The size of this structure, rather than
-        // that of the AddressBitmap class, is used because the main reason for
-        // the partitioning is to minimize the eventual binary representation
-        // of CBTF_Protocol_SymbolTable objects.
-        // 
-        
-        const boost::int64_t kPartitioningCriteria = 8 /* Bits/Byte */ *
-            (2 * sizeof(boost::uint64_t) /* Address Range */ +
-             sizeof(boost::uint8_t) /* Single-Byte Bitmap */);
-        
-        // Convert the provided set of address ranges into a set of addresses
-        std::set<Address> addresses;
-        for (std::set<AddressRange>::const_iterator
-                 i = ranges.begin(); i != ranges.end(); ++i)
-        {
-            for (Address j = i->begin(); j <= i->end(); ++j)
-            {
-                addresses.insert(j);
-            }
-        }
-        
-        //
-        // Initialize a queue with this set of address and iterate over that
-        // queue until it has been emptied.
-        //
-        
-        std::deque<std::set<Address> > queue(1, addresses);        
-        while (!queue.empty())
-        {
-            std::set<Address> i = queue.front();
-            queue.pop_front();
-
-            // Handle the special case of an empty address set by ignoring it
-            if (i.empty())
-            {
-                continue;
-            }
-
-            //
-            // Handle the special case of a single-element address set by
-            // creating an address bitmap for it and adding that bitmap to
-            // the results.
-            //
-
-            if (i.size() == 1)
-            {
-                bitmaps.push_back(AddressBitmap(i));
-                continue;
-            }
-
-            //
-            // Otherwise find the widest gap between any two adjacent addresses
-            // within this address set. Also remember WHERE that widest gap was
-            // located.
-            //
-
-            boost::int64_t widest_gap = 0;
-            std::set<Address>::const_iterator widest_gap_at = i.begin();
-            
-            for (std::set<Address>::const_iterator
-                     prev = i.begin(), current = ++i.begin();
-                 current != i.end();
-                 ++prev, ++current)
-            {
-                boost::int64_t gap = AddressRange(*prev, *current).width() - 1;
-                
-                if (gap > widest_gap)
-                {
-                    widest_gap = gap;
-                    widest_gap_at = current;
-                }
-            }
-            
-            //
-            // If the widest gap exceeds the partitioning criteria, partition
-            // this address set at the gap and push both partitions onto the
-            // queue. Otherwise create an address bitmap for this address set
-            // and add that bitmap to the results.
-            //
-            
-            if (widest_gap > kPartitioningCriteria)
-            {
-                queue.push_back(std::set<Address>(i.begin(), widest_gap_at));
-                queue.push_back(std::set<Address>(widest_gap_at, i.end()));
-            }
-            else
-            {
-                bitmaps.push_back(AddressBitmap(i));
-            }
-            
-        }
-
-        // Return the final results to the caller        
-        return bitmaps;
-    }
-
-} // namespace <anonymous>
 
 
 
@@ -210,8 +57,9 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
     // construct the corresponding entries in this symbol table. Most of the
     // code here is virtually identical to that in the methods addFunction()
     // and addFunctionAddressRanges(). The later, in particular, is inlined
-    // because AddressBitmap is constructable from CBTF_Protocol_AddressBitmap
-    // directly without going through an intermediate set of address ranges.
+    // because AddressSet is constructable from a CBTF_Protocol_AddressBitmap
+    // array directly without going through an intermediate set of address
+    // ranges.
     //
     
     for (u_int i = 0; i < message.functions.functions_len; ++i)
@@ -223,18 +71,14 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
 
         UniqueIdentifier uid = dm_functions.size() - 1;
 
-        for (u_int j = 0; j < entry.bitmaps.bitmaps_len; ++j)
-        {            
-            dm_functions[uid].dm_addresses.push_back(
-                AddressBitmap(entry.bitmaps.bitmaps_val[j])
-                );
-        }
+        dm_functions[uid].dm_addresses = AddressSet(
+            entry.bitmaps.bitmaps_val, entry.bitmaps.bitmaps_len
+            );
         
-        std::set<AddressRange> all_ranges = 
-            extract(dm_functions[uid].dm_addresses);
+        std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;
 
         for (std::set<AddressRange>::const_iterator
-                 j = all_ranges.begin(); j != all_ranges.end(); ++j)
+                 j = ranges.begin(); j != ranges.end(); ++j)
         {
             dm_functions_index.insert(AddressRangeIndexRow(uid, *j));
         }
@@ -259,18 +103,14 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
         
         UniqueIdentifier uid = dm_statements.size() - 1;
 
-        for (u_int j = 0; j < entry.bitmaps.bitmaps_len; ++j)
-        {            
-            dm_statements[uid].dm_addresses.push_back(
-                AddressBitmap(entry.bitmaps.bitmaps_val[j])
-                );
-        }
-        
-        std::set<AddressRange> all_ranges = 
-            extract(dm_statements[uid].dm_addresses);
+        dm_statements[uid].dm_addresses = AddressSet(
+            entry.bitmaps.bitmaps_val, entry.bitmaps.bitmaps_len
+            );
+
+        std::set<AddressRange> ranges = dm_statements[uid].dm_addresses;
 
         for (std::set<AddressRange>::const_iterator
-                 j = all_ranges.begin(); j != all_ranges.end(); ++j)
+                 j = ranges.begin(); j != ranges.end(); ++j)
         {
             dm_statements_index.insert(AddressRangeIndexRow(uid, *j));
         }
@@ -310,20 +150,10 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
             message.functions.functions_val[i];
  
         entry.name = strdup(item.dm_name.c_str());
-        
-        entry.bitmaps.bitmaps_len = item.dm_addresses.size();
-        
-        entry.bitmaps.bitmaps_val =
-            reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
-                malloc(std::max(1U, entry.bitmaps.bitmaps_len) *
-                       sizeof(CBTF_Protocol_AddressBitmap))
-                );
-        
-        for (std::vector<AddressBitmap>::size_type
-                 j = 0; j < item.dm_addresses.size(); ++j)
-        {
-            entry.bitmaps.bitmaps_val[j] = item.dm_addresses[j];
-        }
+
+        item.dm_addresses.extract(
+            entry.bitmaps.bitmaps_val, entry.bitmaps.bitmaps_len
+            );
     }
     
     //
@@ -351,20 +181,10 @@ SymbolTable::operator CBTF_Protocol_SymbolTable() const
         entry.path = item.dm_file;
         entry.line = static_cast<int>(item.dm_line);
         entry.column = static_cast<int>(item.dm_column);
-        
-        entry.bitmaps.bitmaps_len = item.dm_addresses.size();
-        
-        entry.bitmaps.bitmaps_val =
-            reinterpret_cast<CBTF_Protocol_AddressBitmap*>(
-                malloc(std::max(1U, entry.bitmaps.bitmaps_len) *
-                       sizeof(CBTF_Protocol_AddressBitmap))
-                );
-        
-        for (std::vector<AddressBitmap>::size_type
-                 j = 0; j < item.dm_addresses.size(); ++j)
-        {
-            entry.bitmaps.bitmaps_val[j] = item.dm_addresses[j];
-        }
+
+        item.dm_addresses.extract(
+            entry.bitmaps.bitmaps_val, entry.bitmaps.bitmaps_len
+            );
     }
     
     // Return the completed CBTF_Protocol_SymbolTable to the caller
@@ -400,34 +220,18 @@ void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
                                            const std::set<AddressRange>& ranges)
 {    
     BOOST_ASSERT(uid < dm_functions.size());
-
-    //
-    // Construct a set of address ranges that contains all current address
-    // ranges for this function as well as the given new address ranges.
-    // 
-    
-    std::set<AddressRange> all_ranges = 
-        extract(dm_functions[uid].dm_addresses);
-    
-    all_ranges.insert(ranges.begin(), ranges.end());
-    
-    //
-    // Partition this new set of address ranges into address bitmaps. The
-    // new list of address bitmaps completely replaces any previous list.
-    //
-    
-    dm_functions[uid].dm_addresses = partition(all_ranges);
+    dm_functions[uid].dm_addresses += ranges;
     
     //
     // Update the index used to find functions by addresses. Remove all of
-    // the existing index entries for this function. Extract the new set of
+    // the existing index entries for this function. Obtain the new set of
     // address ranges for this function and add them to the index.
     //
 
     dm_functions_index.get<0>().erase(uid);
 
-    all_ranges = extract(dm_functions[uid].dm_addresses);
-
+    std::set<AddressRange> all_ranges = dm_functions[uid].dm_addresses;
+    
     for (std::set<AddressRange>::const_iterator
              i = all_ranges.begin(); i != all_ranges.end(); ++i)
     {
@@ -458,33 +262,17 @@ void SymbolTable::addStatementAddressRanges(
     )
 {
     BOOST_ASSERT(uid < dm_statements.size());
-
-    //
-    // Construct a set of address ranges that contains all current address
-    // ranges for this statement as well as the given new address ranges.
-    // 
-    
-    std::set<AddressRange> all_ranges = 
-        extract(dm_statements[uid].dm_addresses);
-
-    all_ranges.insert(ranges.begin(), ranges.end());
-    
-    //
-    // Partition this new set of address ranges into address bitmaps. The
-    // new list of address bitmaps completely replaces any previous list.
-    //
-    
-    dm_statements[uid].dm_addresses = partition(all_ranges);
+    dm_statements[uid].dm_addresses += ranges;
     
     //
     // Update the index used to find statements by addresses. Remove all of
-    // the existing index entries for this statement. Extract the new set of
+    // the existing index entries for this statement. Obtain the new set of
     // address ranges for this statement and add them to the index.
     //
     
     dm_statements_index.get<0>().erase(uid);
 
-    all_ranges = extract(dm_statements[uid].dm_addresses);
+    std::set<AddressRange> all_ranges = dm_statements[uid].dm_addresses;
 
     for (std::set<AddressRange>::const_iterator
              i = all_ranges.begin(); i != all_ranges.end(); ++i)
@@ -518,7 +306,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
     
     // Update the index used to find functions by addresses
     
-    std::set<AddressRange> ranges = extract(clone.dm_addresses);
+    std::set<AddressRange> ranges = clone.dm_addresses;
     
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); i != ranges.end(); ++i)
@@ -557,7 +345,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
     
     // Update the index used to find statements by addresses
     
-    std::set<AddressRange> ranges = extract(clone.dm_addresses);
+    std::set<AddressRange> ranges = clone.dm_addresses;
     
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); i != ranges.end(); ++i)
@@ -590,7 +378,7 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
     ) const
 {
     BOOST_ASSERT(uid < dm_functions.size());
-    return extract(dm_functions[uid].dm_addresses);
+    return dm_functions[uid].dm_addresses;
 }
 
 
@@ -632,7 +420,7 @@ std::set<AddressRange> SymbolTable::getStatementAddressRanges(
     ) const
 {
     BOOST_ASSERT(uid < dm_statements.size());
-    return extract(dm_statements[uid].dm_addresses);
+    return dm_statements[uid].dm_addresses;
 }
 
 
@@ -675,14 +463,12 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
 {
     BOOST_ASSERT(uid < dm_functions.size());
 
-    AddressRange range(
-        extract(dm_functions[uid].dm_addresses).begin()->begin()
-        );
-    
     bool terminate = false;
     boost::dynamic_bitset<> visited(dm_statements.size());
 
-    visit(range, visitor, terminate, visited);
+    std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;
+    
+    visit(AddressRange(ranges.begin()->begin()), visitor, terminate, visited);
 }
 
 
@@ -697,7 +483,7 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
     bool terminate = false;
     boost::dynamic_bitset<> visited(dm_statements.size());
     
-    std::set<AddressRange> ranges = extract(dm_functions[uid].dm_addresses);
+    std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;
     
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
@@ -749,7 +535,7 @@ void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
     bool terminate = false;
     boost::dynamic_bitset<> visited(dm_functions.size());
     
-    std::set<AddressRange> ranges = extract(dm_statements[uid].dm_addresses);
+    std::set<AddressRange> ranges = dm_statements[uid].dm_addresses;
     
     for (std::set<AddressRange>::const_iterator
              i = ranges.begin(); !terminate && (i != ranges.end()); ++i)

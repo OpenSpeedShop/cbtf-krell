@@ -399,7 +399,7 @@ SymbolTable::UniqueIdentifier SymbolTable::addFunction(
 void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
                                            const std::set<AddressRange>& ranges)
 {    
-    BOOST_VERIFY(uid < dm_functions.size());
+    BOOST_ASSERT(uid < dm_functions.size());
 
     //
     // Construct a set of address ranges that contains all current address
@@ -457,7 +457,7 @@ void SymbolTable::addStatementAddressRanges(
     const UniqueIdentifier& uid, const std::set<AddressRange>& ranges
     )
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
 
     //
     // Construct a set of address ranges that contains all current address
@@ -504,7 +504,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
     const SymbolTable& symbol_table, const UniqueIdentifier& uid
     )
 {
-    BOOST_VERIFY(uid < symbol_table.dm_functions.size());
+    BOOST_ASSERT(uid < symbol_table.dm_functions.size());
 
     // Create a clone of the original function's FunctionItem
 
@@ -541,7 +541,7 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneStatement(
     const SymbolTable& symbol_table, const UniqueIdentifier& uid
     )
 {
-    BOOST_VERIFY(uid < symbol_table.dm_statements.size());
+    BOOST_ASSERT(uid < symbol_table.dm_statements.size());
 
     // Create a clone of the original statement's StatementItem
 
@@ -577,7 +577,7 @@ const std::string& SymbolTable::getFunctionMangledName(
     const UniqueIdentifier& uid
     ) const
 {
-    BOOST_VERIFY(uid < dm_functions.size());
+    BOOST_ASSERT(uid < dm_functions.size());
     return dm_functions[uid].dm_name;
 }
 
@@ -589,7 +589,7 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
     const UniqueIdentifier& uid
     ) const
 {
-    BOOST_VERIFY(uid < dm_functions.size());
+    BOOST_ASSERT(uid < dm_functions.size());
     return extract(dm_functions[uid].dm_addresses);
 }
 
@@ -599,7 +599,7 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
 //------------------------------------------------------------------------------
 const FileName& SymbolTable::getStatementFile(const UniqueIdentifier& uid) const
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
     return dm_statements[uid].dm_file;
 }
 
@@ -609,7 +609,7 @@ const FileName& SymbolTable::getStatementFile(const UniqueIdentifier& uid) const
 //------------------------------------------------------------------------------
 unsigned int SymbolTable::getStatementLine(const UniqueIdentifier& uid) const
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
     return dm_statements[uid].dm_line;
 }
 
@@ -619,7 +619,7 @@ unsigned int SymbolTable::getStatementLine(const UniqueIdentifier& uid) const
 //------------------------------------------------------------------------------
 unsigned int SymbolTable::getStatementColumn(const UniqueIdentifier& uid) const
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
     return dm_statements[uid].dm_column;
 }
 
@@ -631,7 +631,7 @@ std::set<AddressRange> SymbolTable::getStatementAddressRanges(
     const UniqueIdentifier& uid
     ) const
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
     return extract(dm_statements[uid].dm_addresses);
 }
 
@@ -673,7 +673,7 @@ void SymbolTable::visitFunctions(const AddressRange& range,
 void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
                                            const StatementVisitor& visitor)
 {
-    BOOST_VERIFY(uid < dm_functions.size());
+    BOOST_ASSERT(uid < dm_functions.size());
 
     AddressRange range(
         extract(dm_functions[uid].dm_addresses).begin()->begin()
@@ -692,7 +692,7 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
 void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
                                           const StatementVisitor& visitor)
 {
-    BOOST_VERIFY(uid < dm_functions.size());
+    BOOST_ASSERT(uid < dm_functions.size());
 
     bool terminate = false;
     boost::dynamic_bitset<> visited(dm_statements.size());
@@ -744,7 +744,7 @@ void SymbolTable::visitStatements(const AddressRange& range,
 void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
                                           const FunctionVisitor& visitor)
 {
-    BOOST_VERIFY(uid < dm_statements.size());
+    BOOST_ASSERT(uid < dm_statements.size());
 
     bool terminate = false;
     boost::dynamic_bitset<> visited(dm_functions.size());

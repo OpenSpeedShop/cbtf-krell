@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2013 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -224,7 +224,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 /**
  * Called by the CBTF collector service in order to start data collection.
  */
-void cbtf_collector_start(const CBTF_DataHeader* const header)
+void cbtf_collector_start(const CBTF_DataHeader* header)
 {
 /**
  * Start sampling.

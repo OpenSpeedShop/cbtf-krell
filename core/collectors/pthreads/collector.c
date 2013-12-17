@@ -444,10 +444,15 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
  */
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
-    TLS* tls = malloc(sizeof(TLS));
-    Assert(tls != NULL);
-    CBTF_SetTLS(TLSKey, tls);
-    pthreads_init_tls_done = true;
+    TLS* tls;
+    if (!pthreads_init_tls_done) {
+	tls = malloc(sizeof(TLS));
+	Assert(tls != NULL);
+	CBTF_SetTLS(TLSKey, tls);
+	pthreads_init_tls_done = true;
+    } else if (pthreads_init_tls_done) {
+        tls = CBTF_GetTLS(TLSKey);
+    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -570,7 +575,10 @@ void cbtf_collector_stop()
     TLS* tls = &the_tls;
 #endif
 
-    Assert(tls != NULL);
+    if (tls == NULL) {
+	fprintf(stderr,"cbtf_collector_stop called without TLS!\n");
+	return;
+    }
 
     tls->header.time_end = CBTF_GetTime();
 
@@ -593,8 +601,14 @@ bool_t pthreads_do_trace(const char* traced_func)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
+
     TLS* tls;
-    if (pthreads_init_tls_done) {
+    if (tls == NULL && !pthreads_init_tls_done) {
+       tls = malloc(sizeof(TLS));
+       Assert(tls != NULL);
+       CBTF_SetTLS(TLSKey, tls);
+       pthreads_init_tls_done = true;
+    } else if (pthreads_init_tls_done) {
         tls = CBTF_GetTLS(TLSKey);
     } else {
 	return FALSE;
@@ -602,7 +616,10 @@ bool_t pthreads_do_trace(const char* traced_func)
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    if (tls == NULL) {
+	fprintf(stderr,"pthreads_do_trace called without TLS!\n");
+	return;
+    }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 

@@ -303,7 +303,7 @@ int pthreads_pthread_mutex_trylock( pthread_mutex_t* mtx)
     }
 
     /* Call the real function */
-    // if lock is head by any thread call returns immediately else
+    // if lock is held by any thread call returns immediately else
     // the lock is aquired by calling thread.
     // See manpage for details on how the calling threads mutex
     // attributes affect this call.

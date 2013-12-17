@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+//#include "KrellInstitute/CBTF/Impl/MessageTags.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
@@ -200,6 +201,35 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 	CBTF_MRNet_stream->us_filter_id, CBTF_MRNet_stream->ds_filter_id);
     }
 #endif
+
+    /*  wait for FE to notify netowrk is ready 
+     *  Use the SpecifyFilter tag for this since once all commnodes
+     *  have loaded a filter, this message is passed down to the BE.
+     *  This holds the collectors from continuing until any needed
+     *  filter is loaded above.
+     */
+    if (CBTF_MRNet_netPtr) {
+	/* get our stream */
+	Stream_t* stream = Network_get_Stream(CBTF_MRNet_netPtr,stream_id);
+	int readytag = 0;
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	    fprintf(stderr, "BE: waiting for specify filter tag from FE\n");
+	}
+#endif
+	do {
+	    if( CBTF_MRNet_netPtr && Network_recv(CBTF_MRNet_netPtr, &readytag, p, &stream) != 1 ) {
+		fprintf(stderr, "BE: receive failure\n");
+		break;
+	    }
+	} while ( readytag != 105 );
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	    fprintf(stderr, "BE: GOT TAG for filter tag %d from FE\n",readytag);
+	}
+#endif
+     }
+
     mrnet_connected = 1;
 
     if (p != NULL) {
@@ -287,7 +317,6 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 
 void CBTF_Waitfor_MRNet_Shutdown() {
 
-    //fprintf(stderr,"ENTERED CBTF_Waitfor_MRNet_Shutdown %d\n",getpid());
     Packet_t * p;
     p = (Packet_t *)malloc(sizeof(Packet_t));
     Assert(p);

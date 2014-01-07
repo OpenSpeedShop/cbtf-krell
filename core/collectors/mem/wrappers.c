@@ -42,6 +42,7 @@
 #include <sys/uio.h>
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+#if 0
 static void* (*f_malloc)(size_t);
 static void* (*f_calloc)(size_t, size_t);
 static void* (*f_realloc)(void*, size_t);
@@ -59,6 +60,7 @@ static void __attribute__ ((constructor)) initialize()
     f_memalign = dlsym(RTLD_NEXT, "memalign");
 }
 #endif
+#endif
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef malloc
@@ -72,8 +74,6 @@ void* memmalloc(size_t size)
 #endif
 {
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
-    if (f_malloc == NULL)
-	return NULL;
 #endif
 
     void* retval;
@@ -91,6 +91,9 @@ void* memmalloc(size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_malloc(size);
 #else
+    static void* (*f_malloc)(size_t) = NULL;
+    if (!f_malloc)
+	f_malloc = dlsym(RTLD_NEXT, "malloc");
     retval = f_malloc(size);
 #endif
 
@@ -115,6 +118,7 @@ void* memmalloc(size_t size)
 }
 
 
+#if 0
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef calloc
 #undef calloc
@@ -128,8 +132,6 @@ void* memcalloc(size_t count, size_t size)
 #endif
 {
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
-    if (f_calloc == NULL)
-	return NULL;
 #endif
     void* retval;
     CBTF_memt_event event;
@@ -146,6 +148,9 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_calloc(count,size);
 #else
+    static void* (*f_calloc)(size_t,size_t) = NULL;
+    if (!f_calloc)
+	f_calloc = dlsym(RTLD_NEXT, "calloc");
     retval = f_calloc(count,size);
 #endif
 
@@ -168,6 +173,7 @@ void* memcalloc(size_t count, size_t size)
     /* Return the real MEM function's return value to the caller */
     return retval;
 }
+#endif
 
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
@@ -181,7 +187,11 @@ void* __wrap_realloc(void* oldPtr, size_t size)
 void* memrealloc(void* oldPtr, size_t size)
 #endif
 {
+    static void* (*f_realloc)(void*, size_t);
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_realloc == NULL) {
+	f_realloc = dlsym (RTLD_NEXT, "realloc");
+    }
     if (f_realloc == NULL)
 	return NULL;
 #endif
@@ -233,7 +243,16 @@ int __wrap_posix_memalign(void ** memptr, size_t alignment, size_t size)
 int memposix_memalign(void ** memptr, size_t alignment, size_t size)
 #endif
 {    
+    static int (*f_posix_memalign)(void **, size_t, size_t);
     int retval;
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_posix_memalign == NULL) {
+	f_posix_memalign = dlsym (RTLD_NEXT, "posix_memalign");
+    }
+    if (f_posix_memalign == NULL)
+	return 0;
+#endif
+
     CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("posix_memalign");
@@ -284,6 +303,14 @@ int memmemalign(size_t blocksize, size_t bytes)
 #endif
 {    
     int retval;
+    static int (*f_memalign)(size_t, size_t);
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_memalign == NULL) {
+	f_memalign = dlsym (RTLD_NEXT, "memalign");
+    }
+    if (f_memalign == NULL)
+	return 0;
+#endif
     CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("memalign");
@@ -335,7 +362,11 @@ void __wrap_free(void * ptr)
 void memfree(void * ptr)
 #endif
 {
+    static void* (*f_free)(void*);
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
+    if (f_free == NULL) {
+	f_free = dlsym (RTLD_NEXT, "free");
+    }
     if (f_free == NULL)
 	return;
 #endif
@@ -373,3 +404,5 @@ void memfree(void * ptr)
     }
     
 }
+
+

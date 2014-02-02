@@ -75,6 +75,7 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 	@rm -f cbtf_mrnet_commnode
 	@sed \
 		-e 's,@@machine_dependent_libdir@@,$(abi_libdir_name),' \
+		-e 's,@@alt_machine_dependent_libdir@@,$(alt_abi_libdir_name),' \
 		-e 's,@@libmrnetdir@@,$(mrnet_dir),' \
 		-e 's,@@boostinstalldir@@,$(boost_dir),' \
 		-e 's,@@krootinstalldir@@,$(xercesc_dir),' \

@@ -12,7 +12,13 @@
 #
 mrnetlibdir=@@libmrnetdir@@/@@machine_dependent_libdir@@
 cbtflibdir=@@cbtfinstalldir@@/@@machine_dependent_libdir@@
-boostlibdir=@@boostinstalldir@@/@@machine_dependent_libdir@@
+
+if test -f @@boostinstalldir@@/@@machine_dependent_libdir@@/libboost_system.so; then
+   boostlibdir=@@boostinstalldir@@/@@machine_dependent_libdir@@
+elif test -f @@boostinstalldir@@/@@alt_machine_dependent_libdir@@/libboost_system.so; then
+   boostlibdir=@@boostinstalldir@@/@@alt_machine_dependent_libdir@@
+fi
+
 krootlibdir=@@krootinstalldir@@/@@machine_dependent_libdir@@
 
 # location of the real mrnet_commnode.

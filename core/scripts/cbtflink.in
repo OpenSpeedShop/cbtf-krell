@@ -183,6 +183,7 @@ do
                 iot )           collector="$2" ;;
                 mpi )           collector="$2" ;;
                 mpit )          collector="$2" ;;
+                mpip )          collector="$2" ;;
                 mpiotf )        collector="$2" ;;
                 fpe )           collector="$2" ;;
             esac
@@ -499,7 +500,7 @@ then
 fi
 
 case "$collector" in
-    mpi|mpit|mpiotf )
+    mpi|mpit|mpip|mpiotf )
 #    static_collector=${cbtf_plugins}/lib${collector}-${mpitouse}-offline.a
     case "$cbtflinkMode" in
        fileio )      static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;
@@ -517,7 +518,7 @@ case "$collector" in
     fi
     ;;
 
-    mpi-*|mpit-*|mpiotf-*)
+    mpi-*|mpit-*|mpip-*|mpiotf-*)
 #    static_collector=${cbtf_plugins}/lib${collector}-${mpitouse}-offline.a
     case "$cbtflinkMode" in
        fileio )      static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;

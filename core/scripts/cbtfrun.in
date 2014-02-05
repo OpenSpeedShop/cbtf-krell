@@ -225,7 +225,7 @@ esac
 
 case "$collector" in
     # mpi collection always uses mpi;)
-    mpi|mpit)
+    mpi|mpit|mpip)
     collector=${collector}-${mpitouse}
     if [ $use_mrnet == "true" ]
     then

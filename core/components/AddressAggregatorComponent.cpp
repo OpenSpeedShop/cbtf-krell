@@ -212,6 +212,25 @@ bool is_debug_aggregator_events_enabled =
 				data.stacktraces.stacktraces_val, buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
                      reinterpret_cast<char*>(&data));
+	} else if (id == "mpip") {
+#if 0
+	    std::cerr << "MPIP now call StacktraceData::aggregateAddressCounts " << std::endl;
+#endif
+            CBTF_mpi_profile_data data;
+            memset(&data, 0, sizeof(data));
+            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data), &data);
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val, buf);
+#if 0
+	    for(unsigned i = 0; i < data.time.time_len; ++i) {
+	    	if (data.time.time_val[i] > 0) {
+	    	    std::cerr << "MPIP time at " << i << " is " << data.time.time_val[i] << std::endl;
+	    	}
+	    }
+#endif
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "mpit") {
             CBTF_mpi_exttrace_data data;
             memset(&data, 0, sizeof(data));

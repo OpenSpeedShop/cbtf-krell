@@ -306,7 +306,8 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             STSampleMetric(collectorID, dblob);
         } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
+		   collectorID == "mpi" || collectorID == "mpit" || 
+                   collectorID == "mpip" || collectorID == "pthreads") {
             STTraceMetric(collectorID, dblob);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
@@ -361,7 +362,8 @@ private:
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
             STSampleMetric(collectorID, dblob);
         } else if (collectorID == "io" || collectorID == "iot" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
+		   collectorID == "mpi" || collectorID == "mpit" || 
+                   collectorID == "mpip" || collectorID == "pthreads") {
             STTraceMetric(collectorID, dblob);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2006-2013 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2006-2014 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -296,8 +296,12 @@ static void send_samples(TLS *tls)
 	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
+#if defined(PROFILE)
+		tls->data.stacktraces.stacktraces_len);
+#else
 		tls->data.stacktraces.stacktraces_len,
 		tls->data.events.events_len);
+#endif
 	}
 #endif
 

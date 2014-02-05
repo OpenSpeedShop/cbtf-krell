@@ -21,9 +21,9 @@ plugindir = $(libdir)/KrellInstitute/Components
 pkglibdir = $(libdir)/KrellInstitute/Collectors
 staticpkglibdir = $(libdir)/KrellInstitute/Collectors/static
 
-BUILT_FILES = mpi.xml mpit.xml
+BUILT_FILES = mpi.xml mpip.xml mpit.xml
 nobase_dist_xml_DATA = \
-        mpi.xml mpit.xml
+        mpi.xml mpip.xml mpit.xml
 
 WRAPPER_SOURCES = wrappers.c wrappers-fortran.c
 COLLECTOR_SOURCES = collector.c
@@ -34,66 +34,114 @@ staticpkglib_LTLIBRARIES =
 
 if HAVE_MPICH
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-mpich-collector-monitor-fileio.la mpit-mpich-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-mpich-monitor-fileio.la libmpit-mpich-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-mpich-collector-monitor-fileio.la \
+                      mpip-mpich-collector-monitor-fileio.la \
+                      mpit-mpich-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-mpich-monitor-fileio.la \
+                            libmpip-mpich-monitor-fileio.la \
+                            libmpit-mpich-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-mpich-collector-monitor-mrnet-mpi.la mpit-mpich-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-mpich-monitor-mrnet-mpi.la libmpit-mpich-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-mpich-collector-monitor-mrnet-mpi.la \
+                      mpip-mpich-collector-monitor-mrnet-mpi.la \
+                      mpit-mpich-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-mpich-monitor-mrnet-mpi.la \
+                            libmpip-mpich-monitor-mrnet-mpi.la \
+                            libmpit-mpich-monitor-mrnet-mpi.la
 endif
 endif
 endif
 
 if HAVE_MPICH2
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-mpich2-collector-monitor-fileio.la mpit-mpich2-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-fileio.la libmpit-mpich2-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-mpich2-collector-monitor-fileio.la \
+                      mpip-mpich2-collector-monitor-fileio.la \
+                      mpit-mpich2-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-fileio.la \
+                            libmpip-mpich2-monitor-fileio.la \
+                            libmpit-mpich2-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-mpich2-collector-monitor-mrnet-mpi.la mpit-mpich2-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-mrnet-mpi.la libmpit-mpich2-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-mpich2-collector-monitor-mrnet-mpi.la \
+                      mpip-mpich2-collector-monitor-mrnet-mpi.la
+                      mpit-mpich2-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-mrnet-mpi.la \
+                            libmpip-mpich2-monitor-mrnet-mpi.la \
+                            libmpit-mpich2-monitor-mrnet-mpi.la
 endif
 endif
 endif
 
 if HAVE_MVAPICH
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-mvapich-collector-monitor-fileio.la mpit-mvapich-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-mvapich-monitor-fileio.la libmpit-mvapich-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-mvapich-collector-monitor-fileio.la \
+                      mpip-mvapich-collector-monitor-fileio.la \
+                      mpit-mvapich-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-mvapich-monitor-fileio.la  \
+                            libmpip-mvapich-monitor-fileio.la \
+                            libmpit-mvapich-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-mvapich-collector-monitor-mrnet-mpi.la mpit-mvapich-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-mvapich-monitor-mrnet-mpi.la libmpit-mvapich-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-mvapich-collector-monitor-mrnet-mpi.la \
+                      mpip-mvapich-collector-monitor-mrnet-mpi.la \
+                      mpit-mvapich-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-mvapich-monitor-mrnet-mpi.la \
+                            libmpip-mvapich-monitor-mrnet-mpi.la \
+                            libmpit-mvapich-monitor-mrnet-mpi.la
 endif
 endif
 endif
 
 if HAVE_MVAPICH2
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-mvapich2-collector-monitor-fileio.la mpit-mvapich2-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-mvapich2-monitor-fileio.la libmpit-mvapich2-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-mvapich2-collector-monitor-fileio.la \
+                      mpip-mvapich2-collector-monitor-fileio.la \
+                      mpit-mvapich2-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-mvapich2-monitor-fileio.la \
+                            libmpip-mvapich2-monitor-fileio.la \
+                            libmpit-mvapich2-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-mvapich2-collector-monitor-mrnet-mpi.la mpit-mvapich2-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-mvapich2-monitor-mrnet-mpi.la libmpit-mvapich2-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-mvapich2-collector-monitor-mrnet-mpi.la \
+                      mpip-mvapich2-collector-monitor-mrnet-mpi.la \
+                      mpit-mvapich2-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-mvapich2-monitor-mrnet-mpi.la \
+                            libmpip-mvapich2-monitor-mrnet-mpi.la \
+                            libmpit-mvapich2-monitor-mrnet-mpi.la
 endif
 endif
 endif
 
 if HAVE_OPENMPI
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-openmpi-collector-monitor-fileio.la mpit-openmpi-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-openmpi-monitor-fileio.la libmpit-openmpi-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-openmpi-collector-monitor-fileio.la \
+                      mpip-openmpi-collector-monitor-fileio.la \
+                      mpit-openmpi-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-openmpi-monitor-fileio.la \
+                            libmpip-openmpi-monitor-fileio.la \
+                            libmpit-openmpi-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-openmpi-collector-monitor-mrnet-mpi.la mpit-openmpi-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-openmpi-monitor-mrnet-mpi.la libmpit-openmpi-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-openmpi-collector-monitor-mrnet-mpi.la \
+                      mpip-openmpi-collector-monitor-mrnet-mpi.la \
+                      mpit-openmpi-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-openmpi-monitor-mrnet-mpi.la \
+                            libmpip-openmpi-monitor-mrnet-mpi.la \
+                            libmpit-openmpi-monitor-mrnet-mpi.la
 endif
 endif
 endif
 
 if HAVE_MPT
 if HAVE_LIBMONITOR
-pkglib_LTLIBRARIES += mpi-mpt-collector-monitor-fileio.la mpit-mpt-collector-monitor-fileio.la
-staticpkglib_LTLIBRARIES += libmpi-mpt-monitor-fileio.la libmpit-mpt-monitor-fileio.la
+pkglib_LTLIBRARIES += mpi-mpt-collector-monitor-fileio.la \
+                      mpip-mpt-collector-monitor-fileio.la \
+                      mpit-mpt-collector-monitor-fileio.la
+staticpkglib_LTLIBRARIES += libmpi-mpt-monitor-fileio.la \
+                            libmpip-mpt-monitor-fileio.la \
+                            libmpit-mpt-monitor-fileio.la
 if HAVE_MRNET
-pkglib_LTLIBRARIES += mpi-mpt-collector-monitor-mrnet-mpi.la mpit-mpt-collector-monitor-mrnet-mpi.la
-staticpkglib_LTLIBRARIES += libmpi-mpt-monitor-mrnet-mpi.la libmpit-mpt-monitor-mrnet-mpi.la
+pkglib_LTLIBRARIES += mpi-mpt-collector-monitor-mrnet-mpi.la \
+                      mpip-mpt-collector-monitor-mrnet-mpi.la \
+                      mpit-mpt-collector-monitor-mrnet-mpi.la
+staticpkglib_LTLIBRARIES += libmpi-mpt-monitor-mrnet-mpi.la \
+                            libmpip-mpt-monitor-mrnet-mpi.la \
+                            libmpit-mpt-monitor-mrnet-mpi.la
 endif
 endif
 endif
@@ -289,6 +337,13 @@ mpi_mpich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LD
 mpi_mpich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
 mpi_mpich_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_mpich_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_mpich_collector_monitor_fileio_la_CFLAGS = -DPROFILE $(call monitor_fileio_CFLAGS_generate,@MPICH_CPPFLAGS@)
+mpip_mpich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPICH_LDFLAGS@)
+mpip_mpich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
+mpip_mpich_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_mpich_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_mpich_collector_monitor_fileio_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@MPICH_CPPFLAGS@)
 mpit_mpich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPICH_LDFLAGS@)
 mpit_mpich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
@@ -300,17 +355,32 @@ libmpi_mpich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_gener
 libmpi_mpich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
 libmpi_mpich_monitor_fileio_la_DEPENDENCIES =
 libmpi_mpich_monitor_fileio_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
+libmpip_mpich_monitor_fileio_la_CFLAGS = -static -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@MPICH_CPPFLAGS@)
+libmpip_mpich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPICH_LDFLAGS@)
+libmpip_mpich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
+libmpip_mpich_monitor_fileio_la_DEPENDENCIES =
+libmpip_mpich_monitor_fileio_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
 libmpit_mpich_monitor_fileio_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@MPICH_CPPFLAGS@)
 libmpit_mpich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPICH_LDFLAGS@)
 libmpit_mpich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH_LIBS@)
 libmpit_mpich_monitor_fileio_la_DEPENDENCIES =
 libmpit_mpich_monitor_fileio_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
 if HAVE_MRNET
 mpi_mpich_collector_monitor_mrnet_mpi_la_CFLAGS = $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH_CPPFLAGS@)
 mpi_mpich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH_LDFLAGS@)
 mpi_mpich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
 mpi_mpich_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_mpich_collector_monitor_mrnet_mpi_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
+mpip_mpich_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH_CPPFLAGS@)
+mpip_mpich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH_LDFLAGS@)
+mpip_mpich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
+mpip_mpich_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_mpich_collector_monitor_mrnet_mpi_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
 mpit_mpich_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH_CPPFLAGS@)
 mpit_mpich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH_LDFLAGS@)
 mpit_mpich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
@@ -322,6 +392,13 @@ libmpi_mpich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS
 libmpi_mpich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
 libmpi_mpich_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_mpich_monitor_mrnet_mpi_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
+libmpip_mpich_monitor_mrnet_mpi_la_CFLAGS = -static -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPICH_CPPFLAGS@)
+libmpip_mpich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPICH_LDFLAGS@)
+libmpip_mpich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
+libmpip_mpich_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_mpich_monitor_mrnet_mpi_la_SOURCES = $(WRAPPER_SOURCES)  $(COLLECTOR_SOURCES)
+
 libmpit_mpich_monitor_mrnet_mpi_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPICH_CPPFLAGS@)
 libmpit_mpich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPICH_LDFLAGS@)
 libmpit_mpich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH_LIBS@)
@@ -341,27 +418,50 @@ mpi_mpich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_L
 mpi_mpich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
 mpi_mpich2_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_mpich2_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_mpich2_collector_monitor_fileio_la_CFLAGS = -DPROFILE $(call monitor_fileio_CFLAGS_generate,@MPICH2_CPPFLAGS@)
+mpip_mpich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPICH2_LDFLAGS@)
+mpip_mpich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
+mpip_mpich2_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_mpich2_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_mpich2_collector_monitor_fileio_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 mpit_mpich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 mpit_mpich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
 mpit_mpich2_collector_monitor_fileio_la_DEPENDENCIES =
 mpit_mpich2_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 libmpi_mpich2_monitor_fileio_la_CFLAGS = -static $(call lib_monitor_fileio_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 libmpi_mpich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 libmpi_mpich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
 libmpi_mpich2_monitor_fileio_la_DEPENDENCIES =
 libmpi_mpich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
+libmpip_mpich2_monitor_fileio_la_CFLAGS = -static -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@MPICH2_CPPFLAGS@)
+libmpip_mpich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPICH2_LDFLAGS@)
+libmpip_mpich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
+libmpip_mpich2_monitor_fileio_la_DEPENDENCIES =
+libmpip_mpich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 libmpit_mpich2_monitor_fileio_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 libmpit_mpich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 libmpit_mpich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPICH2_LIBS@)
 libmpit_mpich2_monitor_fileio_la_DEPENDENCIES =
 libmpit_mpich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 if HAVE_MRNET
 mpi_mpich2_collector_monitor_mrnet_mpi_la_CFLAGS = $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 mpi_mpich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 mpi_mpich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
 mpi_mpich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_mpich2_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
+mpip_mpich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
+mpip_mpich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
+mpip_mpich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
+mpip_mpich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_mpich2_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
 mpit_mpich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 mpit_mpich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 mpit_mpich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
@@ -373,6 +473,13 @@ libmpi_mpich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAG
 libmpi_mpich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
 libmpi_mpich2_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_mpich2_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
+libmpip_mpich2_monitor_mrnet_mpi_la_CFLAGS = -static -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
+libmpip_mpich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
+libmpip_mpich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
+libmpip_mpich2_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_mpich2_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
 libmpit_mpich2_monitor_mrnet_mpi_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 libmpit_mpich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 libmpit_mpich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
@@ -390,6 +497,13 @@ mpi_mvapich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_
 mpi_mvapich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
 mpi_mvapich_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_mvapich_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_mvapich_collector_monitor_fileio_la_CFLAGS = -DPROFILE $(call monitor_fileio_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
+mpip_mvapich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
+mpip_mvapich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
+mpip_mvapich_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_mvapich_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_mvapich_collector_monitor_fileio_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
 mpit_mvapich_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
 mpit_mvapich_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
@@ -401,6 +515,13 @@ libmpi_mvapich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_gen
 libmpi_mvapich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
 libmpi_mvapich_monitor_fileio_la_DEPENDENCIES =
 libmpi_mvapich_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
+libmpip_mvapich_monitor_fileio_la_CFLAGS = -static -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
+libmpip_mvapich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
+libmpip_mvapich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
+libmpip_mvapich_monitor_fileio_la_DEPENDENCIES =
+libmpip_mvapich_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 libmpit_mvapich_monitor_fileio_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
 libmpit_mvapich_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
 libmpit_mvapich_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH_LIBS@)
@@ -412,6 +533,13 @@ mpi_mvapich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrne
 mpi_mvapich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
 mpi_mvapich_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_mvapich_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
+mpip_mvapich_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
+mpip_mvapich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
+mpip_mvapich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
+mpip_mvapich_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_mvapich_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
 mpit_mvapich_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
 mpit_mvapich_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
 mpit_mvapich_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
@@ -423,6 +551,13 @@ libmpi_mvapich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLA
 libmpi_mvapich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
 libmpi_mvapich_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_mvapich_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
+libmpip_mvapich_monitor_mrnet_mpi_la_CFLAGS = -static -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
+libmpip_mvapich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
+libmpip_mvapich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
+libmpip_mvapich_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_mvapich_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
 libmpit_mvapich_monitor_mrnet_mpi_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH_CPPFLAGS@)
 libmpit_mvapich_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH_LDFLAGS@)
 libmpit_mvapich_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH_LIBS@)
@@ -439,6 +574,13 @@ mpi_mvapich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio
 mpi_mvapich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
 mpi_mvapich2_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_mvapich2_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_mvapich2_collector_monitor_fileio_la_CFLAGS = -DPROFILE $(call monitor_fileio_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
+mpip_mvapich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
+mpip_mvapich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
+mpip_mvapich2_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_mvapich2_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_mvapich2_collector_monitor_fileio_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
 mpit_mvapich2_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
 mpit_mvapich2_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
@@ -450,17 +592,32 @@ libmpi_mvapich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_ge
 libmpi_mvapich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
 libmpi_mvapich2_monitor_fileio_la_DEPENDENCIES =
 libmpi_mvapich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
+libmpip_mvapich2_monitor_fileio_la_CFLAGS = -static -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
+libmpip_mvapich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
+libmpip_mvapich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
+libmpip_mvapich2_monitor_fileio_la_DEPENDENCIES =
+libmpip_mvapich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 libmpit_mvapich2_monitor_fileio_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
 libmpit_mvapich2_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
 libmpit_mvapich2_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MVAPICH2_LIBS@)
 libmpit_mvapich2_monitor_fileio_la_DEPENDENCIES =
 libmpit_mvapich2_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 if HAVE_MRNET
 mpi_mvapich2_collector_monitor_mrnet_mpi_la_CFLAGS = $(call monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
 mpi_mvapich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
 mpi_mvapich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
 mpi_mvapich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_mvapich2_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
+mpip_mvapich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
+mpip_mvapich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
+mpip_mvapich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
+mpip_mvapich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_mvapich2_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
 mpit_mvapich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
 mpit_mvapich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
 mpit_mvapich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
@@ -472,6 +629,13 @@ libmpi_mvapich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFL
 libmpi_mvapich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
 libmpi_mvapich2_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_mvapich2_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
+libmpip_mvapich2_monitor_mrnet_mpi_la_CFLAGS = -static -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
+libmpip_mvapich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
+libmpip_mvapich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
+libmpip_mvapich2_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_mvapich2_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
 libmpit_mvapich2_monitor_mrnet_mpi_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MVAPICH2_CPPFLAGS@)
 libmpit_mvapich2_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MVAPICH2_LDFLAGS@)
 libmpit_mvapich2_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MVAPICH2_LIBS@)
@@ -488,6 +652,13 @@ mpi_openmpi_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_
 mpi_openmpi_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
 mpi_openmpi_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_openmpi_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_openmpi_collector_monitor_fileio_la_CFLAGS = -DPROFILE $(call monitor_fileio_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
+mpip_openmpi_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
+mpip_openmpi_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
+mpip_openmpi_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_openmpi_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_openmpi_collector_monitor_fileio_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
 mpit_openmpi_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
 mpit_openmpi_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
@@ -499,17 +670,32 @@ libmpi_openmpi_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_gen
 libmpi_openmpi_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
 libmpi_openmpi_monitor_fileio_la_DEPENDENCIES =
 libmpi_openmpi_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
+libmpip_openmpi_monitor_fileio_la_CFLAGS = -static -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
+libmpip_openmpi_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
+libmpip_openmpi_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
+libmpip_openmpi_monitor_fileio_la_DEPENDENCIES =
+libmpip_openmpi_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 libmpit_openmpi_monitor_fileio_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
 libmpit_openmpi_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
 libmpit_openmpi_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@OPENMPI_LIBS@)
 libmpit_openmpi_monitor_fileio_la_DEPENDENCIES =
 libmpit_openmpi_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 if HAVE_MRNET
 mpi_openmpi_collector_monitor_mrnet_mpi_la_CFLAGS = $(call monitor_mrnet_mpi_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
 mpi_openmpi_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
 mpi_openmpi_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
 mpi_openmpi_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_openmpi_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
+mpip_openmpi_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
+mpip_openmpi_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
+mpip_openmpi_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
+mpip_openmpi_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_openmpi_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
 mpit_openmpi_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
 mpit_openmpi_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
 mpit_openmpi_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
@@ -521,6 +707,13 @@ libmpi_openmpi_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLA
 libmpi_openmpi_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
 libmpi_openmpi_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_openmpi_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
+libmpip_openmpi_monitor_mrnet_mpi_la_CFLAGS = -static -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
+libmpip_openmpi_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
+libmpip_openmpi_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
+libmpip_openmpi_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_openmpi_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
 libmpit_openmpi_monitor_mrnet_mpi_la_CFLAGS = -static -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@OPENMPI_CPPFLAGS@)
 libmpit_openmpi_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@OPENMPI_LDFLAGS@)
 libmpit_openmpi_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@OPENMPI_LIBS@)
@@ -537,6 +730,13 @@ mpi_mpt_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFL
 mpi_mpt_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPT_LIBS@)
 mpi_mpt_collector_monitor_fileio_la_DEPENDENCIES =
 mpi_mpt_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
+mpip_mpt_collector_monitor_fileio_la_CFLAGS = -DSGI_MPT -DPROFILE $(call monitor_fileio_CFLAGS_generate,@MPT_CPPFLAGS@)
+mpip_mpt_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPT_LDFLAGS@)
+mpip_mpt_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPT_LIBS@)
+mpip_mpt_collector_monitor_fileio_la_DEPENDENCIES =
+mpip_mpt_collector_monitor_fileio_la_SOURCES = $(monitor_fileio_sources)
+
 mpit_mpt_collector_monitor_fileio_la_CFLAGS = -DSGI_MPT -DEXTENDEDTRACE $(call monitor_fileio_CFLAGS_generate,@MPT_CPPFLAGS@)
 mpit_mpt_collector_monitor_fileio_la_LDFLAGS = -module $(call monitor_fileio_LDFLAGS_generate,@MPT_LDFLAGS@)
 mpit_mpt_collector_monitor_fileio_la_LIBADD = $(call monitor_fileio_LIBADD_generate,@MPT_LIBS@)
@@ -548,17 +748,32 @@ libmpi_mpt_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generat
 libmpi_mpt_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPT_LIBS@)
 libmpi_mpt_monitor_fileio_la_DEPENDENCIES =
 libmpi_mpt_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
+libmpip_mpt_monitor_fileio_la_CFLAGS = -static -DSGI_MPT -DPROFILE $(call lib_monitor_fileio_CFLAGS_generate,@MPT_CPPFLAGS@)
+libmpip_mpt_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPT_LDFLAGS@)
+libmpip_mpt_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPT_LIBS@)
+libmpip_mpt_monitor_fileio_la_DEPENDENCIES =
+libmpip_mpt_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 libmpit_mpt_monitor_fileio_la_CFLAGS = -static -DSGI_MPT -DEXTENDEDTRACE $(call lib_monitor_fileio_CFLAGS_generate,@MPT_CPPFLAGS@)
 libmpit_mpt_monitor_fileio_la_LDFLAGS = $(call lib_monitor_fileio_LDFLAGS_generate,@MPT_LDFLAGS@)
 libmpit_mpt_monitor_fileio_la_LIBADD = $(call lib_monitor_fileio_LIBADD_generate,@MPT_LIBS@)
 libmpit_mpt_monitor_fileio_la_DEPENDENCIES =
 libmpit_mpt_monitor_fileio_la_SOURCES = $(lib_monitor_fileio_sources)
+
 if HAVE_MRNET
 mpi_mpt_collector_monitor_mrnet_mpi_la_CFLAGS = -DSGI_MPT $(call monitor_mrnet_mpi_CFLAGS_generate,@MPT_CPPFLAGS@)
 mpi_mpt_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPT_LDFLAGS@)
 mpi_mpt_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
 mpi_mpt_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpi_mpt_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
+mpip_mpt_collector_monitor_mrnet_mpi_la_CFLAGS = -DSGI_MPT -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPT_CPPFLAGS@)
+mpip_mpt_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPT_LDFLAGS@)
+mpip_mpt_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
+mpip_mpt_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
+mpip_mpt_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
+
 mpit_mpt_collector_monitor_mrnet_mpi_la_CFLAGS = -DSGI_MPT -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPT_CPPFLAGS@)
 mpit_mpt_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPT_LDFLAGS@)
 mpit_mpt_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
@@ -570,6 +785,13 @@ libmpi_mpt_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_g
 libmpi_mpt_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
 libmpi_mpt_monitor_mrnet_mpi_la_DEPENDENCIES =
 libmpi_mpt_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
+libmpip_mpt_monitor_mrnet_mpi_la_CFLAGS = -static -DSGI_MPT -DPROFILE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPT_CPPFLAGS@)
+libmpip_mpt_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPT_LDFLAGS@)
+libmpip_mpt_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
+libmpip_mpt_monitor_mrnet_mpi_la_DEPENDENCIES =
+libmpip_mpt_monitor_mrnet_mpi_la_SOURCES = $(lib_monitor_mrnet_mpi_sources)
+
 libmpit_mpt_monitor_mrnet_mpi_la_CFLAGS = -static -DSGI_MPT -DEXTENDEDTRACE $(call lib_monitor_mrnet_mpi_CFLAGS_generate,@MPT_CPPFLAGS@)
 libmpit_mpt_monitor_mrnet_mpi_la_LDFLAGS = $(call lib_monitor_mrnet_mpi_LDFLAGS_generate,@MPT_LDFLAGS@)
 libmpit_mpt_monitor_mrnet_mpi_la_LIBADD = $(call lib_monitor_mrnet_mpi_LIBADD_generate,@MPT_LIBS@)
@@ -591,6 +813,14 @@ mpi.xml: mpi.xml.in
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
 		$(srcdir)/mpi.xml.in > mpi.xml
+mpip.xml: mpip.xml.in
+
+	@rm -f mpip.xml
+	@sed \
+		-e 's,@@component_location@@,$(plugindir),' \
+		-e 's,@@cbtflib_location@@,$(libdir),' \
+		$(srcdir)/mpip.xml.in > mpip.xml
+	
 mpit.xml: mpit.xml.in
 
 	@rm -f mpit.xml

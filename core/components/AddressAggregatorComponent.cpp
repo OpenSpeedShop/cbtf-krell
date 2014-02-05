@@ -584,7 +584,8 @@ private:
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" ||
 		   collectorID == "iop" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
+		   collectorID == "mpi" || collectorID == "mpit" ||
+		   collectorID == "mpip" || collectorID == "pthreads") {
 	    //std::cerr << "IOP CALL aggregateSTTraceData" << std::endl;
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
@@ -686,7 +687,8 @@ private:
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" ||
 		   collectorID == "iop" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit" || collectorID == "pthreads") {
+		   collectorID == "mpi" || collectorID == "mpit" ||
+		   collectorID == "mpip" || collectorID == "pthreads") {
             aggregateSTTraceData(collectorID, dblob, abuffer);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

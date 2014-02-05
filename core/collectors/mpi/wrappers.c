@@ -38,9 +38,24 @@
 #include <mpi.h>
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
-//extern int CBTF_mpi_rank;
 int CBTF_mpi_rank;
 #endif
+
+#if defined(PROFILE)
+extern void mpi_record_event(const CBTF_mpip_event*, uint64_t);
+extern void mpi_start_event(CBTF_mpip_event*);
+#else
+#if defined(EXTENDEDTRACE)
+extern void mpi_record_event(const CBTF_mpit_event*, uint64_t);
+extern void mpi_start_event(CBTF_mpit_event*);
+#else
+extern void mpi_record_event(const CBTF_mpi_event*, uint64_t);
+extern void mpi_start_event(CBTF_mpi_event*);
+#endif
+#endif
+
+extern bool_t mpi_do_trace(const char*);
+
 
 static int debug_trace = 0;
 
@@ -59,11 +74,16 @@ int mpi_PMPI_Irecv
 		    int tag, MPI_Comm comm, MPI_Request* request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Irecv");
@@ -71,15 +91,23 @@ int mpi_PMPI_Irecv
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
     retval = PMPI_Irecv(buf, count, datatype, source, tag, comm, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
 
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -124,11 +152,16 @@ int mpi_PMPI_Recv
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Recv");
@@ -136,7 +169,11 @@ int mpi_PMPI_Recv
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -144,7 +181,12 @@ int mpi_PMPI_Recv
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -188,11 +230,16 @@ int mpi_PMPI_Recv_init
     MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Recv_init");
@@ -200,7 +247,11 @@ int mpi_PMPI_Recv_init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -208,7 +259,12 @@ int mpi_PMPI_Recv_init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -249,10 +305,15 @@ int mpi_PMPI_Iprobe
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Iprobe");
@@ -260,7 +321,11 @@ int mpi_PMPI_Iprobe
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -268,7 +333,12 @@ int mpi_PMPI_Iprobe
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -307,10 +377,15 @@ int mpi_PMPI_Probe
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Probe");
@@ -318,7 +393,11 @@ int mpi_PMPI_Probe
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -326,7 +405,12 @@ int mpi_PMPI_Probe
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -377,11 +461,16 @@ int mpi_PMPI_Isend
     MPI_Request* request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Isend");
@@ -389,7 +478,11 @@ int mpi_PMPI_Isend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -397,7 +490,12 @@ int mpi_PMPI_Isend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -441,11 +539,16 @@ int mpi_PMPI_Bsend
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Bsend");
@@ -453,7 +556,11 @@ int mpi_PMPI_Bsend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -461,7 +568,12 @@ int mpi_PMPI_Bsend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -507,11 +619,16 @@ int mpi_PMPI_Bsend_init
     MPI_Request* request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("Bsend_init");
@@ -519,7 +636,11 @@ int mpi_PMPI_Bsend_init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -527,7 +648,12 @@ int mpi_PMPI_Bsend_init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -572,11 +698,16 @@ int mpi_PMPI_Ibsend
     MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ibsend");
@@ -584,7 +715,11 @@ int mpi_PMPI_Ibsend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -592,7 +727,12 @@ int mpi_PMPI_Ibsend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -637,11 +777,16 @@ int mpi_PMPI_Irsend
     MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Irsend");
@@ -649,7 +794,11 @@ int mpi_PMPI_Irsend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -657,7 +806,12 @@ int mpi_PMPI_Irsend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -702,11 +856,16 @@ int mpi_PMPI_Issend
     MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Issend");
@@ -714,7 +873,11 @@ int mpi_PMPI_Issend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -722,7 +885,12 @@ int mpi_PMPI_Issend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -766,11 +934,16 @@ int mpi_PMPI_Rsend
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Rsend");
@@ -778,7 +951,11 @@ int mpi_PMPI_Rsend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -786,7 +963,12 @@ int mpi_PMPI_Rsend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -832,11 +1014,16 @@ int mpi_PMPI_Rsend_init
     MPI_Request* request )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Rsend_init");
@@ -844,7 +1031,11 @@ int mpi_PMPI_Rsend_init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -852,7 +1043,12 @@ int mpi_PMPI_Rsend_init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -896,11 +1092,16 @@ int mpi_PMPI_Send
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Send");
@@ -908,7 +1109,11 @@ int mpi_PMPI_Send
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -916,7 +1121,12 @@ int mpi_PMPI_Send
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -962,11 +1172,16 @@ int mpi_PMPI_Send_init
     MPI_Request* request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Send_init");
@@ -974,7 +1189,11 @@ int mpi_PMPI_Send_init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -982,7 +1201,12 @@ int mpi_PMPI_Send_init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1026,11 +1250,16 @@ int mpi_PMPI_Ssend
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ssend");
@@ -1038,7 +1267,11 @@ int mpi_PMPI_Ssend
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1046,7 +1279,12 @@ int mpi_PMPI_Ssend
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1092,11 +1330,16 @@ int mpi_PMPI_Ssend_init
     MPI_Request* request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Ssend_init");
@@ -1104,7 +1347,11 @@ int mpi_PMPI_Ssend_init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1112,7 +1359,12 @@ int mpi_PMPI_Ssend_init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1148,10 +1400,15 @@ int mpi_PMPI_Waitall
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitall");
@@ -1159,7 +1416,11 @@ int mpi_PMPI_Waitall
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1167,7 +1428,12 @@ int mpi_PMPI_Waitall
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1202,10 +1468,15 @@ int mpi_PMPI_Finalize()
 #endif
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Finalize");
@@ -1213,12 +1484,16 @@ int mpi_PMPI_Finalize()
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
 
 #if defined(EXTENDEDTRACE)
     PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
 #endif
 
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1226,7 +1501,12 @@ int mpi_PMPI_Finalize()
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1268,10 +1548,15 @@ int mpi_PMPI_Waitsome
     MPI_Status *array_of_statuses)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitsome");
@@ -1279,7 +1564,11 @@ int mpi_PMPI_Waitsome
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1289,7 +1578,12 @@ int mpi_PMPI_Waitsome
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1332,10 +1626,15 @@ int mpi_PMPI_Testsome
     MPI_Status *array_of_statuses)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testsome");
@@ -1343,7 +1642,11 @@ int mpi_PMPI_Testsome
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1353,7 +1656,12 @@ int mpi_PMPI_Testsome
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1392,10 +1700,15 @@ int mpi_PMPI_Waitany
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Waitany");
@@ -1403,7 +1716,11 @@ int mpi_PMPI_Waitany
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1411,7 +1728,12 @@ int mpi_PMPI_Waitany
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1461,11 +1783,16 @@ int mpi_PMPI_Unpack
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Unpack");
@@ -1473,7 +1800,11 @@ int mpi_PMPI_Unpack
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1482,7 +1813,12 @@ int mpi_PMPI_Unpack
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1520,10 +1856,15 @@ int mpi_PMPI_Wait
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Wait");
@@ -1531,7 +1872,11 @@ int mpi_PMPI_Wait
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1539,7 +1884,12 @@ int mpi_PMPI_Wait
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1579,10 +1929,15 @@ int mpi_PMPI_Testany
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testany");
@@ -1590,7 +1945,11 @@ int mpi_PMPI_Testany
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1598,7 +1957,12 @@ int mpi_PMPI_Testany
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1637,10 +2001,15 @@ int mpi_PMPI_Testall
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Testall");
@@ -1648,7 +2017,11 @@ int mpi_PMPI_Testall
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1656,7 +2029,12 @@ int mpi_PMPI_Testall
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1694,10 +2072,15 @@ int mpi_PMPI_Test
     MPI_Status *status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Test");
@@ -1705,7 +2088,11 @@ int mpi_PMPI_Test
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1713,7 +2100,12 @@ int mpi_PMPI_Test
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1759,11 +2151,16 @@ int mpi_PMPI_Scan
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scan");
@@ -1771,7 +2168,11 @@ int mpi_PMPI_Scan
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1779,7 +2180,12 @@ int mpi_PMPI_Scan
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1816,10 +2222,15 @@ int mpi_PMPI_Request_free
     (MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Request_free");
@@ -1827,7 +2238,11 @@ int mpi_PMPI_Request_free
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1835,7 +2250,12 @@ int mpi_PMPI_Request_free
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1886,11 +2306,16 @@ int mpi_PMPI_Reduce_scatter
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Reduce_scatter");
@@ -1898,7 +2323,11 @@ int mpi_PMPI_Reduce_scatter
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1906,7 +2335,12 @@ int mpi_PMPI_Reduce_scatter
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -1954,11 +2388,16 @@ int mpi_PMPI_Reduce
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Reduce");
@@ -1966,7 +2405,11 @@ int mpi_PMPI_Reduce
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -1974,7 +2417,12 @@ int mpi_PMPI_Reduce
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2022,11 +2470,16 @@ int mpi_PMPI_Pack
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Pack");
@@ -2034,7 +2487,11 @@ int mpi_PMPI_Pack
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2043,7 +2500,12 @@ int mpi_PMPI_Pack
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2081,10 +2543,15 @@ int mpi_PMPI_Init
     char ***argv)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Init");
@@ -2092,7 +2559,11 @@ int mpi_PMPI_Init
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2106,7 +2577,12 @@ int mpi_PMPI_Init
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2149,11 +2625,16 @@ int mpi_PMPI_Get_count
      int *count)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Get_count");
@@ -2161,7 +2642,11 @@ int mpi_PMPI_Get_count
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2169,7 +2654,12 @@ int mpi_PMPI_Get_count
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2224,11 +2714,16 @@ int mpi_PMPI_Gatherv
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Gatherv");
@@ -2236,7 +2731,11 @@ int mpi_PMPI_Gatherv
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2245,7 +2744,12 @@ int mpi_PMPI_Gatherv
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2295,11 +2799,16 @@ int mpi_PMPI_Gather
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Gather");
@@ -2307,7 +2816,11 @@ int mpi_PMPI_Gather
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2317,7 +2830,12 @@ int mpi_PMPI_Gather
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2354,10 +2872,15 @@ int mpi_PMPI_Cancel
     (MPI_Request *request)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Cancel");
@@ -2365,7 +2888,11 @@ int mpi_PMPI_Cancel
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2373,7 +2900,12 @@ int mpi_PMPI_Cancel
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2413,11 +2945,16 @@ int mpi_PMPI_Bcast
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Bcast");
@@ -2425,7 +2962,11 @@ int mpi_PMPI_Bcast
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2433,7 +2974,12 @@ int mpi_PMPI_Bcast
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2470,10 +3016,15 @@ int mpi_PMPI_Barrier
     (MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Barrier");
@@ -2481,7 +3032,11 @@ int mpi_PMPI_Barrier
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2489,7 +3044,12 @@ int mpi_PMPI_Barrier
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2544,11 +3104,16 @@ int mpi_PMPI_Alltoallv
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Alltoallv");
@@ -2556,7 +3121,11 @@ int mpi_PMPI_Alltoallv
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2566,7 +3135,12 @@ int mpi_PMPI_Alltoallv
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2610,11 +3184,16 @@ int mpi_PMPI_Alltoall
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Alltoall");
@@ -2622,7 +3201,11 @@ int mpi_PMPI_Alltoall
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2631,7 +3214,12 @@ int mpi_PMPI_Alltoall
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2678,11 +3266,16 @@ int mpi_PMPI_Allreduce
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allreduce");
@@ -2690,7 +3283,11 @@ int mpi_PMPI_Allreduce
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2698,7 +3295,12 @@ int mpi_PMPI_Allreduce
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2752,11 +3354,16 @@ int mpi_PMPI_Allgatherv
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allgatherv");
@@ -2764,7 +3371,11 @@ int mpi_PMPI_Allgatherv
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2774,7 +3385,12 @@ int mpi_PMPI_Allgatherv
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2822,11 +3438,16 @@ int mpi_PMPI_Allgather
     MPI_Comm comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Allgather");
@@ -2834,7 +3455,11 @@ int mpi_PMPI_Allgather
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -2843,7 +3468,12 @@ int mpi_PMPI_Allgather
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -2894,11 +3524,16 @@ int mpi_PMPI_Scatter
     	MPI_Comm    	comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event send_event,recv_event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scatter");
@@ -2923,7 +3558,11 @@ int mpi_PMPI_Scatter
     send_event.start_time = CBTF_GetTime();
 #else
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 #endif
 
     }
@@ -2956,7 +3595,11 @@ int mpi_PMPI_Scatter
     recv_event.tag = 0;
     mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Scatter));
 #else
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
+#endif
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Scatter));
 #endif
 
@@ -2997,11 +3640,16 @@ int mpi_PMPI_Scatterv
     	MPI_Comm    	comm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event send_event,recv_event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Scatterv");
@@ -3023,7 +3671,11 @@ int mpi_PMPI_Scatterv
     send_event.start_time = CBTF_GetTime();
 #else
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 #endif
     
 
@@ -3050,7 +3702,11 @@ int mpi_PMPI_Scatterv
     send_event.stop_time = CBTF_GetTime();
     mpi_record_event(&send_event, CBTF_GetAddressOfFunction(PMPI_Scatterv));
 #else
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
+#endif
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Scatterv));
 #endif
 
@@ -3108,11 +3764,16 @@ int mpi_PMPI_Sendrecv
     	MPI_Status* status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event send_event,recv_event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Sendrecv");
@@ -3134,7 +3795,11 @@ int mpi_PMPI_Sendrecv
     send_event.start_time = CBTF_GetTime();
 #else
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 #endif
 
     }
@@ -3169,7 +3834,11 @@ int mpi_PMPI_Sendrecv
     send_event.stop_time = CBTF_GetTime();
     mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv));
 #else
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
+#endif
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Sendrecv));
 #endif
 
@@ -3202,11 +3871,16 @@ int mpi_PMPI_Sendrecv_replace
     	MPI_Status* 	status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event send_event,recv_event;
     int datatype_size;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_Sendrecv_replace");
@@ -3228,7 +3902,11 @@ int mpi_PMPI_Sendrecv_replace
     send_event.start_time = CBTF_GetTime();
 #else
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 #endif
     
 
@@ -3262,7 +3940,11 @@ int mpi_PMPI_Sendrecv_replace
     recv_event.retval = retval;
     mpi_record_event(&recv_event, CBTF_GetAddressOfFunction(PMPI_Sendrecv_replace));
 #else
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
     event.stop_time = CBTF_GetTime();
+#endif
     mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Sendrecv_replace));
 #endif
 
@@ -3303,10 +3985,15 @@ int mpi_PMPI_Cart_create
 {
 
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3319,7 +4006,11 @@ int mpi_PMPI_Cart_create
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3327,7 +4018,12 @@ int mpi_PMPI_Cart_create
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3367,10 +4063,15 @@ int mpi_PMPI_Cart_sub
 {
 
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3383,7 +4084,11 @@ int mpi_PMPI_Cart_sub
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3391,7 +4096,12 @@ int mpi_PMPI_Cart_sub
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3435,10 +4145,15 @@ int mpi_PMPI_Graph_create
                       MPI_Comm* comm_graph)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     bool_t dotrace = mpi_do_trace("MPI_Graph_create");
@@ -3446,7 +4161,11 @@ int mpi_PMPI_Graph_create
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Graph_create called, comm_old= %d \n", comm_old);
@@ -3459,7 +4178,12 @@ int mpi_PMPI_Graph_create
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3497,10 +4221,15 @@ int mpi_PMPI_Intercomm_create
 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3513,7 +4242,11 @@ int mpi_PMPI_Intercomm_create
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
 
     }
@@ -3523,7 +4256,12 @@ int mpi_PMPI_Intercomm_create
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3557,10 +4295,15 @@ int mpi_PMPI_Intercomm_merge
                          MPI_Comm *newcomm)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3573,7 +4316,11 @@ int mpi_PMPI_Intercomm_merge
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3581,7 +4328,12 @@ int mpi_PMPI_Intercomm_merge
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3616,10 +4368,15 @@ int mpi_PMPI_Comm_free
 			(MPI_Comm* comm )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3632,7 +4389,11 @@ int mpi_PMPI_Comm_free
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3640,7 +4401,12 @@ int mpi_PMPI_Comm_free
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3683,10 +4449,15 @@ int mpi_PMPI_Comm_dup
                         MPI_Comm* newcomm )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3699,7 +4470,11 @@ int mpi_PMPI_Comm_dup
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3707,7 +4482,12 @@ int mpi_PMPI_Comm_dup
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3741,10 +4521,15 @@ int mpi_PMPI_Comm_create
                      MPI_Comm* newcomm )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     bool_t dotrace = mpi_do_trace("MPI_Comm_create");
@@ -3752,7 +4537,11 @@ int mpi_PMPI_Comm_create
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     if (debug_trace) {
       fprintf(stderr, "WRAPPER, mpi_PMPI_Comm_create called, comm = %d \n", comm);
@@ -3765,7 +4554,12 @@ int mpi_PMPI_Comm_create
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3800,10 +4594,15 @@ int mpi_PMPI_Comm_split
                           MPI_Comm* newcomm )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3816,7 +4615,11 @@ int mpi_PMPI_Comm_split
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3824,7 +4627,12 @@ int mpi_PMPI_Comm_split
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3859,10 +4667,15 @@ int mpi_PMPI_Start
 		( MPI_Request* request )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3875,7 +4688,11 @@ int mpi_PMPI_Start
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3883,7 +4700,12 @@ int mpi_PMPI_Start
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3918,10 +4740,15 @@ int mpi_PMPI_Startall
                         MPI_Request *array_of_requests )
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
 
     if (debug_trace) {
@@ -3934,7 +4761,11 @@ int mpi_PMPI_Startall
     if (dotrace) {
 
     mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
     event.start_time = CBTF_GetTime();
+#endif
 
     }
 
@@ -3942,7 +4773,12 @@ int mpi_PMPI_Startall
 
     if (dotrace) {
 
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
     event.stop_time = CBTF_GetTime();
+#endif
 
     /*TRACE DETAILS*/
 #if defined(EXTENDEDTRACE)
@@ -3971,13 +4807,13 @@ int mpi_PMPI_Startall
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_open(
+int MPI_File_open
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_open(
+int __wrap_MPI_File_open
 #else
-int mpi_PMPI_File_open(
+int mpi_PMPI_File_open
 #endif
-    MPI_Comm comm, 
+    (MPI_Comm comm, 
 #if MPI_VERSION >= 3
     const char * filename,
 #else
@@ -3988,10 +4824,15 @@ int mpi_PMPI_File_open(
     MPI_File* mfile)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_open");
@@ -4003,13 +4844,22 @@ int mpi_PMPI_File_open(
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_open(comm, filename, amode, info, mfile);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_open));
     }
 
@@ -4022,13 +4872,13 @@ int mpi_PMPI_File_open(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write(
+int MPI_File_write
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write(
+int __wrap_MPI_File_write
 #else
-int mpi_PMPI_File_write(
+int mpi_PMPI_File_write
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -4039,10 +4889,15 @@ int mpi_PMPI_File_write(
     MPI_Status* status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write");
@@ -4054,13 +4909,22 @@ int mpi_PMPI_File_write(
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write));
     }
 
@@ -4073,13 +4937,13 @@ int mpi_PMPI_File_write(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write_ordered(
+int MPI_File_write_ordered
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write_ordered(
+int __wrap_MPI_File_write_ordered
 #else
-int mpi_PMPI_File_write_ordered(
+int mpi_PMPI_File_write_ordered
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -4090,10 +4954,15 @@ int mpi_PMPI_File_write_ordered(
     MPI_Status* status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write_ordered");
@@ -4105,13 +4974,22 @@ int mpi_PMPI_File_write_ordered(
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write_ordered(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write_ordered));
     }
 
@@ -4124,13 +5002,13 @@ int mpi_PMPI_File_write_ordered(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write_shared(
+int MPI_File_write_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write_shared(
+int __wrap_MPI_File_write_shared
 #else
-int mpi_PMPI_File_write_shared(
+int mpi_PMPI_File_write_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -4141,23 +5019,37 @@ int mpi_PMPI_File_write_shared(
     MPI_Status* status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write_shared(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write_shared));
     }
 
@@ -4170,13 +5062,13 @@ int mpi_PMPI_File_write_shared(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write_all(
+int MPI_File_write_all
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write_all(
+int __wrap_MPI_File_write_all
 #else
-int mpi_PMPI_File_write_all(
+int mpi_PMPI_File_write_all
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -4187,23 +5079,37 @@ int mpi_PMPI_File_write_all(
     MPI_Status* status)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write_all");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write_all(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write_all));
     }
 
@@ -4216,34 +5122,48 @@ int mpi_PMPI_File_write_all(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_seek(
+int MPI_File_seek
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_seek(
+int __wrap_MPI_File_seek
 #else
-int mpi_PMPI_File_seek(
+int mpi_PMPI_File_seek
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset, 
     int whence)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_seek");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_seek(mfile, offset, whence);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
        event.stop_time = CBTF_GetTime();
+#endif
        mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_seek));
     }
 
@@ -4256,34 +5176,48 @@ int mpi_PMPI_File_seek(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_seek_shared(
+int MPI_File_seek_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_seek_shared(
+int __wrap_MPI_File_seek_shared
 #else
-int mpi_PMPI_File_seek_shared(
+int mpi_PMPI_File_seek_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset, 
     int whence)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_seek_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_seek_shared(mfile, offset, whence);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
        event.stop_time = CBTF_GetTime();
+#endif
        mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_seek_shared));
     }
 
@@ -4296,13 +5230,13 @@ int mpi_PMPI_File_seek_shared(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_set_view(
+int MPI_File_set_view
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_set_view(
+int __wrap_MPI_File_set_view
 #else
-int mpi_PMPI_File_set_view(
+int mpi_PMPI_File_set_view
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset disp,
     MPI_Datatype etype, 
     MPI_Datatype ftype, 
@@ -4314,23 +5248,37 @@ int mpi_PMPI_File_set_view(
     MPI_Info info)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_set_view");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_set_view(mfile, disp, etype, ftype, datarep, info);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_set_view));
     }
 
@@ -4343,19 +5291,24 @@ int mpi_PMPI_File_set_view(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_close(
+int MPI_File_close
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_close(
+int __wrap_MPI_File_close
 #else
-int mpi_PMPI_File_close(
+int mpi_PMPI_File_close
 #endif
-    MPI_File* mfile)
+    (MPI_File* mfile)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_close");
@@ -4367,13 +5320,22 @@ int mpi_PMPI_File_close(
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_close(mfile);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_close));
     }
 
@@ -4386,13 +5348,13 @@ int mpi_PMPI_File_close(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_delete(
+int MPI_File_delete
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_delete(
+int __wrap_MPI_File_delete
 #else
-int mpi_PMPI_File_delete(
+int mpi_PMPI_File_delete
 #endif
-
+    (
 #if MPI_VERSION >= 3
     const char * filename,
 #else
@@ -4401,23 +5363,37 @@ int mpi_PMPI_File_delete(
     MPI_Info info)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_delete");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_delete(filename, info);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_delete));
     }
 
@@ -4432,33 +5408,47 @@ int mpi_PMPI_File_delete(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_set_size(
+int MPI_File_set_size
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_set_size(
+int __wrap_MPI_File_set_size
 #else
-int mpi_PMPI_File_set_size(
+int mpi_PMPI_File_set_size
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset size)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_set_size");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_set_size(mfile, size);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_set_size));
     }
 
@@ -4472,33 +5462,47 @@ int mpi_PMPI_File_set_size(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_size(
+int MPI_File_get_size
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_size(
+int __wrap_MPI_File_get_size
 #else
-int mpi_PMPI_File_get_size(
+int mpi_PMPI_File_get_size
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset* size)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_size");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_size(mfile, size);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_size));
     }
 
@@ -4512,33 +5516,47 @@ int mpi_PMPI_File_get_size(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_position(
+int MPI_File_get_position
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_position(
+int __wrap_MPI_File_get_position
 #else
-int mpi_PMPI_File_get_position(
+int mpi_PMPI_File_get_position
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset* size)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_position");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_position(mfile, size);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_position));
     }
 
@@ -4551,33 +5569,47 @@ int mpi_PMPI_File_get_position(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_position_shared(
+int MPI_File_get_position_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_position_shared(
+int __wrap_MPI_File_get_position_shared
 #else
-int mpi_PMPI_File_get_position_shared(
+int mpi_PMPI_File_get_position_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset* size)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_position_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_position_shared(mfile, size);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_position_shared));
     }
 
@@ -4589,33 +5621,47 @@ int mpi_PMPI_File_get_position_shared(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_group(
+int MPI_File_get_group
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_group(
+int __wrap_MPI_File_get_group
 #else
-int mpi_PMPI_File_get_group(
+int mpi_PMPI_File_get_group
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Group* group)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_group");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_group(mfile, group);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_group));
     }
 
@@ -4627,33 +5673,47 @@ int mpi_PMPI_File_get_group(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_amode(
+int MPI_File_get_amode
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_amode(
+int __wrap_MPI_File_get_amode
 #else
-int mpi_PMPI_File_get_amode(
+int mpi_PMPI_File_get_amode
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     int * amode)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_amode");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_amode(mfile, amode);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_amode));
     }
 
@@ -4665,33 +5725,47 @@ int mpi_PMPI_File_get_amode(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_set_info(
+int MPI_File_set_info
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_set_info(
+int __wrap_MPI_File_set_info
 #else
-int mpi_PMPI_File_set_info(
+int mpi_PMPI_File_set_info
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Info info)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_set_info");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_set_info(mfile, info);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_set_info));
     }
 
@@ -4704,33 +5778,47 @@ int mpi_PMPI_File_set_info(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_info(
+int MPI_File_get_info
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_info(
+int __wrap_MPI_File_get_info
 #else
-int mpi_PMPI_File_get_info(
+int mpi_PMPI_File_get_info
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Info *ginfo)
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_info");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_info(mfile, ginfo);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_info));
     }
 
@@ -4742,36 +5830,50 @@ int mpi_PMPI_File_get_info(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_get_view(
+int MPI_File_get_view
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_get_view(
+int __wrap_MPI_File_get_view
 #else
-int mpi_PMPI_File_get_view(
+int mpi_PMPI_File_get_view
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset* disp,
     MPI_Datatype* etype, 
     MPI_Datatype* ftype, 
     char* datarep) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_get_view");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_get_view(mfile, disp, etype, ftype, datarep);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_get_view));
     }
 
@@ -4784,36 +5886,50 @@ int mpi_PMPI_File_get_view(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read(
+int MPI_File_read
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read(
+int __wrap_MPI_File_read
 #else
-int mpi_PMPI_File_read(
+int mpi_PMPI_File_read
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read));
     }
 
@@ -4826,36 +5942,50 @@ int mpi_PMPI_File_read(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read_shared(
+int MPI_File_read_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read_shared(
+int __wrap_MPI_File_read_shared
 #else
-int mpi_PMPI_File_read_shared(
+int mpi_PMPI_File_read_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read_shared(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read_shared));
     }
 
@@ -4868,36 +5998,50 @@ int mpi_PMPI_File_read_shared(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read_ordered(
+int MPI_File_read_ordered
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read_ordered(
+int __wrap_MPI_File_read_ordered
 #else
-int mpi_PMPI_File_read_ordered(
+int mpi_PMPI_File_read_ordered
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read_ordered");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read_ordered(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read_ordered));
     }
 
@@ -4910,36 +6054,50 @@ int mpi_PMPI_File_read_ordered(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read_all(
+int MPI_File_read_all
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read_all(
+int __wrap_MPI_File_read_all
 #else
-int mpi_PMPI_File_read_all(
+int mpi_PMPI_File_read_all
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read_all");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read_all(mfile, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read_all));
     }
 
@@ -4951,13 +6109,13 @@ int mpi_PMPI_File_read_all(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read_at(
+int MPI_File_read_at
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read_at(
+int __wrap_MPI_File_read_at
 #else
-int mpi_PMPI_File_read_at(
+int mpi_PMPI_File_read_at
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
     void* buf, 
     int count, 
@@ -4965,23 +6123,37 @@ int mpi_PMPI_File_read_at(
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read_at");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read_at(mfile, offset, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read_at));
     }
 
@@ -4994,13 +6166,13 @@ int mpi_PMPI_File_read_at(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_read_at_all(
+int MPI_File_read_at_all
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_read_at_all(
+int __wrap_MPI_File_read_at_all
 #else
-int mpi_PMPI_File_read_at_all(
+int mpi_PMPI_File_read_at_all
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
     void* buf, 
     int count, 
@@ -5008,23 +6180,37 @@ int mpi_PMPI_File_read_at_all(
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_read_at_all");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_read_at_all(mfile, offset, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_read_at_all));
     }
 
@@ -5037,13 +6223,13 @@ int mpi_PMPI_File_read_at_all(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write_at(
+int MPI_File_write_at
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write_at(
+int __wrap_MPI_File_write_at
 #else
-int mpi_PMPI_File_write_at(
+int mpi_PMPI_File_write_at
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
 #if MPI_VERSION >= 3
     const void* buf, 
@@ -5055,23 +6241,37 @@ int mpi_PMPI_File_write_at(
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write_at");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write_at(mfile, offset, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write_at));
     }
 
@@ -5084,13 +6284,13 @@ int mpi_PMPI_File_write_at(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_write_at_all(
+int MPI_File_write_at_all
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_write_at_all(
+int __wrap_MPI_File_write_at_all
 #else
-int mpi_PMPI_File_write_at_all(
+int mpi_PMPI_File_write_at_all
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
 #if MPI_VERSION >= 3
     const void* buf, 
@@ -5102,23 +6302,37 @@ int mpi_PMPI_File_write_at_all(
     MPI_Status* status) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_write_at_all");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_write_at_all(mfile, offset, buf, count, dtype, status);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_write_at_all));
     }
 
@@ -5131,13 +6345,13 @@ int mpi_PMPI_File_write_at_all(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iread_at(
+int MPI_File_iread_at
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iread_at(
+int __wrap_MPI_File_iread_at
 #else
-int mpi_PMPI_File_iread_at(
+int mpi_PMPI_File_iread_at
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
     void* buf, 
     int count, 
@@ -5145,23 +6359,37 @@ int mpi_PMPI_File_iread_at(
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iread_at");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iread_at(mfile, offset, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iread_at));
     }
 
@@ -5175,36 +6403,50 @@ int mpi_PMPI_File_iread_at(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iread(
+int MPI_File_iread
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iread(
+int __wrap_MPI_File_iread
 #else
-int mpi_PMPI_File_iread(
+int mpi_PMPI_File_iread
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iread");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iread(mfile, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iread));
     }
 
@@ -5216,36 +6458,50 @@ int mpi_PMPI_File_iread(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iread_shared(
+int MPI_File_iread_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iread_shared(
+int __wrap_MPI_File_iread_shared
 #else
-int mpi_PMPI_File_iread_shared(
+int mpi_PMPI_File_iread_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     void* buf, 
     int count, 
     MPI_Datatype dtype, 
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iread_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iread_shared(mfile, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iread_shared));
     }
 
@@ -5258,13 +6514,13 @@ int mpi_PMPI_File_iread_shared(
 
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iwrite_at(
+int MPI_File_iwrite_at
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iwrite_at(
+int __wrap_MPI_File_iwrite_at
 #else
-int mpi_PMPI_File_iwrite_at(
+int mpi_PMPI_File_iwrite_at
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
     MPI_Offset offset,
 #if MPI_VERSION >= 3
     const void* buf, 
@@ -5276,23 +6532,37 @@ int mpi_PMPI_File_iwrite_at(
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iwrite_at");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iwrite_at(mfile, offset, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iwrite_at));
     }
 
@@ -5304,13 +6574,13 @@ int mpi_PMPI_File_iwrite_at(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iwrite(
+int MPI_File_iwrite
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iwrite(
+int __wrap_MPI_File_iwrite
 #else
-int mpi_PMPI_File_iwrite(
+int mpi_PMPI_File_iwrite
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -5321,23 +6591,37 @@ int mpi_PMPI_File_iwrite(
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iwrite");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iwrite(mfile, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iwrite));
     }
 
@@ -5350,13 +6634,13 @@ int mpi_PMPI_File_iwrite(
  */
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
-int MPI_File_iwrite_shared(
+int MPI_File_iwrite_shared
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_File_iwrite_shared(
+int __wrap_MPI_File_iwrite_shared
 #else
-int mpi_PMPI_File_iwrite_shared(
+int mpi_PMPI_File_iwrite_shared
 #endif
-    MPI_File mfile,
+    (MPI_File mfile,
 #if MPI_VERSION >= 3
     const void* buf, 
 #else
@@ -5367,23 +6651,37 @@ int mpi_PMPI_File_iwrite_shared(
     MPIO_Request* request) 
 {
     int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpit_event event;
 #else
     CBTF_mpi_event event;
+#endif
 #endif
     
     bool_t dotrace = mpi_do_trace("MPI_File_iwrite_shared");
 
     if (dotrace) {
       mpi_start_event(&event);
+#if defined(PROFILE)
+	start_time = CBTF_GetTime();
+#else
       event.start_time = CBTF_GetTime();
+#endif
     }
 
     retval = PMPI_File_iwrite_shared(mfile, buf, count, dtype, request);
 
     if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
       event.stop_time = CBTF_GetTime();
+#endif
       mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_File_iwrite_shared));
     }
 

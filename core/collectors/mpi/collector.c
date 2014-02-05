@@ -49,14 +49,21 @@
 
 
 /** String uniquely identifying this collector. */
+#if defined(PROFILE)
+const char* const cbtf_collector_unique_id = "mpip";
+#else
 #if defined(EXTENDEDTRACE)
 const char* const cbtf_collector_unique_id = "mpit";
 #else
 const char* const cbtf_collector_unique_id = "mpi";
 #endif
+#endif
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
+#if defined(PROFILE)
+const unsigned OverheadFrameCount = 2;
+#else
 #if defined(CBTF_SERVICE_USE_OFFLINE)
 const unsigned OverheadFrameCount = 1;
 #else
@@ -64,6 +71,7 @@ const unsigned OverheadFrameCount = 1;
 const unsigned OverheadFrameCount = 2 /*3*/;
 #else
 const unsigned OverheadFrameCount = 2;
+#endif
 #endif
 #endif
 
@@ -74,21 +82,29 @@ const unsigned OverheadFrameCount = 2;
  *       function" even though the size IS constant... Maybe this can be fixed?
  */
 
+#if defined(PROFILE)
+#define MaxFramesPerStackTrace 100
+#else
 /** Maximum number of frames to allow in each stack trace. */
 /* what is a reasonable default here. 32? */
 #define MaxFramesPerStackTrace 64
+#endif
 
+#if defined(PROFILE)
+#define StackTraceBufferSize (CBTF_BlobSizeFactor * 512)
+#else
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
 /** allows for 6 unique stacktraces (384*8/512) */
 #define StackTraceBufferSize (CBTF_BlobSizeFactor * 384)
+#endif
 
 
 /** Number of event entries in the tracing buffer. */
 /** CBTF_mpi_event is 32 bytes */
 #if defined(EXTENDEDTRACE)
 #define EventBufferSize (CBTF_BlobSizeFactor * 215)
-#else
+#elif !defined(PROFILE)
 #define EventBufferSize (CBTF_BlobSizeFactor * 415)
 #endif
 
@@ -96,21 +112,33 @@ const unsigned OverheadFrameCount = 2;
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
+#if defined(PROFILE)
+    CBTF_mpi_profile_data data;
+#else
 #if defined(EXTENDEDTRACE)
     CBTF_mpi_exttrace_data data;              /**< Actual data blob. */
 #else
     CBTF_mpi_trace_data data;              /**< Actual data blob. */
 #endif
+#endif
 
     /** Tracing buffer. */
+#if defined(PROFILE)
     struct {
         uint64_t stacktraces[StackTraceBufferSize];  /**< Stack traces. */
+        uint64_t time[StackTraceBufferSize];  /**< Stack traces. */
+        uint8_t count[StackTraceBufferSize];  /**< Stack traces. */
+    } buffer;
+#else
+    struct {
+        uint64_t stacktraces[StackTraceBufferSize]; /**< Stack traces. */
 #if defined(EXTENDEDTRACE)
         CBTF_mpit_event events[EventBufferSize];    /**< MPI call events with details. */
 #else
         CBTF_mpi_event events[EventBufferSize];     /**< MPI call events. */
 #endif
     } buffer;
+#endif
     
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     char CBTF_mpi_traced[PATH_MAX];
@@ -128,7 +156,16 @@ typedef struct {
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
+#if defined(PROFILE)
+static const uint32_t TLSKey = 0x0000FEF8;
+#else
+#if defined(EXTENDEDTRACE)
+static const uint32_t TLSKey = 0x00001EF8;
+#else
 static const uint32_t TLSKey = 0x00001EF7;
+#endif
+#endif
+
 int mpi_init_tls_done = 0;
 
 #else
@@ -169,14 +206,26 @@ static void initialize_data(TLS* tls)
     tls->header.addr_end = 0;
     
     /* Re-initialize the actual data blob */
-    tls->data.stacktraces.stacktraces_len = 0;
     tls->data.stacktraces.stacktraces_val = tls->buffer.stacktraces;
+    tls->data.stacktraces.stacktraces_len = 0;
+#if defined(PROFILE)
+    tls->data.count.count_val = tls->buffer.count;
+    tls->data.count.count_len = 0;
+    tls->data.time.time_val = tls->buffer.time;
+    tls->data.time.time_len = 0;
+#else
     tls->data.events.events_len = 0;
     tls->data.events.events_val = tls->buffer.events;
+#endif
 
     /* Re-initialize the sampling buffer */
     memset(tls->buffer.stacktraces, 0, sizeof(tls->buffer.stacktraces));
+#if defined(PROFILE)
+    memset(tls->buffer.count, 0, sizeof(tls->buffer.count));
+    memset(tls->buffer.time, 0, sizeof(tls->buffer.time));
+#else
     memset(tls->buffer.events, 0, sizeof(tls->buffer.events));
+#endif
 }
 
 
@@ -252,10 +301,14 @@ static void send_samples(TLS *tls)
 	}
 #endif
 
+#if defined(PROFILE)
+    cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mpi_profile_data, &(tls->data));
+#else
 #if defined(EXTENDEDTRACE)
     cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mpi_exttrace_data, &(tls->data));
 #else
     cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mpi_trace_data, &(tls->data));
+#endif
 #endif
 
     /* Re-initialize the data blob's header */
@@ -270,10 +323,14 @@ static void send_samples(TLS *tls)
  *
  * @param event    Event to be started.
  */
+#if defined(PROFILE)
+void mpi_start_event(CBTF_mpip_event* event)
+#else
 #if defined(EXTENDEDTRACE)
 void mpi_start_event(CBTF_mpit_event* event)
 #else
 void mpi_start_event(CBTF_mpi_event* event)
+#endif
 #endif
 {
     /* Access our thread-local storage */
@@ -288,10 +345,15 @@ void mpi_start_event(CBTF_mpi_event* event)
     ++tls->nesting_depth;
 
     /* Initialize the event record. */
+
+#if defined(PROFILE)
+    memset(event, 0, sizeof(CBTF_mpip_event));
+#else
 #if defined(EXTENDEDTRACE)
     memset(event, 0, sizeof(CBTF_mpit_event));
 #else
     memset(event, 0, sizeof(CBTF_mpi_event));
+#endif
 #endif
 }
 
@@ -310,10 +372,14 @@ void mpi_start_event(CBTF_mpi_event* event)
  * @param function    Address of the MPI function for which the event is being
  *                    recorded.
  */
+#if defined(PROFILE)
+void mpi_record_event(const CBTF_mpip_event* event, uint64_t function)
+#else
 #if defined(EXTENDEDTRACE)
 void mpi_record_event(const CBTF_mpit_event* event, uint64_t function)
 #else
 void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
+#endif
 #endif
 {
     /* Access our thread-local storage */
@@ -363,13 +429,95 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
      * then decrement nesting_depth after aquiring the stacktrace
      */
 
-    //++tls->nesting_depth;
+    ++tls->nesting_depth;
     /* Obtain the stack trace from the current thread context */
     CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
 				    MaxFramesPerStackTrace,
 				    &stacktrace_size, stacktrace);
-    //--tls->nesting_depth;
+    --tls->nesting_depth;
 
+#if defined(PROFILE)
+
+    bool_t stack_already_exists = FALSE;
+
+    if(stacktrace_size > 0)
+	stacktrace[0] = function;
+
+    int j;
+    int stackindex = 0;
+    /* search individual stacks via count/indexing array */
+    for (i = 0; i < tls->data.count.count_len ; i++ )
+    {
+	/* a count > 0 indexes the top of stack in the data buffer. */
+	/* a count == 255 indicates this stack is at the count limit. */
+
+	if (tls->buffer.count[i] == 0) {
+	    continue;
+	}
+	if (tls->buffer.count[i] == 255) {
+	    continue;
+	}
+
+	/* see if the stack addresses match */
+	for (j = 0; j < stacktrace_size ; j++ )
+	{
+	    if ( tls->buffer.stacktraces[i+j] != stacktrace[j] ) {
+		   break;
+	    }
+	}
+
+	if ( j == stacktrace_size) {
+	    stack_already_exists = TRUE;
+	    stackindex = i;
+	}
+    }
+
+    /* if the stack already exisits in the buffer, update its count
+     * and return. If the stack is already at the count limit.
+    */
+    if (stack_already_exists && tls->buffer.count[stackindex] < 255 ) {
+	/* update count for this stack */
+	tls->buffer.count[stackindex] = tls->buffer.count[stackindex] + 1;
+	tls->buffer.time[stackindex] += event->time;
+	// reset do_trace to true.
+	tls->do_trace = TRUE;
+	return;
+    }
+
+    /* sample buffer has no room for these stack frames.*/
+    int buflen = tls->data.stacktraces.stacktraces_len + stacktrace_size;
+    if ( buflen > StackTraceBufferSize) {
+	/* send the current sample buffer. (will init a new buffer) */
+	send_samples(tls);
+    }
+
+    /* add frames to sample buffer, compute addresss range */
+    for (i = 0; i < stacktrace_size ; i++)
+    {
+	/* always add address to buffer bt */
+	tls->buffer.stacktraces[tls->data.stacktraces.stacktraces_len] = stacktrace[i];
+
+	/* top of stack indicated by a positive count. */
+	/* all other elements are 0 */
+	if (i > 0 ) {
+	    tls->buffer.count[tls->data.count.count_len] = 0;
+	} else {
+	    tls->buffer.count[tls->data.count.count_len] = 1;
+	    tls->buffer.time[tls->data.time.time_len] = event->time;
+	}
+
+	if (stacktrace[i] < tls->header.addr_begin ) {
+	    tls->header.addr_begin = stacktrace[i];
+	}
+	if (stacktrace[i] > tls->header.addr_end ) {
+	    tls->header.addr_end = stacktrace[i];
+	}
+	tls->data.stacktraces.stacktraces_len++;
+	tls->data.count.count_len++;
+	tls->data.time.time_len++;
+    }
+
+#else
     /*
      * Replace the first entry in the call stack with the address of the MPI
      * function that is being wrapped. On most platforms, this entry will be
@@ -463,6 +611,7 @@ fprintf(stderr,"Event Buffer is full, call send_samples\n");
 #endif
 	send_samples(tls);
     }
+#endif
 
     tls->do_trace = TRUE;
 }
@@ -618,9 +767,15 @@ void cbtf_collector_stop()
     defer_trace(0);
 
     /* Are there any unsent samples? */
+#if defined(PROFILE)
+    if(tls->data.count.count_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
+	send_samples(tls);
+    }
+#else
     if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
+#endif
 
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS

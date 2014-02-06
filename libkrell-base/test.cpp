@@ -186,8 +186,8 @@ BOOST_AUTO_TEST_CASE(TestAddressRange)
     //
     // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=57532
     //   
-#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL == 1) || \
-      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL == 0))    
+#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ == 1) || \
+      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ == 0))    
     BOOST_CHECK((AddressRange() & AddressRange(0, 13)).empty());
 #endif
     
@@ -503,8 +503,8 @@ BOOST_AUTO_TEST_CASE(TestTimeInterval)
     //
     // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=57532
     //   
-#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL == 1) || \
-      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL == 0))    
+#if !((__GNUC__ == 4 && __GNUC_MINOR__ == 8 && __GNUC_PATCHLEVEL__ == 1) || \
+      (__GNUC__ == 4 && __GNUC_MINOR__ == 9 && __GNUC_PATCHLEVEL__ == 0))    
     BOOST_CHECK((TimeInterval() & TimeInterval(0, 13)).empty());
 #endif
     

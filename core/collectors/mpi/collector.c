@@ -65,7 +65,8 @@ const char* const cbtf_collector_unique_id = "mpi";
 const unsigned OverheadFrameCount = 2;
 #else
 #if defined(CBTF_SERVICE_USE_OFFLINE)
-const unsigned OverheadFrameCount = 1;
+//const unsigned OverheadFrameCount = 1;
+const unsigned OverheadFrameCount = 2;
 #else
 #if defined(__linux) && defined(__ia64)
 const unsigned OverheadFrameCount = 2 /*3*/;
@@ -433,12 +434,10 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
      * then decrement nesting_depth after aquiring the stacktrace
      */
 
-    ++tls->nesting_depth;
     /* Obtain the stack trace from the current thread context */
     CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
 				    MaxFramesPerStackTrace,
 				    &stacktrace_size, stacktrace);
-    --tls->nesting_depth;
 
 #if defined(PROFILE)
 

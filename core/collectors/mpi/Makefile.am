@@ -61,7 +61,7 @@ staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-fileio.la \
                             libmpit-mpich2-monitor-fileio.la
 if HAVE_MRNET
 pkglib_LTLIBRARIES += mpi-mpich2-collector-monitor-mrnet-mpi.la \
-                      mpip-mpich2-collector-monitor-mrnet-mpi.la
+                      mpip-mpich2-collector-monitor-mrnet-mpi.la \
                       mpit-mpich2-collector-monitor-mrnet-mpi.la
 staticpkglib_LTLIBRARIES += libmpi-mpich2-monitor-mrnet-mpi.la \
                             libmpip-mpich2-monitor-mrnet-mpi.la \
@@ -287,7 +287,6 @@ monitor_mrnet_mpi_sources = \
 	$(WRAPPER_SOURCES) \
 	$(COLLECTOR_SOURCES)
 
-
 lib_monitor_mrnet_mpi_CFLAGS_generate = \
 	-static \
 	-DCBTF_SERVICE_USE_OFFLINE \
@@ -462,7 +461,7 @@ mpip_mpich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIB
 mpip_mpich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =
 mpip_mpich2_collector_monitor_mrnet_mpi_la_SOURCES = $(monitor_mrnet_mpi_sources)
 
-mpit_mpich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DEXTENDEDTRACE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
+mpit_mpich2_collector_monitor_mrnet_mpi_la_CFLAGS = -DPROFILE $(call monitor_mrnet_mpi_CFLAGS_generate,@MPICH2_CPPFLAGS@)
 mpit_mpich2_collector_monitor_mrnet_mpi_la_LDFLAGS = -module $(call monitor_mrnet_mpi_LDFLAGS_generate,@MPICH2_LDFLAGS@)
 mpit_mpich2_collector_monitor_mrnet_mpi_la_LIBADD = $(call monitor_mrnet_mpi_LIBADD_generate,@MPICH2_LIBS@)
 mpit_mpich2_collector_monitor_mrnet_mpi_la_DEPENDENCIES =

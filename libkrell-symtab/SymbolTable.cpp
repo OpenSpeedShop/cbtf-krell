@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -19,8 +19,6 @@
 /** @file Definition of the SymbolTable class. */
 
 #include <boost/assert.hpp>
-#include <KrellInstitute/SymbolTable/Function.hpp>
-#include <KrellInstitute/SymbolTable/Statement.hpp>
 
 #include "SymbolTable.hpp"
 
@@ -36,6 +34,8 @@ SymbolTable::SymbolTable(const FileName& file) :
     dm_file(file),
     dm_functions(),
     dm_functions_index(),
+    dm_loops(),
+    dm_loops_index(),
     dm_statements(),
     dm_statements_index()
 {
@@ -49,6 +49,8 @@ SymbolTable::SymbolTable(const CBTF_Protocol_SymbolTable& message) :
     dm_file(message.linked_object),
     dm_functions(),
     dm_functions_index(),
+    dm_loops(),
+    dm_loops_index(),
     dm_statements(),
     dm_statements_index()
 {
@@ -204,9 +206,7 @@ const FileName& SymbolTable::getFile() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-SymbolTable::UniqueIdentifier SymbolTable::addFunction(
-    const std::string& name
-    )
+SymbolTable::UniqueIdentifier SymbolTable::addFunction(const std::string& name)
 {
     dm_functions.push_back(FunctionItem(name));    
     return dm_functions.size() - 1;
@@ -236,6 +236,43 @@ void SymbolTable::addFunctionAddressRanges(const UniqueIdentifier& uid,
              i = all_ranges.begin(); i != all_ranges.end(); ++i)
     {
         dm_functions_index.insert(AddressRangeIndexRow(uid, *i));
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::addLoop(const Address& head)
+{
+    dm_loops.push_back(LoopItem(head));
+    return dm_loops.size() - 1;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::addLoopAddressRanges(const UniqueIdentifier& uid,
+                                       const std::set<AddressRange>& ranges)
+{    
+    BOOST_ASSERT(uid < dm_loops.size());
+    dm_loops[uid].dm_addresses += ranges;
+    
+    //
+    // Update the index used to find loops by addresses. Remove all of
+    // the existing index entries for this loop. Obtain the new set of
+    // address ranges for this loop and add them to the index.
+    //
+
+    dm_loops_index.get<0>().erase(uid);
+
+    std::set<AddressRange> all_ranges = dm_loops[uid].dm_addresses;
+    
+    for (std::set<AddressRange>::const_iterator
+             i = all_ranges.begin(); i != all_ranges.end(); ++i)
+    {
+        dm_loops_index.insert(AddressRangeIndexRow(uid, *i));
     }
 }
 
@@ -322,6 +359,43 @@ SymbolTable::UniqueIdentifier SymbolTable::cloneFunction(
 
 //------------------------------------------------------------------------------
 // By implementing the cloning as a SymbolTable method, rather than externally
+// inside of Loop, we avoid partitioning the cloned loop's address ranges into
+// address bitmaps because the original partitioning is copied.
+//------------------------------------------------------------------------------
+SymbolTable::UniqueIdentifier SymbolTable::cloneLoop(
+    const SymbolTable& symbol_table, const UniqueIdentifier& uid
+    )
+{
+    BOOST_ASSERT(uid < symbol_table.dm_loops.size());
+
+    // Create a clone of the original loop's LoopItem
+
+    const LoopItem& original = symbol_table.dm_loops[uid];
+    dm_loops.push_back(LoopItem(original.dm_head));
+
+    UniqueIdentifier clone_uid = dm_loops.size() - 1;
+    
+    LoopItem& clone = dm_loops[clone_uid];
+    clone.dm_addresses = original.dm_addresses;
+    
+    // Update the index used to find loops by addresses
+    
+    std::set<AddressRange> ranges = clone.dm_addresses;
+    
+    for (std::set<AddressRange>::const_iterator
+             i = ranges.begin(); i != ranges.end(); ++i)
+    {
+        dm_loops_index.insert(AddressRangeIndexRow(clone_uid, *i));
+    }
+
+    // Return the unique identifier of the cloned loop
+    return clone_uid;
+}
+
+
+
+//------------------------------------------------------------------------------
+// By implementing the cloning as a SymbolTable method, rather than externally
 // inside of Statement, we avoid partitioning the cloned statement's address
 // ranges into address bitmaps because the original partitioning is copied.
 //------------------------------------------------------------------------------
@@ -385,6 +459,30 @@ std::set<AddressRange> SymbolTable::getFunctionAddressRanges(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+const Address& SymbolTable::getLoopHeadAddress(
+    const UniqueIdentifier& uid
+    ) const
+{
+    BOOST_ASSERT(uid < dm_loops.size());
+    return dm_loops[uid].dm_head;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+std::set<AddressRange> SymbolTable::getLoopAddressRanges(
+    const UniqueIdentifier& uid
+    ) const
+{
+    BOOST_ASSERT(uid < dm_loops.size());
+    return dm_loops[uid].dm_addresses;
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 const FileName& SymbolTable::getStatementFile(const UniqueIdentifier& uid) const
 {
     BOOST_ASSERT(uid < dm_statements.size());
@@ -429,16 +527,7 @@ std::set<AddressRange> SymbolTable::getStatementAddressRanges(
 //------------------------------------------------------------------------------
 void SymbolTable::visitFunctions(const FunctionVisitor& visitor)
 {
-    bool terminate = false;
-    Function value(shared_from_this(), 0);
-    
-    for (UniqueIdentifier i = 0, iEnd = dm_functions.size(); 
-         !terminate && (i != iEnd); 
-         ++i)
-    {
-        value.dm_unique_identifier = i;
-        terminate |= !visitor(value);
-    }
+    visit<FunctionItem>(dm_functions, visitor);
 }
 
 
@@ -448,10 +537,7 @@ void SymbolTable::visitFunctions(const FunctionVisitor& visitor)
 void SymbolTable::visitFunctions(const AddressRange& range,
                                  const FunctionVisitor& visitor)
 {
-    bool terminate = false;
-    boost::dynamic_bitset<> visited(dm_functions.size());
-
-    visit(range, visitor, terminate, visited);
+    visit<FunctionItem>(dm_functions, dm_functions_index, range, visitor);
 }
 
 
@@ -462,13 +548,21 @@ void SymbolTable::visitFunctionDefinitions(const UniqueIdentifier& uid,
                                            const StatementVisitor& visitor)
 {
     BOOST_ASSERT(uid < dm_functions.size());
+    std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;    
+    visit<StatementItem>(dm_statements, dm_statements_index,
+                         AddressRange(ranges.begin()->begin()), visitor);
+}
 
-    bool terminate = false;
-    boost::dynamic_bitset<> visited(dm_statements.size());
 
-    std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;
-    
-    visit(AddressRange(ranges.begin()->begin()), visitor, terminate, visited);
+        
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitFunctionLoops(const UniqueIdentifier& uid,
+                                     const LoopVisitor& visitor)
+{
+    BOOST_ASSERT(uid < dm_functions.size());
+    visit<LoopItem>(dm_loops, dm_loops_index,
+                    dm_functions[uid].dm_addresses, visitor);
 }
 
 
@@ -479,17 +573,63 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
                                           const StatementVisitor& visitor)
 {
     BOOST_ASSERT(uid < dm_functions.size());
+    visit<StatementItem>(dm_statements, dm_statements_index,
+                         dm_functions[uid].dm_addresses, visitor);
+}
 
-    bool terminate = false;
-    boost::dynamic_bitset<> visited(dm_statements.size());
-    
-    std::set<AddressRange> ranges = dm_functions[uid].dm_addresses;
-    
-    for (std::set<AddressRange>::const_iterator
-             i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
-    {
-        visit(*i, visitor, terminate, visited);
-    }
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitLoops(const LoopVisitor& visitor)
+{
+    visit<LoopItem>(dm_loops, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitLoops(const AddressRange& range,
+                             const LoopVisitor& visitor)
+{
+    visit<LoopItem>(dm_loops, dm_loops_index, range, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitLoopDefinitions(const UniqueIdentifier& uid,
+                                       const StatementVisitor& visitor)
+{
+    BOOST_ASSERT(uid < dm_loops.size());
+    visit<StatementItem>(dm_statements, dm_statements_index,
+                         AddressRange(dm_loops[uid].dm_head), visitor);
+}
+
+
+        
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitLoopFunctions(const UniqueIdentifier& uid,
+                                     const FunctionVisitor& visitor)
+{
+    BOOST_ASSERT(uid < dm_loops.size());
+    visit<FunctionItem>(dm_functions, dm_functions_index,
+                        dm_loops[uid].dm_addresses, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void SymbolTable::visitLoopStatements(const UniqueIdentifier& uid,
+                                      const StatementVisitor& visitor)
+{
+    BOOST_ASSERT(uid < dm_loops.size());
+    visit<StatementItem>(dm_statements, dm_statements_index,
+                         dm_loops[uid].dm_addresses, visitor);
 }
 
 
@@ -498,16 +638,7 @@ void SymbolTable::visitFunctionStatements(const UniqueIdentifier& uid,
 //------------------------------------------------------------------------------
 void SymbolTable::visitStatements(const StatementVisitor& visitor)
 {
-    bool terminate = false;
-    Statement value(shared_from_this(), 0);
-    
-    for (UniqueIdentifier i = 0, iEnd = dm_statements.size();
-         !terminate && (i != iEnd); 
-         ++i)
-    {
-        value.dm_unique_identifier = i;
-        terminate |= !visitor(value);
-    }
+    visit<StatementItem>(dm_statements, visitor);
 }
 
 
@@ -517,10 +648,7 @@ void SymbolTable::visitStatements(const StatementVisitor& visitor)
 void SymbolTable::visitStatements(const AddressRange& range,
                                   const StatementVisitor& visitor)
 {
-    bool terminate = false;
-    boost::dynamic_bitset<> visited(dm_statements.size());
-
-    visit(range, visitor, terminate, visited);
+    visit<StatementItem>(dm_statements, dm_statements_index, range, visitor);
 }
 
 
@@ -531,81 +659,18 @@ void SymbolTable::visitStatementFunctions(const UniqueIdentifier& uid,
                                           const FunctionVisitor& visitor)
 {
     BOOST_ASSERT(uid < dm_statements.size());
-
-    bool terminate = false;
-    boost::dynamic_bitset<> visited(dm_functions.size());
-    
-    std::set<AddressRange> ranges = dm_statements[uid].dm_addresses;
-    
-    for (std::set<AddressRange>::const_iterator
-             i = ranges.begin(); !terminate && (i != ranges.end()); ++i)
-    {
-        visit(*i, visitor, terminate, visited);
-    }
+    visit<FunctionItem>(dm_functions, dm_functions_index,
+                        dm_statements[uid].dm_addresses, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void SymbolTable::visit(const AddressRange& range,
-                        const FunctionVisitor& visitor,
-                        bool& terminate, boost::dynamic_bitset<>& visited)
+void SymbolTable::visitStatementLoops(const UniqueIdentifier& uid,
+                                      const LoopVisitor& visitor)
 {
-    Function value(shared_from_this(), 0);
-
-    AddressRangeIndex::nth_index<1>::type::const_iterator i = 
-        dm_functions_index.get<1>().lower_bound(range.begin());
-    
-    if (i != dm_functions_index.get<1>().begin())
-    {
-        --i;
-    }
-    
-    AddressRangeIndex::nth_index<1>::type::const_iterator iEnd = 
-        dm_functions_index.get<1>().upper_bound(range.end());
-    
-    for (; !terminate && (i != iEnd); ++i)
-    {
-        if (i->dm_range.intersects(range) &&
-            (i->dm_uid < visited.size()) && !visited[i->dm_uid])
-        {
-            visited[i->dm_uid] = true;
-            value.dm_unique_identifier = i->dm_uid;
-            terminate |= !visitor(value);
-        }
-    }
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void SymbolTable::visit(const AddressRange& range,
-                        const StatementVisitor& visitor,
-                        bool& terminate, boost::dynamic_bitset<>& visited)
-{
-    Statement value(shared_from_this(), 0);
-
-    AddressRangeIndex::nth_index<1>::type::const_iterator i =
-        dm_statements_index.get<1>().lower_bound(range.begin());
-    
-    if (i != dm_statements_index.get<1>().begin())
-    {
-        --i;
-    }
-    
-    AddressRangeIndex::nth_index<1>::type::const_iterator iEnd =
-        dm_statements_index.get<1>().upper_bound(range.end());
-    
-    for (; !terminate && (i != iEnd); ++i)
-    {
-        if (i->dm_range.intersects(range) && 
-            (i->dm_uid < visited.size()) && !visited[i->dm_uid])
-        {
-            visited[i->dm_uid] = true;
-            value.dm_unique_identifier = i->dm_uid;
-            terminate |= !visitor(value);
-        }
-    }
+    BOOST_ASSERT(uid < dm_statements.size());    
+    visit<LoopItem>(dm_loops, dm_loops_index,
+                    dm_statements[uid].dm_addresses, visitor);
 }

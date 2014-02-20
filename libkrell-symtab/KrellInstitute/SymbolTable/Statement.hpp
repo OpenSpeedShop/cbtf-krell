@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -27,6 +27,7 @@
 #include <KrellInstitute/Base/AddressRange.hpp>
 #include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
+#include <KrellInstitute/SymbolTable/LoopVisitor.hpp>
 #include <set>
 #include <string>
 
@@ -39,7 +40,7 @@ namespace KrellInstitute { namespace SymbolTable {
     }
 
     /**
-     * A source code statement from a symbol table.
+     * A source code statement within a linked object.
      */
     class Statement :
         public boost::totally_ordered<Statement>
@@ -159,6 +160,14 @@ namespace KrellInstitute { namespace SymbolTable {
          *                   this statement.
          */
         void visitFunctions(const FunctionVisitor& visitor) const;
+
+        /**
+         * Visit the loops containing this statement.
+         *
+         * @param visitor    Visitor invoked for each loop containing
+         *                   this statement.
+         */
+        void visitLoops(const LoopVisitor& visitor) const;
 
         /**
          * Redirection to an output stream.

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -28,12 +28,14 @@
 #include <KrellInstitute/Base/FileName.hpp>
 #include <KrellInstitute/Messages/Symbol.h>
 #include <KrellInstitute/SymbolTable/FunctionVisitor.hpp>
+#include <KrellInstitute/SymbolTable/LoopVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <string>
 
 namespace KrellInstitute { namespace SymbolTable {
 
     class Function;
+    class Loop;
     class Statement;
 
     namespace Impl {
@@ -47,6 +49,7 @@ namespace KrellInstitute { namespace SymbolTable {
         public boost::totally_ordered<LinkedObject>
     {
         friend class Function;
+        friend class Loop;
         friend class Statement;
         
     public:
@@ -137,6 +140,29 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         void visitFunctions(const Base::AddressRange& range,
                             const FunctionVisitor& visitor) const;
+        
+        /**
+         * Visit the loops contained within this linked object.
+         *
+         * @param visitor    Visitor invoked for each loop contained
+         *                   within this linked object.
+         */
+        void visitLoops(const LoopVisitor& visitor) const;
+        
+        /**
+         * Visit the loops contained within this linked object intersecting the
+         * given address range.
+         *
+         * @param range      Address range to be found.
+         * @param visitor    Visitor invoked for each loop contained within this
+         *                   linked object intersecting that address range.
+         *
+         * @note    The addresses specified must be relative to the beginning of
+         *          this linked object rather than an absolute address from the
+         *          address space of a specific process.
+         */
+        void visitLoops(const Base::AddressRange& range,
+                        const LoopVisitor& visitor) const;
         
         /**
          * Visit the statements contained within this linked object.

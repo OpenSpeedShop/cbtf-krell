@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
+// Copyright (c) 2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -16,11 +16,11 @@
 // Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Definition of the Statement class. */
+/** @file Definition of the Loop class. */
 
 #include <boost/format.hpp>
+#include <KrellInstitute/SymbolTable/Loop.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
-#include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
 #include "SymbolTable.hpp"
@@ -32,12 +32,9 @@ using namespace KrellInstitute::SymbolTable;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::Statement(const LinkedObject& linked_object,
-                     const FileName& file,
-                     const unsigned int& line,
-                     const unsigned int& column) :
+Loop::Loop(const LinkedObject& linked_object, const Address& head) :
     dm_symbol_table(linked_object.dm_symbol_table),
-    dm_unique_identifier(dm_symbol_table->addStatement(file, line, column))
+    dm_unique_identifier(dm_symbol_table->addLoop(head))
 {
 }
 
@@ -45,7 +42,7 @@ Statement::Statement(const LinkedObject& linked_object,
         
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::operator std::string() const
+Loop::operator std::string() const
 {
     std::ostringstream stream;
     stream << *this;
@@ -56,7 +53,7 @@ Statement::operator std::string() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-bool Statement::operator<(const Statement& other) const
+bool Loop::operator<(const Loop& other) const
 {
     if (dm_symbol_table < other.dm_symbol_table)
     {
@@ -76,7 +73,7 @@ bool Statement::operator<(const Statement& other) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-bool Statement::operator==(const Statement& other) const
+bool Loop::operator==(const Loop& other) const
 {
     return (dm_symbol_table == other.dm_symbol_table) &&
         (dm_unique_identifier == other.dm_unique_identifier);
@@ -86,11 +83,11 @@ bool Statement::operator==(const Statement& other) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement Statement::clone(LinkedObject& linked_object) const
+Loop Loop::clone(LinkedObject& linked_object) const
 {
-    return Statement(
+    return Loop(
         linked_object.dm_symbol_table,
-        linked_object.dm_symbol_table->cloneStatement(
+        linked_object.dm_symbol_table->cloneLoop(
             *dm_symbol_table, dm_unique_identifier
             )
         );
@@ -100,16 +97,16 @@ Statement Statement::clone(LinkedObject& linked_object) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
+void Loop::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_symbol_table->addStatementAddressRanges(dm_unique_identifier, ranges);
+    dm_symbol_table->addLoopAddressRanges(dm_unique_identifier, ranges);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject Statement::getLinkedObject() const
+LinkedObject Loop::getLinkedObject() const
 {
     return LinkedObject(dm_symbol_table);
 }
@@ -118,54 +115,45 @@ LinkedObject Statement::getLinkedObject() const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-FileName Statement::getFile() const
+Address Loop::getHeadAddress() const
 {
-    return dm_symbol_table->getStatementFile(dm_unique_identifier);
+    return dm_symbol_table->getLoopHeadAddress(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-unsigned int Statement::getLine() const
+std::set<AddressRange> Loop::getAddressRanges() const
 {
-    return dm_symbol_table->getStatementLine(dm_unique_identifier);
+    return dm_symbol_table->getLoopAddressRanges(dm_unique_identifier);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-unsigned int Statement::getColumn() const
+void Loop::visitDefinitions(const StatementVisitor& visitor) const
 {
-    return dm_symbol_table->getStatementColumn(dm_unique_identifier);
+    dm_symbol_table->visitLoopDefinitions(dm_unique_identifier, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-std::set<AddressRange> Statement::getAddressRanges() const
+void Loop::visitFunctions(const FunctionVisitor& visitor) const
 {
-    return dm_symbol_table->getStatementAddressRanges(dm_unique_identifier);
+    dm_symbol_table->visitLoopFunctions(dm_unique_identifier, visitor);
 }
 
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Statement::visitFunctions(const FunctionVisitor& visitor) const
+void Loop::visitStatements(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitStatementFunctions(dm_unique_identifier, visitor);
-}
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void Statement::visitLoops(const LoopVisitor& visitor) const
-{
-    dm_symbol_table->visitStatementLoops(dm_unique_identifier, visitor);
+    dm_symbol_table->visitLoopStatements(dm_unique_identifier, visitor);
 }
 
 
@@ -173,12 +161,12 @@ void Statement::visitLoops(const LoopVisitor& visitor) const
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 std::ostream& KrellInstitute::SymbolTable::operator<<(
-    std::ostream& stream, const Statement& statement
+    std::ostream& stream, const Loop& loop
     )
 {
     stream << boost::str(
-        boost::format("Statement %u in SymbolTable 0x%016X") % 
-        statement.dm_unique_identifier % statement.dm_symbol_table.get()
+        boost::format("Loop %u in SymbolTable 0x%016X") % 
+        loop.dm_unique_identifier % loop.dm_symbol_table.get()
         );
     
     return stream;
@@ -188,8 +176,8 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::Statement(Impl::SymbolTable::Handle symbol_table,
-                     Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+Loop::Loop(Impl::SymbolTable::Handle symbol_table,
+           Impl::SymbolTable::UniqueIdentifier unique_identifier) :
     dm_symbol_table(symbol_table),
     dm_unique_identifier(unique_identifier)
 {
@@ -201,28 +189,18 @@ Statement::Statement(Impl::SymbolTable::Handle symbol_table,
 // The individual comparisons are performed from least to most expensive in
 // order to optimize performance.
 //------------------------------------------------------------------------------
-bool KrellInstitute::SymbolTable::equivalent(const Statement& first,
-                                             const Statement& second)
+bool KrellInstitute::SymbolTable::equivalent(const Loop& first,
+                                             const Loop& second)
 {
-    if (first.getLine() != second.getLine())
+    if (first.getHeadAddress() != second.getHeadAddress())
     {
         return false;
     }
-
-    if (first.getColumn() != second.getColumn())
-    {
-        return false;
-    }
-
-    if (first.getFile() != second.getFile())
-    {
-        return false;
-    }
-
+    
     if (first.getAddressRanges() != second.getAddressRanges())
     {
         return false;
-    }
-
+    }    
+    
     return true;
 }

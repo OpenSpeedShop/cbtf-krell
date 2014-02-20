@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -49,6 +49,8 @@ add_library(krell-symtab SHARED
     KrellInstitute/SymbolTable/FunctionVisitor.hpp
     KrellInstitute/SymbolTable/LinkedObject.hpp LinkedObject.cpp
     KrellInstitute/SymbolTable/LinkedObjectVisitor.hpp
+    KrellInstitute/SymbolTable/Loop.hpp Loop.cpp
+    KrellInstitute/SymbolTable/LoopVisitor.hpp
     KrellInstitute/SymbolTable/MappingVisitor.hpp
     KrellInstitute/SymbolTable/Resolver.hpp Resolver.cpp
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp

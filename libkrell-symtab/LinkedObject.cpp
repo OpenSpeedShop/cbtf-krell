@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -23,6 +23,7 @@
 #include <boost/ref.hpp>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Loop.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
@@ -55,8 +56,7 @@ namespace {
      * doesn't have an equivalent in the given linked object.
      */
     bool containsAllFunctions(const LinkedObject& linked_object,
-                              const Function& x,
-                              bool& contains)
+                              const Function& x, bool& contains)
     {
         bool contains_this = false;
 
@@ -71,14 +71,34 @@ namespace {
     }
     
     /**
+     * Visitor for determining if the given linked object contains a loop
+     * equivalent to all loops in an arbitrary set of visited loops. The
+     * visitation is terminated as soon as a loop is encountered that
+     * doesn't have an equivalent in the given linked object.
+     */
+    bool containsAllLoops(const LinkedObject& linked_object,
+                          const Loop& x, bool& contains)
+    {
+        bool contains_this = false;
+
+        linked_object.visitLoops(
+            boost::bind(
+                containsEquivalent<Loop>, x, _1, boost::ref(contains_this)
+                )
+            );
+        
+        contains &= contains_this;
+        return contains;
+    }
+    
+    /**
      * Visitor for determining if the given linked object contains a statement
      * equivalent to all statements in an arbitrary set of visited statements.
      * The visitation is terminated as soon as a statement is encountered that
      * doesn't have an equivalent in the given linked object.
      */
     bool containsAllStatements(const LinkedObject& linked_object,
-                               const Statement& x,
-                               bool& contains)
+                               const Statement& x, bool& contains)
     {
         bool contains_this = false;
         
@@ -193,6 +213,25 @@ void LinkedObject::visitFunctions(const AddressRange& range,
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+void LinkedObject::visitLoops(const LoopVisitor& visitor) const
+{
+    dm_symbol_table->visitLoops(visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void LinkedObject::visitLoops(const AddressRange& range,
+                              const LoopVisitor& visitor) const
+{
+    dm_symbol_table->visitLoops(range, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void LinkedObject::visitStatements(const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitStatements(visitor);
@@ -267,6 +306,32 @@ bool KrellInstitute::SymbolTable::equivalent(const LinkedObject& first,
     
     second.visitFunctions(
         boost::bind(containsAllFunctions, first, _1, boost::ref(contains))
+        );
+
+    if (!contains)
+    {
+        return false;
+    }
+    
+    // Is "second" missing any of the loops from "first"?
+    
+    contains = true;
+    
+    first.visitLoops(
+        boost::bind(containsAllLoops, second, _1, boost::ref(contains))
+        );
+    
+    if (!contains)
+    {
+        return false;
+    }
+
+    // Is "first" missing any of the loops from "second"?
+
+    contains = true;
+    
+    second.visitLoops(
+        boost::bind(containsAllLoops, first, _1, boost::ref(contains))
         );
 
     if (!contains)

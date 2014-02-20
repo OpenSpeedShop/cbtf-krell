@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -164,6 +164,15 @@ std::set<AddressRange> Function::getAddressRanges() const
 void Function::visitDefinitions(const StatementVisitor& visitor) const
 {
     dm_symbol_table->visitFunctionDefinitions(dm_unique_identifier, visitor);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void Function::visitLoops(const LoopVisitor& visitor) const
+{
+    dm_symbol_table->visitFunctionLoops(dm_unique_identifier, visitor);
 }
 
 

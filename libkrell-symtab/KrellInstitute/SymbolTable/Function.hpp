@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <KrellInstitute/Base/AddressRange.hpp>
+#include <KrellInstitute/SymbolTable/LoopVisitor.hpp>
 #include <KrellInstitute/SymbolTable/StatementVisitor.hpp>
 #include <set>
 #include <string>
@@ -141,11 +142,18 @@ namespace KrellInstitute { namespace SymbolTable {
         /**
          * Visit the definitions of this function.
          *
-         * @param visitor    Visitor invoked for each defintion of this
-         *                   function.
+         * @param visitor    Visitor invoked for each defintion of this function.
          */
         void visitDefinitions(const StatementVisitor& visitor) const;
 
+        /**
+         * Visit the loops associated with this function.
+         *
+         * @param visitor    Visitor invoked for each loop associated 
+         *                   with this function.
+         */
+        void visitLoops(const LoopVisitor& visitor) const;
+        
         /**
          * Visit the statements associated with this function.
          *

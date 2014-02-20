@@ -35,7 +35,7 @@ namespace KrellInstitute { namespace Base {
      *
      * @sa http://en.wikipedia.org/wiki/Set_data_structure
      *
-     * @note    The interface and implementation of this class is currently
+     * @todo    The interface and implementation of this class is currently
      *          as minimal as possible while still getting the job done. In
      *          the future a more extensive interface and higher performance
      *          implementation should be investigated.

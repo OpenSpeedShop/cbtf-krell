@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -154,7 +154,7 @@ bool AddressBitmap::get(const Address& address) const
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void AddressBitmap::set(const Address& address, const bool& value)
+void AddressBitmap::set(const Address& address, bool value)
 {
     if (!dm_range.contains(address))
     {
@@ -171,7 +171,7 @@ void AddressBitmap::set(const Address& address, const bool& value)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-std::set<AddressRange> AddressBitmap::ranges(const bool& value) const
+std::set<AddressRange> AddressBitmap::ranges(bool value) const
 {
     std::set<AddressRange> result;
     

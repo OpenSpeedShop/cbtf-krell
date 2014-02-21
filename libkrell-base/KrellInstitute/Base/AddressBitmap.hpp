@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
 //
 // This program is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free Software
@@ -115,7 +115,7 @@ namespace KrellInstitute { namespace Base {
          * @throw std::invalid_argument    The given address isn't contained
          *                                 within this bitmap's range.
          */
-        void set(const Address& address, const bool& value);
+        void set(const Address& address, bool value);
         
         /**
          * Get the set of contiguous address ranges in this address bitmap 
@@ -124,7 +124,7 @@ namespace KrellInstitute { namespace Base {
          * @param value    Value of interest.
          * @return         Set of contiguous address ranges with that value.
          */
-        std::set<AddressRange> ranges(const bool& value) const;
+        std::set<AddressRange> ranges(bool value) const;
 
     private:
         

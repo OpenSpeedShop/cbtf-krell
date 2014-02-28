@@ -35,6 +35,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject;
 
     namespace Impl {
+        template <typename T> class EntityTable;
         class SymbolTable;
     }
 
@@ -44,7 +45,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class Function :
         public boost::totally_ordered<Function>
     {
-        friend class Impl::SymbolTable;
+        template <typename T> friend class Impl::EntityTable;
 
     public:
 
@@ -186,7 +187,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param unique_identifier    Unique identifier for this function
          *                             within that symbol table.
          */
-        Function(boost::shared_ptr<Impl::SymbolTable> symbol_table,
+        Function(const boost::shared_ptr<Impl::SymbolTable>& symbol_table,
                  boost::uint32_t unique_identifier);
 
         /** Symbol table containing this function. */

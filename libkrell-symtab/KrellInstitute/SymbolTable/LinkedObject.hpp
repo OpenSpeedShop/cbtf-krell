@@ -208,7 +208,7 @@ namespace KrellInstitute { namespace SymbolTable {
          *
          * @param symbol_table    Symbol table containing this linked object.
          */
-        LinkedObject(boost::shared_ptr<Impl::SymbolTable> symbol_table);
+        LinkedObject(const boost::shared_ptr<Impl::SymbolTable>& symbol_table);
         
         /** Symbol table containing this linked object. */
         boost::shared_ptr<Impl::SymbolTable> dm_symbol_table;

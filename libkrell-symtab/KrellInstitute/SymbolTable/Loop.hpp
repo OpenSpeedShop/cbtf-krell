@@ -36,6 +36,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject;
 
     namespace Impl {
+        template <typename T> class EntityTable;
         class SymbolTable;
     }
 
@@ -45,7 +46,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class Loop :
         public boost::totally_ordered<Loop>
     {
-        friend class Impl::SymbolTable;
+        template <typename T> friend class Impl::EntityTable;
 
     public:
 
@@ -188,7 +189,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param unique_identifier    Unique identifier for this loop
          *                             within that symbol table.
          */
-        Loop(boost::shared_ptr<Impl::SymbolTable> symbol_table,
+        Loop(const boost::shared_ptr<Impl::SymbolTable>& symbol_table,
              boost::uint32_t unique_identifier);
         
         /** Symbol table containing this loop. */

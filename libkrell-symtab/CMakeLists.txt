@@ -56,6 +56,9 @@ add_library(krell-symtab SHARED
     KrellInstitute/SymbolTable/Statement.hpp Statement.cpp
     KrellInstitute/SymbolTable/StatementVisitor.hpp
     KrellInstitute/SymbolTable/ThreadVisitor.hpp
+    AddressRangeIndex.hpp
+    EntityTable.hpp
+    EntityUID.hpp
     SymbolTable.hpp SymbolTable.cpp
     ${SYMTABAPI_SOURCES}
     )

@@ -19,7 +19,9 @@
 /** @file Definition of the Statement class. */
 
 #include <boost/format.hpp>
+#include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Loop.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
@@ -34,10 +36,14 @@ using namespace KrellInstitute::SymbolTable;
 //------------------------------------------------------------------------------
 Statement::Statement(const LinkedObject& linked_object,
                      const FileName& file,
-                     const unsigned int& line,
-                     const unsigned int& column) :
+                     unsigned int line,
+                     unsigned int column) :
     dm_symbol_table(linked_object.dm_symbol_table),
-    dm_unique_identifier(dm_symbol_table->addStatement(file, line, column))
+    dm_unique_identifier(dm_symbol_table->statements().add(
+                             Impl::SymbolTable::StatementFields(
+                                 file, line, column
+                                 )
+                             ))
 {
 }
 
@@ -90,8 +96,8 @@ Statement Statement::clone(LinkedObject& linked_object) const
 {
     return Statement(
         linked_object.dm_symbol_table,
-        linked_object.dm_symbol_table->cloneStatement(
-            *dm_symbol_table, dm_unique_identifier
+        linked_object.dm_symbol_table->statements().clone(
+            dm_symbol_table->statements(), dm_unique_identifier
             )
         );
 }
@@ -102,7 +108,7 @@ Statement Statement::clone(LinkedObject& linked_object) const
 //------------------------------------------------------------------------------
 void Statement::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_symbol_table->addStatementAddressRanges(dm_unique_identifier, ranges);
+    dm_symbol_table->statements().add(dm_unique_identifier, ranges);
 }
 
 
@@ -120,7 +126,7 @@ LinkedObject Statement::getLinkedObject() const
 //------------------------------------------------------------------------------
 FileName Statement::getFile() const
 {
-    return dm_symbol_table->getStatementFile(dm_unique_identifier);
+    return dm_symbol_table->statements().fields(dm_unique_identifier).dm_file;
 }
 
 
@@ -129,7 +135,7 @@ FileName Statement::getFile() const
 //------------------------------------------------------------------------------
 unsigned int Statement::getLine() const
 {
-    return dm_symbol_table->getStatementLine(dm_unique_identifier);
+    return dm_symbol_table->statements().fields(dm_unique_identifier).dm_line;
 }
 
 
@@ -138,7 +144,7 @@ unsigned int Statement::getLine() const
 //------------------------------------------------------------------------------
 unsigned int Statement::getColumn() const
 {
-    return dm_symbol_table->getStatementColumn(dm_unique_identifier);
+    return dm_symbol_table->statements().fields(dm_unique_identifier).dm_column;
 }
 
 
@@ -147,7 +153,7 @@ unsigned int Statement::getColumn() const
 //------------------------------------------------------------------------------
 std::set<AddressRange> Statement::getAddressRanges() const
 {
-    return dm_symbol_table->getStatementAddressRanges(dm_unique_identifier);
+    return dm_symbol_table->statements().addresses(dm_unique_identifier);
 }
 
 
@@ -156,7 +162,10 @@ std::set<AddressRange> Statement::getAddressRanges() const
 //------------------------------------------------------------------------------
 void Statement::visitFunctions(const FunctionVisitor& visitor) const
 {
-    dm_symbol_table->visitStatementFunctions(dm_unique_identifier, visitor);
+    dm_symbol_table->functions().visit<Function, FunctionVisitor>(
+        dm_symbol_table->statements().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -165,7 +174,10 @@ void Statement::visitFunctions(const FunctionVisitor& visitor) const
 //------------------------------------------------------------------------------
 void Statement::visitLoops(const LoopVisitor& visitor) const
 {
-    dm_symbol_table->visitStatementLoops(dm_unique_identifier, visitor);
+    dm_symbol_table->loops().visit<Loop, LoopVisitor>(
+        dm_symbol_table->statements().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -188,8 +200,8 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Statement::Statement(Impl::SymbolTable::Handle symbol_table,
-                     Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+Statement::Statement(const Impl::SymbolTable::Handle& symbol_table,
+                     boost::uint32_t unique_identifier) :
     dm_symbol_table(symbol_table),
     dm_unique_identifier(unique_identifier)
 {

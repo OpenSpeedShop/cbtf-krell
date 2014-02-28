@@ -36,6 +36,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class LinkedObject;
 
     namespace Impl {
+        template <typename T> class EntityTable;
         class SymbolTable;
     }
 
@@ -45,7 +46,7 @@ namespace KrellInstitute { namespace SymbolTable {
     class Statement :
         public boost::totally_ordered<Statement>
     {
-        friend class Impl::SymbolTable;
+        template <typename T> friend class Impl::EntityTable;
 
     public:
 
@@ -61,8 +62,8 @@ namespace KrellInstitute { namespace SymbolTable {
          */
         Statement(const LinkedObject& linked_object,
                   const Base::FileName& file,
-                  const unsigned int& line,
-                  const unsigned int& column);
+                  unsigned int line,
+                  unsigned int column);
 
         /**
          * Type conversion to a string.
@@ -193,7 +194,7 @@ namespace KrellInstitute { namespace SymbolTable {
          * @param unique_identifier    Unique identifier for this statement
          *                             within that symbol table.
          */
-        Statement(boost::shared_ptr<Impl::SymbolTable> symbol_table,
+        Statement(const boost::shared_ptr<Impl::SymbolTable>& symbol_table,
                   boost::uint32_t unique_identifier);
 
         /** Symbol table containing this statement. */

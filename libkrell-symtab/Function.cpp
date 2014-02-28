@@ -22,6 +22,8 @@
 #include <cxxabi.h>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Loop.hpp>
+#include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
 #include "SymbolTable.hpp"
@@ -35,7 +37,8 @@ using namespace KrellInstitute::SymbolTable;
 //------------------------------------------------------------------------------
 Function::Function(const LinkedObject& linked_object, const std::string& name) :
     dm_symbol_table(linked_object.dm_symbol_table),
-    dm_unique_identifier(dm_symbol_table->addFunction(name))
+    dm_unique_identifier(dm_symbol_table->functions().add(
+                             Impl::SymbolTable::FunctionFields(name)))
 {
 }
 
@@ -88,8 +91,8 @@ Function Function::clone(LinkedObject& linked_object) const
 {
     return Function(
         linked_object.dm_symbol_table,
-        linked_object.dm_symbol_table->cloneFunction(
-            *dm_symbol_table, dm_unique_identifier
+        linked_object.dm_symbol_table->functions().clone(
+            dm_symbol_table->functions(), dm_unique_identifier
             )
         );
 }
@@ -100,7 +103,7 @@ Function Function::clone(LinkedObject& linked_object) const
 //------------------------------------------------------------------------------
 void Function::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_symbol_table->addFunctionAddressRanges(dm_unique_identifier, ranges);
+    dm_symbol_table->functions().add(dm_unique_identifier, ranges);
 }
 
 
@@ -118,7 +121,7 @@ LinkedObject Function::getLinkedObject() const
 //------------------------------------------------------------------------------
 std::string Function::getMangledName() const
 {
-    return dm_symbol_table->getFunctionMangledName(dm_unique_identifier);
+    return dm_symbol_table->functions().fields(dm_unique_identifier).dm_name;
 }
 
 
@@ -154,7 +157,7 @@ std::string Function::getDemangledName() const
 //------------------------------------------------------------------------------
 std::set<AddressRange> Function::getAddressRanges() const
 {
-    return dm_symbol_table->getFunctionAddressRanges(dm_unique_identifier);
+    return dm_symbol_table->functions().addresses(dm_unique_identifier);
 }
 
 
@@ -163,7 +166,12 @@ std::set<AddressRange> Function::getAddressRanges() const
 //------------------------------------------------------------------------------
 void Function::visitDefinitions(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctionDefinitions(dm_unique_identifier, visitor);
+    std::set<AddressRange> ranges =
+        dm_symbol_table->functions().addresses(dm_unique_identifier);
+
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        AddressRange(ranges.begin()->begin()), dm_symbol_table, visitor
+        );
 }
 
 
@@ -172,7 +180,10 @@ void Function::visitDefinitions(const StatementVisitor& visitor) const
 //------------------------------------------------------------------------------
 void Function::visitLoops(const LoopVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctionLoops(dm_unique_identifier, visitor);
+    dm_symbol_table->loops().visit<Loop, LoopVisitor>(
+        dm_symbol_table->functions().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -181,7 +192,10 @@ void Function::visitLoops(const LoopVisitor& visitor) const
 //------------------------------------------------------------------------------
 void Function::visitStatements(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctionStatements(dm_unique_identifier, visitor);
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        dm_symbol_table->functions().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -204,8 +218,8 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Function::Function(Impl::SymbolTable::Handle symbol_table,
-                   Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+Function::Function(const Impl::SymbolTable::Handle& symbol_table,
+                   boost::uint32_t unique_identifier) :
     dm_symbol_table(symbol_table),
     dm_unique_identifier(unique_identifier)
 {

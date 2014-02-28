@@ -19,8 +19,10 @@
 /** @file Definition of the Loop class. */
 
 #include <boost/format.hpp>
+#include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/Loop.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <sstream>
 
 #include "SymbolTable.hpp"
@@ -34,7 +36,8 @@ using namespace KrellInstitute::SymbolTable;
 //------------------------------------------------------------------------------
 Loop::Loop(const LinkedObject& linked_object, const Address& head) :
     dm_symbol_table(linked_object.dm_symbol_table),
-    dm_unique_identifier(dm_symbol_table->addLoop(head))
+    dm_unique_identifier(dm_symbol_table->loops().add(
+                             Impl::SymbolTable::LoopFields(head)))
 {
 }
 
@@ -87,8 +90,8 @@ Loop Loop::clone(LinkedObject& linked_object) const
 {
     return Loop(
         linked_object.dm_symbol_table,
-        linked_object.dm_symbol_table->cloneLoop(
-            *dm_symbol_table, dm_unique_identifier
+        linked_object.dm_symbol_table->loops().clone(
+            dm_symbol_table->loops(), dm_unique_identifier
             )
         );
 }
@@ -99,7 +102,7 @@ Loop Loop::clone(LinkedObject& linked_object) const
 //------------------------------------------------------------------------------
 void Loop::addAddressRanges(const std::set<AddressRange>& ranges)
 {
-    dm_symbol_table->addLoopAddressRanges(dm_unique_identifier, ranges);
+    dm_symbol_table->loops().add(dm_unique_identifier, ranges);
 }
 
 
@@ -117,7 +120,7 @@ LinkedObject Loop::getLinkedObject() const
 //------------------------------------------------------------------------------
 Address Loop::getHeadAddress() const
 {
-    return dm_symbol_table->getLoopHeadAddress(dm_unique_identifier);
+    return dm_symbol_table->loops().fields(dm_unique_identifier).dm_head;
 }
 
 
@@ -126,7 +129,7 @@ Address Loop::getHeadAddress() const
 //------------------------------------------------------------------------------
 std::set<AddressRange> Loop::getAddressRanges() const
 {
-    return dm_symbol_table->getLoopAddressRanges(dm_unique_identifier);
+    return dm_symbol_table->loops().addresses(dm_unique_identifier);
 }
 
 
@@ -135,7 +138,12 @@ std::set<AddressRange> Loop::getAddressRanges() const
 //------------------------------------------------------------------------------
 void Loop::visitDefinitions(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitLoopDefinitions(dm_unique_identifier, visitor);
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        AddressRange(
+            dm_symbol_table->loops().fields(dm_unique_identifier).dm_head
+            ),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -144,7 +152,10 @@ void Loop::visitDefinitions(const StatementVisitor& visitor) const
 //------------------------------------------------------------------------------
 void Loop::visitFunctions(const FunctionVisitor& visitor) const
 {
-    dm_symbol_table->visitLoopFunctions(dm_unique_identifier, visitor);
+    dm_symbol_table->functions().visit<Function, FunctionVisitor>(
+        dm_symbol_table->loops().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -153,7 +164,10 @@ void Loop::visitFunctions(const FunctionVisitor& visitor) const
 //------------------------------------------------------------------------------
 void Loop::visitStatements(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitLoopStatements(dm_unique_identifier, visitor);
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        dm_symbol_table->loops().addresses(dm_unique_identifier),
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -176,8 +190,8 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-Loop::Loop(Impl::SymbolTable::Handle symbol_table,
-           Impl::SymbolTable::UniqueIdentifier unique_identifier) :
+Loop::Loop(const Impl::SymbolTable::Handle& symbol_table,
+           boost::uint32_t unique_identifier) :
     dm_symbol_table(symbol_table),
     dm_unique_identifier(unique_identifier)
 {

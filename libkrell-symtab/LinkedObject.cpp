@@ -196,7 +196,9 @@ FileName LinkedObject::getFile() const
 //------------------------------------------------------------------------------
 void LinkedObject::visitFunctions(const FunctionVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctions(visitor);
+    dm_symbol_table->functions().visit<Function, FunctionVisitor>(
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -206,7 +208,9 @@ void LinkedObject::visitFunctions(const FunctionVisitor& visitor) const
 void LinkedObject::visitFunctions(const AddressRange& range,
                                   const FunctionVisitor& visitor) const
 {
-    dm_symbol_table->visitFunctions(range, visitor);
+    dm_symbol_table->functions().visit<Function, FunctionVisitor>(
+        range, dm_symbol_table, visitor
+        );
 }
 
 
@@ -215,7 +219,9 @@ void LinkedObject::visitFunctions(const AddressRange& range,
 //------------------------------------------------------------------------------
 void LinkedObject::visitLoops(const LoopVisitor& visitor) const
 {
-    dm_symbol_table->visitLoops(visitor);
+    dm_symbol_table->loops().visit<Loop, LoopVisitor>(
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -225,7 +231,9 @@ void LinkedObject::visitLoops(const LoopVisitor& visitor) const
 void LinkedObject::visitLoops(const AddressRange& range,
                               const LoopVisitor& visitor) const
 {
-    dm_symbol_table->visitLoops(range, visitor);
+    dm_symbol_table->loops().visit<Loop, LoopVisitor>(
+        range, dm_symbol_table, visitor
+        );
 }
 
 
@@ -234,7 +242,9 @@ void LinkedObject::visitLoops(const AddressRange& range,
 //------------------------------------------------------------------------------
 void LinkedObject::visitStatements(const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitStatements(visitor);
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        dm_symbol_table, visitor
+        );
 }
 
 
@@ -244,7 +254,9 @@ void LinkedObject::visitStatements(const StatementVisitor& visitor) const
 void LinkedObject::visitStatements(const AddressRange& range,
                                    const StatementVisitor& visitor) const
 {
-    dm_symbol_table->visitStatements(range, visitor);
+    dm_symbol_table->statements().visit<Statement, StatementVisitor>(
+        range, dm_symbol_table, visitor
+        );
 }
 
 
@@ -266,7 +278,7 @@ std::ostream& KrellInstitute::SymbolTable::operator<<(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-LinkedObject::LinkedObject(Impl::SymbolTable::Handle symbol_table) :
+LinkedObject::LinkedObject(const Impl::SymbolTable::Handle& symbol_table) :
     dm_symbol_table(symbol_table)
 {
 }

@@ -204,16 +204,16 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             bool terminate = false;
             boost::dynamic_bitset<> visited(dm_entities.size());
 
-            AddressRangeIndex::index<ByRange>::type::const_iterator i =
-                dm_index.get<ByRange>().lower_bound(range.begin());
+            AddressRangeIndex::nth_index<1>::type::const_iterator i =
+                dm_index.get<1>().lower_bound(range.begin());
             
-            if (i != dm_index.get<ByRange>().begin())
+            if (i != dm_index.get<1>().begin())
             {
                 --i;
             }
             
-            AddressRangeIndex::index<ByRange>::type::const_iterator iEnd = 
-                dm_index.get<ByRange>().upper_bound(range.end());
+            AddressRangeIndex::nth_index<1>::type::const_iterator iEnd = 
+                dm_index.get<1>().upper_bound(range.end());
             
             for (; !terminate && (i != iEnd); ++i)
             {
@@ -260,16 +260,16 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
             {
                 const Base::AddressRange& range = *r;
                 
-                AddressRangeIndex::index<ByRange>::type::const_iterator i = 
-                    dm_index.get<ByRange>().lower_bound(range.begin());
+                AddressRangeIndex::nth_index<1>::type::const_iterator i = 
+                    dm_index.get<1>().lower_bound(range.begin());
             
                 if (i != dm_index.get<1>().begin())
                 {
                     --i;
                 }
                 
-                AddressRangeIndex::index<ByRange>::type::const_iterator iEnd = 
-                    dm_index.get<ByRange>().upper_bound(range.end());
+                AddressRangeIndex::nth_index<1>::type::const_iterator iEnd = 
+                    dm_index.get<1>().upper_bound(range.end());
                 
                 for (; !terminate && (i != iEnd); ++i)
                 {
@@ -303,7 +303,7 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         {
             if (reindexing)
             {
-                dm_index.get<ByUID>().erase(uid);
+                dm_index.get<0>().erase(uid);
             }
             
             std::set<Base::AddressRange> ranges = dm_entities[uid].second;

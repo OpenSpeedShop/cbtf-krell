@@ -60,19 +60,12 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         
     }; // struct AddressRangeIndexRow
             
-    /** Tag for searching by unique identifier. */
-    struct ByUID {};
-        
-    /** Tag for searched by address range. */
-    struct ByRange {};
-        
     /**
      * Type of associative container used to search for the entities overlapping
      * a given address range.
      *
-     * @note    The EntityTable class is the only place where AddressRangeIndex
-     *          and its associated types (AddressRangeIndexRow, ByUID, ByRange)
-     *          are used. So normally it would be sensible for all of these to
+     * @note    EntityTable is the only place where AddressRangeIndex[Row] are
+     *          used. So normally it would be sensible for those 2 types to be
      *          be private nested types in that class. But because EntityTable
      *          and boost::multi_index_container are both templates, the syntax
      *          for referencing AddressRangeIndex from EntityTable becomes very
@@ -83,7 +76,6 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
         AddressRangeIndexRow,
         boost::multi_index::indexed_by<
             boost::multi_index::ordered_non_unique<
-                boost::multi_index::tag<ByUID>,
                 boost::multi_index::member<
                     AddressRangeIndexRow,
                     EntityUID,
@@ -91,7 +83,6 @@ namespace KrellInstitute { namespace SymbolTable { namespace Impl {
                     >
                 >,
             boost::multi_index::ordered_non_unique<
-                boost::multi_index::tag<ByRange>,
                 typename AddressRangeIndexRow::range_begin
                 >
             >

@@ -30,6 +30,7 @@
 #include <KrellInstitute/SymbolTable/AddressSpaces.hpp>
 #include <KrellInstitute/SymbolTable/Function.hpp>
 #include <KrellInstitute/SymbolTable/LinkedObject.hpp>
+#include <KrellInstitute/SymbolTable/Loop.hpp>
 #include <KrellInstitute/SymbolTable/Statement.hpp>
 #include <map>
 #include <set>
@@ -45,7 +46,7 @@ using namespace KrellInstitute::SymbolTable::Impl;
 /** Anonymous namespace hiding implementation details. */
 namespace {
 
-    /** Templated visitor for accumulating functions, statements, etc. */
+    /** Templated visitor for accumulating functions, etc. */
     template <typename T>
     bool accumulate(const T& x, std::set<T>& set)
     {
@@ -370,12 +371,12 @@ BOOST_AUTO_TEST_CASE(TestAddressSpace)
 
 
 /**
- * Unit test for the SymbolTable classes (LinkedObject, Function, Statement).
+ * Unit test for the LinkedObject, Function, Loop, and Statement classes.
  */
 BOOST_AUTO_TEST_CASE(TestSymbolTable)
 {
     std::set<AddressRange> addresses;
-
+    
     LinkedObject linked_object(FileName("/path/to/nonexistent/dso"));
     
     BOOST_CHECK_EQUAL(LinkedObject(linked_object), linked_object);
@@ -383,13 +384,17 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
                       FileName("/path/to/nonexistent/dso"));
 
     //
-    // The following functions and statements (along with their corresponding
+    // The following functions, loops, and statements (along with their listed
     // address ranges) are added to this linked object during the test:
     //
     //      function1:  [  0,   7]  [ 13,  27]
     //      function2:  [113, 127]
     //      function3:  [  7,  13]  [213, 227]
     //      function4:  [ 57,  63]
+    //
+    //          loop1:  [ 13,  27]              {Head = 13}
+    //          loop2:  [  0,   7]  [110, 130]  {Head =  0}
+    //          loop3:  [ 13, 100]              {Head = 13}
     //
     //     statement1:  [  0,   7]  [113, 127]
     //     statement2:  [ 13,  27]
@@ -436,7 +441,7 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     //
     // Test adding statements and the LinkedObject::visitStatements query.
     //
-
+    
     std::set<Statement> statements;
     linked_object.visitStatements(
         boost::bind(accumulate<Statement>, _1, boost::ref(statements))
@@ -714,15 +719,275 @@ BOOST_AUTO_TEST_CASE(TestSymbolTable)
     BOOST_CHECK(functions.find(function4) == functions.end());
 
     //
-    // Test the conversion of LinkedObject to/from CBTF_Protocol_SymbolTable
-    // and LinkedObject::clone().
+    // Test the conversion of LinkedObject to/from CBTF_Protocol_SymbolTable.
+    // This is done before loops are added because that message doesn't contain
+    // loop information, and the equivalent() check below would fail.
     //
-
+    
     BOOST_CHECK(equivalent(
         LinkedObject(static_cast<CBTF_Protocol_SymbolTable>(linked_object)),
         linked_object
         ));
 
+    //
+    // Test adding loops and the LinkedObject::visitLoops query.
+    //
+
+    std::set<Loop> loops;
+    linked_object.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK(loops.empty());
+
+    Loop loop1(linked_object, Address(13));
+
+    BOOST_CHECK_EQUAL(Loop(loop1), loop1);
+    BOOST_CHECK_EQUAL(loop1.getLinkedObject(), linked_object);
+    BOOST_CHECK_EQUAL(loop1.getHeadAddress(), Address(13));
+    BOOST_CHECK(loop1.getAddressRanges().empty());
+
+    Loop loop2(linked_object, Address(0));
+    Loop loop3(loop1.clone(linked_object));
+
+    BOOST_CHECK_NE(loop1, loop2);
+    BOOST_CHECK_LT(loop1, loop2);
+    BOOST_CHECK_GT(loop3, loop2);
+    BOOST_CHECK_NE(loop1, loop3);
+
+    BOOST_CHECK(!equivalent(loop1, loop2));
+    BOOST_CHECK(equivalent(loop1, loop3));
+
+    loops.clear();
+    linked_object.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 3);
+
+    //
+    // Add address ranges to the loops.
+    //
+
+    addresses = boost::assign::list_of
+        (AddressRange(13, 27));
+    loop1.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(0, 7))
+        (AddressRange(110, 130));
+    loop2.addAddressRanges(addresses);
+
+    addresses = boost::assign::list_of
+        (AddressRange(13, 100));
+    loop3.addAddressRanges(addresses);
+
+    BOOST_CHECK(!loop1.getAddressRanges().empty());
+    BOOST_CHECK(!loop2.getAddressRanges().empty());
+    BOOST_CHECK(!loop3.getAddressRanges().empty());
+
+    //
+    // Test the LinkedObject::visitLoops(<address_range>) query.
+    //
+
+    loops.clear();
+    linked_object.visitLoops(
+        AddressRange(30, 120),
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 2);
+    BOOST_CHECK(loops.find(loop1) == loops.end());
+    BOOST_CHECK(loops.find(loop2) != loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+
+    loops.clear();
+    linked_object.visitLoops(
+        AddressRange(101, 105),
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK(loops.empty());
+
+    //
+    // Test the Function::visitLoops() query.
+    //
+
+    loops.clear();
+    function1.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 3);
+    BOOST_CHECK(loops.find(loop1) != loops.end());
+    BOOST_CHECK(loops.find(loop2) != loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+    
+    loops.clear();
+    function2.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 1);
+    BOOST_CHECK(loops.find(loop1) == loops.end());
+    BOOST_CHECK(loops.find(loop2) != loops.end());
+    BOOST_CHECK(loops.find(loop3) == loops.end());
+    
+    loops.clear();
+    function3.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 3);
+    BOOST_CHECK(loops.find(loop1) != loops.end());
+    BOOST_CHECK(loops.find(loop2) != loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+    
+    loops.clear();
+    function4.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 1);
+    BOOST_CHECK(loops.find(loop1) == loops.end());
+    BOOST_CHECK(loops.find(loop2) == loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+
+    //
+    // Test the Statement::visitLoops() query.
+    //
+
+    loops.clear();
+    statement1.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 1);
+    BOOST_CHECK(loops.find(loop1) == loops.end());
+    BOOST_CHECK(loops.find(loop2) != loops.end());
+    BOOST_CHECK(loops.find(loop3) == loops.end());
+    
+    loops.clear();
+    statement2.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 2);
+    BOOST_CHECK(loops.find(loop1) != loops.end());
+    BOOST_CHECK(loops.find(loop2) == loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+    
+    loops.clear();
+    statement3.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK_EQUAL(loops.size(), 1);
+    BOOST_CHECK(loops.find(loop1) == loops.end());
+    BOOST_CHECK(loops.find(loop2) == loops.end());
+    BOOST_CHECK(loops.find(loop3) != loops.end());
+    
+    loops.clear();
+    statement4.visitLoops(
+        boost::bind(accumulate<Loop>, _1, boost::ref(loops))
+        );
+    BOOST_CHECK(loops.empty());
+    
+    //
+    // Test the Loop::visitDefinitions() query.
+    //
+
+    statements.clear();
+    loop1.visitDefinitions(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) == statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    loop2.visitDefinitions(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    loop3.visitDefinitions(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) == statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    //
+    // Test the Loop::visitFunctions() query.
+    //
+
+    functions.clear();
+    loop1.visitFunctions(
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 2);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    loop2.visitFunctions(
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 3);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) != functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) == functions.end());
+
+    functions.clear();
+    loop3.visitFunctions(
+        boost::bind(accumulate<Function>, _1, boost::ref(functions))
+        );
+    BOOST_CHECK_EQUAL(functions.size(), 3);
+    BOOST_CHECK(functions.find(function1) != functions.end());
+    BOOST_CHECK(functions.find(function2) == functions.end());
+    BOOST_CHECK(functions.find(function3) != functions.end());
+    BOOST_CHECK(functions.find(function4) != functions.end());
+
+    //
+    // Test the Loop::visitStatements() query.
+    //
+    
+    statements.clear();
+    loop1.visitStatements(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) == statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    loop2.visitStatements(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 1);
+    BOOST_CHECK(statements.find(statement1) != statements.end());
+    BOOST_CHECK(statements.find(statement2) == statements.end());
+    BOOST_CHECK(statements.find(statement3) == statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());
+
+    statements.clear();
+    loop3.visitStatements(
+        boost::bind(accumulate<Statement>, _1, boost::ref(statements))
+        );
+    BOOST_CHECK_EQUAL(statements.size(), 2);
+    BOOST_CHECK(statements.find(statement1) == statements.end());
+    BOOST_CHECK(statements.find(statement2) != statements.end());
+    BOOST_CHECK(statements.find(statement3) != statements.end());
+    BOOST_CHECK(statements.find(statement4) == statements.end());    
+
+    //
+    // Test LinkedObject::clone().
+    //
+    
     LinkedObject clone = linked_object.clone();
     
     BOOST_CHECK((clone < linked_object) || (linked_object < clone));

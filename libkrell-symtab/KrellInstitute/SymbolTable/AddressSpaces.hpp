@@ -182,7 +182,7 @@ namespace KrellInstitute { namespace SymbolTable {
     private:
 
         /** Structure representing one mapping in these address spaces. */
-        struct MappingItem
+        struct Mapping
         {
             /** Name of the thread containing this mapping. */
             Base::ThreadName dm_thread;
@@ -197,18 +197,18 @@ namespace KrellInstitute { namespace SymbolTable {
             Base::TimeInterval dm_interval;
             
             /** Constructor from initial fields. */
-            MappingItem(const Base::ThreadName& thread,
-                        const LinkedObject& linked_object,
-                        const Base::AddressRange& range,
-                        const Base::TimeInterval& interval) :
+            Mapping(const Base::ThreadName& thread,
+                    const LinkedObject& linked_object,
+                    const Base::AddressRange& range,
+                    const Base::TimeInterval& interval) :
                 dm_thread(thread),
                 dm_linked_object(linked_object),
                 dm_range(range),
                 dm_interval(interval)
             {
             }
-                        
-        }; // struct MappingItem
+            
+        }; // struct Mapping
 
         /**
          * Type of associative container used to search for the mappings for a
@@ -216,30 +216,26 @@ namespace KrellInstitute { namespace SymbolTable {
          * time interval.
          */
         typedef boost::multi_index_container<
-            MappingItem,
+            Mapping,
             boost::multi_index::indexed_by<
                 boost::multi_index::ordered_non_unique<
                     boost::multi_index::member<
-                        MappingItem, Base::ThreadName,
-                        &MappingItem::dm_thread
+                        Mapping, Base::ThreadName, &Mapping::dm_thread
                         >
                     >,
                 boost::multi_index::ordered_non_unique<
                     boost::multi_index::member<
-                        MappingItem, LinkedObject,
-                        &MappingItem::dm_linked_object
+                        Mapping, LinkedObject, &Mapping::dm_linked_object
                         >
                     >,
                 boost::multi_index::ordered_non_unique<
                     boost::multi_index::composite_key<
-                        MappingItem,
+                        Mapping,
                         boost::multi_index::member<
-                            MappingItem, Base::ThreadName, 
-                            &MappingItem::dm_thread
+                            Mapping, Base::ThreadName, &Mapping::dm_thread
                             >,
                         boost::multi_index::member<
-                            MappingItem, LinkedObject, 
-                            &MappingItem::dm_linked_object
+                            Mapping, LinkedObject, &Mapping::dm_linked_object
                             >                        
                         >
                     >

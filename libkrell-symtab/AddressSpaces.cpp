@@ -123,8 +123,8 @@ void AddressSpaces::applyMessage(const CBTF_Protocol_LinkedObjectGroup& message)
         }
         
         dm_mappings.insert(
-            MappingItem(ThreadName(message.thread), j->second, entry.range,
-                        TimeInterval(entry.time_begin, entry.time_end - 1))
+            Mapping(ThreadName(message.thread), j->second, entry.range,
+                    TimeInterval(entry.time_begin, entry.time_end - 1))
             );
     }
 }
@@ -195,9 +195,8 @@ void AddressSpaces::applyMessage(const CBTF_Protocol_SymbolTable& message)
              ++j)
         {
             dm_mappings.get<1>().replace(
-                j,
-                MappingItem(j->dm_thread, linked_object,
-                            j->dm_range, j->dm_interval)
+                j, Mapping(j->dm_thread, linked_object,
+                           j->dm_range, j->dm_interval)
                 );
         }
         
@@ -208,9 +207,9 @@ void AddressSpaces::applyMessage(const CBTF_Protocol_SymbolTable& message)
 
 
 //------------------------------------------------------------------------------
-// Construct a MappingItem from the given values and add it to these address
-// spaces. Existing linked objects are used when found and new linked objects
-// are added as necessary.
+// Construct a Mapping from the given values and add it to these address spaces.
+// Existing linked objects are used when found and new linked objects are added
+// as necessary.
 //------------------------------------------------------------------------------
 void AddressSpaces::loadLinkedObject(const ThreadName& thread,
                                      const LinkedObject& linked_object,
@@ -228,8 +227,7 @@ void AddressSpaces::loadLinkedObject(const ThreadName& thread,
     }
     
     dm_mappings.insert(
-        MappingItem(thread, i->second, range,
-                    TimeInterval(when, Time::TheEnd()))
+        Mapping(thread, i->second, range, TimeInterval(when, Time::TheEnd()))
         );
 }
 
@@ -257,8 +255,8 @@ void AddressSpaces::unloadLinkedObject(const ThreadName& thread,
         if (i->dm_interval.end() == Time::TheEnd())
         {
             dm_mappings.get<2>().replace(
-                i, MappingItem(i->dm_thread, i->dm_linked_object, i->dm_range,
-                               TimeInterval(i->dm_interval.begin(), when))
+                i, Mapping(i->dm_thread, i->dm_linked_object, i->dm_range,
+                           TimeInterval(i->dm_interval.begin(), when))
                 );
         }
     }

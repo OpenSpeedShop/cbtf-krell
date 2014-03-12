@@ -43,11 +43,11 @@ AC_DEFUN([AX_LIBMONITOR], [
 
     AC_MSG_CHECKING([for libmonitor library and headers])
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <monitor.h>
         ]], [[
         monitor_init_library();
-        ]]), [ AC_MSG_RESULT(yes)
+        ]])], [ AC_MSG_RESULT(yes)
 
             AM_CONDITIONAL(HAVE_LIBMONITOR, true)
             AC_DEFINE(HAVE_LIBMONITOR, 1, [Define to 1 if you have libmonitor.])

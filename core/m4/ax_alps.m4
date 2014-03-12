@@ -49,12 +49,12 @@ AC_DEFUN([AX_ALPS], [
     AC_MSG_CHECKING([for alps library and headers])
     AC_LANG_PUSH(C++)
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <alps/alps.h>
         ]], [[
         if ( ALPS_XT_NID ) {
         }
-        ]]), [ found_alps=1 ], [ found_alps=0 ])
+        ]])], [ found_alps=1 ], [ found_alps=0 ])
 
     if test $found_alps -eq 1; then
         AC_MSG_RESULT(yes)

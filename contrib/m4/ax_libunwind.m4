@@ -42,11 +42,11 @@ AC_DEFUN([AX_LIBUNWIND], [
 
     AC_MSG_CHECKING([for libunwind library and headers])
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <libunwind.h>
         ]], [[
         unw_init_local((void*)0, (void*)0);
-        ]]), [ AC_MSG_RESULT(yes)
+        ]])], [ AC_MSG_RESULT(yes)
 
             AM_CONDITIONAL(HAVE_LIBUNWIND, true)
             AC_DEFINE(HAVE_LIBUNWIND, 1, [Define to 1 if you have libunwind.])

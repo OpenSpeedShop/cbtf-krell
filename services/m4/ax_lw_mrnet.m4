@@ -59,10 +59,10 @@ AC_DEFUN([AX_LW_MRNET], [
 
     AC_MSG_CHECKING([for Lightweight MRNet library and headers])
 
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <mrnet_lightweight/MRNet.h>
         ]], [[
-        ]]), [ 
+        ]])], [ 
             AC_MSG_RESULT(yes)
 
 	    foundMRNET=1

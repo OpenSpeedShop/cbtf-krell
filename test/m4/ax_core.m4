@@ -36,10 +36,10 @@ AC_DEFUN([AX_CORE], [
     AC_MSG_CHECKING([for CBTF CORE library and headers])
 
     AC_LANG_PUSH(C++)
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([[
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
         #include <KrellInstitute/Core/TotallyOrdered.hpp>
         ]], [[
-        ]]), [ 
+        ]])], [ 
             AC_MSG_RESULT(yes)
         ], [
             AC_MSG_RESULT(no)

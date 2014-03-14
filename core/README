@@ -1,0 +1,40 @@
+
+# To build initially, this directory must be bootstrapped by running the ./bootstrap file in this 
+# directory.  Then do a configure (see below), followed by make clean, make and make install
+
+# This is an example configure line where some of the components are in the externals directory:
+# /opt/krellroot_v2.1u3oldmr.  The cbtf components in this example are found in: /opt/cbtf_only_v1.1u1oldmr
+# 
+
+# Some components are not set but are shown here in case your particular build needs to specify those
+# components.
+
+./configure --prefix=/opt/cbtf_only_v1.1u1oldmr 
+            --with-cbtf=/opt/cbtf_only_v1.1u1oldmr 
+            --with-cbtf-messages=/opt/cbtf_only_v1.1u1oldmr 
+            --with-mrnet=/opt/krellroot_v2.1u3oldmr 
+            --with-cbtf-mrnet=/opt/cbtf_only_v1.1u1oldmr 
+            --with-boost=
+            --with-boost-libdir=
+            --with-cbtf-xml=/opt/cbtf_only_v1.1u1oldmr 
+            --with-papi=/opt/krellroot_v2.1u3oldmr 
+            --with-libmonitor=/opt/krellroot_v2.1u3oldmr 
+            --with-libunwind=/opt/krellroot_v2.1u3oldmr 
+            --with-cbtf-services=/opt/cbtf_only_v1.1u1oldmr 
+            --with-tls=implicit 
+            --with-libelf=
+            --with-libdwarf=/opt/krellroot_v2.1u3oldmr 
+            --with-libdwarf-libdir= 
+            --with-dyninst=/opt/krellroot_v2.1u3oldmr 
+            --with-dyninst-libdir= 
+            --with-dyninst-version=8.1.2 
+            --with-libxerces-c-prefix=
+            --with-binutils=
+            --with-mpich2=
+            --with-mvapich=
+            --with-mvapich2=
+            --with-openmpi=/opt/openmpi-1.6.5 
+            --with-mpt=
+            --with-alps= 
+            CC=/usr/bin/gcc CXX=/usr/bin/c++ 
+

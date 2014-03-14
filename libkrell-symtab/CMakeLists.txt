@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013,2014 Krell Institute. All Rights Reserved.
+# Copyright (c) 2013-2014 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -27,6 +27,8 @@ find_package(Boost 1.39.0 REQUIRED
     )
 find_package(CBTF-Messages REQUIRED)
 find_package(Krell-Base REQUIRED)
+find_package(Libelf)
+find_package(Libdwarf)
 find_package(SymtabAPI)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc64*")
@@ -68,6 +70,8 @@ target_link_libraries(krell-symtab
     ${Boost_SYSTEM_LIBRARY}
     ${CBTF_MESSAGE_LIBRARIES}
     ${KRELL_BASE_LIBRARIES}
+    ${Libdwarf_SHARED_LIBRARIES}
+    ${Libelf_SHARED_LIBRARIES}
     ${SymtabAPI_LIBRARIES}
     )
 
@@ -78,6 +82,8 @@ add_executable(test test.cpp)
 target_link_libraries(test
     krell-symtab
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${Libdwarf_SHARED_LIBRARIES}
+    ${Libelf_SHARED_LIBRARIES}
     )
 
 include_directories(

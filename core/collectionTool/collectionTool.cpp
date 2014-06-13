@@ -221,22 +221,43 @@ class FEThread
         topology_file_component, "value", launcher, "TopologyFile"
         );
 
-    shared_ptr<ValueSink<bool> > done = ValueSink<bool>::instantiate();
-    Component::Instance outputs_component =
-            reinterpret_pointer_cast<Component>(done);
+    //shared_ptr<ValueSink<bool> > done = ValueSink<bool>::instantiate();
+    //Component::Instance outputs_component =
+     //       reinterpret_pointer_cast<Component>(done);
+    //Component::connect(network, "output", outputs_component, "value");
+    shared_ptr<ValueSink<bool> > threads_finished = ValueSink<bool>::instantiate();
+    Component::Instance threads_finished_output_component =
+            reinterpret_pointer_cast<Component>(threads_finished);
+    Component::connect(network, "threads_finished", threads_finished_output_component, "value");
 
 
     Component::connect(launcher, "Network", network, "Network");
-    Component::connect(network, "output", outputs_component, "value");
 
     *backend_attach_count = numBE;
     *backend_attach_file = connections;
     *topology_file = topology;
 
-    while (true) {
-	finished = *done;
-	if (finished) break;
+    std::map<std::string, Type> inputs = network->getInputs();
+
+    if (inputs.find("numBE") != inputs.end()) {
+    boost::shared_ptr<ValueSource<int> > numberBackends =
+        ValueSource<int>::instantiate();
+    Component::Instance numberBackends_component =
+        boost::reinterpret_pointer_cast<Component>(numberBackends);
+    Component::connect(numberBackends_component, "value", network, "numBE");
+    *numberBackends = numBE;
     }
+
+    bool threads_done = false;
+    while (true) {
+        threads_done = *threads_finished;
+        nanosleep((struct timespec[]){{0, 500000000}}, NULL);
+        if (threads_done) {
+            finished = true;
+            break;
+	}
+    }        
+
   }
 
   private:
@@ -331,14 +352,19 @@ int main(int argc, char** argv)
     bool finished = false;
     std::string aprunLlist ="";
 
+    if (numBE == 0) {
+        std::cout << desc << std::endl;
+        return 1;
+    }
+
     // TODO: pass numBE to CBTFTopology and record as the number
     // of application processes.
     CBTFTopology cbtftopology;
     if (topology.empty()) {
       if (arch == "cray") {
-          cbtftopology.autoCreateTopology(BE_CRAY_ATTACH);
+          cbtftopology.autoCreateTopology(BE_CRAY_ATTACH,numBE);
       } else {
-          cbtftopology.autoCreateTopology(BE_ATTACH);
+          cbtftopology.autoCreateTopology(BE_ATTACH,numBE);
       }
       topology = cbtftopology.getTopologyFileName();
       std::cerr << "Generated topology file: " << topology << std::endl;

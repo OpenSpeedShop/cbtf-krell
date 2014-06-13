@@ -30,6 +30,7 @@
 #endif
 
 #include "KrellInstitute/Core/AddressBuffer.hpp"
+#include "KrellInstitute/Core/Graph.hpp"
 
 
 namespace KrellInstitute { namespace Core {
@@ -49,6 +50,10 @@ namespace KrellInstitute { namespace Core {
 				    const uint8_t*, AddressBuffer&) const;
 	void aggregateAddressCounts(const unsigned &, const uint64_t*,
 				    AddressBuffer&) const;
+	void graphAddressCounts(const unsigned &, const uint64_t*,
+				    const uint8_t*, Graph&) const;
+	void graphAddressCounts(const unsigned &, const uint64_t*,
+				    Graph&) const;
     };
     
 } }

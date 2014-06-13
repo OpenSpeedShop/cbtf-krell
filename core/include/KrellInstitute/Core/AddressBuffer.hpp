@@ -43,6 +43,7 @@ namespace KrellInstitute { namespace Core {
 	AddressCounts addresscounts;
 
 	bool updateAddressCounts(uint64_t, uint64_t);
+	bool updateAddressCounts(AddressBuffer&);
 	void printResults() const;
 
 	AddressCounts  getAddressCounts() {

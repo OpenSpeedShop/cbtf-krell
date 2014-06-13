@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012-2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2012-2014 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -56,6 +56,14 @@
 
 using namespace KrellInstitute::Core;
 
+#ifndef NDEBUG
+/** Flag indicating if debuging for topology creationis enabled. */
+bool CBTFTopology::is_debug_topology_enabled =
+    (getenv("CBTF_DEBUG_TOPOLOGY") != NULL);
+bool CBTFTopology::is_debug_topology_details_enabled =
+    (getenv("CBTF_DEBUG_TOPOLOGY_DETAILS") != NULL);
+#endif
+
 CBTFTopology::CBTFTopology()
 {
     dm_top_depth = 2;
@@ -88,12 +96,14 @@ std::string extract_ranges(std::string nodeListNames) {
   }
 
   // Print out the numeric values on start-up when debug is turned on
-  if (getenv("OPENSS_DEBUG_DETAILED_STARTUP") != NULL || getenv("CBTF_DEBUG_DETAILED_STARTUP") != NULL) {
-    std::cerr << "DEBUG: CBTFTopology, numericNames.size() " << numericNames.size() << std::endl;
+#ifndef NDEBUG
+  if(CBTFTopology::is_debug_topology_details_enabled) {
+    std::cerr << "CBTFTopology: numericNames.size() " << numericNames.size() << std::endl;
     for (setit=numericNames.begin(); setit != numericNames.end(); setit++) {
-       std::cerr << "DEBUG: CBTFTopology, numericNames value=" << *setit << std::endl;
+       std::cerr << "CBTFTopology: numericNames value=" << *setit << std::endl;
     }
   }
+#endif
   
   // Loop through the list of numeric values and create range sets when possible
   for (setit=numericNames.begin(); setit != numericNames.end(); setit++) {
@@ -567,10 +577,28 @@ void CBTFTopology::parsePBSEnv()
 
     if (is_pbs_valid && dm_pbs_num_nodes > 1) {
 	long needed_cps = 0;
-	if (dm_top_fanout != 0)
+	int numbe = getNumBE();
+	long maxcps = numbe / 32;
+	//std::cerr << "maxcps:" << maxcps << " numbe:" << numbe << "/32" << std::endl;
+	if (numbe > 0) {
+	  if (dm_top_fanout != 0)
 	    needed_cps = dm_procs_per_node / dm_top_fanout;
-	else
+	  else
 	    needed_cps = dm_pbs_job_tasks / dm_procs_per_node;
+
+	  if (maxcps > 0) {
+	    //needed_cps = maxcps / dm_procs_per_node;
+	    needed_cps = maxcps;
+	  } else {
+	    needed_cps = 1;
+	  }
+ 
+	} else {
+	  if (dm_top_fanout != 0)
+	    needed_cps = dm_procs_per_node / dm_top_fanout;
+	  else
+	    needed_cps = dm_pbs_job_tasks / dm_procs_per_node;
+	}
 	
 	long numcpnodes = needed_cps / dm_procs_per_node;
 	long numcpnodesX = needed_cps % dm_procs_per_node;
@@ -580,24 +608,23 @@ void CBTFTopology::parsePBSEnv()
 	if (!dm_colocate_mrnet_procs)
 	    dm_num_app_nodes -= numcpnodes;
 
-        if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
-	   std::cerr << "DEBUG: CBTFTopology, dm_pbs_num_nodes " << dm_pbs_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, needed_cps " << needed_cps << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, numcpnodes " << numcpnodes << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, fanout " << dm_top_fanout << std::endl;
-        }
 
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
 	bool need_cp_node = true;
+	bool need_app_node = true;
+	long numappnodes = numbe / dm_procs_per_node;
+	if (numappnodes > 0) dm_num_app_nodes = numappnodes;
+
+	//std::cerr << "numappnodes:" << numappnodes << " numbe:" << numbe << std::endl;
+
         for (NodeListIter = dm_nodelist.begin();
 	     NodeListIter != dm_nodelist.end(); NodeListIter++) {
 
 	    if (need_cp_node || dm_colocate_mrnet_procs) {
                 dm_cp_nodelist.push_back(*NodeListIter);
 		//std::cerr << "NEED CP || dm_colocate_mrnet_procs dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
-	    } else {
+	    } else if (need_app_node) {
                 dm_app_nodelist.push_back(*NodeListIter);
 		//std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
 	    }
@@ -618,7 +645,26 @@ void CBTFTopology::parsePBSEnv()
 
 		need_cp_node = false;
 	    }
+	    if (counter-1 == numappnodes )
+	    {
+
+#if 0
+		std::cerr << "DONE WITH app nodes"
+		    << std::endl;
+#endif
+
+		need_app_node = false;
+	    }
 	}
+#ifndef NDEBUG
+	if(CBTFTopology::is_debug_topology_enabled) {
+	   std::cerr << "CBTFTopology::parsePBSEnv dm_pbs_num_nodes " << dm_pbs_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv needed_cps " << needed_cps << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv fanout " << dm_top_fanout << std::endl;
+        }
+#endif
     }
 }
 
@@ -728,13 +774,15 @@ void CBTFTopology::parseSlurmEnv()
 	if (!dm_colocate_mrnet_procs)
 	    dm_num_app_nodes -= numcpnodes;
 
-        if (getenv("OPENSS_DEBUG_STARTUP") != NULL || getenv("CBTF_DEBUG_STARTUP") != NULL) {
- 	   std::cerr << "DEBUG: CBTFTopology, dm_slurm_num_nodes " << dm_slurm_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, needed_cps " << needed_cps << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, numcpnodes " << numcpnodes << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, dm_num_app_nodes " << dm_num_app_nodes << std::endl;
-	   std::cerr << "DEBUG: CBTFTopology, fanout " << dm_top_fanout << std::endl;
+#ifndef NDEBUG
+	if(CBTFTopology::is_debug_topology_enabled) {
+ 	   std::cerr << "CBTFTopology::parseSlurmEnv dm_slurm_num_nodes " << dm_slurm_num_nodes << " dm_procs_per_node " << dm_procs_per_node << std::endl;
+	   std::cerr << "CBTFTopology::parseSlurmEnv needed_cps " << needed_cps << std::endl;
+	   std::cerr << "CBTFTopology::parseSlurmEnv numcpnodes " << numcpnodes << std::endl;
+	   std::cerr << "CBTFTopology::parseSlurmEnv dm_num_app_nodes " << dm_num_app_nodes << std::endl;
+	   std::cerr << "CBTFTopology::parseSlurmEnv fanout " << dm_top_fanout << std::endl;
         }
+#endif
 
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
@@ -770,7 +818,7 @@ void CBTFTopology::parseSlurmEnv()
     }
 }
 
-void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
+void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& numBE)
 {
     // need to handle cray and bluegene separately...
     if (mode == BE_ATTACH) {
@@ -786,6 +834,7 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
 	setColocateMRNetProcs(false);
 	setFanout(0);
     }
+    setNumBE(numBE);
 
     std::string fehostname;
     if (getIsCray()) {
@@ -803,8 +852,10 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode)
     if ((job_envval = getenv("SLURM_JOB_ID")) != NULL) {
       parseSlurmEnv();
       setPBSValid(false);
+      setSlurmValid(true);
     } else if ((job_envval = getenv("PBS_JOBID")) != NULL) {
       parsePBSEnv();
+      setPBSValid(true);
       setSlurmValid(false);
     } else {
       setPBSValid(false);
@@ -880,6 +931,9 @@ void CBTFTopology::createTopology()
     // FE will launch BE's. i.e. daemon type tools.
     if (!isAttachBEMode()) {
 	desiredDepth = 2;
+    } else {
+
+	//desiredDepth = 1;
     }
 
     //std::cerr << "CreateTopology desiredDepth  " << desiredDepth << std::endl;

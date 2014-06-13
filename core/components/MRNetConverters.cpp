@@ -400,3 +400,87 @@ private:
 }; // class ConvertPacketToUInt64
 
 KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToUInt64)
+
+/**
+ * Component that converts an int value into a MRNet packet.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertIntToPacket :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertIntToPacket())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertIntToPacket() :
+        Component(Type(typeid(ConvertIntToPacket)), Version(0, 0, 1))
+    {
+        declareInput<int>(
+            "in", boost::bind(&ConvertIntToPacket::inHandler, this, _1)
+            );
+        declareOutput<MRN::PacketPtr>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const int& in)
+    {
+        emitOutput<MRN::PacketPtr>(
+            "out", MRN::PacketPtr(new MRN::Packet(0, 0, "%d", in))
+            );
+    }
+    
+}; // class ConvertIntToPacket
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertIntToPacket)
+
+
+
+/**
+ * Component that converts a MRNet packet into an integer value.
+ */
+class __attribute__ ((visibility ("hidden"))) ConvertPacketToInt :
+    public Component
+{
+
+public:
+
+    /** Factory function for this component type. */
+    static Component::Instance factoryFunction()
+    {
+        return Component::Instance(
+            reinterpret_cast<Component*>(new ConvertPacketToInt())
+            );
+    }
+
+private:
+
+    /** Default constructor. */
+    ConvertPacketToInt() :
+        Component(Type(typeid(ConvertPacketToInt)), Version(0, 0, 1))
+    {
+        declareInput<MRN::PacketPtr>(
+            "in", boost::bind(&ConvertPacketToInt::inHandler, this, _1)
+            );
+        declareOutput<int>("out");
+    }
+
+    /** Handler for the "in" input.*/
+    void inHandler(const MRN::PacketPtr& in)
+    {
+        int out = 0;
+        in->unpack("%d", &out);
+        emitOutput<int>("out", out);
+    }
+    
+}; // class ConvertPacketToInt
+
+KRELL_INSTITUTE_CBTF_REGISTER_FACTORY_FUNCTION(ConvertPacketToInt)

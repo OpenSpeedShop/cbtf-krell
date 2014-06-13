@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2013 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2013-2014 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -29,6 +29,8 @@
 
 using namespace KrellInstitute::Core;
 
+// https://www.ibm.com/developerworks/aix/library/au-aix-boost-graph/
+//
 // test if edge exists.
 // boost::edge(u,v,g) returns pair<edge_descriptor, bool> where the bool is whether
 // the edge exists. So in the case we know it does, use the expression:
@@ -176,20 +178,19 @@ bool Graph::isEmpty() const
 bool GraphaddEdge(Vertex& v1, Vertex& v2) {
 };
 
-bool Graph::addEdge(Address& out, Address& in) {
+bool Graph::addEdge(Address& out, Address& in, const uint64_t& cost) {
     vertex_t out_v;
     if (addr2vertex.find(out) == addr2vertex.end()) {
 	out_v = boost::add_vertex(dm_dg);
 	addr2vertex.insert(std::make_pair(out, out_v));
 	dm_dg[out_v].a = out;
 	std::stringstream output;
-	//output << "addr:" << out << std::endl;
 	output << "addr:" << out ;
 	dm_dg[out_v].name = output.str();
-	std::cerr << "ADD vertex for " << out << std::endl;
+	//std::cerr << "ADD VERTEX for addr out " << out << std::endl;
     } else {
 	out_v = addr2vertex[out];
-	std::cerr << "FOUND vertex for " << out << std::endl;
+	//std::cerr << "FOUND VERTEX for " << out << std::endl;
     }
     vertex_t in_v;
     if (addr2vertex.find(in) == addr2vertex.end()) {
@@ -197,22 +198,46 @@ bool Graph::addEdge(Address& out, Address& in) {
 	addr2vertex.insert(std::make_pair(in, in_v));
 	dm_dg[in_v].a = in;
 	std::stringstream output;
-	//output << "addr:" << in << std::endl;
 	output << "addr:" << in ;
 	dm_dg[in_v].name = output.str();
-	std::cerr << "ADD vertex for " << in << std::endl;
+	//std::cerr << "ADD VERTEX for addr in " << in << std::endl;
     } else {
 	in_v = addr2vertex[in];
-	std::cerr << "FOUND vertex for " << in << std::endl;
+	//std::cerr << "FOUND VERTEX for " << in << std::endl;
     }
 
     edge_t e; bool b;
     if(!boost::edge(out_v, in_v, dm_dg).second) {
+        //std::pair<edge_descriptor, bool>
+        //add_edge(vertex_descriptor u, vertex_descriptor v,
+        //         adjacency_list& g)
+        // Adds edge (u,v) to the graph and returns the edge descriptor for the
+        // new edge. For graphs that do not allow parallel edges, if the edge
+        // is already in the graph then a duplicate will not be added and the
+        // bool flag will be false. When the flag is false, the returned edge
+        // descriptor points to the already existing edge.
+        //
+        //std::pair<edge_descriptor, bool>
+        //add_edge(vertex_descriptor u, vertex_descriptor v,
+        //         const EdgeProperties& p,
+        //         adjacency_list& g)
+        // Adds edge (u,v) to the graph and attaches p as the value of the
+        // edge's internal property storage. Also see the previous add_edge()
+        // member function for more details.
+        //
         boost::tie(e,b) = boost::add_edge(out_v, in_v, dm_dg);
-        dm_dg[e].cost = 1;
+	//std::cerr << "ADD EDGE for " << out << "->" << in << " cost " << cost << std::endl;
+        dm_dg[e].cost = cost;
     } else {
-        // FIXME. crashed with 1.41 on rmzerl.
-        //dm_dg[e].cost += 1;
+        // find existing edge and update the cost.
+        // std::pair<edge_descriptor, bool>
+        // edge(vertex_descriptor u, vertex_descriptor v,
+        //      const adjacency_list& g)
+        //      Returns an edge connecting vertex u to vertex v in graph g.
+        //
+        edge_t theEdge = boost::edge(out_v, in_v, dm_dg).first;
+	//std::cerr << "FOUND EDGE for " << out << "->" << in << " cost " << dm_dg[theEdge].cost << "+" << cost << std::endl;
+        dm_dg[theEdge].cost += cost;
     }
 };
 
@@ -225,14 +250,21 @@ void Graph::printGraph() {
     dp.property("label", boost::get(&Vertex::name, dm_dg));
     dp.property("node_id", boost::get(boost::vertex_index, dm_dg));
     dp.property("label", boost::get(&Edge::cost, dm_dg));
+
+// FIXME: Need to reliably determine boost level to know when
+// write_graphviz_dp is available.
 //  BOOST_VERSION % 100 is the patch level
 //  BOOST_VERSION / 100 % 1000 is the minor version
 //  BOOST_VERSION / 100000 is the major version
-#if (BOOST_VERSION / 100000 == 1) && (BOOST_VERSION / 100 % 1000 == 4) && (BOOST_VERSION % 100 > 3)
+//#if (BOOST_VERSION / 100000 == 1) && (BOOST_VERSION / 100 % 1000 == 4) && (BOOST_VERSION % 100 > 3)
+#if 0
+    std::cerr << "calling write_graphviz_dp for " << filename << std::endl;
     write_graphviz_dp(outf, dm_dg, dp);
 #else
-    boost::write_graphviz(outf, dm_dg);
+//    std::cerr << "calling boost::write_graphviz for " << filename << std::endl;
+ //   boost::write_graphviz(outf, dm_dg);
 #endif
 
+    //write_graphviz_dp(std::cout, dm_dg, dp);
     //boost::write_graphviz(std::cout, dm_dg);
 };

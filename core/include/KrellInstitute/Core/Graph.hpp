@@ -71,7 +71,7 @@ namespace KrellInstitute { namespace Core {
     typedef std::vector<ThreadName> ThreadNameVec;
 
     struct Edge{
-	int64_t cost;
+	uint64_t cost;
     };
 
     struct Vertex{
@@ -108,7 +108,7 @@ namespace KrellInstitute { namespace Core {
 	
 	bool addEdge(Vertex&, Vertex&);
 
-	bool addEdge(Address&, Address&);
+	bool addEdge(Address&, Address&, const uint64_t&);
 
         void printGraph();
 

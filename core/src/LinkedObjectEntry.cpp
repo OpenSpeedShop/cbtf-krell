@@ -78,3 +78,17 @@ LinkedObjectEntry::getAddressRange() const
 
     return AddressRange(Address(addr_begin),Address(addr_end));
 }
+
+
+bool LinkedObjectEntry::operator==(const LinkedObjectEntry& other) const
+{
+
+    if(path == other.path &&
+       time_loaded == other.time_loaded &&
+       time_unloaded == other.time_unloaded &&
+       addr_begin == other.addr_begin &&
+       addr_end == other.addr_end)
+	return true;
+
+    return false;
+}

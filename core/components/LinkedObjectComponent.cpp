@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -16,13 +16,14 @@
 // 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Plugin used by unit tests for the CBTF MRNet library. */
+/** @file LinkedObjectComponent. */
 
 #include <boost/bind.hpp>
 #include <boost/operators.hpp>
 #include <mrnet/MRNet.h>
 #include <typeinfo>
 #include <algorithm>
+#include <sstream>
 
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
@@ -39,6 +40,7 @@
 #include "KrellInstitute/Core/SymbolTable.hpp"
 #include "KrellInstitute/Core/SymtabAPISymbols.hpp"
 #include "KrellInstitute/Core/Time.hpp"
+#include "KrellInstitute/Core/TimeInterval.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 
 #include "KrellInstitute/Messages/Address.h"
@@ -57,13 +59,15 @@ using namespace KrellInstitute::Core;
 
 namespace { 
 
-
+/** count indicating number of threads attached. */
     int handled_threads = 0;
 
 #ifndef NDEBUG
 /** Flag indicating if debuging for LinkedObjects is enabled. */
 bool is_debug_linkedobject_events_enabled =
     (getenv("CBTF_DEBUG_LINKEDOBJECT_EVENTS") != NULL);
+bool is_trace_linkedobject_events_enabled =
+    (getenv("CBTF_TRACE_LINKEDOBJECT_EVENTS") != NULL);
 #endif
 
 }
@@ -97,16 +101,15 @@ private:
         declareInput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >(
             "loaded", boost::bind(&LinkedObject::loadedHandler, this, _1)
             );
-	declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out");
-
         declareInput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >(
             "unloaded", boost::bind(&LinkedObject::unloadedHandler, this, _1)
             );
-	declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out");
-
         declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
             "group", boost::bind(&LinkedObject::groupHandler, this, _1)
             );
+
+	declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out");
+	declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out");
 	declareOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out");
 	declareOutput<LinkedObjectEntryVec>("linkedobjectvec_out");
     }
@@ -114,22 +117,33 @@ private:
     /** Handlers for the inputs.*/
     void threadnamesHandler(const ThreadNameVec& in)
     {
+#ifndef NDEBUG
+	if (is_trace_linkedobject_events_enabled) {
+	    std::cerr << "ENTERED LinkedObject::threadnamesHandler with num threads "
+		<< in.size() << std::endl;
+	}
+#endif
 	threadnames = in;
-	//std::cerr  << "LinkedObject::threadnamesHandler threadnames size is "
-	//    << threadnames.size() << std::endl;
     }
 
 
     void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
     {
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
-#if 1
+#ifndef NDEBUG
+	if (is_trace_linkedobject_events_enabled) {
+	    std::cerr << "ENTERED LinkedObject::groupHandler with num linked objects "
+	    << message->linkedobjects.linkedobjects_len << std::endl;
+	}
+#endif
+
 	ThreadName tname(message->thread);
 
 	LinkedObjectEntryVec linkedobjects;
 	for(int i = 0; i < message->linkedobjects.linkedobjects_len; ++i) {
 	    const CBTF_Protocol_LinkedObject& msg_lo =
 				message->linkedobjects.linkedobjects_val[i];
+
 	    LinkedObjectEntry entry;
 	    entry.tname = tname;
 	    entry.path = msg_lo.linked_object.path;
@@ -137,18 +151,20 @@ private:
 	    entry.addr_end = msg_lo.range.end;
 	    entry.is_executable = msg_lo.is_executable;
 	    entry.time_loaded = msg_lo.time_begin;
-	    entry.time_unloaded = Time::TheEnd();
-	    linkedobjectvec.push_back(entry);
+	    entry.time_unloaded = msg_lo.time_end;
+	    
+	    LinkedObjectEntryVec::iterator lvi;
+	    lvi = std::find(linkedobjectvec.begin(), linkedobjectvec.end(), entry); 
+	    if (lvi == linkedobjectvec.end()) {
+	        linkedobjectvec.push_back(entry);
+	    }
 	}
 
 #ifndef NDEBUG
 	if (is_debug_linkedobject_events_enabled) {
-	    std::cerr  << "LinkedObject::groupHandler thread " << tname.getHost()
-	    	<< ":" << tname.getPid().second
-	    	<< ":" << tname.getPosixThreadId().second
-	    	<< std::endl;
-	    std::cerr  << "LinkedObject::groupHandler linkedobjects size is "
-		<< linkedobjectvec.size() << std::endl;
+	    std::cerr  << "LinkedObject::groupHandler tname:" << tname
+	        << " objects:" << linkedobjectvec.size()
+		<< std::endl;
 	}
 #endif
 
@@ -157,25 +173,16 @@ private:
 	// from the collector.  Once we have them all we should send the
 	// vector of linked objects to the client.
 	handled_threads++;
-	//std::cerr  << "LinkedObject::groupHandler handle_threads " << handled_threads
-	//	<< " of total " << threadnames.size() << std::endl;
-	if (handled_threads == threadnames.size() ) {
-
 #ifndef NDEBUG
-	    if (is_debug_linkedobject_events_enabled) {
-	        std::cerr  << "LinkedObject::groupHandler handled "
-		    << threadnames.size() << " pending threads. " << std::endl;
-	    }
-#endif
-	    
-	    emitOutput<LinkedObjectEntryVec>("linkedobjectvec_out",linkedobjectvec);
-	    // clear any linkedobjects for which we sent entries for.
-	    linkedobjectvec.clear();
+	if (is_debug_linkedobject_events_enabled) {
+	    std::cerr << "LinkedObject::groupHandler handled_threads " << handled_threads
+			<< " of total " << threadnames.size() << std::endl;
+	    std::cerr  << "LinkedObject::groupHandler EMITS LinkedObjectEntryVec" << std::endl;
+	    std::cerr  << "LinkedObject::groupHandler EMITS CBTF_Protocol_LinkedObjectGroup " << std::endl;
 	}
-#else
-
-	emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
 #endif
+	emitOutput<LinkedObjectEntryVec>("linkedobjectvec_out",linkedobjectvec);
+	emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
     }
 
     // Handler for dlopen events.
@@ -183,6 +190,11 @@ private:
     {
         CBTF_Protocol_LoadedLinkedObject *message = in.get();
 	LinkedObjectEntry entry;
+
+#ifndef NDEBUG
+	std::stringstream output;
+#endif
+	
 
 	for(int i = 0; i < message->threads.names.names_len; ++i) {
 	    const CBTF_Protocol_ThreadName& msg_thread =
@@ -202,17 +214,22 @@ private:
 // used to show the linkedobject information sent.
 #ifndef NDEBUG
 	    if (is_debug_linkedobject_events_enabled) {
-	    std::cerr << "path " << entry.path
+	    output << "path " << entry.path
 	    << " loaded at time " << entry.time_loaded.getValue()
 	    << " unloaded at time " << entry.time_unloaded.getValue()
 	    << " at " << AddressRange(entry.addr_begin,entry.addr_end)
 	    << " in thread " << entry.tname.getHost()
-	    << ":" << entry.tname.getPid().second
+	    << ":" << entry.tname.getPid()
 	    << ":" <<  entry.tname.getPosixThreadId().second
 	    << std::endl;
 	    }
 #endif
 	}
+#ifndef NDEBUG
+	if (is_debug_linkedobject_events_enabled) {
+	    std::cerr << output.str();
+	}
+#endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out", in);
     }
 

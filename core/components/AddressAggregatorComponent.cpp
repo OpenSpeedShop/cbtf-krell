@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -20,11 +20,10 @@
 
 #include <boost/bind.hpp>
 #include <boost/operators.hpp>
-//#include <mrnet/MRNet.h>
+#include <boost/shared_ptr.hpp>
 #include <typeinfo>
 #include <string>
 #include <sstream>
-
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -33,15 +32,18 @@
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
+#include <KrellInstitute/CBTF/Impl/MRNet.hpp>
 
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
+#include "KrellInstitute/Core/Graph.hpp"
 #include "KrellInstitute/Core/PCData.hpp"
 #include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/StacktraceData.hpp"
 #include "KrellInstitute/Core/Time.hpp"
+#include "KrellInstitute/Core/TimeInterval.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 #include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/DataHeader.h"
@@ -55,9 +57,13 @@
 #include "KrellInstitute/Messages/Mem_data.h"
 #include "KrellInstitute/Messages/Mpi_data.h"
 #include "KrellInstitute/Messages/Pthreads_data.h"
+#include "KrellInstitute/Messages/ThreadEvents.h"
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
+
+typedef std::map<Address, std::pair<ThreadName,uint64_t> > AddrThreadCountMap;
+typedef std::map<ThreadName,AddressBuffer>  ThreadAddrBufMap;
 
 namespace {
 
@@ -66,25 +72,93 @@ namespace {
 /** Flag indicating if debuging for LinkedObjects is enabled. */
 bool is_debug_aggregator_events_enabled =
     (getenv("CBTF_DEBUG_AGGR_EVENTS") != NULL);
+bool is_trace_aggregator_events_enabled =
+    (getenv("CBTF_TRACE_AGGR_EVENTS") != NULL);
 #endif
 
-    // count of threads handled
-    int handled_buffers = 0;
-
     bool is_finished = false;
-
     bool sent_buffer = false;
 
     // vector of incoming threadnames. For each thread we expect
     ThreadNameVec threadnames;
+    ThreadAddrBufMap threadaddrbufmap;
+
+    // map address counts to threads.
+    bool updateAddrThreadCountMap(AddressBuffer& buf,
+				   AddrThreadCountMap& addrThreadCount,
+				   ThreadName& tname)
+    {
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    std::cerr << getpid() << " " << "ENTERED updateAddrThreadCountMap  buf size is "
+	    << buf.addresscounts.size() << std::endl;
+	}
+#endif
+	threadaddrbufmap.insert(std::make_pair(tname,buf));
+	AddressCounts::const_iterator aci;
+
+	for (aci = buf.addresscounts.begin(); aci != buf.addresscounts.end(); ++aci) {
+	    AddrThreadCountMap::iterator lb = addrThreadCount.lower_bound(aci->first);
+	    if(lb != addrThreadCount.end() && !(addrThreadCount.key_comp()(aci->first, lb->first))) {
+		if (aci->second > lb->second.second) {
+#if 0
+		    std::cerr << "updateAddrThreadCountMap UPDATE addr " << aci->first
+		        << " thread " << tname
+		        << " new count " << aci->second << std::endl;
+#endif
+		    lb->second.first = tname;
+		    lb->second.second = aci->second;
+		}
+	    } else {
+#if 0
+		std::cerr << "updateAddrThreadCountMap INSERTS addr " << aci->first
+		    <<  " thread " << tname
+		    << " count " << aci->second << std::endl;
+#endif
+		std::pair<ThreadName,uint64_t> tcount(tname,aci->second);
+		addrThreadCount.insert(lb, AddrThreadCountMap::value_type(aci->first, tcount));
+	    }
+	}
+
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    std::cerr << getpid() << " " << "updateAddrThreadCountMap exits, addrThreadCount size is "
+	    << addrThreadCount.size() << std::endl;
+	}
+#endif
+    }
+
+    void printAddrThreadCountMap(AddrThreadCountMap& addrTM)
+    {
+	std::stringstream output;
+	output << "entered printAddrThreadCountMap addrThreadCount size " << addrTM.size() << std::endl;
+	AddrThreadCountMap::const_iterator aci;
+	for (aci = addrTM.begin(); aci != addrTM.end(); ++aci) {
+	    output << "Address " << aci->first
+		<< " thread:" << aci->second.first
+		<< " count " << aci->second.second
+		<< std::endl;
+	}
+	std::cerr << output.str();
+    }
+
+
+    Graph dGraph;
+
+    // threads finished.
+    int threads_finished = 0;
+
+    // total size of performance data seen.
+    int total_data_size = 0;
 
     void aggregatePCData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf, uint64_t &interval)
+			 AddressBuffer &buf, uint64_t &interval,
+			 ThreadName &tname)
     {
 	if (id == "pcsamp") {
             CBTF_pcsamp_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
 	    interval = data.interval;
 	    PCData pcdata;
             pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
@@ -94,7 +168,7 @@ bool is_debug_aggregator_events_enabled =
 	} else if (id == "hwc") {
             CBTF_hwc_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
 	    interval = data.interval;
 	    PCData pcdata;
             pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
@@ -103,7 +177,7 @@ bool is_debug_aggregator_events_enabled =
 	} else if (id == "hwcsamp") {
             CBTF_hwcsamp_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data), &data);
 	    interval = data.interval;
 	    PCData pcdata;
             pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
@@ -115,23 +189,33 @@ bool is_debug_aggregator_events_enabled =
     }
 
     void aggregateSTSampleData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf, uint64_t &interval)
+			 AddressBuffer &buf, uint64_t &interval,
+			 ThreadName &tname)
     {
 	if (id == "usertime") {
             CBTF_usertime_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
 	    interval = data.interval;
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val,
 				data.count.count_val, buf);
+
+#if 0
+	    stdata.graphAddressCounts(data.stacktraces.stacktraces_len,
+				data.stacktraces.stacktraces_val,
+				data.count.count_val, dGraph);
+
+	    dGraph.printGraph();
+#endif
+
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "hwctime") {
             CBTF_hwctime_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
 	    interval = data.interval;
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
@@ -146,40 +230,30 @@ bool is_debug_aggregator_events_enabled =
     }
 
     void aggregateSTTraceData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf)
+			 AddressBuffer &buf, ThreadName &tname)
     {
 	if (id == "io") {
             CBTF_io_trace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "iop") {
-#if 0
-	    std::cerr << "IOP now call StacktraceData::aggregateAddressCounts " << std::endl;
-#endif
             CBTF_io_profile_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
-#if 0
-	    for(unsigned i = 0; i < data.time.time_len; ++i) {
-	    	if (data.time.time_val[i] > 0) {
-	    	    std::cerr << "IOP time at " << i << " is " << data.time.time_val[i] << std::endl;
-	    	}
-	    }
-#endif
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "iot") {
             CBTF_io_exttrace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
@@ -188,16 +262,17 @@ bool is_debug_aggregator_events_enabled =
 	} else if (id == "mem") {
             CBTF_mem_exttrace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
+
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "pthreads") {
             CBTF_pthreads_exttrace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
@@ -206,35 +281,49 @@ bool is_debug_aggregator_events_enabled =
 	} else if (id == "mpi") {
             CBTF_mpi_trace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
+#if 0
+	    int tracecount = 0;
+	    int eventcount = 0;
+	    std::map<Address,uint64_t> addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+	        Address a;
+		TimeInterval interval(Time(data.events.events_val[i].start_time),
+                              Time(data.events.events_val[i].stop_time));
+		
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		std::map<Address,uint64_t>::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
+	    for(std::map<Address,uint64_t>::iterator it = addressTime.begin();
+		it != addressTime.end(); ++it) {
+		std::cerr << " Address:" << (*it).first << " value:" << (*it).second << " thread:" << tname << std::endl;
+	    }
+#endif
+
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "mpip") {
-#if 0
-	    std::cerr << "MPIP now call StacktraceData::aggregateAddressCounts " << std::endl;
-#endif
             CBTF_mpi_profile_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
-#if 0
-	    for(unsigned i = 0; i < data.time.time_len; ++i) {
-	    	if (data.time.time_val[i] > 0) {
-	    	    std::cerr << "MPIP time at " << i << " is " << data.time.time_val[i] << std::endl;
-	    	}
-	    }
-#endif
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "mpit") {
             CBTF_mpi_exttrace_data data;
             memset(&data, 0, sizeof(data));
-            blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
 				data.stacktraces.stacktraces_val, buf);
@@ -271,6 +360,7 @@ private:
     AddressAggregator() :
         Component(Type(typeid(AddressAggregator)), Version(0, 0, 1))
     {
+	handled_buffers = 0;
         declareInput<AddressBuffer>(
             "addressBuffer", boost::bind(&AddressAggregator::addressBufferHandler, this, _1)
             );
@@ -328,8 +418,9 @@ private:
        declareInput<bool>(
             "finished", boost::bind(&AddressAggregator::finishedHandler, this, _1)
             );
-
+ 
         declareOutput<AddressBuffer>("Aggregatorout");
+        declareOutput<ThreadAddrBufMap>("ThreadAddrBufMap");
 	declareOutput<uint64_t>("interval");
 	declareOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out");
     }
@@ -339,9 +430,9 @@ private:
     {
         threadnames = in;
 #ifndef NDEBUG
-        if (is_debug_aggregator_events_enabled) {
-            std::cerr
-	    << "AddressAggregator::threadnamesHandler threadnames size is "
+        if (is_trace_aggregator_events_enabled) {
+            std::cerr << getpid() << " "
+	    << "Entered AddressAggregator::threadnamesHandler threadnames size is "
 	    << threadnames.size() << std::endl;
 	}
 #endif
@@ -351,11 +442,10 @@ private:
     {
         is_finished = in;
 #ifndef NDEBUG
-        if (is_debug_aggregator_events_enabled) {
-            std::cerr
-	    << "AddressAggregator::finishedHandler finished is " << is_finished
+        if (is_trace_aggregator_events_enabled) {
+            std::cerr << getpid() << " "
+	    << "ENTERED AddressAggregator::finishedHandler finished is " << is_finished
 	    << " for " << threadnames.size() << " threadnames seen"
-	    << " from cbtf pid " << getpid()
 	    << std::endl;
 	}
 #endif
@@ -368,14 +458,15 @@ private:
 	if (!sent_buffer) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
-                std::cerr
-	        << "AddressAggregator::finishedHandler sends buffer " << sent_buffer
-	        << " from cbtf pid " << getpid()
+                std::cerr << getpid() << " "
+	        << "AddressAggregator::finishedHandler sends buffer addr size " << abuffer.addresscounts.size()
 		<< std::endl;
-		abuffer.printResults();
 	    }
 #endif
+            //std::cerr << getpid() << " " << "AddressAggregator::finishedHandler EMITS buffer " << std::endl;
 	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+            //std::cerr << getpid() << " " << "AddressAggregator::finishedHandler EMITS threadaddrbufmap size "<< threadaddrbufmap.size() << std::endl;
+            emitOutput<ThreadAddrBufMap>("ThreadAddrBufMap",threadaddrbufmap);
 	    sent_buffer = true;
 	}
     }
@@ -401,7 +492,6 @@ private:
     {
         CBTF_hwc_data *data = in.get();
 
-        //std::cerr << "AddressAggregator::hwcHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -417,7 +507,6 @@ private:
     {
         CBTF_hwcsamp_data *data = in.get();
 
-        //std::cerr << "AddressAggregator::hwcsampHandler: input interval is " << data->interval <<  std::endl;
 	PCData pcdata;
         pcdata.aggregateAddressCounts(data->pc.pc_len,
                                 data->pc.pc_val,
@@ -535,10 +624,20 @@ private:
     }
 
     /** Handler for the "CBTF_Protocol_Blob" input.*/
+    // This is the main handler of performance data blobs streaming up from
+    // the collector BE's connected to this filter node. A CBTF_Protocol_Blob
+    // contains an xdr encoded header and an xdr encoded data payload.
+    // The header maps the data payload to a specific collector and the
+    // thread it came from. There can be 1 to N connections to a filter node.
+    // Each connection can stream data from any pthreads that share the connection.
+    // The total number of datablobs and the size of these blobs...
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
-
-	//std::cerr << "ENTER AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    std::cerr << "ENTERED AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
+	}
+#endif
 
 	if (in->data.data_len == 0 ) {
 	    std::cerr << "EXIT AddressAggregator::cbtf_protocol_blob_Handler: data length 0" << std::endl;
@@ -548,55 +647,65 @@ private:
 	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
 	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
 
-        CBTF_Protocol_Blob *B = in.get();
-	Blob myblob(B->data.data_len, B->data.data_val);
+	Blob myblob(in.get()->data.data_len, in.get()->data.data_val);
 
-	// decode this blobs data header
+	// decode this blobs data header and create a threadname object
+	// and collector id object.
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
         unsigned header_size = myblob.getXDRDecoding(
             reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
             );
-
+        ThreadName threadname(header.host,header.pid,header.posix_tid,header.rank);
 	std::string collectorID(header.id);
+
+	// find the actual data blob after the header and create a Blob.
+	unsigned data_size = myblob.getSize() - header_size;
+	total_data_size += data_size;
+	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
+	Blob dblob(data_size,data_ptr);
 
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << "Aggregating CBTF_Protocol_Blob addresses for "
-	    << collectorID << " data from "
-	    << header.host << ":" << header.pid
-	    << " from cbtf pid " << getpid()
+	    std::cerr << getpid() << " " << "Aggregating CBTF_Protocol_Blob addresses for "
+	    << collectorID << " data from thread " << threadname
+	    << " total data bytes so far: " << total_data_size
 	    << std::endl;
 	}
 #endif
 
-	// find the actual data blob after the header
-	unsigned data_size = myblob.getSize() - header_size;
-	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
-        xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), reinterpret_cast<char*>(&header));
-	Blob dblob(data_size,data_ptr);
-
+	// The following does a global aggregation of the data. Not per thread of execution.
 	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
-            aggregatePCData(collectorID, dblob, abuffer, interval);
+	    AddressBuffer buf;
+            aggregatePCData(collectorID, dblob, buf, interval, threadname);
+	    // update aggregate addresses and counts. 
+	    abuffer.updateAddressCounts(buf);
+
+	    // load balance on address counts.
+	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
 	    emitOutput<uint64_t>("interval",  interval);
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
-            aggregateSTSampleData(collectorID, dblob, abuffer, interval);
+	    AddressBuffer buf;
+            aggregateSTSampleData(collectorID, dblob, buf, interval, threadname);
+	    abuffer.updateAddressCounts(buf);
+	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" ||
 		   collectorID == "iop" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit" ||
 		   collectorID == "mpip" || collectorID == "pthreads") {
-	    //std::cerr << "IOP CALL aggregateSTTraceData" << std::endl;
-            aggregateSTTraceData(collectorID, dblob, abuffer);
+            //aggregateSTTraceData(collectorID, dblob, abuffer, threadname);
+	    AddressBuffer buf;
+            aggregateSTTraceData(collectorID, dblob, buf, threadname);
+	    abuffer.updateAddressCounts(buf);
+	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
 
-	// Too bad the waitforall sync filter can't control the
-	// emit of the AddressBuffer based on the number of
-	// children below.
-	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT Addressbuffer" << std::endl;
+	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMITS Addressbuffer" << std::endl;
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
+        xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), reinterpret_cast<char*>(&header));
 
     }
 
@@ -604,14 +713,25 @@ private:
     void pass_cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
 	// Would be nice to group these on their way up the tree.
-	//std::cerr << "AddressAggregator::pass_cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    std::cerr << "AddressAggregator::pass_cbtf_protocol_blob_Handler: EMITS CBTF_Protocol_Blob" << std::endl;
+	}
+#endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
     }
 
-    /** Handler for the "in2" input.*/
+    /** Handler for the "addressBuffer" input.
+      * Aggregate Addresbuffers coming in to this node.
+      */
     void addressBufferHandler(const AddressBuffer& in)
     {
 	
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    std::cerr << "ENTERED AddressAggregator::addressBufferHandler" << std::endl;
+	}
+#endif
 	AddressCounts::const_iterator aci;
 	for (aci = in.addresscounts.begin(); aci != in.addresscounts.end(); ++aci) {
 
@@ -622,40 +742,29 @@ private:
         handled_buffers++;
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
- 	    std::cerr << "AddressAggregator::addressBufferHandler"
+ 	    std::cerr << getpid() << " " << "AddressAggregator::addressBufferHandler"
 	    << " handled buffers " << handled_buffers
 	    << " known threads " << threadnames.size()
 	    << " is_finished " << is_finished
-	    << " from cbtf pid " << getpid()
 	    << std::endl;
 	}
 #endif
-	// This logic is now suspect.  It is possible for a collector
-	// to send multiple buffers from a single thread.  therefore
-	// we can handle more buffers than the total for known threads.
-	// e.g. if each thread sends 2 buffers, then handled_buffers
-	// will be twice the known threads size.
         if (handled_buffers == threadnames.size()) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
- 	        std::cerr << "AddressAggregator::addressBufferHandler "
+ 	        std::cerr << getpid() << " " << "AddressAggregator::addressBufferHandler "
  	        << "handled " << handled_buffers
 		<< " buffers for known total threads" << threadnames.size()
-		<< " from cbtf pid " << getpid()
  	        << std::endl;
 	    }
 #endif
-	    //emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-	    //sent_buffer = true;
 	}
-	// We are not sending to a client here. We are sending upward
-	// to potentially other nodes for further aggregation.
-	//emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
     }
 
-    /** Handler for the "in3" input.*/
+    /** Handler for the "blob" input.*/
     void blobHandler(const Blob& in)
     {
+	//std::cerr << "ENTERED AddressAggregator::blobHandler" << std::endl;
 	// decode this blobs data header
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
@@ -663,13 +772,12 @@ private:
             reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
             );
 
+        ThreadName tname(header.host,header.pid,header.posix_tid,header.rank);
 	std::string collectorID(header.id);
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << "Aggregating Blob addresses for "
-	    << collectorID << " data from "
-	    << header.host << ":" << header.pid
-	    << " from cbtf pid " << getpid()
+	    std::cerr << getpid() << " blobHandler: Aggregating Blob addresses for "
+	    << collectorID << " data from thread " << tname
 	    << std::endl;
 	}
 #endif
@@ -680,16 +788,16 @@ private:
 	Blob dblob(data_size,data_ptr);
 
 	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
-            aggregatePCData(collectorID, dblob, abuffer, interval);
+            aggregatePCData(collectorID, dblob, abuffer, interval,tname);
 	    emitOutput<uint64_t>("interval",  interval);
 	} else if (collectorID == "usertime" || collectorID == "hwctime") {
-            aggregateSTSampleData(collectorID, dblob, abuffer, interval);
+            aggregateSTSampleData(collectorID, dblob, abuffer, interval,tname);
 	    emitOutput<uint64_t>("interval",  interval);
         } else if (collectorID == "io" || collectorID == "iot" ||
 		   collectorID == "iop" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit" ||
 		   collectorID == "mpip" || collectorID == "pthreads") {
-            aggregateSTTraceData(collectorID, dblob, abuffer);
+            aggregateSTTraceData(collectorID, dblob, abuffer, tname);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
@@ -701,12 +809,13 @@ private:
     void intervalHandler(const uint64_t in)
     {
         interval = in;
-        //std::cerr << "AddressAggregator::intervalHandler: interval is " << interval <<  std::endl;
     }
 
     uint64_t interval;
 
     AddressBuffer abuffer;
+    AddrThreadCountMap addrThreadCount;
+    int handled_buffers;
 
 }; // class AddressAggregator
 

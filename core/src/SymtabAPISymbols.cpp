@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009-2012 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2009-2014 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -28,6 +28,7 @@
 #include "Symtab.h"
 #include "LineInformation.h"
 #include "Function.h"
+#include <sstream>
 
 using namespace KrellInstitute::Core;
 using namespace Dyninst;
@@ -66,7 +67,7 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 // DEBUG
 #ifndef NDEBUG
     if(is_debug_symtabapi_symbols_enabled) {
-	std::cerr << "Processing linked object "
+	std::cerr << "SymtabAPISymbols::getSymbols: Processing linked object "
 	    << objname << " with address range " << lorange
 	    << " addresses is " << addresses.size()
 	    << std::endl;
@@ -86,7 +87,7 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 // DEBUG
 #ifndef NDEBUG
     if(is_debug_symtabapi_symbols_enabled) {
-        std::cerr << "Image range of " << objname << " is " << image_range << std::endl;
+        std::cerr << "SymtabAPISymbols::getSymbols: Image range for" << objname << " " << image_range << std::endl;
     }
 #endif
 
@@ -118,6 +119,10 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
     std::set<KrellInstitute::Core::Address> function_begin_addresses;
     std::vector <Function *>::iterator fsit;
 
+#ifndef NDEBUG
+    std::stringstream output;
+#endif
+
     for(fsit = fsyms.begin(); fsit != fsyms.end(); ++fsit) {
 	int sym_size = (*fsit)->getSize();
 	KrellInstitute::Core::Address begin((*fsit)->getOffset());
@@ -139,10 +144,10 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 // DEBUG
 #ifndef NDEBUG
 		if(is_debug_symtabapi_symbols_detailed_enabled) {
-	            std::cerr << "ADDING FUNCTION " << fname
-		    << " RANGE " << frange
-		    << " for pc " << *ai
-		    << " adjusted pc " << theAddr
+	            output << "SymtabAPISymbols::getSymbols: ADDING FUNCTION " << fname
+		    << " " << frange
+		    << " pc:" << *ai
+		    << " adjusted pc:" << theAddr
 		    << std::endl;
 		}
 #endif
@@ -159,12 +164,19 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 	}
     }
 
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_detailed_enabled) {
+	std::cerr << output.str();
+        output.clear();
+    }
+#endif
+
 
     std::vector <Module *>mods;
     AddressRange module_range;
     std::string module_name;
     if(symtab && !symtab->getAllModules(mods)) {
-	std::cerr << "getAllModules unable to get all modules  "
+	std::cerr << "SymtabAPISymbols::getSymbols: getAllModules unable to get all modules  "
 	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
 	    << std::endl;
     } else {
@@ -176,7 +188,7 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 		   AddressRange(mods[i]->addr(),
 				mods[i]->addr() + symtab->imageLength());
 	        module_name = mods[i]->fullName();
-	        std::cerr << "getAllModules module name " << mods[i]->fullName()
+	        std::cerr << "SymtabAPISymbols::getSymbols: getAllModules for " << mods[i]->fullName()
 		    << " Range " << module_range
 		    << std::endl;
 	    }
@@ -188,9 +200,9 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 #ifndef NDEBUG
     if(is_debug_symtabapi_symbols_enabled) {
 
-        std::cerr << "symtabAPISymbols: image_offset " << image_offset
-	<< " image_length " << image_length
-	<< " image_range " << image_range << std::endl;
+        std::cerr << "SymtabAPISymbols::getSymbols: image_offset:" << image_offset
+	<< " image_length:" << image_length
+	<< " image_range:" << image_range << std::endl;
 
 	std::cerr << "USING BASE OFFSET " << base << std::endl;
     }
@@ -211,12 +223,12 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 // DEBUG
 #ifndef NDEBUG
 		    if(is_debug_symtabapi_symbols_detailed_enabled) {
-			std::cerr << " SAMPLE Address:" << theAddr + base
-			<< " File:" << (*si)->getFile()
-			<< " Line:" << (*si)->getLine()
-			<< " Column:" << (int) (*si)->getColumn()
-			<< " startAddr:" << KrellInstitute::Core::Address((*si)->startAddr()) +base
-			<< " endAddr:" << KrellInstitute::Core::Address((*si)->endAddr()) +base
+			output << "SymtabAPISymbols::getSymbols: SAMPLE Address:" << theAddr + base
+			<< " " << (*si)->getFile()
+			<< ":" << (*si)->getLine()
+			<< ":" << (int) (*si)->getColumn()
+			<< ":" << KrellInstitute::Core::Address((*si)->startAddr()) +base
+			<< ":" << KrellInstitute::Core::Address((*si)->endAddr()) +base
 			<< std::endl;
 		    }
 #endif
@@ -231,6 +243,13 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 	    }
 	} // mods loop
     } // sampled addresses loop
+
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_detailed_enabled) {
+	std::cerr << output.str();
+        output.clear();
+    }
+#endif
 
     // Find any statements for the beginning of a function that
     // contained a valid sample address.
@@ -250,12 +269,12 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 // DEBUG
 #ifndef NDEBUG
 	 	    if(is_debug_symtabapi_symbols_detailed_enabled) {
-			std::cerr << " FUNCTION BEGIN Address:" << theAddr + base
-				  << " File:" << (*si)->getFile()
-				  << " Line:" << (*si)->getLine()
-				  << " Column:" << (int) (*si)->getColumn()
-				  << " startAddr:" << KrellInstitute::Core::Address((*si)->startAddr()) +base
-				  << " endAddr:" << KrellInstitute::Core::Address((*si)->endAddr()) +base
+			output << "SymtabAPISymbols::getSymbols: FUNCTION BEGIN"
+				  << " " << (*si)->getFile()
+				  << ":" << (*si)->getLine()
+				  << ":" << (int) (*si)->getColumn()
+				  << ":" << KrellInstitute::Core::Address((*si)->startAddr()) +base
+				  << ":" << KrellInstitute::Core::Address((*si)->endAddr()) +base
 				  << std::endl;
 		    }
 #endif
@@ -271,6 +290,12 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 	    }
 	} // mods loop
     } // function begin statement loop
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_detailed_enabled) {
+	std::cerr << output.str();
+        output.clear();
+    }
+#endif
 }
 
 
@@ -293,7 +318,7 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 // DEBUG
 #ifndef NDEBUG
     if(is_debug_symtabapi_symbols_enabled) {
-	    std::cerr << "Processing linked object "
+	    std::cerr << "SymtabAPISymbols::getAllSymbols: Processing linked object "
 	    << objname << " with address range " << lrange << std::endl;
     }
 #endif
@@ -313,12 +338,16 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
     std::vector <SymtabAPI::Function *>fsyms;
 
     if(symtab && !symtab->getAllFunctions(fsyms) ) {
-	std::cerr << "getAllSymbolsByType unable to get all Functions "
+	std::cerr << "Symtab getAllFunctions unable to get all Functions "
 	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
 	    << std::endl;
     }
 
     std::vector<SymtabAPI::Function *>::iterator fsit;
+
+#ifndef NDEBUG
+    std::stringstream output;
+#endif
 
     for(fsit = fsyms.begin(); fsit != fsyms.end(); ++fsit) {
 	int sym_size = (*fsit)->getSize();
@@ -330,19 +359,27 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 
 // DEBUG
 #ifndef NDEBUG
-	    if(is_debug_symtabapi_symbols_enabled) {
-	        std::cerr << "ADDING FUNCTION " << (*fsit)->getFirstSymbol()->getPrettyName()
+	if(is_debug_symtabapi_symbols_enabled) {
+	    output << "SymtabAPISymbols::getAllSymbols: ADDING FUNCTION "
+		<< (*fsit)->getFirstSymbol()->getPrettyName()
 		<< " RANGE " << begin << "," << end << std::endl;
-	    }
+	}
 #endif
 	st.addFunction(begin + base, end + base,(*fsit)->getFirstSymbol()->getPrettyName());
     }
+
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_enabled) {
+	std::cerr << output.str();
+	output.clear();
+    }
+#endif
 
     std::vector <Module *>mods;
     AddressRange module_range;
     std::string module_name;
     if(symtab && !symtab->getAllModules(mods)) {
-	std::cerr << "getAllModules unable to get all modules  "
+	std::cerr << "Symtab getAllModules unable to get all modules  "
 	    << Symtab::printError(Symtab::getLastSymtabError()).c_str()
 	    << std::endl;
     } else {
@@ -353,7 +390,7 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 	        module_range =
 		   AddressRange(mods[i]->addr(), mods[i]->addr() + symtab->imageLength());
 	        module_name = mods[i]->fullName();
-	        std::cerr << "getAllModules MNAME " << mods[i]->fullName()
+	        std::cerr << "Symtab getAllModules MNAME " << mods[i]->fullName()
 		    << " Range " << module_range << std::endl;
 	    }
 	}
@@ -364,7 +401,7 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 #ifndef NDEBUG
     if(is_debug_symtabapi_symbols_enabled) {
 
-        std::cerr << "symtabAPISymbols: image_offset " << image_offset
+        std::cerr << "SymtabAPISymbols::getAllSymbols: image_offset " << image_offset
 	<< " image_length " << image_length
 	<< " image_range " << image_range << std::endl;
 
@@ -386,7 +423,7 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 // DEBUG
 #ifndef NDEBUG
 		if(is_debug_symtabapi_symbols_enabled) {
-		    std::cerr << "ADDING STATEMENT " << b << ":" << e
+		    output << "SymtabAPISymbols::getAllSymbols: ADDING STATEMENT " << b << ":" << e
 		    <<" " << line.first << ":" << line.second  << std::endl;
 		}
 #endif
@@ -394,6 +431,12 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 	    }
 	}
     }
+#ifndef NDEBUG
+    if(is_debug_symtabapi_symbols_enabled) {
+	std::cerr << output.str();
+	output.clear();
+    }
+#endif
 }
 
 void

@@ -118,7 +118,12 @@ class CBTFTopology {
 	    };
 
 
-	    void autoCreateTopology(const MRNetStartMode&);
+	    void autoCreateTopology(const MRNetStartMode& mode) {
+		autoCreateTopology(mode,0);	
+	    };
+
+	    void autoCreateTopology(const MRNetStartMode&, const int&);
+
 	    void createTopology();
 
 	    int getCrayFENid( void );
@@ -299,6 +304,14 @@ class CBTFTopology {
 		return attach_be_mode;
 	    };
 
+	    void setNumBE(const int& val) {
+		dm_top_numbe = val;
+	    };
+
+	    int getNumBE() {
+		return dm_top_numbe;
+	    };
+
 	    void setColocateMRNetProcs(const bool& val) {
 		dm_colocate_mrnet_procs = val;
 	    };
@@ -317,13 +330,17 @@ class CBTFTopology {
 		GENERIC
 	    } TreeType;
 
+#ifndef NDEBUG
+	    static bool is_debug_topology_enabled;
+	    static bool is_debug_topology_details_enabled;
+#endif
 	private:
 	    std::set<std::string> * dm_nodes;
 	    std::string dm_topology_filename;
 	    std::string dm_topology_spec;
 	    std::string dm_topology;
 	    std::string dm_fe_node;
-	    int dm_top_depth, dm_top_fanout;
+	    int dm_top_depth, dm_top_fanout, dm_top_numbe;
 	    MRN::Tree * dm_tree;
 	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
 		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;

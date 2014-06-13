@@ -18,7 +18,7 @@
 
 /** @file
  *
- * Definition of the PCHash and Address counts functions.
+ * Definition of AddressBuffer functions.
  *
  */
 
@@ -91,11 +91,24 @@ bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
     AddressCounts::iterator lb = addresscounts.lower_bound(thePC);
 
     if(lb != addresscounts.end() && !(addresscounts.key_comp()(thePC, lb->first))) {
-//std::cerr << "AddressBuffer::updateAddressCounts updates count for " << thePC << std::endl;
 	lb->second += count;
     } else {
-//std::cerr << "AddressBuffer::updateAddressCounts inserts count for " << thePC << std::endl;
 	addresscounts.insert(lb, AddressCounts::value_type(thePC, count));
     }
 
+}
+
+bool AddressBuffer::updateAddressCounts(AddressBuffer& buf)
+{
+  AddressCounts::const_iterator aci;
+  for (aci = buf.addresscounts.begin(); aci != buf.addresscounts.end(); ++aci) {
+
+    AddressCounts::iterator lb = addresscounts.lower_bound(aci->first);
+
+    if(lb != addresscounts.end() && !(addresscounts.key_comp()(aci->first, lb->first))) {
+	lb->second += aci->second;
+    } else {
+	addresscounts.insert(lb, AddressCounts::value_type(aci->first, aci->second));
+    }
+  }
 }

@@ -33,6 +33,7 @@ libcbtf_core_la_LDFLAGS = \
 
 
 libcbtf_core_la_LIBADD = \
+	@MESSAGES_BASE_LIBS@ \
 	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@
 
@@ -63,30 +64,25 @@ libcbtf_core_symtabapi_la_CXXFLAGS = \
 libcbtf_core_symtabapi_la_LDFLAGS = \
 	@LIBDWARF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
-	@MESSAGES_LDFLAGS@ \
 	-export-dynamic -version-info 0:0:0
 
 
 libcbtf_core_symtabapi_la_LIBADD = \
-	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBDWARF_LIBS@ \
 	@DYNINST_SYMTABAPI_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_core_mrnet_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
-	@MESSAGES_CPPFLAGS@ \
 	@BOOST_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_core_mrnet_la_LDFLAGS = \
-	@MESSAGES_LDFLAGS@ \
 	@MRNET_LDFLAGS@ \
 	-export-dynamic -version-info 0:0:0
 
 libcbtf_core_mrnet_la_LIBADD = \
-	@MESSAGES_PERFDATA_LIBS@ \
 	@MRNET_LIBS@ \
 	@LIBLTDL@
 
@@ -103,6 +99,7 @@ libcbtf_core_la_SOURCES = \
 	Blob.cpp \
 	Exception.cpp \
 	ExtentGroup.cpp \
+	Graph.cpp \
 	LinkedObjectEntry.cpp \
 	Path.cpp \
 	PCData.cpp \

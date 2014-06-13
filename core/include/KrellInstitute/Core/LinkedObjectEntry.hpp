@@ -75,6 +75,7 @@ namespace KrellInstitute { namespace Core {
         bool  is_executable;
 
 	LinkedObjectEntry();
+	bool operator==(const LinkedObjectEntry&) const;
 
     };
     

@@ -50,19 +50,33 @@ ThreadName::ThreadName(const std::string& command,
 		       ) :
     dm_command(true, command),
     dm_host(host),
-    dm_pid(true, pid),
+    dm_pid(pid),
     dm_posixtid(true, posixtid),
-    dm_rank(true, rank),
+    dm_rank(rank),
     dm_executable(true, executable)
+{
+}
+
+ThreadName::ThreadName(const std::string& host,
+		       const int64_t& pid,
+		       const int64_t& posixtid,
+		       const int32_t& rank
+		       ) :
+    dm_command(false,"empty command"),
+    dm_host(host),
+    dm_pid(pid),
+    dm_posixtid(true, posixtid),
+    dm_rank(rank),
+    dm_executable(false,"no executable provided")
 {
 }
 
 ThreadName::ThreadName(const CBTF_Protocol_ThreadName& object) :
     dm_command(false,"empty command"),
     dm_host(object.host),
-    dm_pid(true,object.pid),
+    dm_pid(object.pid),
     dm_posixtid(std::make_pair(object.has_posix_tid, object.posix_tid)),
-    dm_rank(true,object.rank),
+    dm_rank(object.rank),
     dm_executable(false,"no executable provided")
 {
 }
@@ -80,24 +94,14 @@ ThreadName::ThreadName(const CBTF_Protocol_ThreadName& object) :
  */
 bool ThreadName::operator==(const ThreadName& other) const
 {
-    // Equal if the host name and command are identical
-    if(dm_command.first && other.dm_command.first &&
-       (dm_host == other.dm_host) &&
-       (dm_command.second == other.dm_command.second))
-	return true;
 
-    // Equal if the executable and MPI rank are identical
-    if(dm_executable.first && other.dm_executable.first &&
-       dm_rank.first && other.dm_rank.first &&
-       (dm_executable.second == other.dm_executable.second) &&
-       (dm_rank.second == other.dm_rank.second))
-	return true;
-
-    // Equal if the host name and executable are identical
-    if(dm_executable.first && other.dm_executable.first &&
-       (dm_host == other.dm_host) &&
-       (dm_executable.second == other.dm_executable.second))
-	return true;
+    if (dm_host == other.dm_host &&
+      dm_pid == other.dm_pid &&
+      dm_rank == other.dm_rank &&
+      dm_posixtid.first == other.dm_posixtid.first &&
+      dm_posixtid.second == other.dm_posixtid.second) {
+      return true;
+    }
 
     // Otherwise the two names are not equal
     return false;

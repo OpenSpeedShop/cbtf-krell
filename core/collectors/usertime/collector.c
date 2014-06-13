@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2013 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -27,6 +27,10 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Usertime.h"
@@ -75,7 +79,7 @@ typedef struct {
     /** Sample buffer. */
     CBTF_StackTraceData buffer;
 
-    bool_t defer_sampling;
+    bool defer_sampling;
 } TLS;
 
 #if defined(USE_EXPLICIT_TLS)
@@ -179,6 +183,9 @@ static void send_samples(TLS *tls)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+#if defined (CBTF_SERVICE_USE_OFFLINE)
+    tls->header.rank = monitor_mpi_comm_rank();
+#endif
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
@@ -325,7 +332,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 /**
  * Called by the CBTF collector service in order to start data collection.
  */
-void cbtf_collector_start(const CBTF_DataHeader* const header)
+void cbtf_collector_start(const CBTF_DataHeader* header)
 {
 /**
  * Start sampling.
@@ -370,7 +377,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
-
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
 

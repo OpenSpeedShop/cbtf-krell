@@ -290,6 +290,7 @@ static void send_samples(TLS *tls)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+    tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {

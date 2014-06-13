@@ -171,6 +171,9 @@ static void send_samples (TLS* tls)
     tls->data.pc.pc_len = tls->buffer.length;
     tls->data.count.count_len = tls->buffer.length;
 
+    /* rank is not filled until mpi_init finished. safe to set here*/
+    tls->header.rank = monitor_mpi_comm_rank();
+
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
         fprintf(stderr,"HWC send_samples DATA:\n");

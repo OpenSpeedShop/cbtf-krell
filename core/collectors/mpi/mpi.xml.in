@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Copyright (c) 2014 Krell Institute. All Rights Reserved.
+Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
     
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -84,6 +84,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Tag>1124</Tag>
   </Stream>
 
+  <Input>
+    <Name>numBE</Name>
+    <To><Input>numBackends</Input></To>
+  </Input>
+
 <!--
    Declare output of this distributed component. Used to communicate
    data back to a tool client that registers this xml component and
@@ -95,8 +100,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
   sends the notification that all threads are finished.
 -->
   <Output>
-      <Name>output</Name>
-      <From><Output>output_from_frontend</Output></From>
+      <Name>threads_finished</Name>
+      <From><Output>threads_finished_output_from_frontend</Output></From>
   </Output>
 
 <!--
@@ -191,6 +196,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
  
   <Frontend>
 
+<!--
+     The operations done in this network are intended to run only on the Frontend.
+-->
+
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
 
       <Type>mpi_Frontend</Type>
@@ -201,8 +210,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Plugin>CollectionPlugin.so</Plugin>
 
 <!--
-     The AddressAggregator component.  The operations done in this network
-     are intended to run only on the Frontend.
+     The Frontend AddressAggregator component.
 -->
       <Component>
         <Name>Aggregator</Name>
@@ -210,7 +218,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Component>
 
 <!--
-     The LinkedObject component.  The operations done in this network
+     The Frontend LinkedObject component.  The operations done
      essentially pass on linkedobject datum to a client tool.
 -->
       <Component>
@@ -219,36 +227,34 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Component>
 
 <!--
-     The ThreadStateChanged component.  The operations done in this network
-     essentially pass on thread state changed events to a client tool.
-     In addition, this component will notify the client tool when all
-     threads for which a BE attached a thread have terminated.
 -->
-      <Component>
-        <Name>ThreadsStateChanged</Name>
-        <Type>ThreadsStateChanged</Type>
-      </Component>
 
 <!--
-     The AttachedToThreads component.  The operations done in this network
-     essentially pass on the threads the a BE has sent an attached threads
-     message to a client tool. This component also has a connection to
-     the Aggregator component to pass the list of currently attached threads.
+     The ThreadEventComponent component.  The operations done in component
+     network essentially pass on thread related events to a client tool.
+     * attached threads
+     * attached threads that have terminated.
+     This component also has a connection to the Aggregator component
+     to pass the list of currently attached threads.
 -->
       <Component>
-        <Name>AttachedToThreads</Name>
-        <Type>AttachedToThreads</Type>
+        <Name>ThreadEventComponent</Name>
+        <Type>ThreadEventComponent</Type>
       </Component>
 
-<!--
-     The CreatedProcess component.  The operations done in this component
-     essentially pass on created process events to a client tool.
--->
       <Component>
-        <Name>CreatedProcess</Name>
-        <Type>CreatedProcess</Type>
+        <Name>ResolveSymbols</Name>
+        <Type>ResolveSymbols</Type>
       </Component>
- 
+
+      <Input>
+        <Name>numBackends</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>numBE</Input>
+        </To>
+      </Input>
+
 <!--
       <Component>
         <Name>ResolveSymbols</Name>
@@ -310,13 +316,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     Input to handle incoming thread state changed events.  These are
     passed on untouched by this FrontEnd network to a client tool.
     In addition, this input handler watches for terminated state and keeps
-    a count of termeinated threads.
+    a count of terminated threads.
 -->
       <Input>
         <Name>IncomingThreadsStateChanged</Name>
         <To>
-          <Name>ThreadsStateChanged</Name>
-          <Input>in</Input>
+          <Name>ThreadEventComponent</Name>
+          <Input>threadstate</Input>
         </To>
       </Input>
 
@@ -327,32 +333,79 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Input>
         <Name>IncomingAttachedToThreads</Name>
         <To>
-          <Name>AttachedToThreads</Name>
-          <Input>in</Input>
+          <Name>ThreadEventComponent</Name>
+          <Input>threads</Input>
         </To>
       </Input>
 
 <!--
     Input to handle incoming created process events.  These are
     passed on untouched by this FrontEnd network to a client tool.
+    TODO: this input is not needed for OSS collection.
 -->
       <Input>
         <Name>IncomingCreatedProcess</Name>
         <To>
-          <Name>CreatedProcess</Name>
-          <Input>in</Input>
+          <Name>ThreadEventComponent</Name>
+          <Input>createdprocess</Input>
         </To>
       </Input>
 
+      <Input>
+        <Name>IncomingLeafCP</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>leafCPnumBE</Input>
+        </To>
+      </Input>
+
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>LeafCP_numBE</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>leafCPnumBE</Input>
+        </To>
+      </Connection>
+
+      <Input>
+        <Name>IncomingMaxFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>maxfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingMinFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>minfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingAvgFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>avgfunctionvalues</Input>
+        </To>
+      </Input>
 <!--
      Connection to send list of attached threads to the aggregator.
      This is a sync connection used by the aggregator to wait for
      all attached threads to send at least one addressbuffer.
+     TODO: this message currently is connected  internally to other components
+     within this Frontend component network. Ie. it is not sent across the
+     broader mrnet component network (off node) and would require an mrnet
+     converter to do so..
 -->
       <Connection>
         <From>
-            <Name>AttachedToThreads</Name>
-            <Output>out</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadNameVecOut</Output>
         </From>
         <To>
             <Name>Aggregator</Name>
@@ -362,8 +415,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <Connection>
         <From>
-            <Name>ThreadsStateChanged</Name>
-            <Output>out1</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
         </From>
         <To>
             <Name>Aggregator</Name>
@@ -371,7 +424,44 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Connection>
 
+<!--
+the following symbol related code is not in use in the Frontend.
+it is here as an example of resolving symbols in the Frontend.
+-->
+<!--
+      <Connection>
+        <From>
+            <Name>LinkedObject</Name>
+            <Output>linkedobjectvec_out</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>linkedobjectvecin</Input>
+        </To>
+      </Connection>
 
+      <Connection>
+        <From>
+            <Name>Aggregator</Name>
+            <Output>Aggregatorout</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>abufferin</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+-->
 
 <!--
      Connection to send list of attached threads to the linkedobject component.
@@ -380,8 +470,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 -->
       <Connection>
         <From>
-            <Name>AttachedToThreads</Name>
-            <Output>out</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadNameVecOut</Output>
         </From>
         <To>
             <Name>LinkedObject</Name>
@@ -390,27 +480,57 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Connection>
 
 <!--
+     Notification that all attached threads known at this component level
+     have terminated and the ThreadEventComponent can finish any remaining
+     work.
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
+        </From>
+        <To>
+            <Name>ThreadEventComponent</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+
+<!--
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>LeafCP_numBE</Output>
+        </From>
+        <To>
+            <Name>ThreadEventComponent</Name>
+            <Input>leafCP_numBE</Input>
+        </To>
+      </Connection>
+-->
+
+<!--
      FIXME: need a descriptive name for this output.
      Currently this sends the client tool notification that all
      threads have terminated.
 -->
       <Output>
-         <Name>output_from_frontend</Name>
+         <Name>threads_finished_output_from_frontend</Name>
          <From>
-            <Name>ThreadsStateChanged</Name>
-            <Output>out1</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
          </From>
       </Output>
 
 <!--
      Output created process message to client tool that has registered
      this distributed xml component and handles this meesage.
+     TODO: this is not in use by OSS at this time (4-29-2014)
 -->
       <Output>
          <Name>created_process_xdr_output_from_frontend</Name>
          <From>
-            <Name>CreatedProcess</Name>
-            <Output>xdr_out</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>CreatedProcess_xdr_out</Output>
          </From>
       </Output>
 
@@ -421,8 +541,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Output>
          <Name>attached_threads_xdr_output_from_frontend</Name>
          <From>
-            <Name>AttachedToThreads</Name>
-            <Output>xdr_out</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>AttachedToThreads_xdr_out</Output>
          </From>
       </Output>
 
@@ -433,8 +553,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Output>
          <Name>threads_state_changed_xdr_output_from_frontend</Name>
          <From>
-            <Name>ThreadsStateChanged</Name>
-            <Output>xdr_out</Output>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadsStateChanged_xdr_out</Output>
          </From>
       </Output>
 
@@ -499,7 +619,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Output>
 
 <!--
-     FIXME: Unused. oss cbtf instrumentor knows about this for now.
+     TODO: oss cbtf instrumentor knows about this for now.
 -->
       <Output>
         <Name>linkedobjectentryvec_from_frontend</Name>
@@ -520,6 +640,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 -->
 
     </Network>
+
+    <IncomingUpstream>
+      <Name>LeafCP</Name>
+      <To><Input>IncomingLeafCP</Input></To>
+    </IncomingUpstream>
 
 <!--
     Incoming addressbuffers.
@@ -574,19 +699,36 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <To><Input>IncomingBlobs</Input></To>
     </IncomingUpstream>
  
+    <IncomingUpstream>
+      <Name>MaxFunctionValues</Name>
+      <To><Input>IncomingMaxFunctionValues</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>MinFunctionValues</Name>
+      <To><Input>IncomingMinFunctionValues</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>AvgFunctionValues</Name>
+      <To><Input>IncomingAvgFunctionValues</Input></To>
+    </IncomingUpstream>
+
   </Frontend>
 
 <!--
    This filter is intended to run on the Leaf CP nodes only.
-   It's primary purpose is to intercept incoming performance data
-   blobs and aggregate pc addresses and their sample counts and
-   send that aggregation upstream.
+   It's primary purposes: 
+   * handle incoming performance data blobs
+   * aggregate pc addresses and their sample counts and
+     send that aggregation upstream.
+   * aggregate thread events
+   * aggregate linkedobject events
 -->
   <Filter>
  
 <!--
-    Run this filter only on the CP's that are connected to a BE.
-    In this case the BE's are lightweight.
+    Run this filter only on CP's that are connected to a lightweight mrnet BE.
 -->
     <Depth>
 	<LeafRelative>
@@ -613,6 +755,57 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Component>
 
 <!--
+     The Filter LinkedObject component.
+-->
+      <Component>
+        <Name>LinkedObject</Name>
+        <Type>LinkedObject</Type>
+      </Component>
+
+<!--
+     The Filter ThreadEventComponent component.
+-->
+      <Component>
+        <Name>ThreadEventComponent</Name>
+        <Type>ThreadEventComponent</Type>
+      </Component>
+
+<!--
+-->
+      <Component>
+        <Name>ResolveSymbols</Name>
+        <Type>ResolveSymbols</Type>
+      </Component>
+
+<!--
+    Input to handle incoming attached to thread events.  These are
+    passed on untouched by this FrontEnd network to a client tool.
+-->
+      <Input>
+        <Name>IncomingAttachedToThreads</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>threads</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingThreadsStateChanged</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>threadstate</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingLinkedObjectGroup</Name>
+        <To>
+          <Name>LinkedObject</Name>
+          <Input>group</Input>
+        </To>
+      </Input>
+
+<!--
      Any cbtf_protocol_blob on this input will be decoded and processed
      for the aggregation of pc addresses and counts from the embedded
      data blob.  Each cbtf_protocol_blob contains a header blob which
@@ -627,6 +820,114 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>cbtf_protocol_blob</Input>
         </To>
       </Input>
+
+
+<!--
+     Connection to send list of attached threads to the aggregator.
+     This is a sync connection used by the aggregator to wait for
+     all attached threads to send at least one addressbuffer.
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadNameVecOut</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>threadnames</Input>
+        </To>
+      </Connection>
+
+<!--
+     Notify Aggregator that all threads are terminated.
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+
+<!--
+     Connection to send list of attached threads to the linkedobject component.
+     This is a sync connection used by the linkedobject component to wait for
+     all attached threads to send a group of initially loaded linkedobjects.
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadNameVecOut</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>threadnames</Input>
+        </To>
+      </Connection>
+
+<!--
+     Connection to send list of attached threads to the symbol component.
+-->
+      <Connection>
+        <From>
+            <Name>LinkedObject</Name>
+            <Output>linkedobjectvec_out</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>linkedobjectvecin</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>Aggregator</Name>
+            <Output>Aggregatorout</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>abufferin</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>Aggregator</Name>
+            <Output>ThreadAddrBufMap</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>threadaddrbufmap</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+
+<!--
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>Threads_finished</Output>
+        </From>
+        <To>
+            <Name>ThreadEventComponent</Name>
+            <Input>finished</Input>
+        </To>
+      </Connection>
+
 
 <!--
      This ouput sends an AddressBuffer upstream. This buffer represents
@@ -657,17 +958,97 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Output>datablob_xdr_out</Output>
         </From>
       </Output>
+
+      <Output>
+         <Name>OutgoingThreadsAttached</Name>
+         <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>AttachedToThreads_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>OutgoingThreadsState</Name>
+         <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>ThreadsStateChanged_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>OutgoingLinkedObjectGroup</Name>
+         <From>
+            <Name>LinkedObject</Name>
+            <Output>group_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+        <Name>OutgoingLeafCP</Name>
+        <From>
+          <Name>ThreadEventComponent</Name>
+          <Output>LeafCP_numBE</Output>
+        </From>
+      </Output>
+
+      <Output>
+         <Name>OutgoingMaxFunctionValues</Name>
+         <From>
+            <Name>ResolveSymbols</Name>
+            <Output>maxfunctionvalues_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>OutgoingMinFunctionValues</Name>
+         <From>
+            <Name>ResolveSymbols</Name>
+            <Output>minfunctionvalues_xdr_out</Output>
+         </From>
+      </Output>
+
+      <Output>
+         <Name>OutgoingAvgFunctionValues</Name>
+         <From>
+            <Name>ResolveSymbols</Name>
+            <Output>avgfunctionvalues_xdr_out</Output>
+         </From>
+      </Output>
  
     </Network>    
 
 <!--
     Incoming performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For io, the xdr data blob is
+    and an actual xdr data blob.  For mpi, the xdr data blob is
     the actual sample payload sent from a collection service. 
 -->
     <IncomingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
       <To><Input>IncomingBlobs</Input></To>
+    </IncomingUpstream>
+
+<!--
+    Incoming attached to threads events.
+-->
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+      <To><Input>IncomingAttachedToThreads</Input></To>
+    </IncomingUpstream>
+
+<!--
+    Incoming threads state changed events.
+-->
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+      <To><Input>IncomingThreadsStateChanged</Input></To>
+    </IncomingUpstream>
+
+<!--
+    Incoming loaded linked object group events.
+-->
+    <IncomingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP</Name>
+      <To><Input>IncomingLinkedObjectGroup</Input></To>
     </IncomingUpstream>
 
 <!--
@@ -679,9 +1060,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <From><Output>OutgoingBuffers</Output></From>
     </OutgoingUpstream>
 
+    <OutgoingUpstream>
+      <Name>LeafCP</Name>
+      <From><Output>OutgoingLeafCP</Output></From>
+    </OutgoingUpstream>
+
 <!--
     Outgoing performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For io, the xdr data blob is
+    and an actual xdr data blob.  For mpi, the xdr data blob is
     the actual sample payload sent from a collection service. 
     This stream essentially passes on the incoming blobs upstream
     where eventually a client can record them to a database if desired.
@@ -689,6 +1075,36 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <OutgoingUpstream>
       <Name>CBTF_PROTOCOL_TAG_PERFORMANCE_DATA</Name>
       <From><Output>OutgoingBlobs</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
+      <From><Output>OutgoingThreadsAttached</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
+      <From><Output>OutgoingThreadsState</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP</Name>
+      <From><Output>OutgoingLinkedObjectGroup</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>MaxFunctionValues</Name>
+      <From><Output>OutgoingMaxFunctionValues</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>MinFunctionValues</Name>
+      <From><Output>OutgoingMinFunctionValues</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>AvgFunctionValues</Name>
+      <From><Output>OutgoingAvgFunctionValues</Output></From>
     </OutgoingUpstream>
 
   </Filter>

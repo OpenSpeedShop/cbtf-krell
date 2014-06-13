@@ -187,6 +187,8 @@ static void send_samples (TLS* tls)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+    /* rank is not filled until mpi_init finished. safe to set here*/
+    tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {

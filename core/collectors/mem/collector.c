@@ -83,8 +83,9 @@ const unsigned OverheadFrameCount = 2;
 
 /** Number of event entries in the tracing buffer. */
 /** CBTF_mem_event is 32 bytes */
+/** CBTF_memt_event is 64 bytes */
 // FIXME:  300 was too high given the current stack buffer size
-// and the size of a mem event.  Should find the best fit going forward.
+// and the size of a memt event.  Should find the best fit going forward.
 #define EventBufferSize (CBTF_BlobSizeFactor * 200)
 
 /** Type defining the items stored in thread-local storage. */
@@ -229,6 +230,8 @@ static void send_samples(TLS *tls)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+    /* rank is not filled until mpi_init finished. safe to set here*/
+    tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {

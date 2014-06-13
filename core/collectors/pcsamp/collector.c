@@ -164,6 +164,10 @@ static void send_samples (TLS* tls)
     tls->header.time_end =  CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
+
+    /* rank is not filled until mpi_init finished. safe to set here*/
+    tls->header.rank = monitor_mpi_comm_rank();
+
     tls->data.pc.pc_len = tls->buffer.length;
     tls->data.count.count_len = tls->buffer.length;
 
@@ -265,7 +269,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
-    tls->header.time_begin = CBTF_GetTime();
 
     tls->data.interval = 
 	(uint64_t)(1000000000) / (uint64_t)(args.sampling_rate);

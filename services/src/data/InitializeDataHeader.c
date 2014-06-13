@@ -100,4 +100,6 @@ void CBTF_InitializeDataHeader(int experiment, int collector,
 
     /* Fill in the identifier of this thread */
     header->posix_tid = pthread_self();
+
+    header->rank = -1;
 }

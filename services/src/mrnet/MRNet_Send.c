@@ -99,7 +99,7 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
 int CBTF_MRNet_LW_connect (const int con_rank)
 {
     if (mrnet_connected) {
-        return;
+        return mrnet_connected;
     }
 
     const char* connfile = getenv("CBTF_MRNETBE_CONNECTIONS");
@@ -217,6 +217,9 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 	    fprintf(stderr, "BE: waiting for specify filter tag from FE\n");
 	}
 #endif
+	/* use KRELL_INSTITUTE_CBTF_IMPL_SPECIFY_FILTER for readytag 105
+	 * include/from KrellInstitute/CBTF/Impl/MessageTags.h 
+	 */
 	do {
 	    if( CBTF_MRNet_netPtr && Network_recv(CBTF_MRNet_netPtr, &readytag, p, &stream) != 1 ) {
 		fprintf(stderr, "BE: receive failure\n");
@@ -235,6 +238,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     if (p != NULL) {
         free(p);
     } 
+    return mrnet_connected;
 }
 
 static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
@@ -322,7 +326,7 @@ void CBTF_Waitfor_MRNet_Shutdown() {
     Assert(p);
 
     if (CBTF_MRNet_netPtr && Network_is_ShutDown(CBTF_MRNet_netPtr)) {
-	//fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown -- already SHUTDOWN %d\n",getpid());
+	fprintf(stderr,"CBTF_Waitfor_MRNet_Shutdown -- already SHUTDOWN %d\n",getpid());
 	return;
     }
 

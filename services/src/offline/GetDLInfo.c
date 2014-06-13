@@ -242,7 +242,7 @@ static void lc(ElfW(Addr) base_address, const char *name, mem_region *regions,
 
 {
 #ifndef NDEBUG
-    if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
+    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
 	fprintf(stderr, "CBTF_GetDLInfo: %s %s at [%#lx, %#lx]\n",
 		is_load ? "Loaded" : "Unloaded", name,
 		regions[0].mem_addr,
@@ -323,7 +323,7 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	    mappedpath != NULL &&
 	    (strncmp(path, mappedpath, strlen(path)) == 0) ) {
 #ifndef NDEBUG
-	    if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
+	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
 		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dlopen) DLOPEN RECORD: %s [%08lx, %08lx]\n",
 		    mappedpath, begin, end);
 	    }
@@ -335,7 +335,7 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	// DPM: added test for path 4-15-08
 	else if (perm[2] == 'x' && path == NULL) {
 #ifndef NDEBUG
-	    if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
+	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
 		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dso) LD RECORD %s [%08lx, %08lx]\n", mappedpath, begin, end);
 	    }
 #endif

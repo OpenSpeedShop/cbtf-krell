@@ -75,6 +75,7 @@ extern void cbtf_offline_resume_sampling();
 extern short cbtf_connected_to_mrnet();
 extern void cbtf_offline_waitforshutdown();
 extern void send_thread_state_changed_message();
+extern void send_attached_to_threads_message();
 
 
 /** Type defining the items stored in thread-local storage. */
@@ -164,7 +165,7 @@ void monitor_fini_process(int how, void *data)
     }
 
     if (tls->debug) {
-	fprintf(stderr,"monitor_fini_process %d,%lu, thread_is_terminating\n",
+	fprintf(stderr,"monitor_fini_process %d,%lu, thread_is_terminating %d\n",
 		tls->pid,tls->tid,tls->thread_is_terminating);
     }
 
@@ -209,6 +210,11 @@ void *monitor_init_process(int *argc, char **argv, void *data)
 	tls->debug=0;
     }
 
+    short debug_mpi_pcontrol=0;
+    if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
+	debug_mpi_pcontrol=1;
+    }
+
     tls->pid = getpid();
     tls->cbtf_dllist_head = NULL;
 
@@ -235,19 +241,19 @@ void *monitor_init_process(int *argc, char **argv, void *data)
 
     /* Start with gathering data disabled if environment variable is set */
     if ( mpi_pcontrol && !start_enabled) {
-      if (tls->debug) {
+      if (debug_mpi_pcontrol) {
         fprintf(stderr,"monitor_init_process CBTF|OPENSS_START_ENABLED was NOT set. Skip starting sampling at start-up time. \n");
       }
       tls->sampling_status = CBTF_Monitor_Not_Started;
     } else if ( mpi_pcontrol && start_enabled) {
-      if (tls->debug) {
+      if (debug_mpi_pcontrol) {
         fprintf(stderr,"monitor_init_process CBTF|OPENSS_START_ENABLED was set.  Start gathering from beginning of program.\n");
       }
       tls->sampling_status = CBTF_Monitor_Started;
       cbtf_offline_start_sampling(NULL);
       cbtf_offline_notify_event(CBTF_Monitor_init_process_event);
     } else {
-      if (tls->debug) {
+      if (debug_mpi_pcontrol) {
         fprintf(stderr,"monitor_init_process CBTF|OPENSS_ENABLE_MPI_PCONTROL was NOT set.  Normal start-up path.\n");
       }
       tls->sampling_status = CBTF_Monitor_Started;
@@ -262,16 +268,20 @@ void *monitor_init_process(int *argc, char **argv, void *data)
  */
 void monitor_init_library(void)
 {
+#if 0
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	fprintf(stderr,"cbtf callback monitor_init_library entered\n");
     }
+#endif
 }
 
 void monitor_fini_library(void)
 {
+#if 0
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	fprintf(stderr,"cbtf callback monitor_fini_library entered\n");
     }
+#endif
     static int f = 0;
     if (f > 0)
       raise(SIGSEGV);
@@ -330,11 +340,15 @@ void *monitor_init_thread(int tid, void *data)
 
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	tls->debug=1;
-        fprintf(stderr,"Entered monitor_init_thread\n");
+        //fprintf(stderr,"Entered monitor_init_thread\n");
     } else {
 	tls->debug=0;
     }
 
+    short debug_mpi_pcontrol=0;
+    if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
+	debug_mpi_pcontrol=1;
+    }
 
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init == 1) {
         if (tls->debug) {
@@ -362,19 +376,19 @@ void *monitor_init_thread(int tid, void *data)
 
     /* Start with gathering data disabled if environment variable is set */
     if ( mpi_pcontrol && !start_enabled) {
-	if (tls->debug) {
+	if (debug_mpi_pcontrol) {
 	    fprintf(stderr,"monitor_init_thread CBTF|OPENSS_START_ENABLED was NOT set. Do not start gathering performance data. \n");
 	}
 	tls->sampling_status = CBTF_Monitor_Not_Started;
     } else if ( mpi_pcontrol && start_enabled) {
-	if (tls->debug) {
+	if (debug_mpi_pcontrol) {
 	    fprintf(stderr,"monitor_init_process CBTF|OPENSS_START_ENABLED was set.  Start gathering from beginning of program.\n");
 	}
 	tls->sampling_status = CBTF_Monitor_Started;
 	cbtf_offline_start_sampling(NULL);
 	cbtf_offline_notify_event(CBTF_Monitor_init_thread_event);
     } else {
-	if (tls->debug) {
+	if (debug_mpi_pcontrol) {
 	    fprintf(stderr,"monitor_init_thread CBTF|OPENSS_START_DISABLED was NOT set \n");
 	}
 	tls->sampling_status = CBTF_Monitor_Started;
@@ -750,8 +764,10 @@ void monitor_fini_mpi(void)
 	    fprintf(stderr,"monitor_fini_mpi PAUSE SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	tls->sampling_status = CBTF_Monitor_Paused;
-	cbtf_offline_stop_sampling(NULL, 1);
+	//tls->sampling_status = CBTF_Monitor_Paused;
+	// FIXME: seems the only way mpi jobs work is to stop sampling here.
+	// therefore mpi_finalize is not recorded at least for mpi trace.
+	//cbtf_offline_stop_sampling(NULL, 1);
     }
 }
 
@@ -770,17 +786,19 @@ void monitor_mpi_post_fini(void)
 		tls->pid,tls->tid);
     }
 
-    if (tls->sampling_status == CBTF_Monitor_Paused) {
+    if (1 || tls->sampling_status == CBTF_Monitor_Paused) {
         if (tls->debug) {
 	    fprintf(stderr,"monitor_mpi_post_fini RESUME SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
+	//tls->sampling_status = CBTF_Monitor_Resumed;
+	//cbtf_offline_stop_sampling(NULL, 1);
+	//send_attached_to_threads_message();
     }
 }
 
 
-// FIXME.  This callback should be reviewed to see if it is only
-// needed durint mpi startup and mrnet connection issues.
+// This callback should is only needed during mpi startup and mrnet connection.
 // Once connected, this should just return as early as possible.
 void monitor_mpi_post_comm_rank(void)
 {
@@ -795,6 +813,14 @@ void monitor_mpi_post_comm_rank(void)
     if (tls->debug) {
 	fprintf(stderr,"monitor_mpi_post_comm_rank CALLED %d,%lu at %lu\n",
 		tls->pid,tls->tid, CBTF_GetTime());
+    }
+
+    if (cbtf_connected_to_mrnet()) {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_mpi_post_comm_rank already connected to mrnet %d,%lu\n",
+		    tls->pid,tls->tid);
+        }
+	return;
     }
 
 

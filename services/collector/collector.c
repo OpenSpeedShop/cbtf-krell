@@ -104,6 +104,7 @@ void init_process_thread()
 	return;
 
     tls->tname.rank = monitor_mpi_comm_rank();
+    tls->header.rank = monitor_mpi_comm_rank();
 
     // removed CBTF_Protocol_CreatedProcess message;
 
@@ -132,18 +133,19 @@ void send_attached_to_threads_message()
 	return;
 
     if (tls->connected_to_mrnet && ! tls->sent_attached_to_threads) {
-	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
-			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
-			&tls->attached_to_threads_message);
-	tls->sent_attached_to_threads = true;
+	init_process_thread();
 #ifndef NDEBUG
         if (tls->debug_mrnet) {
     	     fprintf(stderr,
-	   "SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld rank %d\n",
+	   "SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d\n",
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid, tls->header.rank);
         }
 #endif
+	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
+			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
+			&tls->attached_to_threads_message);
+	tls->sent_attached_to_threads = true;
     }
 }
 
@@ -253,38 +255,16 @@ void send_thread_state_changed_message()
 	return;
     }
 
-#ifndef NDEBUG
-    if (tls->debug_mrnet) {
-        fprintf(stderr,"ENTERED send_thread_state_changed_message for rank %d\n", monitor_mpi_comm_rank());
-    }
-#endif
-
-    CBTF_Protocol_ThreadName tname;
-    tname.experiment = 0;
-    tname.host = strdup(tls->header.host);
-    tname.pid = tls->header.pid;
-    tname.has_posix_tid = true;
-    tname.posix_tid = tls->header.posix_tid;
-    tname.rank = tls->header.rank;
-
-    tls->tgrp.names.names_len = 0;
-    tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
-    memset(tls->tgrpbuf.tnames, 0, sizeof(tls->tgrpbuf.tnames));
-
-    memcpy(&(tls->tgrpbuf.tnames[tls->tgrp.names.names_len]),
-           &tname, sizeof(tname));
-    tls->tgrp.names.names_len++;
-
     //CBTF_Protocol_ThreadsStateChanged message;
     tls->thread_state_changed_message.threads = tls->tgrp;
-    tls->thread_state_changed_message.state = Terminated;
-
+    tls->thread_state_changed_message.state = Terminated; 
     if (tls->connected_to_mrnet) {
 #ifndef NDEBUG
 	if (tls->debug_mrnet) {
             fprintf(stderr,
-		"SENDING send_thread_state_changed_message for rank %d\n",
-		monitor_mpi_comm_rank());
+	    "SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d\n",
+                     tls->header.host, (long long)tls->header.pid,
+                     (long long)tls->header.posix_tid, tls->header.rank);
 	}
 #endif
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
@@ -308,7 +288,9 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"cbtf_collector_send DATA:\n");
+        fprintf(stderr,"cbtf_collector_send DATA for %s:%lld:%lld:%d:\n",
+                     tls->header.host, (long long)tls->header.pid,
+                     (long long)tls->header.posix_tid, tls->header.rank);
         fprintf(stderr,"time_range[%lu, %lu) addr range [%#lx, %#lx]\n",
             (uint64_t)header->time_begin, (uint64_t)header->time_end,
 	    header->addr_begin, header->addr_end);
@@ -322,7 +304,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
 	    if (!tls->sent_attached_to_threads) {
-		init_process_thread();
+		//init_process_thread();
 	        send_attached_to_threads_message();
 	        tls->sent_attached_to_threads = true;
 	    }
@@ -424,7 +406,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     connect_to_mrnet();
     if (tls->connected_to_mrnet) {
 	if (!tls->sent_attached_to_threads) {
-	    init_process_thread();
+	    //init_process_thread();
 	    send_attached_to_threads_message();
 	    tls->sent_attached_to_threads = true;
 	}

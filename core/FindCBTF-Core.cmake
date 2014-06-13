@@ -20,13 +20,13 @@ include(FindPackageHandleStandardArgs)
 
 find_library(CBTF_CORE_LIBRARY
     NAMES libcbtf-core.so
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX} ${CBTF_CORE_ROOT}
     PATH_SUFFIXES lib lib64
     )
 
 find_path(CBTF_CORE_INCLUDE_DIR
     KrellInstitute/Core/Assert.hpp
-    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX}
+    HINTS $ENV{CBTF_ROOT} $ENV{CBTF_PREFIX} ${CBTF_CORE_ROOT}
     PATH_SUFFIXES include
     )
 

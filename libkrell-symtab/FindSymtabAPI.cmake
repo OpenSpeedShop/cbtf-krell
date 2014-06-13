@@ -19,12 +19,12 @@
 include(FindPackageHandleStandardArgs)
 
 find_library(SymtabAPI_LIBRARY NAMES libsymtabAPI.so
-    HINTS $ENV{DYNINST_ROOT}
+    HINTS $ENV{DYNINST_ROOT} ${DYNINST_ROOT}
     PATH_SUFFIXES lib lib64
     )
 
 find_path(SymtabAPI_INCLUDE_DIR dyninst/Symtab.h
-    HINTS $ENV{DYNINST_ROOT}
+    HINTS $ENV{DYNINST_ROOT} ${DYNINST_ROOT}
     PATH_SUFFIXES include
     )
 

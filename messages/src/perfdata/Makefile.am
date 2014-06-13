@@ -40,7 +40,8 @@ BUILT_SOURCES = \
 	Pthreads.h Pthreads.c \
 	Pthreads_data.h Pthreads_data.c \
 	Usertime.h Usertime.c \
-	Usertime_data.h Usertime_data.c
+	Usertime_data.h Usertime_data.c \
+	Stats.h Stats.c
 
 libcbtf_messages_perfdata_la_CFLAGS = \
 	-I$(top_srcdir)/include \
@@ -64,6 +65,7 @@ libcbtf_messages_perfdata_la_SOURCES = \
 	Mpi.x Mpi_data.x \
 	Pthreads.x Pthreads_data.x \
 	Usertime.x Usertime_data.x \
+	Stats.x \
 	$(BUILT_SOURCES)
 
 libcbtf_messages_converters_perfdata_la_CXXFLAGS = \
@@ -95,7 +97,8 @@ xdr_headers = \
 	Mem.h Mem_data.h \
 	Mpi.h Mpi_data.h \
 	Pthreads.h Pthreads_data.h \
-	Usertime.h Usertime_data.h
+	Usertime.h Usertime_data.h \
+	Stats.h
 
 SUFFIXES = .x
 CLEANFILES = $(BUILT_SOURCES)
@@ -192,6 +195,11 @@ Usertime.h Usertime.c : Usertime.x
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
 
 Usertime_data.h Usertime_data.c : Usertime_data.x
+	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
+	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
+	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<
+
+Stats.h Stats.c : Stats.x
 	rm -f  $(patsubst %.x, %.h, $<) $(patsubst %.x, %.c, $<)
 	$(RPCGEN) -h -o $(patsubst %.x, %.h, $<) $<
 	$(RPCGEN) -c -o $(patsubst %.x, %.c, $<) $<

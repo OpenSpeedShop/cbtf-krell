@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2006-2013 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2006-2014 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -49,6 +49,8 @@ namespace KrellInstitute { namespace Core {
 	void aggregateAddressCounts(const unsigned &, const uint64_t*,
 				    const uint8_t*, AddressBuffer&) const;
 	void aggregateAddressCounts(const unsigned &, const uint64_t*,
+				    AddressBuffer&) const;
+	void aggregateAddressCounts(AddressCounts&,
 				    AddressBuffer&) const;
 	void graphAddressCounts(const unsigned &, const uint64_t*,
 				    const uint8_t*, Graph&) const;

@@ -65,6 +65,14 @@ void StacktraceData::aggregateAddressCounts(
     }
 }
 
+// Handle data from tracing using exclusive time in function as count.
+void StacktraceData::aggregateAddressCounts(
+	AddressCounts& addrcounts,
+	AddressBuffer& buffer) const
+{
+	buffer.updateAddressCounts(addrcounts);
+}
+
 // graph g is a directed graph using an adjaceny list (boost).
 void StacktraceData::graphAddressCounts(
 	const unsigned& len,

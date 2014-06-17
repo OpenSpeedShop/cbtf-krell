@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 The Krell Institue. All Rights Reserved.
+// Copyright (c) 2011-2014 The Krell Institue. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -102,6 +102,21 @@ bool AddressBuffer::updateAddressCounts(AddressBuffer& buf)
 {
   AddressCounts::const_iterator aci;
   for (aci = buf.addresscounts.begin(); aci != buf.addresscounts.end(); ++aci) {
+
+    AddressCounts::iterator lb = addresscounts.lower_bound(aci->first);
+
+    if(lb != addresscounts.end() && !(addresscounts.key_comp()(aci->first, lb->first))) {
+	lb->second += aci->second;
+    } else {
+	addresscounts.insert(lb, AddressCounts::value_type(aci->first, aci->second));
+    }
+  }
+}
+
+bool AddressBuffer::updateAddressCounts(AddressCounts& addrcounts)
+{
+  AddressCounts::const_iterator aci;
+  for (aci = addrcounts.begin(); aci != addrcounts.end(); ++aci) {
 
     AddressCounts::iterator lb = addresscounts.lower_bound(aci->first);
 

@@ -236,97 +236,178 @@ bool is_trace_aggregator_events_enabled =
             CBTF_io_trace_data data;
             memset(&data, 0, sizeof(data));
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "iop") {
-            CBTF_io_profile_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "iot") {
-            CBTF_io_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mem") {
-            CBTF_mem_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
-
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "pthreads") {
-            CBTF_pthreads_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mpi") {
-            CBTF_mpi_trace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
-#if 0
-	    int tracecount = 0;
 	    int eventcount = 0;
-	    std::map<Address,uint64_t> addressTime;
+	    AddressCounts addressTime;
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
 	        Address a;
-		TimeInterval interval(Time(data.events.events_val[i].start_time),
-                              Time(data.events.events_val[i].stop_time));
-		
 		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
 
-		std::map<Address,uint64_t>::iterator it = addressTime.find(a);
+		AddressCounts::iterator it = addressTime.find(a);
 		if (it == addressTime.end() ) {
 		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
 		} else {
 		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 		}
 	    }
-	    for(std::map<Address,uint64_t>::iterator it = addressTime.begin();
-		it != addressTime.end(); ++it) {
-		std::cerr << " Address:" << (*it).first << " value:" << (*it).second << " thread:" << tname << std::endl;
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "iop") {
+            CBTF_io_profile_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.time.time_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[i]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.time.time_val[i]));
+		} else {
+		    (*it).second += data.time.time_val[i];
+		}
 	    }
-#endif
 
 	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "iot") {
+            CBTF_io_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "mem") {
+            CBTF_mem_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "pthreads") {
+            CBTF_pthreads_exttrace_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data),
+                     reinterpret_cast<char*>(&data));
+	} else if (id == "mpi") {
+            CBTF_mpi_trace_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "mpip") {
             CBTF_mpi_profile_data data;
             memset(&data, 0, sizeof(data));
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.time.time_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[i]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.time.time_val[i]));
+		} else {
+		    (*it).second += data.time.time_val[i];
+		}
+	    }
+
 	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
+	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
                      reinterpret_cast<char*>(&data));
 	} else if (id == "mpit") {
             CBTF_mpi_exttrace_data data;
             memset(&data, 0, sizeof(data));
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.events.events_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
+		} else {
+		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		}
+	    }
 	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val, buf);
+	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data),
                      reinterpret_cast<char*>(&data));
 	} else {

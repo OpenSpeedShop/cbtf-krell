@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2008-2013 The Krell Institue. All Rights Reserved.
+// Copyright (c) 2008-2014 The Krell Institue. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -44,6 +44,7 @@ namespace KrellInstitute { namespace Core {
 
 	bool updateAddressCounts(uint64_t, uint64_t);
 	bool updateAddressCounts(AddressBuffer&);
+	bool updateAddressCounts(AddressCounts&);
 	void printResults() const;
 
 	AddressCounts  getAddressCounts() {

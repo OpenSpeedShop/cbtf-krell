@@ -51,7 +51,7 @@ namespace {
     {
         struct timespec wait;
         wait.tv_sec = 0;
-        wait.tv_nsec = 5000 * 1000 * 1000;
+        wait.tv_nsec = 500 * 1000 * 1000;
         while(nanosleep(&wait, &wait));
     }
 }

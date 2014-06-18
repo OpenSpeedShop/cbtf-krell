@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -45,6 +45,16 @@ using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
 
 enum exe_class_types { MPI_exe_type, SEQ_RunAs_MPI_exe_type, SEQ_exe_type };
+
+namespace {
+    void suspend()
+    {
+        struct timespec wait;
+        wait.tv_sec = 0;
+        wait.tv_nsec = 5000 * 1000 * 1000;
+        while(nanosleep(&wait, &wait));
+    }
+}
 
 // Experiment Utilities.
 
@@ -251,7 +261,8 @@ class FEThread
     bool threads_done = false;
     while (true) {
         threads_done = *threads_finished;
-        nanosleep((struct timespec[]){{0, 500000000}}, NULL);
+        //nanosleep((struct timespec[]){{0, 500000000}}, NULL);
+        suspend();
         if (threads_done) {
             finished = true;
             break;

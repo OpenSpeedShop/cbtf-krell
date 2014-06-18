@@ -56,6 +56,7 @@ libcbtf_core_bfd_la_LIBADD = \
 libcbtf_core_symtabapi_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@LIBDWARF_CPPFLAGS@ \
+	@LIBELF_CPPFLAGS@ \
 	@BOOST_CPPFLAGS@ \
 	@DYNINST_CPPFLAGS@ \
 	@MESSAGES_CPPFLAGS@ \
@@ -63,12 +64,14 @@ libcbtf_core_symtabapi_la_CXXFLAGS = \
 
 libcbtf_core_symtabapi_la_LDFLAGS = \
 	@LIBDWARF_LDFLAGS@ \
+	@LIBELF_LDFLAGS@ \
 	@DYNINST_LDFLAGS@ \
 	-export-dynamic -version-info 0:0:0
 
 
 libcbtf_core_symtabapi_la_LIBADD = \
 	@LIBDWARF_LIBS@ \
+	@LIBELF_LIBS@ \
 	@DYNINST_SYMTABAPI_LIBS@ \
 	@LIBLTDL@
 

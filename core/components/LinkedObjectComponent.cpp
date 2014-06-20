@@ -119,7 +119,8 @@ private:
     {
 #ifndef NDEBUG
 	if (is_trace_linkedobject_events_enabled) {
-	    std::cerr << "ENTERED LinkedObject::threadnamesHandler with num threads "
+	    std::cerr << getpid() << " "
+	     << "ENTERED LinkedObject::threadnamesHandler with num threads "
 		<< in.size() << std::endl;
 	}
 #endif
@@ -132,7 +133,8 @@ private:
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
 #ifndef NDEBUG
 	if (is_trace_linkedobject_events_enabled) {
-	    std::cerr << "ENTERED LinkedObject::groupHandler with num linked objects "
+	    std::cerr << getpid() << " "
+	    << "ENTERED LinkedObject::groupHandler with num linked objects "
 	    << message->linkedobjects.linkedobjects_len << std::endl;
 	}
 #endif
@@ -153,11 +155,15 @@ private:
 	    entry.time_loaded = msg_lo.time_begin;
 	    entry.time_unloaded = msg_lo.time_end;
 	    
+#if 0
 	    LinkedObjectEntryVec::iterator lvi;
 	    lvi = std::find(linkedobjectvec.begin(), linkedobjectvec.end(), entry); 
 	    if (lvi == linkedobjectvec.end()) {
 	        linkedobjectvec.push_back(entry);
 	    }
+#else
+	        linkedobjectvec.push_back(entry);
+#endif
 	}
 
 #ifndef NDEBUG
@@ -189,6 +195,12 @@ private:
     void loadedHandler(const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& in)
     {
         CBTF_Protocol_LoadedLinkedObject *message = in.get();
+#ifndef NDEBUG
+	if (is_trace_linkedobject_events_enabled) {
+	    std::cerr << getpid() << " "
+	     << "ENTERED LinkedObject::loadedHandler" << std::endl;
+	}
+#endif
 	LinkedObjectEntry entry;
 
 #ifndef NDEBUG
@@ -236,6 +248,12 @@ private:
     // Handler for dlclose events.
     void unloadedHandler(const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& in)
     {
+#ifndef NDEBUG
+	if (is_trace_linkedobject_events_enabled) {
+	    std::cerr << getpid() << " "
+	     << "ENTERED LinkedObject::unloadedHandler" << std::endl;
+	}
+#endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out", in);
     }
 

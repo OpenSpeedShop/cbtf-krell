@@ -119,6 +119,7 @@ case "$host" in
           alt_abi_libdir="lib"
           LDFLAGS="$LDFLAGS"
         fi
+        ;;
 
     *)
         AC_MSG_CHECKING([Configuring for default host])

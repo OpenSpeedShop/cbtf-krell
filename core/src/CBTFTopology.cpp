@@ -577,83 +577,66 @@ void CBTFTopology::parsePBSEnv()
 
     if (is_pbs_valid && dm_pbs_num_nodes > 1) {
 	long needed_cps = 0;
-	int numbe = getNumBE();
-	long maxcps = numbe / 32;
-	//std::cerr << "maxcps:" << maxcps << " numbe:" << numbe << "/32" << std::endl;
-	if (numbe > 0) {
-	  if (dm_top_fanout != 0)
+	if (dm_top_fanout != 0) {
 	    needed_cps = dm_procs_per_node / dm_top_fanout;
-	  else
-	    needed_cps = dm_pbs_job_tasks / dm_procs_per_node;
-
-	  if (maxcps > 0) {
-	    //needed_cps = maxcps / dm_procs_per_node;
-	    needed_cps = maxcps;
-	  } else {
-	    needed_cps = 1;
-	  }
- 
 	} else {
-	  if (dm_top_fanout != 0)
-	    needed_cps = dm_procs_per_node / dm_top_fanout;
-	  else
 	    needed_cps = dm_pbs_job_tasks / dm_procs_per_node;
 	}
 	
 	long numcpnodes = needed_cps / dm_procs_per_node;
-	long numcpnodesX = needed_cps % dm_procs_per_node;
-	if (numcpnodesX > 0 )
+	if (needed_cps % dm_procs_per_node > 0 )
 	     numcpnodes++;
 
-	if (!dm_colocate_mrnet_procs)
-	    dm_num_app_nodes -= numcpnodes;
+	int desiredDepth,fanout;
+	// desiredMaxFanout should ultimately be configurable.
+	int desiredMaxFanout = 32;
+	int procsNeeded = 0;
+	int num_nodes_for_app = getNumBE()/dm_procs_per_node;
+	int new_fanout = 0;
+	for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
+	    new_fanout = (int)ceil(pow((float)num_nodes_for_app, (float)1.0 / (float)desiredDepth));
+	    if (new_fanout <= desiredMaxFanout)
+		break; 
+	}
+	
+	for (int i = 1; i <= desiredDepth; i++) {
+	    procsNeeded += (int)ceil(pow((float)new_fanout, (float)i));
+	}
 
+	long real_numcpnodes = procsNeeded/dm_procs_per_node;
+	if (procsNeeded%dm_procs_per_node > 0) {
+	    ++real_numcpnodes;
+	}
+
+	if (!dm_colocate_mrnet_procs) {
+	    dm_num_app_nodes -= real_numcpnodes;
+	}
+
+
+	dm_num_app_nodes = num_nodes_for_app;
+	numcpnodes = real_numcpnodes;
+	setFanout(new_fanout);
+	setDepth(desiredDepth);
 
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
 	bool need_cp_node = true;
-	bool need_app_node = true;
-	long numappnodes = numbe / dm_procs_per_node;
-	if (numappnodes > 0) dm_num_app_nodes = numappnodes;
 
-	//std::cerr << "numappnodes:" << numappnodes << " numbe:" << numbe << std::endl;
-
-        for (NodeListIter = dm_nodelist.begin();
+	for (NodeListIter = dm_nodelist.begin();
 	     NodeListIter != dm_nodelist.end(); NodeListIter++) {
 
-	    if (need_cp_node || dm_colocate_mrnet_procs) {
+	    if (need_cp_node || !dm_colocate_mrnet_procs) {
                 dm_cp_nodelist.push_back(*NodeListIter);
-		//std::cerr << "NEED CP || dm_colocate_mrnet_procs dm_cp_nodelist.push_back " << *NodeListIter << std::endl;
-	    } else if (need_app_node) {
+	    } else {
                 dm_app_nodelist.push_back(*NodeListIter);
-		//std::cerr << "dm_app_nodelist.push_back " << *NodeListIter << std::endl;
 	    }
 
 	    counter++;
-#if 0
-	    std::cerr << " counter:" << counter << " needed_cps:" << needed_cps
-		    << " !dm_colocate_mrnet_procs:" << !dm_colocate_mrnet_procs
-		    << std::endl;
-#endif
-	    if (counter == numcpnodes )
-	    {
-
-#if 0
-		std::cerr << "DONE WITH CP's"
-		    << std::endl;
-#endif
-
+	    if (counter == numcpnodes ) {
 		need_cp_node = false;
 	    }
-	    if (counter-1 == numappnodes )
-	    {
-
-#if 0
-		std::cerr << "DONE WITH app nodes"
-		    << std::endl;
-#endif
-
-		need_app_node = false;
+	    if (counter == numcpnodes + dm_num_app_nodes ) {
+		break;
 	    }
 	}
 #ifndef NDEBUG
@@ -663,6 +646,8 @@ void CBTFTopology::parsePBSEnv()
 	   std::cerr << "CBTFTopology::parsePBSEnv numcpnodes " << numcpnodes << std::endl;
 	   std::cerr << "CBTFTopology::parsePBSEnv dm_num_app_nodes " << dm_num_app_nodes << std::endl;
 	   std::cerr << "CBTFTopology::parsePBSEnv fanout " << dm_top_fanout << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv dm_cp_nodelist size " << dm_cp_nodelist.size() << std::endl;
+	   std::cerr << "CBTFTopology::parsePBSEnv dm_app_nodelist size " << dm_app_nodelist.size() << std::endl;
         }
 #endif
     }
@@ -771,6 +756,27 @@ void CBTFTopology::parseSlurmEnv()
 	if (numcpnodesX > 0 )
 	     numcpnodes++;
 
+	numcpnodes++;
+
+	int tmp_num_app_nodes = dm_num_app_nodes - numcpnodes;
+	int desiredDepth,fanout;
+	int desiredMaxFanout = 32;
+        for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
+                fanout = (int)ceil(pow((float)tmp_num_app_nodes, (float)1.0 / (float)desiredDepth));
+                if (fanout <= desiredMaxFanout)
+                    break; 
+	}
+	int procsNeeded = 0;
+
+        for (int i = 1; i <= desiredDepth; i++) {
+            procsNeeded += (int)ceil(pow((float)fanout, (float)i));
+	}
+
+        if (procsNeeded <= numcpnodes * dm_procs_per_node) {
+	    std::cerr << "PBS desiredDepth OK " << desiredDepth
+		<< " procsNeeded:" << procsNeeded << " numcpnodes:" << numcpnodes << std::endl;
+	}
+
 	if (!dm_colocate_mrnet_procs)
 	    dm_num_app_nodes -= numcpnodes;
 
@@ -807,8 +813,8 @@ void CBTFTopology::parseSlurmEnv()
 	    if (counter == numcpnodes )
 	    {
 
-#if 0
-		std::cerr << "DONE WITH CP's"
+#if 1
+		std::cerr << "DONE WITH " << counter << " CP's"
 		    << std::endl;
 #endif
 
@@ -866,16 +872,21 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
     if (isSlurmValid()) {
 	std::cerr << "Creating topology file for slurm frontend node " << fehostname << std::endl;
 	if (isAttachBEMode())
-	    setDepth(2);
+	    if (getDepth() < 2) {
+		setDepth(2);
+	    }
 	else
 	    setDepth(3);
 
     } else if (isPBSValid()) {
 	std::cerr << "Creating topology file for pbs frontend node " << fehostname << std::endl;
-	if (isAttachBEMode())
-	    setDepth(2);
-	else
+	if (isAttachBEMode()) {
+	    if (getDepth() < 2) {
+	        setDepth(2);
+	    }
+	} else {
 	    setDepth(3);
+	}
     } else {
 	// default to the localhost simple toplogy.
 	std::cerr << "Creating topology file for frontend host " << fehostname << std::endl;
@@ -924,24 +935,19 @@ void CBTFTopology::createTopology()
     //  imply no CP's. A flat 1 to N tree in this case is 1 FE communicating
     //  directly with the BEs.
     //
-    int desiredDepth = dm_top_depth;
-    int desiredMaxFanout = dm_top_fanout;
+    int desiredDepth = getDepth();
+    int desiredMaxFanout = getFanout();
     int procsNeeded = 0;
 
     // FE will launch BE's. i.e. daemon type tools.
     if (!isAttachBEMode()) {
 	desiredDepth = 2;
     } else {
-
-	//desiredDepth = 1;
     }
-
-    //std::cerr << "CreateTopology desiredDepth  " << desiredDepth << std::endl;
 
     // Set topology format and compute depth and fanout.
     if (topologyspec.empty()) {
         if (desiredDepth == 0) {
-	    //std::cerr << "COMPUTING desiredDepth  " << desiredDepth << std::endl;
             // Compute desired depth based on the fanout and number of app nodes.
             for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
                 fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
@@ -952,11 +958,15 @@ void CBTFTopology::createTopology()
             fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
 	}
 
-#if 0
-	std::cerr << "computed desiredDepth  " << desiredDepth
-		<< " dm_top_depth  " << dm_top_depth
+#ifndef NDEBUG
+	if(CBTFTopology::is_debug_topology_enabled) {
+	    std::cerr << "CBTFTopology::createTopology: computed desiredDepth  " << desiredDepth
+		<< " dm_top_depth  " << getDepth()
 		<< " dm_num_app_nodes  " << dm_num_app_nodes
-		<< " computed fanout  " << fanout << std::endl;
+		<< " dm_cp_nodelist.size  " << dm_cp_nodelist.size()
+		<< " computed fanout  " << fanout
+		<< " dm_top_fanout  " << getFanout() << std::endl;
+	}
 #endif
 
         // Determine the number of mrnet processes needed
@@ -974,24 +984,41 @@ void CBTFTopology::createTopology()
         }
 
 	topologyspec = ostr.str();
-	//std::cerr << "topologyspec " << ostr.str() << std::endl;
+#ifndef NDEBUG
+	if(CBTFTopology::is_debug_topology_enabled) {
+	    std::cerr << "CBTFTopology::createTopology topologyspec " << ostr.str() << std::endl;
+	    std::cerr << "num cp nodes:" << dm_cp_nodelist.size()
+		<< " cp procs available:" << dm_cp_nodelist.size() * dm_procs_per_node
+		<< " cp procsNeeded:" << procsNeeded << std::endl;
+	}
+#endif
 
         if (procsNeeded <= dm_cp_nodelist.size() * dm_procs_per_node) {
             //  We have enough CPs, so we can have our desired depth
             depth = desiredDepth;
-	    //std::cerr << "depth OK" << std::endl;
+#ifndef NDEBUG
+	    if(CBTFTopology::is_debug_topology_enabled) {
+	        std::cerr << "depth OK" << std::endl;
+	    }
+#endif
         } else {
             // There aren't enough CPs, so make a 2-deep tree with as many CPs as we have
             std::ostringstream nstr;
 	    nstr << (dm_cp_nodelist.size() * dm_procs_per_node);
 	    topologyspec = nstr.str();
-	    //std::cerr << "BAD depth " << depth << " desireddepth " << desiredDepth << std::endl;
+#ifndef NDEBUG
+	    if(CBTFTopology::is_debug_topology_enabled) {
+	        std::cerr << "Not enough CPs for desired dpeth " << desiredDepth << std::endl;
+	    }
+#endif
         }
 
-#if 0
-	std::cerr << "computed procsNeeded: " << procsNeeded
+#ifndef NDEBUG
+	if(CBTFTopology::is_debug_topology_enabled) {
+	    std::cerr << "computed CP procsNeeded: " << procsNeeded
 	    << " desiredDepth: " << desiredDepth
 	    << " topologyspec: " << topologyspec << std::endl;
+	}
 #endif
 
     } else {
@@ -1068,16 +1095,18 @@ void CBTFTopology::createTopology()
     // Initialized vector iterators
     unsigned int parentIter = 0, childIter = 1;
 
-    //std::cerr << "using topologyspec " << topologyspec << std::endl;
+#ifndef NDEBUG
+    if(CBTFTopology::is_debug_topology_enabled) {
+	std::cerr << "using topologyspec " << topologyspec << std::endl;
+    }
+#endif
 
     if (topologyspec.empty()) {
 	// Flat topology with no CP.  Just an FE that can be attached
 	// to by a BE (or BEs) later.  i.e. FE -> BE.
         fprintf(file, "%s;\n", treeList[0].c_str());
-        //std::cerr << "CREATE FROM TREELIST" << std::endl;
     } else {
         // Create the topology file from specification
-        //std::cerr << "CREATE FROM topology file from specification" << std::endl;
         topoIter = topologyspec;
         parentIter = 0;
         int parentCount = 1;

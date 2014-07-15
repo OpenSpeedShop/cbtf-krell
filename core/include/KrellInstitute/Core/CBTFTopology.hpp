@@ -340,16 +340,17 @@ class CBTFTopology {
 	    std::string dm_topology_spec;
 	    std::string dm_topology;
 	    std::string dm_fe_node;
-	    int dm_top_depth, dm_top_fanout, dm_top_numbe;
 	    MRN::Tree * dm_tree;
-	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs,
-		dm_num_app_nodes, dm_num_cp_nodes, dm_procs_per_node;
+	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs, dm_procs_per_node;
 	    bool is_pbs_valid, is_slurm_valid, dm_is_cray;
 	    bool attach_be_mode, dm_colocate_mrnet_procs;
 	    long dm_slurm_jobid, dm_slurm_num_nodes, dm_slurm_job_tasks;
 	    long dm_pbs_jobid, dm_pbs_num_nodes, dm_pbs_job_tasks;
-	    std::list<std::string> dm_cp_nodelist;
 
+	public:
+	    int dm_top_depth, dm_top_fanout, dm_top_numbe;
+	    int dm_num_app_nodes, dm_num_cp_nodes;
+	    std::list<std::string> dm_cp_nodelist;
  	    std::list<std::string> dm_app_nodelist;
  	    std::list<std::string> dm_nodelist;
  

@@ -33,8 +33,8 @@ libcbtf_core_la_LDFLAGS = \
 
 
 libcbtf_core_la_LIBADD = \
-	@MESSAGES_PERFDATA_LIBS@ \
 	@MESSAGES_BASE_LIBS@ \
+	@MESSAGES_PERFDATA_LIBS@ \
 	@LIBLTDL@
 
 libcbtf_core_bfd_la_CXXFLAGS = \

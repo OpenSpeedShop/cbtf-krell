@@ -321,7 +321,7 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	/* the victim application has performed a dlopen. */
 	if (path != NULL &&
 	    mappedpath != NULL &&
-	    (strncmp(path, basename(mappedpath), strlen(path)) == 0) ) {
+	    (strncmp(basename(path), basename(mappedpath), strlen(basename(path))) == 0) ) {
 #ifndef NDEBUG
 	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
 		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dlopen) DLOPEN RECORD: %s [%08lx, %08lx]\n",

@@ -765,7 +765,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 }
 
 /**
- * Record a dlopen library.
+ * Record a dlopened library.
  *
  * Writes information regarding a DSO that was dlopened/dlclosed  in the thread
  * to the appropriate file.
@@ -788,6 +788,7 @@ void cbtf_offline_record_dlopen(const char* dsoname,
 #endif
     Assert(tls != NULL);
 
+    cbtf_offline_pause_sampling(0);
 
     /* Initialize the offline "dso" blob's header */
     CBTF_EventHeader local_header;
@@ -816,7 +817,6 @@ void cbtf_offline_record_dlopen(const char* dsoname,
 
     CBTF_Protocol_FileName dsoFilename;
     dsoFilename.path = strdup(dsoname);
-    //objects.linked_object = strdup(dsoname);
     objects.linked_object = dsoFilename;
 
     objects.range.begin = begin;
@@ -895,4 +895,6 @@ void cbtf_offline_record_dlopen(const char* dsoname,
            &objects, sizeof(objects));
     tls->data.linkedobjects.linkedobjects_len++;
     tls->dsoname_len += dsoname_len;
+
+    cbtf_offline_resume_sampling(0);
 }

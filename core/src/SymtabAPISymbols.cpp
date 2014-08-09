@@ -116,13 +116,15 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 
     }
 
-    std::set<KrellInstitute::Core::Address> function_begin_addresses;
-    std::vector <Function *>::iterator fsit;
-
 #ifndef NDEBUG
     std::stringstream output;
 #endif
 
+    std::set<Address>::iterator ai_begin = addresses.equal_range(lorange.getBegin()).first;
+    std::set<Address>::iterator ai_end = addresses.equal_range(lorange.getEnd()).second;
+    std::set<KrellInstitute::Core::Address> function_begin_addresses;
+    std::vector <Function *>::iterator fsit;
+    
     for(fsit = fsyms.begin(); fsit != fsyms.end(); ++fsit) {
 	int sym_size = (*fsit)->getSize();
 	KrellInstitute::Core::Address begin((*fsit)->getOffset());
@@ -133,8 +135,8 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 
 	AddressRange frange(begin,end);
 
-	for (ai=addresses.equal_range(lorange.getBegin()).first;
-     		ai!=addresses.equal_range(lorange.getEnd()).second;ai++) {
+	for (ai=ai_begin; ai!=ai_end; ++ai)
+	{
 	    // normalize address for testing range from symtabapi.
 	    KrellInstitute::Core::Address theAddr(*ai - base.getValue()) ; 
 	    if (frange.doesContain( theAddr )) {
@@ -208,8 +210,8 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
     }
 #endif
 
-    for (ai=addresses.equal_range(lorange.getBegin()).first;
-    	    ai!=addresses.equal_range(lorange.getEnd()).second;ai++) {
+    for (ai=ai_begin; ai!=ai_end; ++ai)
+    {
 	// normalize address for testing range from symtabapi.
 	KrellInstitute::Core::Address theAddr(*ai - base.getValue()) ; 
 	Offset myoffset = theAddr.getValue();
@@ -297,6 +299,7 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
     }
 #endif
 }
+
 
 
 void

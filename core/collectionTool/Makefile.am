@@ -61,7 +61,7 @@ collectionTool_LDADD = \
 	@LIBDWARF_LIBS@ \
         @LIBXERCES_C@ \
 	@MRNET_LIBS@ \
-	-lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core
+	-lrt -lcbtf-core-symtabapi -lcbtf-core-mrnet -lcbtf-core
 
 collectionTool_SOURCES = \
 	collectionTool.cpp

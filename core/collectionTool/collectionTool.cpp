@@ -38,6 +38,7 @@
 #include <KrellInstitute/CBTF/ValueSource.hpp>
 #include <KrellInstitute/CBTF/XML.hpp>
 #include "KrellInstitute/Core/SymtabAPISymbols.hpp"
+#include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/CBTFTopology.hpp"
 
 using namespace boost;
@@ -54,6 +55,7 @@ namespace {
         wait.tv_nsec = 500 * 1000 * 1000;
         while(nanosleep(&wait, &wait));
     }
+    bool is_debug_timing_enabled = (getenv("CBTF_TIME_CLIENT_EVENTS") != NULL);
 }
 
 // Experiment Utilities.
@@ -189,6 +191,13 @@ class FEThread
 	   const std::string& collector, const unsigned int& numBE,
 	   bool& finished)
   {
+
+#ifndef NDEBUG
+    if (is_debug_timing_enabled) {
+	std::cerr << Time::Now() << " collectionTool FE thread starts cbtf network." << std::endl;
+    }
+#endif
+
     std::string xmlfile(collector);
     xmlfile += ".xml";
     registerXML(filesystem::path(XMLDIR) / xmlfile);
@@ -258,16 +267,26 @@ class FEThread
     *numberBackends = numBE;
     }
 
+#ifndef NDEBUG
+    if (is_debug_timing_enabled) {
+	std::cerr << Time::Now() << " collectionTool FE cbtf network running." << std::endl;
+    }
+#endif
+
     bool threads_done = false;
     while (true) {
         threads_done = *threads_finished;
-        //nanosleep((struct timespec[]){{0, 500000000}}, NULL);
         suspend();
         if (threads_done) {
             finished = true;
             break;
 	}
     }        
+#ifndef NDEBUG
+    if (is_debug_timing_enabled) {
+	std::cerr << Time::Now() << " collectionTool FE cbtf network finished." << std::endl;
+    }
+#endif
 
   }
 
@@ -277,6 +296,12 @@ class FEThread
 
 int main(int argc, char** argv)
 {
+#ifndef NDEBUG
+    if (is_debug_timing_enabled) {
+	std::cerr << Time::Now() << " collectionTool started." << std::endl;
+    }
+#endif
+
     unsigned int numBE;
     bool isMPI;
     std::string topology, arch, connections, collector, program, mpiexecutable, cbtfrunpath;
@@ -484,4 +509,9 @@ int main(int argc, char** argv)
         fethread.join();
     }
 
+#ifndef NDEBUG
+    if (is_debug_timing_enabled) {
+	std::cerr << Time::Now() << " collectionTool exits." << std::endl;
+    }
+#endif
 }

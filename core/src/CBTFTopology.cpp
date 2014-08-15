@@ -622,11 +622,24 @@ void CBTFTopology::parsePBSEnv()
 	if (needed_cps % dm_procs_per_node > 0 )
 	     numcpnodes++;
 
+	int num_nodes_for_app;
+	if (isAttachBEMode()) {
+	    if (getNumBE() > dm_procs_per_node) {
+	        // initialize to enough nodes to handle number of request BEs.
+		num_nodes_for_app = getNumBE()/dm_procs_per_node;
+	    } else {
+	        // initialize to at least one node.
+		num_nodes_for_app = 1;
+	    }
+	} else {
+	    // initialize to all nodes in allocation for daemonTools.
+	    num_nodes_for_app = dm_pbs_num_nodes;
+	}
+
 	int desiredDepth,fanout;
 	// desiredMaxFanout should ultimately be configurable.
 	int desiredMaxFanout = 32;
 	int procsNeeded = 0;
-	int num_nodes_for_app = getNumBE()/dm_procs_per_node;
 	int new_fanout = 0;
 	for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
 	    new_fanout = (int)ceil(pow((float)num_nodes_for_app, (float)1.0 / (float)desiredDepth));
@@ -809,11 +822,24 @@ void CBTFTopology::parseSlurmEnv()
 	if (numcpnodesX > 0 )
 	     numcpnodes++;
 
+	int num_nodes_for_app;
+	if (isAttachBEMode()) {
+	    if (getNumBE() > dm_procs_per_node) {
+	        // initialize to enough nodes to handle number of request BEs.
+		num_nodes_for_app = getNumBE()/dm_procs_per_node;
+	    } else {
+	        // initialize to at least one node.
+		num_nodes_for_app = 1;
+	    }
+	} else {
+	    // initialize to all nodes in allocation for daemonTools.
+	    num_nodes_for_app = dm_pbs_num_nodes;
+	}
+
 	int desiredDepth,fanout;
 	// desiredMaxFanout should ultimately be configurable.
 	int desiredMaxFanout = 32;
 	int procsNeeded = 0;
-	int num_nodes_for_app = getNumBE()/dm_procs_per_node;
 	int new_fanout = 0;
 	int tmp_num_app_nodes = dm_num_app_nodes - numcpnodes;
         for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {

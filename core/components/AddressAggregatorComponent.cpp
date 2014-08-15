@@ -240,14 +240,21 @@ bool is_trace_aggregator_events_enabled =
 	    AddressCounts addressTime;
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+	        	Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
 	    StacktraceData stdata;
@@ -285,14 +292,21 @@ bool is_trace_aggregator_events_enabled =
 	    AddressCounts addressTime;
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+	        	Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
 	    StacktraceData stdata;
@@ -307,14 +321,21 @@ bool is_trace_aggregator_events_enabled =
 	    AddressCounts addressTime;
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+	        	Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
 	    StacktraceData stdata;
@@ -329,14 +350,21 @@ bool is_trace_aggregator_events_enabled =
 	    AddressCounts addressTime;
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+	        	Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
 	    StacktraceData stdata;
@@ -349,18 +377,27 @@ bool is_trace_aggregator_events_enabled =
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
 	    int eventcount = 0;
 	    AddressCounts addressTime;
+
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+	        	Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
+
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
@@ -383,7 +420,6 @@ bool is_trace_aggregator_events_enabled =
 		    (*it).second += data.time.time_val[i];
 		}
 	    }
-
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
@@ -394,18 +430,27 @@ bool is_trace_aggregator_events_enabled =
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
 	    int eventcount = 0;
 	    AddressCounts addressTime;
+
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[data.events.events_val[i].stacktrace]);
+		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
 
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.events.events_val[i].stop_time - data.events.events_val[i].start_time));
-		} else {
-		    (*it).second += data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
+		for (unsigned j = data.events.events_val[i].stacktrace;
+		     j < data.stacktraces.stacktraces_len; ++j) {
+
+		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
+			Address a;
+			a = Address(data.stacktraces.stacktraces_val[j]);
+
+			AddressCounts::iterator it = addressTime.find(a);
+			if (it == addressTime.end() ) {
+			    addressTime.insert(std::make_pair(a,event_time));
+			} else {
+			    (*it).second += event_time;
+		    }
 		}
 	    }
+
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data),

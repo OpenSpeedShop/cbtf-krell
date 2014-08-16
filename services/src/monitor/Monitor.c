@@ -764,7 +764,8 @@ void monitor_fini_mpi(void)
 	    fprintf(stderr,"monitor_fini_mpi PAUSE SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	//tls->sampling_status = CBTF_Monitor_Paused;
+	tls->sampling_status = CBTF_Monitor_Paused;
+	cbtf_offline_pause_sampling(CBTF_Monitor_MPI_fini_event);
 	// FIXME: seems the only way mpi jobs work is to stop sampling here.
 	// therefore mpi_finalize is not recorded at least for mpi trace.
 	//cbtf_offline_stop_sampling(NULL, 1);
@@ -791,7 +792,8 @@ void monitor_mpi_post_fini(void)
 	    fprintf(stderr,"monitor_mpi_post_fini RESUME SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	//tls->sampling_status = CBTF_Monitor_Resumed;
+	tls->sampling_status = CBTF_Monitor_Resumed;
+	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_post_fini_event);
 	//cbtf_offline_stop_sampling(NULL, 1);
 	//send_attached_to_threads_message();
     }

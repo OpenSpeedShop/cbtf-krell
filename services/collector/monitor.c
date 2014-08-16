@@ -151,7 +151,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -160,7 +160,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -168,10 +168,18 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
 	    }
 #endif
 	    set_mpi_flag(true);
+	    break;
+	case CBTF_Monitor_MPI_fini_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_fini_event\n");
+	    }
+#endif
+	    cbtf_offline_service_stop_timer();
 	    break;
 	default:
 	    break;
@@ -228,6 +236,15 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 		cbtf_send_info();
 		cbtf_offline_service_start_timer();
 	    }
+	    break;
+	case CBTF_Monitor_MPI_post_fini_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
+	        fprintf(stderr,
+		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n");
+	    }
+#endif
+	    cbtf_offline_service_start_timer();
 	    break;
 	default:
 	    break;
@@ -419,7 +436,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	        fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	        fprintf(stderr,"cbtf_offline_notify_event passed event CBTF_Monitor_MPI_pre_init_event\n");
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -427,7 +444,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	         fprintf(stderr,"offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	         fprintf(stderr,"cbtf_offline_notify_event passed event CBTF_Monitor_MPI_init_event\n");
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -435,7 +452,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
-	        fprintf(stderr,"offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
+	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
 			monitor_mpi_comm_rank());
 	    }
 	    set_mpi_flag(true);
@@ -445,7 +462,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_process_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"offline_notify_event CBTF_Monitor_init_process_event for pid %d\n",
+	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_init_process_event for pid %d\n",
 			getpid());
 	    }
 #endif
@@ -453,7 +470,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_thread_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"offline_notify_event CBTF_Monitor_init_thread_event for pid %d\n",
+	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_init_thread_event for pid %d\n",
 			getpid());
 	    }
 #endif

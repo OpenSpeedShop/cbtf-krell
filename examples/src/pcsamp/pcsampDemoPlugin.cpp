@@ -483,7 +483,7 @@ private:
 	    << " loaded at time " << entry.time_loaded
 	    << " at " << AddressRange(entry.addr_begin,entry.addr_end)
 	    << " in thread " << entry.tname.getHost()
-	    << ":" << entry.tname.getPid().second
+	    << ":" << entry.tname.getPid()
 	    << ":" <<  entry.tname.getPosixThreadId().second
 	    << std::endl;
 #endif
@@ -538,9 +538,9 @@ private:
 
 	    ThreadName tname(msg_thread);
 	    std::cerr << "ThreadStateChanged " << tname.getHost()
-	    << ":" << tname.getPid().second
+	    << ":" << tname.getPid()
 	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
-	    << ":" <<  tname.getMPIRank().second
+	    << ":" <<  tname.getMPIRank()
 	    << " ThreadState: " << message->state
 	    << std::endl;
 
@@ -600,9 +600,9 @@ private:
 
 	    ThreadName tname(msg_thread);
 	    std::cerr << "AttachedToThread " << tname.getHost()
-	    << ":" << tname.getPid().second
+	    << ":" << tname.getPid()
 	    << ":" <<  (uint64_t) tname.getPosixThreadId().second
-	    << ":" <<  tname.getMPIRank().second
+	    << ":" <<  tname.getMPIRank()
 	    << std::endl;
 
 	    tvec.push_back(tname);
@@ -649,9 +649,9 @@ private:
 
 	ThreadName created_threadname(message->created_thread);
 	std::cerr << "CreatedProcess " << created_threadname.getHost()
-	<< ":" << created_threadname.getPid().second
+	<< ":" << created_threadname.getPid()
 	<< ":" <<  (uint64_t) created_threadname.getPosixThreadId().second
-	<< ":" <<  created_threadname.getMPIRank().second
+	<< ":" <<  created_threadname.getMPIRank()
 	<< std::endl;
 
     }

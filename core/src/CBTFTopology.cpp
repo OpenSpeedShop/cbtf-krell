@@ -610,7 +610,7 @@ void CBTFTopology::parsePBSEnv()
 
     is_pbs_valid = has_pbs;
 
-    if (is_pbs_valid && dm_pbs_num_nodes > 1) {
+    if (is_pbs_valid && dm_pbs_num_nodes > 0) {
 	long needed_cps = 0;
 	if (dm_top_fanout != 0) {
 	    needed_cps = dm_procs_per_node / dm_top_fanout;

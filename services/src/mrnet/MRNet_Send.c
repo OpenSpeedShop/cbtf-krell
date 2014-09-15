@@ -26,7 +26,6 @@
 #include "config.h"
 #endif
 
-//#include "KrellInstitute/CBTF/Impl/MessageTags.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
@@ -36,6 +35,7 @@
 #include <rpc/rpc.h>
 #include "mrnet_lightweight/MRNet.h"
 
+#include "KrellInstitute/CBTF/Impl/MessageTags.h"
 
 Network_t* CBTF_MRNet_netPtr;
 // make the id of the stream we want global and use Network_get_Stream
@@ -225,7 +225,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 		fprintf(stderr, "BE: receive failure\n");
 		break;
 	    }
-	} while ( readytag != 105 );
+	} while ( readytag != KRELL_INSTITUTE_CBTF_IMPL_NETWORK_READY /*107*/ );
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
 	    fprintf(stderr, "BE: GOT TAG for filter tag %d from FE\n",readytag);

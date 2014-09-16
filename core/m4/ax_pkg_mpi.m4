@@ -1,5 +1,5 @@
 #################################################################################
-# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2014 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -34,6 +34,7 @@ AC_DEFUN([AX_LAM], [
     LAM_CC="$lam_dir/bin/mpicc"
     LAM_CPPFLAGS="-I$lam_dir/include"
     LAM_LDFLAGS="-L$lam_dir/$abi_libdir"
+    LAM_LIBDIR="$lam_dir/$abi_libdir"
     LAM_LIBS="-lmpi -llam -llamf77mpi -lutil"
     LAM_HEADER="$lam_dir/include/mpi.h"
     LAM_DIR="$lam_dir"
@@ -83,6 +84,7 @@ AC_DEFUN([AX_LAM], [
          LAM_CC="$lam_dir/bin/mpicc"
          LAM_CPPFLAGS="-I$lam_dir/include"
          LAM_LDFLAGS="-L$lam_dir/$alt_abi_libdir"
+         LAM_LIBDIR="$lam_dir/$alt_abi_libdir"
          LAM_LIBS="-lmpi"
          LAM_HEADER="$lam_dir/include/mpi.h"
          LAM_DIR="$lam_dir"
@@ -130,6 +132,7 @@ AC_DEFUN([AX_LAM], [
           LAM_CC=""
           LAM_CPPFLAGS=""
           LAM_LDFLAGS=""
+          LAM_LIBDIR=""
           LAM_LIBS=""
           LAM_HEADER=""
           LAM_DIR=""
@@ -139,6 +142,7 @@ AC_DEFUN([AX_LAM], [
     AC_SUBST(LAM_CC)
     AC_SUBST(LAM_CPPFLAGS)
     AC_SUBST(LAM_LDFLAGS)
+    AC_SUBST(LAM_LIBDIR)
     AC_SUBST(LAM_LIBS)
     AC_SUBST(LAM_HEADER)
     AC_SUBST(LAM_DIR)
@@ -165,6 +169,7 @@ AC_DEFUN([AX_LAMPI], [
     LAMPI_CC="$lampi_dir/bin/mpicc"
     LAMPI_CPPFLAGS="-I$lampi_dir/include"
     LAMPI_LDFLAGS="-L$lampi_dir/$abi_libdir"
+    LAMPI_LIBDIR="$lampi_dir/$abi_libdir"
     LAMPI_LIBS="-lmpi"
     LAMPI_HEADER="$lampi_dir/include/mpi.h"
     LAMPI_DIR="$lampi_dir"
@@ -215,6 +220,7 @@ AC_DEFUN([AX_LAMPI], [
          LAMPI_CC="$lampi_dir/bin/mpicc"
          LAMPI_CPPFLAGS="-I$lampi_dir/include"
          LAMPI_LDFLAGS="-L$lampi_dir/$alt_abi_libdir"
+         LAMPI_LIBDIR="$lampi_dir/$alt_abi_libdir"
          LAMPI_LIBS="-lmpi"
          LAMPI_HEADER="$lampi_dir/include/mpi.h"
          LAMPI_DIR="$lampi_dir"
@@ -264,6 +270,7 @@ AC_DEFUN([AX_LAMPI], [
           LAMPI_CC=""
           LAMPI_CPPFLAGS=""
           LAMPI_LDFLAGS=""
+          LAMPI_LIBDIR=""
           LAMPI_LIBS=""
           LAMPI_HEADER=""
           LAMPI_DIR=""
@@ -273,12 +280,12 @@ AC_DEFUN([AX_LAMPI], [
     AC_SUBST(LAMPI_CC)
     AC_SUBST(LAMPI_CPPFLAGS)
     AC_SUBST(LAMPI_LDFLAGS)
+    AC_SUBST(LAMPI_LIBDIR)
     AC_SUBST(LAMPI_LIBS)
     AC_SUBST(LAMPI_HEADER)
     AC_SUBST(LAMPI_DIR)
 
 ])
-
 
 ################################################################################
 # Check for MPICH (http://www-unix.mcs.anl.gov/mpi/mpich1)
@@ -294,7 +301,7 @@ AC_DEFUN([AX_MPICH], [
     AC_ARG_WITH(mpich-driver,
 		AC_HELP_STRING([--with-mpich-driver=NAME],
 			       [MPICH driver name @<:@ch-p4@:>@]),
-		mpich_driver=$withval, mpich_driver="ch-p4")
+		mpich_driver=$withval, mpich_driver="")
 
     AC_MSG_CHECKING([for MPICH library and headers])
 
@@ -306,6 +313,7 @@ AC_DEFUN([AX_MPICH], [
     MPICH_CC="$mpich_dir/$mpich_driver/bin/mpicc -shlib"
     MPICH_CPPFLAGS="-I$mpich_dir/include"
     MPICH_LDFLAGS="-L$mpich_dir/$mpich_driver/$abi_libdir/shared"
+    MPICH_LIBDIR="$mpich_dir/$mpich_driver/$abi_libdir/shared"
     MPICH_LIBS="-lmpich"
     MPICH_HEADER="$mpich_dir/include/mpi.h"
     MPICH_DIR="$mpich_dir"
@@ -314,17 +322,19 @@ AC_DEFUN([AX_MPICH], [
     # that has things moved around a bit. Handle this by allowing a "llnl"
     # pseudo-driver that makes the necessary configuration changes.
     if test x"$mpich_driver" == x"llnl"; then
-	MPICH_CC="$mpich_dir/bin/mpicc -shlib"
-	# even on the Opterons/Peloton systems (x86_64) all libraries are in lib
+        MPICH_CC="$mpich_dir/bin/mpicc -shlib"
+        # even on the Opterons/Peloton systems (x86_64) all libraries are in lib
         # MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
         MPICH_LDFLAGS="-L$mpich_dir/lib"
+        MPICH_LIBDIR="$mpich_dir/lib"
     fi
 
     if test x"$mpich_driver" == x"llnlib"; then
-	MPICH_CC="$mpich_dir/bin/mpicc -shlib"
-	# even on the Opterons/Peloton systems (x86_64) all libraries are in lib
+        MPICH_CC="$mpich_dir/bin/mpicc -shlib"
+        # even on the Opterons/Peloton systems (x86_64) all libraries are in lib
         # MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
         MPICH_LDFLAGS="-L$mpich_dir/lib"
+        MPICH_LIBDIR="$mpich_dir/lib"
         MPICH_LIBS="-lmpich -libverbs"
     fi
 
@@ -332,8 +342,9 @@ AC_DEFUN([AX_MPICH], [
     # that has things moved around a bit. Handle this by allowing a "lanl"
     # pseudo-driver that makes the necessary configuration changes.
     if test x"$mpich_driver" == x"lanl"; then
-	MPICH_CC="$mpich_dir/bin/mpicc"
+        MPICH_CC="$mpich_dir/bin/mpicc"
         MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir/shared"
+        MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir/shared"
         MPICH_LIBS="-lfmpich"
     fi
 
@@ -341,18 +352,19 @@ AC_DEFUN([AX_MPICH], [
     # that has things moved around a bit. Handle this by allowing a "sandia"
     # pseudo-driver that makes the necessary configuration changes.
     if test x"$mpich_driver" == x"sandia"; then
-	MPICH_CC="$mpich_dir/bin/mpicc"
+        MPICH_CC="$mpich_dir/bin/mpicc"
         MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+        MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
         MPICH_LIBS="-lmpich"
     fi
-
 
     # On the systems at Sandia they have an MPICH variant
     # that has things moved around a bit. Handle this by allowing a "shared"
     # pseudo-driver that makes the necessary configuration changes.
     if test x"$mpich_driver" == x"shared"; then
-	MPICH_CC="$mpich_dir/bin/mpicc"
+        MPICH_CC="$mpich_dir/bin/mpicc"
         MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir/shared"
+        MPICH_LIBDIR="$mpich_dir/$abi_libdir/shared"
         MPICH_LIBS="-lmpich"
     fi
 
@@ -368,84 +380,411 @@ AC_DEFUN([AX_MPICH], [
     LIBS="$MPICH_LIBS"
 
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-	#include <mpi.h>
-	]], [[
-	MPI_Initialized((int*)0);
-	]])],
+        #include <mpi.h>
+        ]], [[
+        MPI_Initialized((int*)0);
+        ]])],
 
         if ( (test -f $mpich_dir/$abi_libdir/shared/libmpich.so) ) ; then
-	    found_mpich=1
-        fi 
+            found_mpich=1
+        fi
 
-	, )
-
+        , )
 
     if test $found_mpich -eq 1; then
-	AC_MSG_RESULT(yes)
-	AM_CONDITIONAL(HAVE_MPICH, true)
-	AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])	
-    else
+        AC_MSG_RESULT(yes)
+        AM_CONDITIONAL(HAVE_MPICH, true)
+        AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])
+    fi
+
+
+    if test $found_mpich -eq 0; then
+
         AC_MSG_RESULT([Temporary output: found_mpich=$found_mpich])
+
         # Try again looking in the alternative lib dir with no driver
         AC_MSG_CHECKING([for MPICH alternative library and headers with no mpich_driver specified])
         MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+        MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
 #        MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir -L$mpich_dir/$alt_abi_libdir/libmpich.a"
         LDFLAGS="$mpich_saved_LDFLAGS $MPICH_LDFLAGS $MPICH_LIBS"
 
         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    	    #include <mpi.h>
-	    ]], [[
-	    MPI_Initialized((int*)0);
-	    ]])],
+            #include <mpi.h>
+            ]], [[
+            MPI_Initialized((int*)0);
+            ]])],
 
             if ( (test -f $mpich_dir/$alt_abi_libdir/libmpich.so) ) ; then
-    	        found_mpich=1
-            fi 
+                found_mpich=1
+            fi
 
-	    , )
+            , )
 
         if test $found_mpich -eq 1; then
-	  AC_MSG_RESULT(yes)
-	  AM_CONDITIONAL(HAVE_MPICH, true)
-	  AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])	
+          AC_MSG_RESULT(yes)
+          AM_CONDITIONAL(HAVE_MPICH, true)
+          AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])
+        fi 
 
-        else
-             AC_MSG_RESULT([Temporary output: found_mpich=$found_mpich])
+    fi 
 
-             # Try again looking in the normal lib dir with no driver
-             AC_MSG_CHECKING([for MPICH normal lib library and headers with no mpich_driver specified])
-             MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
-#             MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir -L$mpich_dir/$abi_libdir/libmpich.a"
-             LDFLAGS="$mpich_saved_LDFLAGS $MPICH_LDFLAGS $MPICH_LIBS"
+    if test $found_mpich -eq 0; then
+         AC_MSG_RESULT([Temporary output: found_mpich=$found_mpich])
 
-             AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-                 #include <mpi.h>
-                 ]], [[
-                 MPI_Initialized((int*)0);
-                 ]])],
+         # Try again looking in the normal lib dir with no driver
+         AC_MSG_CHECKING([for MPICH normal lib library and headers with no mpich_driver specified])
+         MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+         MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+         LDFLAGS="$mpich_saved_LDFLAGS $MPICH_LDFLAGS $MPICH_LIBS"
 
-                 if ( (test -f $mpich_dir/$abi_libdir/libmpich.so) ) ; then
-	           found_mpich=1
-                 fi 
+         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+             #include <mpi.h>
+             ]], [[
+             MPI_Initialized((int*)0);
+             ]])],
 
-                 , )
+             if ( (test -f $mpich_dir/$abi_libdir/libmpich.so) ) ; then
+               found_mpich=1
+             fi
 
-              if test $found_mpich -eq 1; then
-                AC_MSG_RESULT(yes)
-                AM_CONDITIONAL(HAVE_MPICH, true)
-                AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])
-               else
-  	         AC_MSG_RESULT(no)
-	         AM_CONDITIONAL(HAVE_MPICH, false)
-	         MPICH_CC=""
-	         MPICH_CPPFLAGS=""
-	         MPICH_LDFLAGS=""
-	         MPICH_LIBS=""
-	         MPICH_HEADER=""
-	         MPICH_DIR=""
-               fi
-        fi
+             , )
 
+          if test $found_mpich -eq 1; then
+            AC_MSG_RESULT(yes)
+            AM_CONDITIONAL(HAVE_MPICH, true)
+            AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])
+           fi
+    fi
+
+
+    if test $found_mpich -eq 0; then
+
+         # Put -shlib into MPICH_CC, since it is needed when building the
+         # tests, where $MPICH_CC is used, and is not needed when building
+         # the MPI-related plugins, where $MPICH_CC is not used.
+         MPICH_CC="$mpich_dir/bin/mpicc"
+         MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+         MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+         MPICH_LIBS="-lmpich"
+         if (test "$abi_libdir" == "lib64" && test -d $mpich_dir/include64 && test -f $mpich_dir/include64/mpi.h) ; then
+              MPICH_HEADER="$mpich_dir/include64/mpi.h"
+              MPICH_CPPFLAGS="-I$mpich_dir/include64"
+         elif (test -f $mpich_dir/include/mpi.h) ; then
+              MPICH_CPPFLAGS="-I$mpich_dir/include"
+              MPICH_HEADER="$mpich_dir/include/mpi.h"
+         elif (test -f /usr/include/mpich-$cbtf_hardware_platform/mpi.h) ; then
+              MPICH_CPPFLAGS="-I/usr/include/mpich-$cbtf_hardware_platform"
+              MPICH_HEADER="-I/usr/include/mpich-$cbtf_hardware_platform/mpi.h"
+         else
+              MPICH_HEADER="$mpich_dir/include/mpi.h"
+              MPICH_CPPFLAGS="-I$mpich_dir/include"
+         fi
+         MPICH_DIR="$mpich_dir"
+
+
+         AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+     	     #include <mpi.h>
+	     ]], [[
+	     MPI_Initialized((int*)0);
+	     ]])],
+
+             if (test -f $mpich_dir/$abi_libdir/libmpich.so) ; then
+	         found_mpich=1
+                 MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+                 MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+             fi
+
+             if (test -f $mpich_dir/$abi_libdir/shared/libmpich.so); then
+	         found_mpich=1
+                 MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir/shared -L$mpich_dir/$abi_libdir"
+                 MPICH_LIBDIR="$mpich_dir/$abi_libdir/shared"
+             fi 
+
+     	     , )
+    fi
+
+    if test $found_mpich -eq 0; then
+
+       AC_MSG_CHECKING([for MPICH library (alt locations) and headers])
+
+       MPICH_CC="$mpich_dir/bin/mpicc"
+       MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+       MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+       MPICH_LIBS="-lmpich"
+       MPICH_DIR="$mpich_dir"
+       if (test -f /usr/include/mpich-$cbtf_hardware_platform/mpi.h) ; then
+         MPICH_CPPFLAGS="-I/usr/include/mpich-$cbtf_hardware_platform"
+         MPICH_HEADER="-I/usr/include/mpich-$cbtf_hardware_platform/mpi.h"
+       elif (test -f $mpich_dir/include/mpi.h) ; then
+         MPICH_CPPFLAGS="-I$mpich_dir/include"
+         MPICH_HEADER="$mpich_dir/include/mpi.h"
+       else
+         MPICH_CPPFLAGS="-I$mpich_dir/include"
+         MPICH_HEADER="$mpich_dir/include/mpi.h"
+       fi
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$alt_abi_libdir/libmpich.so) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found MPICH library alt locations found alt_abi_libdir and headers])
+         fi
+
+         if (test -f $mpich_dir/$alt_abi_libdir/shared/libmpich.so) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir/shared -L$mpich_dir/$alt_abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir/shared"
+	    found_mpich=1
+            AC_MSG_CHECKING([found MPICH library alt locations found shared/alt_abi_libdir and headers])
+         fi 
+
+	, )
+
+    fi
+
+#
+# Check now for Intel MPI version of installation for their MPICH based MPI Implementation
+#
+    if test $found_mpich -eq 0 && test "$abi_libdir" == "lib64" ; then
+
+       AC_MSG_CHECKING([for Intel MPICH 64 bit library and headers using mpigcc])
+
+       MPICH_CC="$mpich_dir/bin64/mpgicc"
+       MPICH_CPPFLAGS="-I$mpich_dir/include"
+       if (test -d $mpich_dir/$abi_libdir) ; then
+          MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+          MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+       elif (test -d $mpich_dir/$alt_abi_libdir) ; then
+          MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+          MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+       fi
+       MPICH_LIBS="-lmpich"
+       MPICH_HEADER="$mpich_dir/include/mpi.h"
+       MPICH_DIR="$mpich_dir"
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$abi_libdir/libmpich.so && test -f $mpich_dir/include/mpi.h) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel MPICH 64 bit library and headers using mpigcc])
+         elif (test -f $mpich_dir/$alt_abi_libdir/libmpich.so && test -f $mpich_dir/include/mpi.h) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel MPICH 64 bit library and headers using mpigcc])
+         fi
+
+	, )
+
+    fi
+
+#
+# Check now for Intel MPI version of installation for their MPICH based MPI Implementation with libmpi not libmpich
+#
+    if test $found_mpich -eq 0 && test "$abi_libdir" == "lib" ; then
+
+       AC_MSG_CHECKING([for Intel 32 bit MPICH library and headers using mpicc])
+
+       MPICH_CC="$mpich_dir/bin/mpicc"
+       MPICH_CPPFLAGS="-I$mpich_dir/include"
+       MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+       MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+       MPICH_LIBS="-lmpi"
+       MPICH_HEADER="$mpich_dir/include/mpi.h"
+       MPICH_DIR="$mpich_dir"
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$abi_libdir/libmpi.so && test -f $mpich_dir/include/mpi.h) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel 32 bit MPICH library and headers using mpicc])
+         fi
+
+	, )
+
+    fi
+
+
+#
+# Check now for Intel MPI version of installation for their MPICH based MPI Implementation
+#
+    if test $found_mpich -eq 0 && test "$abi_libdir" == "lib" ; then
+
+       AC_MSG_CHECKING([for Intel 32 bit MPICH library and headers using mpigcc])
+
+       MPICH_CC="$mpich_dir/bin/mpigcc"
+       MPICH_CPPFLAGS="-I$mpich_dir/include"
+       MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+       MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+       MPICH_LIBS="-lmpich"
+       MPICH_HEADER="$mpich_dir/include/mpi.h"
+       MPICH_DIR="$mpich_dir"
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$abi_libdir/libmpich.so && test -f $mpich_dir/include/mpi.h) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel 32 bit MPICH library and headers using mpigcc])
+         fi
+
+	, )
+
+    fi
+#
+# Check now for Intel MPI version of installation for their MPICH based MPI Implementation
+#
+    if test $found_mpich -eq 0 && test "$abi_libdir" == "lib64" ; then
+
+       AC_MSG_CHECKING([for Intel MPICH 64 bit library and headers using mpicc])
+
+       if ( test -d $mpich_dir/bin64 && test -f $mpich_dir/bin64/mpicc) ; then
+          MPICH_CC="$mpich_dir/bin64/mpicc"
+       elif (test -d $mpich_dir/bin && test -f $mpich_dir/bin/mpicc) ; then
+          MPICH_CC="$mpich_dir/bin/mpicc"
+       elif ( ! test -d $mpich_dir/bin ) ; then
+          MPICH_CC="cc"
+       fi
+
+       if (test -d $mpich_dir/$abi_libdir) ; then
+          MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+          MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+       elif (test -d $mpich_dir/$alt_abi_libdir) ; then
+          MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+          MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+       fi
+       MPICH_LIBS="-lmpich"
+       if (test "$abi_libdir" == "lib64" && test -d $mpich_dir/include64 && test -f $mpich_dir/include64/mpi.h) ; then
+         MPICH_HEADER="$mpich_dir/include64/mpi.h"
+         MPICH_CPPFLAGS="-I$mpich_dir/include64"
+       else
+         MPICH_HEADER="$mpich_dir/include/mpi.h"
+         MPICH_CPPFLAGS="-I$mpich_dir/include"
+       fi
+       MPICH_DIR="$mpich_dir"
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$abi_libdir/libmpich.so) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel MPICH 64 bit library and headers using mpicc])
+         elif (test -f $mpich_dir/$alt_abi_libdir/libmpich.so) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$alt_abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$alt_abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel MPICH 64 bit library and headers using mpicc])
+         fi
+
+	, )
+
+    fi
+
+#
+# Check now for Intel MPI version of installation for their MPICH based MPI Implementation
+#
+    if test $found_mpich -eq 0 && test "$abi_libdir" == "lib" ; then
+
+       AC_MSG_CHECKING([for Intel 32 bit MPICH library and headers using mpicc])
+
+       MPICH_CC="$mpich_dir/bin/mpicc"
+       MPICH_CPPFLAGS="-I$mpich_dir/include"
+       MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+       MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+       MPICH_LIBS="-lmpich"
+       MPICH_HEADER="$mpich_dir/include/mpi.h"
+       MPICH_DIR="$mpich_dir"
+
+       CPPFLAGS=$mpich_saved_CPPFLAGS
+       LDFLAGS=$mpich_saved_LDFLAGS
+
+       CC="$MPICH_CC"
+       CPPFLAGS="$CPPFLAGS $MPICH_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MPICH_LDFLAGS"
+       LIBS="$MPICH_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+         if (test -f $mpich_dir/$abi_libdir/libmpich.so) ; then
+            MPICH_LDFLAGS="-L$mpich_dir/$abi_libdir"
+            MPICH_LIBDIR="$mpich_dir/$abi_libdir"
+	    found_mpich=1
+            AC_MSG_CHECKING([found Intel 32 bit MPICH library and headers using mpicc])
+         fi
+
+	, )
 
     fi
 
@@ -454,15 +793,31 @@ AC_DEFUN([AX_MPICH], [
     LDFLAGS=$mpich_saved_LDFLAGS
     LIBS=$mpich_saved_LIBS
 
+    if test $found_mpich -eq 1; then
+	AC_MSG_RESULT(yes)
+	AM_CONDITIONAL(HAVE_MPICH, true)
+	AC_DEFINE(HAVE_MPICH, 1, [Define to 1 if you have MPICH.])	
+    else
+	AC_MSG_RESULT(no)
+	AM_CONDITIONAL(HAVE_MPICH, false)
+	MPICH_CC=""
+	MPICH_CPPFLAGS=""
+	MPICH_LDFLAGS=""
+	MPICH_LIBDIR=""
+	MPICH_LIBS=""
+	MPICH_HEADER=""
+	MPICH_DIR=""
+    fi
+
     AC_SUBST(MPICH_CC)
     AC_SUBST(MPICH_CPPFLAGS)
     AC_SUBST(MPICH_LDFLAGS)
+    AC_SUBST(MPICH_LIBDIR)
     AC_SUBST(MPICH_LIBS)
     AC_SUBST(MPICH_HEADER)
     AC_SUBST(MPICH_DIR)
 
 ])
-
 
 ################################################################################
 # Check for MPICH2 (http://www-unix.mcs.anl.gov/mpi/mpich2)
@@ -489,6 +844,7 @@ AC_DEFUN([AX_MPICH2], [
     # the MPI-related plugins, where $MPICH2_CC is not used.
     MPICH2_CC="$mpich2_dir/bin/mpicc"
     MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+    MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
     MPICH2_LIBS="-lmpich"
     if (test "$abi_libdir" == "lib64" && test -d $mpich2_dir/include64 && test -f $mpich2_dir/include64/mpi.h) ; then
          MPICH2_HEADER="$mpich2_dir/include64/mpi.h"
@@ -496,9 +852,9 @@ AC_DEFUN([AX_MPICH2], [
     elif (test -e $mpich2/include/mpi.h) ; then
          MPICH2_CPPFLAGS="-I$mpich2/include"
          MPICH2_HEADER="$mpich2/include/mpi.h"
-    elif (test -e /usr/include/mpich2-$oss_hardware_platform/mpi.h) ; then
-         MPICH2_CPPFLAGS="-I/usr/include/mpich2-$oss_hardware_platform"
-         MPICH2_HEADER="-I/usr/include/mpich2-$oss_hardware_platform/mpi.h"
+    elif (test -e /usr/include/mpich2-$cbtf_hardware_platform/mpi.h) ; then
+         MPICH2_CPPFLAGS="-I/usr/include/mpich2-$cbtf_hardware_platform"
+         MPICH2_HEADER="-I/usr/include/mpich2-$cbtf_hardware_platform/mpi.h"
     else
          MPICH2_HEADER="$mpich2_dir/include/mpi.h"
          MPICH2_CPPFLAGS="-I$mpich2_dir/include"
@@ -512,6 +868,7 @@ AC_DEFUN([AX_MPICH2], [
     if test x"$mpich2_driver" == x"llnl"; then
 	MPICH2_CC="$mpich2_dir/bin/mpicc -shlib"
         MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+        MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
     fi
 
     if test x"$mpich2_driver" == x"bluegeneq"; then
@@ -519,6 +876,7 @@ AC_DEFUN([AX_MPICH2], [
 	MPICH2_CC="cc"
         MPICH2_LIBS="-lmpich"
         MPICH2_LDFLAGS="-L$mpich2_dir/lib"
+        MPICH2_LIBDIR="$mpich2_dir/lib"
     fi
 
     if test x"$mpich2_driver" == x"bluegene"; then
@@ -526,6 +884,7 @@ AC_DEFUN([AX_MPICH2], [
 	MPICH2_CC="cc"
         MPICH2_LIBS="-lmpich.cnk"
         MPICH2_LDFLAGS="-L$mpich2_dir/lib"
+        MPICH2_LIBDIR="$mpich2_dir/lib"
     fi
 
 
@@ -533,6 +892,7 @@ AC_DEFUN([AX_MPICH2], [
 	found_mpich2=1
 	MPICH2_CC="cc"
         MPICH2_LDFLAGS="-L$mpich2_dir/lib"
+        MPICH2_LIBDIR="$mpich2_dir/lib"
     fi
 
     mpich2_saved_CC=$CC
@@ -556,11 +916,13 @@ AC_DEFUN([AX_MPICH2], [
         if (test -f $mpich2_dir/$abi_libdir/libmpich.so) ; then
 	    found_mpich2=1
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
         fi
 
         if (test -f $mpich2_dir/$abi_libdir/shared/libmpich.so); then
 	    found_mpich2=1
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir/shared -L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir/shared"
         fi 
 
 	, )
@@ -579,6 +941,7 @@ AC_DEFUN([AX_MPICH2], [
 #       MPICH2_CC="$mpich2_dir/bin/mpicc -shlib"
        MPICH2_CPPFLAGS="-I$mpich2_dir/include"
        MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+       MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
 #       MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir -L$mpich2_dir/$alt_abi_libdir/libmpich.a"
        MPICH2_LIBS="-lmpich"
 #       MPICH2_LIBS=""
@@ -587,9 +950,9 @@ AC_DEFUN([AX_MPICH2], [
        if (test -e $mpich2/include/mpi.h) ; then
          MPICH2_CPPFLAGS="-I$mpich2/include"
          MPICH2_HEADER="$mpich2/include/mpi.h"
-       elif (test -e /usr/include/mpich2-$oss_hardware_platform/mpi.h) ; then
-         MPICH2_CPPFLAGS="-I/usr/include/mpich2-$oss_hardware_platform"
-         MPICH2_HEADER="-I/usr/include/mpich2-$oss_hardware_platform/mpi.h"
+       elif (test -e /usr/include/mpich2-$cbtf_hardware_platform/mpi.h) ; then
+         MPICH2_CPPFLAGS="-I/usr/include/mpich2-$cbtf_hardware_platform"
+         MPICH2_HEADER="-I/usr/include/mpich2-$cbtf_hardware_platform/mpi.h"
        fi
 
        CC="$MPICH2_CC"
@@ -605,12 +968,14 @@ AC_DEFUN([AX_MPICH2], [
 
          if (test -f $mpich2_dir/$alt_abi_libdir/libmpich.so) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found MPICH2 library alt locations found alt_abi_libdir and headers])
          fi
 
          if (test -f $mpich2_dir/$alt_abi_libdir/shared/libmpich.so) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir/shared -L$mpich2_dir/$alt_abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir/shared"
 	    found_mpich2=1
             AC_MSG_CHECKING([found MPICH2 library alt locations found shared/alt_abi_libdir and headers])
          fi 
@@ -630,8 +995,10 @@ AC_DEFUN([AX_MPICH2], [
        MPICH2_CPPFLAGS="-I$mpich2_dir/include"
        if (test -d $mpich2_dir/$abi_libdir) ; then
           MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+          MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
        elif (test -d $mpich2_dir/$alt_abi_libdir) ; then
           MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+          MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
        fi
        MPICH2_LIBS="-lmpich"
        MPICH2_HEADER="$mpich2_dir/include/mpi.h"
@@ -648,12 +1015,14 @@ AC_DEFUN([AX_MPICH2], [
 	  MPI_Initialized((int*)0);
 	  ]])],
 
-         if (test -f $mpich2_dir/$abi_libdir/libmpich.so) ; then
+         if (test -f $mpich2_dir/$abi_libdir/libmpich.so && test -f $mpich2_dir/include/mpi.h) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel MPICH2 64 bit library and headers using mpigcc])
-         elif (test -f $mpich2_dir/$alt_abi_libdir/libmpich.so) ; then
+         elif (test -f $mpich2_dir/$alt_abi_libdir/libmpich.so && test -f $mpich2_dir/include/mpi.h) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel MPICH2 64 bit library and headers using mpigcc])
          fi
@@ -672,6 +1041,7 @@ AC_DEFUN([AX_MPICH2], [
        MPICH2_CC="$mpich2_dir/bin/mpicc"
        MPICH2_CPPFLAGS="-I$mpich2_dir/include"
        MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+       MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
        MPICH2_LIBS="-lmpi"
        MPICH2_HEADER="$mpich2_dir/include/mpi.h"
        MPICH2_DIR="$mpich2_dir"
@@ -687,8 +1057,9 @@ AC_DEFUN([AX_MPICH2], [
 	  MPI_Initialized((int*)0);
 	  ]])],
 
-         if (test -f $mpich2_dir/$abi_libdir/libmpi.so) ; then
+         if (test -f $mpich2_dir/$abi_libdir/libmpi.so && test -f $mpich2_dir/include/mpi.h) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel 32 bit MPICH2 library and headers using mpicc])
          fi
@@ -708,6 +1079,7 @@ AC_DEFUN([AX_MPICH2], [
        MPICH2_CC="$mpich2_dir/bin/mpigcc"
        MPICH2_CPPFLAGS="-I$mpich2_dir/include"
        MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+       MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
        MPICH2_LIBS="-lmpich"
        MPICH2_HEADER="$mpich2_dir/include/mpi.h"
        MPICH2_DIR="$mpich2_dir"
@@ -723,8 +1095,9 @@ AC_DEFUN([AX_MPICH2], [
 	  MPI_Initialized((int*)0);
 	  ]])],
 
-         if (test -f $mpich2_dir/$abi_libdir/libmpich.so) ; then
+         if (test -f $mpich2_dir/$abi_libdir/libmpich.so && test -f $mpich2_dir/include/mpi.h) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel 32 bit MPICH2 library and headers using mpigcc])
          fi
@@ -749,8 +1122,10 @@ AC_DEFUN([AX_MPICH2], [
 
        if (test -d $mpich2_dir/$abi_libdir) ; then
           MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+          MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
        elif (test -d $mpich2_dir/$alt_abi_libdir) ; then
           MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+          MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
        fi
        MPICH2_LIBS="-lmpich"
        if (test "$abi_libdir" == "lib64" && test -d $mpich2_dir/include64 && test -f $mpich2_dir/include64/mpi.h) ; then
@@ -775,10 +1150,12 @@ AC_DEFUN([AX_MPICH2], [
 
          if (test -f $mpich2_dir/$abi_libdir/libmpich.so) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel MPICH2 64 bit library and headers using mpicc])
          elif (test -f $mpich2_dir/$alt_abi_libdir/libmpich.so) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$alt_abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$alt_abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel MPICH2 64 bit library and headers using mpicc])
          fi
@@ -797,6 +1174,7 @@ AC_DEFUN([AX_MPICH2], [
        MPICH2_CC="$mpich2_dir/bin/mpicc"
        MPICH2_CPPFLAGS="-I$mpich2_dir/include"
        MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+       MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
        MPICH2_LIBS="-lmpich"
        MPICH2_HEADER="$mpich2_dir/include/mpi.h"
        MPICH2_DIR="$mpich2_dir"
@@ -814,6 +1192,7 @@ AC_DEFUN([AX_MPICH2], [
 
          if (test -f $mpich2_dir/$abi_libdir/libmpich.so) ; then
             MPICH2_LDFLAGS="-L$mpich2_dir/$abi_libdir"
+            MPICH2_LIBDIR="$mpich2_dir/$abi_libdir"
 	    found_mpich2=1
             AC_MSG_CHECKING([found Intel 32 bit MPICH2 library and headers using mpicc])
          fi
@@ -837,6 +1216,7 @@ AC_DEFUN([AX_MPICH2], [
 	MPICH2_CC=""
 	MPICH2_CPPFLAGS=""
 	MPICH2_LDFLAGS=""
+	MPICH2_LIBDIR=""
 	MPICH2_LIBS=""
 	MPICH2_HEADER=""
 	MPICH2_DIR=""
@@ -845,6 +1225,7 @@ AC_DEFUN([AX_MPICH2], [
     AC_SUBST(MPICH2_CC)
     AC_SUBST(MPICH2_CPPFLAGS)
     AC_SUBST(MPICH2_LDFLAGS)
+    AC_SUBST(MPICH2_LIBDIR)
     AC_SUBST(MPICH2_LIBS)
     AC_SUBST(MPICH2_HEADER)
     AC_SUBST(MPICH2_DIR)
@@ -869,9 +1250,11 @@ AC_DEFUN([AX_MPT], [
     if objdump -T $mpt_dir/$abi_libdir/libmpi.so | grep MPI_debug_rank >/dev/null; then
        found_mpt=1
        MPT_LDFLAGS="-L$mpt_dir/$abi_libdir"
+       MPT_LIBDIR="$mpt_dir/$abi_libdir"
     elif objdump -T $mpt_dir/lib/libmpi.so | grep MPI_debug_rank >/dev/null; then
        found_mpt=1
        MPT_LDFLAGS="-L$mpt_dir/lib"
+       MPT_LIBDIR="$mpt_dir/lib"
     fi
 
 
@@ -905,6 +1288,22 @@ AC_DEFUN([AX_MPT], [
     LIBS=$mpt_saved_LIBS
 
     if test $found_mpt -eq 1; then
+
+        MPT_MAJ_VERS=2
+        MPT_SUB_VERS=0
+        tmp_value=`grep MPT_VERSION "$MPT_HEADER" 2>/dev/null | grep 2.11 2>/dev/null`
+        if test -n "$tmp_value"; then
+           MPT_SUB_VERS=11
+        fi
+        tmp_value=`grep MPT_VERSION "$MPT_HEADER" 2>/dev/null | grep 2.10 2>/dev/null`
+        if test -n "$tmp_value"; then
+           MPT_SUB_VERS=10
+        fi
+        tmp_value=`grep MPT_VERSION "$MPT_HEADER" 2>/dev/null | grep 2.08 2>/dev/null`
+        if test -n "$tmp_value"; then
+           MPT_SUB_VERS=8
+        fi
+
 	AC_MSG_RESULT(yes)
 	AM_CONDITIONAL(HAVE_MPT, true)
 	AC_DEFINE(HAVE_MPT, 1, [Define to 1 if you have MPT.])	
@@ -914,16 +1313,22 @@ AC_DEFUN([AX_MPT], [
 	MPT_CC=""
 	MPT_CPPFLAGS=""
 	MPT_LDFLAGS=""
+	MPT_LIBDIR=""
 	MPT_LIBS=""
 	MPT_HEADER=""
 	MPT_DIR=""
+        MPT_MAJ_VERS=""
+        MPT_SUB_VERS=""
     fi
 
     AC_SUBST(MPT_CC)
     AC_SUBST(MPT_CPPFLAGS)
     AC_SUBST(MPT_LDFLAGS)
+    AC_SUBST(MPT_LIBDIR)
     AC_SUBST(MPT_LIBS)
     AC_SUBST(MPT_HEADER)
+    AC_SUBST(MPT_MAJ_VERS)
+    AC_SUBST(MPT_SUB_VERS)
     AC_SUBST(MPT_DIR)
 
 ])
@@ -948,14 +1353,19 @@ AC_DEFUN([AX_OPENMPI], [
     if (test -e $openmpi_dir/include/mpi.h) ; then
       OPENMPI_CPPFLAGS="-I$openmpi_dir/include"
       OPENMPI_HEADER="$openmpi_dir/include/mpi.h"
-    elif (test -e /usr/include/openmpi-$oss_hardware_platform/mpi.h) ; then
-      OPENMPI_CPPFLAGS="-I/usr/include/openmpi-$oss_hardware_platform"
-      OPENMPI_HEADER="-I/usr/include/openmpi-$oss_hardware_platform/mpi.h"
+    elif (test -e /usr/include/mpi/mpi.h) ; then
+      OPENMPI_CPPFLAGS="-I/usr/include/mpi"
+      OPENMPI_HEADER="-I/usr/include/mpi/mpi.h"
+    elif (test -e /usr/include/openmpi-$cbtf_hardware_platform/mpi.h) ; then
+      OPENMPI_CPPFLAGS="-I/usr/include/openmpi-$cbtf_hardware_platform"
+      OPENMPI_HEADER="-I/usr/include/openmpi-$cbtf_hardware_platform/mpi.h"
     fi
     if (test -e $openmpi_dir/$abi_libdir/libmpi.so) ; then
       OPENMPI_LDFLAGS="-L$openmpi_dir/$abi_libdir"
+      OPENMPI_LIBDIR="$openmpi_dir/$abi_libdir"
     elif (test -e $openmpi_dir/$alt_abi_libdir/libmpi.so) ; then
       OPENMPI_LDFLAGS="-L$openmpi_dir/$alt_abi_libdir"
+      OPENMPI_LIBDIR="$openmpi_dir/$alt_abi_libdir"
     fi
     OPENMPI_LIBS="-lmpi"
     OPENMPI_DIR="$openmpi_dir"
@@ -992,6 +1402,7 @@ AC_DEFUN([AX_OPENMPI], [
    if test $found_openmpi -eq 0; then
      OPENMPI_CPPFLAGS="-I$openmpi_dir/include/openmpi"
      OPENMPI_LDFLAGS="-L$openmpi_dir/$abi_libdir/openmpi"
+     OPENMPI_LIBDIR="$openmpi_dir/$abi_libdir/openmpi"
      OPENMPI_HEADER="$openmpi_dir/include/openmpi/mpi.h"
      LDFLAGS="$LDFLAGS $OPENMPI_LDFLAGS"
      LIBS="$OPENMPI_LIBS"
@@ -1020,6 +1431,7 @@ AC_DEFUN([AX_OPENMPI], [
      OPENMPI_CPPFLAGS="-I$openmpi_dir/include"
      OPENMPI_HEADER="$openmpi_dir/include/mpi.h"
      OPENMPI_LDFLAGS="-L$openmpi_dir/$abi_libdir"
+     OPENMPI_LIBDIR="$openmpi_dir/$abi_libdir"
      LDFLAGS="$LDFLAGS $OPENMPI_LDFLAGS"
      LIBS="$OPENMPI_LIBS"
      CPPFLAGS="-O0 -g $CPPFLAGS $OPENMPI_CPPFLAGS"
@@ -1045,6 +1457,7 @@ AC_DEFUN([AX_OPENMPI], [
 #
    if test $found_openmpi -eq 0; then
      OPENMPI_LDFLAGS="-L$openmpi_dir/$alt_abi_libdir"
+     OPENMPI_LIBDIR="$openmpi_dir/$alt_abi_libdir"
      LDFLAGS="$LDFLAGS $OPENMPI_LDFLAGS $OPENMPI_LIBS"
 
      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
@@ -1068,6 +1481,7 @@ AC_DEFUN([AX_OPENMPI], [
 #
    if test $found_openmpi -eq 0 && test -a $openmpi_dir/bin/om-mpicx; then
      OPENMPI_LDFLAGS="-L$openmpi_dir/$abi_libdir/openmpi"
+     OPENMPI_LIBDIR="$openmpi_dir/$abi_libdir/openmpi"
      LDFLAGS="$LDFLAGS $OPENMPI_LDFLAGS"
      LIBS="$OPENMPI_LIBS"
      OPENMPI_CC="$openmpi_dir/bin/om-mpicxx"
@@ -1104,6 +1518,7 @@ AC_DEFUN([AX_OPENMPI], [
 	OPENMPI_CC=""
 	OPENMPI_CPPFLAGS=""
 	OPENMPI_LDFLAGS=""
+        OPENMPI_LIBDIR=""
 	OPENMPI_LIBS=""
 	OPENMPI_HEADER=""
 	OPENMPI_DIR=""
@@ -1112,6 +1527,7 @@ AC_DEFUN([AX_OPENMPI], [
     AC_SUBST(OPENMPI_CC)
     AC_SUBST(OPENMPI_CPPFLAGS)
     AC_SUBST(OPENMPI_LDFLAGS)
+    AC_SUBST(OPENMPI_LIBDIR)
     AC_SUBST(OPENMPI_LIBS)
     AC_SUBST(OPENMPI_HEADER)
     AC_SUBST(OPENMPI_DIR)
@@ -1220,6 +1636,7 @@ AC_DEFUN([AX_MVAPICH], [
     MVAPICH_CC="$mvapich_dir/bin/mpicc -shlib"
     MVAPICH_CPPFLAGS="-I$mvapich_dir/include"
     MVAPICH_LDFLAGS="-L$mvapich_dir/$abi_libdir"
+    MVAPICH_LIBDIR="$mvapich_dir/$abi_libdir"
     MVAPICH_LIBS="-lmpich -libverbs -libumad -libcommon"
     MVAPICH_HEADER="$mvapich_dir/include/mpi.h"
     MVAPICH_DIR="$mvapich_dir"
@@ -1250,11 +1667,13 @@ AC_DEFUN([AX_MVAPICH], [
 
         if (test -f $mvapich_dir/$abi_libdir/libmpich.so); then
             MVAPICH_LDFLAGS="-L$mvapich_dir/$abi_libdir"
+            MVAPICH_LIBDIR="$mvapich_dir/$abi_libdir"
             found_mvapich=1
         fi
 
         if (test -f $mvapich_dir/$abi_libdir/shared/libmpich.so); then
             MVAPICH_LDFLAGS="-L$mvapich_dir/$abi_libdir/shared -L$mvapich_dir/$abi_libdir"
+            MVAPICH_LIBDIR="$mvapich_dir/$abi_libdir/shared"
             found_mvapich=1
         fi 
 
@@ -1269,6 +1688,7 @@ AC_DEFUN([AX_MVAPICH], [
        MVAPICH_CC="$mvapich_dir/bin/mpicc -shlib"
        MVAPICH_CPPFLAGS="-I$mvapich_dir/include"
        MVAPICH_LDFLAGS="-L$mvapich_dir/$alt_abi_libdir"
+       MVAPICH_LIBDIR="$mvapich_dir/$alt_abi_libdir"
        MVAPICH_LIBS="-lmpich -libverbs -libumad -libcommon"
        MVAPICH_HEADER="$mvapich_dir/include/mpi.h"
        MVAPICH_DIR="$mvapich_dir"
@@ -1286,11 +1706,13 @@ AC_DEFUN([AX_MVAPICH], [
 
          if (test -f $mvapich_dir/$alt_abi_libdir/libmpich.so); then
              MVAPICH_LDFLAGS="-L$mvapich_dir/$alt_abi_libdir"
+             MVAPICH_LIBDIR="$mvapich_dir/$alt_abi_libdir"
              found_mvapich=1
          fi
 
          if (test -f $mvapich_dir/$alt_abi_libdir/shared/libmpich.so); then
              MVAPICH_LDFLAGS="-L$mvapich_dir/$alt_abi_libdir/shared -L$mvapich_dir/$alt_abi_libdir"
+             MVAPICH_LIBDIR="$mvapich_dir/$alt_abi_libdir/shared"
              found_mvapich=1
          fi 
 
@@ -1313,6 +1735,7 @@ AC_DEFUN([AX_MVAPICH], [
 	MVAPICH_CC=""
 	MVAPICH_CPPFLAGS=""
 	MVAPICH_LDFLAGS=""
+	MVAPICH_LIBDIR=""
 	MVAPICH_LIBS=""
 	MVAPICH_HEADER=""
 	MVAPICH_DIR=""
@@ -1321,6 +1744,7 @@ AC_DEFUN([AX_MVAPICH], [
     AC_SUBST(MVAPICH_CC)
     AC_SUBST(MVAPICH_CPPFLAGS)
     AC_SUBST(MVAPICH_LDFLAGS)
+    AC_SUBST(MVAPICH_LIBDIR)
     AC_SUBST(MVAPICH_LIBS)
     AC_SUBST(MVAPICH_HEADER)
     AC_SUBST(MVAPICH_DIR)
@@ -1356,7 +1780,9 @@ AC_DEFUN([AX_MVAPICH2], [
     MVAPICH2_CC="$mvapich2_dir/bin/mpicc -shlib"
     MVAPICH2_CPPFLAGS="-I$mvapich2_dir/include"
     MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir -L$mvapich2_ofed_dir/$abi_libdir"
+    MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir"
     MVAPICH2_LIBS="-lmpich -libverbs -libcommon"
+    MVAPICH2_LIBS="-lmpich -libverbs"
     MVAPICH2_HEADER="$mvapich2_dir/include/mpi.h"
     MVAPICH2_DIR="$mvapich2_dir"
     MVAPICH2_NULL=""
@@ -1388,11 +1814,13 @@ AC_DEFUN([AX_MVAPICH2], [
          if (test -f $mvapich2_dir/$abi_libdir/libmpich.so); then
              found_mvapich2=1
              MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir -L$mvapich2_ofed_dir/$abi_libdir"
+             MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir"
          fi
         
          if (test -f $mvapich2_dir/$abi_libdir/shared/libmpich.so); then
-	    found_mvapich2=1
-            MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir/shared -L$mvapich2_ofed_dir/$abi_libdir"
+	     found_mvapich2=1
+             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir/shared -L$mvapich2_ofed_dir/$abi_libdir"
+             MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir/shared"
         fi 
 
 	, )
@@ -1407,6 +1835,7 @@ AC_DEFUN([AX_MVAPICH2], [
        MVAPICH2_CC="$mvapich2_dir/bin/mpicc -shlib"
        MVAPICH2_CPPFLAGS="-I$mvapich2_dir/include"
        MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+       MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
        MVAPICH2_LIBS="-lmpich -libverbs -libcommon"
        MVAPICH2_HEADER="$mvapich2_dir/include/mpi.h"
        MVAPICH2_DIR="$mvapich2_dir"
@@ -1426,11 +1855,13 @@ AC_DEFUN([AX_MVAPICH2], [
           if (test -f $mvapich2_dir/$alt_abi_libdir/libmpich.so); then
 	    found_mvapich2=1
             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
           fi
 
           if (test -f $mvapich2_dir/$alt_abi_libdir/shared/libmpich.so); then
 	    found_mvapich2=1
             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir/shared -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir/shared"
           fi 
 
 	, )
@@ -1452,6 +1883,7 @@ AC_DEFUN([AX_MVAPICH2], [
       MVAPICH2_CC="$mvapich2_dir/bin/mpicc -shlib"
       MVAPICH2_CPPFLAGS="-I$mvapich2_dir/include"
       MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir -L$mvapich2_ofed_dir/$abi_libdir"
+      MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir"
       MVAPICH2_LIBS="-lmpich -libverbs"
       MVAPICH2_HEADER="$mvapich2_dir/include/mpi.h"
       MVAPICH2_DIR="$mvapich2_dir"
@@ -1483,11 +1915,13 @@ AC_DEFUN([AX_MVAPICH2], [
          if (test -f $mvapich2_dir/$abi_libdir/libmpich.so); then
              found_mvapich2=1
              MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir -L$mvapich2_ofed_dir/$abi_libdir"
+             MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir"
          fi
         
          if (test -f $mvapich2_dir/$abi_libdir/shared/libmpich.so); then
-	    found_mvapich2=1
-            MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir/shared -L$mvapich2_ofed_dir/$abi_libdir"
+	     found_mvapich2=1
+             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$abi_libdir/shared -L$mvapich2_ofed_dir/$abi_libdir"
+             MVAPICH2_LIBDIR="$mvapich2_dir/$abi_libdir/shared"
         fi 
 
 	, )
@@ -1503,6 +1937,7 @@ AC_DEFUN([AX_MVAPICH2], [
        MVAPICH2_CC="$mvapich2_dir/bin/mpicc -shlib"
        MVAPICH2_CPPFLAGS="-I$mvapich2_dir/include"
        MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+       MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
        MVAPICH2_LIBS="-lmpich -libverbs" 
        MVAPICH2_HEADER="$mvapich2_dir/include/mpi.h"
        MVAPICH2_DIR="$mvapich2_dir"
@@ -1522,11 +1957,59 @@ AC_DEFUN([AX_MVAPICH2], [
           if (test -f $mvapich2_dir/$alt_abi_libdir/libmpich.so); then
 	    found_mvapich2=1
             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
           fi
 
           if (test -f $mvapich2_dir/$alt_abi_libdir/shared/libmpich.so); then
 	    found_mvapich2=1
             MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir/shared -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir/shared"
+          fi 
+
+	, )
+
+    fi
+
+    if test $found_mvapich2 -eq 0; then
+
+       AC_MSG_CHECKING([for MVAPICH2 library (alt locations), no libcommon  and headers])
+
+       MVAPICH2_CC="$mvapich2_dir/bin/mpicc"
+       MVAPICH2_CPPFLAGS="-I$mvapich2_dir/include"
+       MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+       MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
+       MVAPICH2_LIBS="-lmpich -libverbs" 
+       MVAPICH2_HEADER="$mvapich2_dir/include/mpi.h"
+       MVAPICH2_DIR="$mvapich2_dir"
+       MVAPICH2_NULL=""
+
+       CC="$MVAPICH2_CC"
+       CPPFLAGS="$CPPFLAGS $MVAPICH2_CPPFLAGS"
+       LDFLAGS="$LDFLAGS $MVAPICH2_LDFLAGS"
+       LIBS="$MVAPICH2_LIBS"
+
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+   	  #include <mpi.h>
+	  ]], [[
+	  MPI_Initialized((int*)0);
+	  ]])],
+
+          if (test -f $mvapich2_dir/$alt_abi_libdir/libmpich.a); then
+	    found_mvapich2=1
+            MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
+          fi
+
+          if (test -f $mvapich2_dir/$alt_abi_libdir/libmpich.so); then
+	    found_mvapich2=1
+            MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir"
+          fi
+
+          if (test -f $mvapich2_dir/$alt_abi_libdir/shared/libmpich.so); then
+	    found_mvapich2=1
+            MVAPICH2_LDFLAGS="-L$mvapich2_dir/$alt_abi_libdir/shared -L$mvapich2_ofed_dir/$alt_abi_libdir"
+            MVAPICH2_LIBDIR="$mvapich2_dir/$alt_abi_libdir/shared"
           fi 
 
 	, )
@@ -1548,6 +2031,7 @@ AC_DEFUN([AX_MVAPICH2], [
 	MVAPICH2_CC=""
 	MVAPICH2_CPPFLAGS=""
 	MVAPICH2_LDFLAGS=""
+	MVAPICH2_LIBDIR=""
 	MVAPICH2_LIBS=""
 	MVAPICH2_HEADER=""
 	MVAPICH2_DIR=""
@@ -1557,6 +2041,7 @@ AC_DEFUN([AX_MVAPICH2], [
     AC_SUBST(MVAPICH2_CC)
     AC_SUBST(MVAPICH2_CPPFLAGS)
     AC_SUBST(MVAPICH2_LDFLAGS)
+    AC_SUBST(MVAPICH2_LIBDIR)
     AC_SUBST(MVAPICH2_LIBS)
     AC_SUBST(MVAPICH2_HEADER)
     AC_SUBST(MVAPICH2_DIR)

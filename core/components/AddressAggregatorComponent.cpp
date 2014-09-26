@@ -65,8 +65,18 @@ using namespace KrellInstitute::Core;
 typedef std::map<Address, std::pair<ThreadName,uint64_t> > AddrThreadCountMap;
 typedef std::map<ThreadName,AddressBuffer>  ThreadAddrBufMap;
 
+/** requires std::ostringstream debug_prefix in namespace **/
+#define DEBUGPREFIX(x,y) \
+	if (debug_prefix.str().empty()) { \
+	    if (x) debug_prefix << "FE:"; \
+	    else  if (y == 1) debug_prefix << "LCP:"; \
+	    else  debug_prefix << "ICP:"; \
+	    debug_prefix << getpid() << " "; \
+	}
+
 namespace {
 
+    std::ostringstream debug_prefix;
 
 #ifndef NDEBUG
 /** Flag indicating if debuging for LinkedObjects is enabled. */
@@ -74,10 +84,15 @@ bool is_debug_aggregator_events_enabled =
     (getenv("CBTF_DEBUG_AGGR_EVENTS") != NULL);
 bool is_trace_aggregator_events_enabled =
     (getenv("CBTF_TRACE_AGGR_EVENTS") != NULL);
+bool is_time_aggregator_events_enabled =
+    (getenv("CBTF_TIME_AGGR_EVENTS") != NULL);
 #endif
+
+    bool is_defer_emit = (getenv("CBTF_DEFER_AGGR_EMIT") != NULL);
 
     bool is_finished = false;
     bool sent_buffer = false;
+    int data_blobs = 0;
 
     // vector of incoming threadnames. For each thread we expect
     ThreadNameVec threadnames;
@@ -89,8 +104,9 @@ bool is_trace_aggregator_events_enabled =
 				   ThreadName& tname)
     {
 #ifndef NDEBUG
+	std::stringstream output;
         if (is_trace_aggregator_events_enabled) {
-	    std::cerr << getpid() << " " << "ENTERED updateAddrThreadCountMap  buf size is "
+	    output << debug_prefix.str() << "ENTERED updateAddrThreadCountMap  addresscount size  "
 	    << buf.addresscounts.size() << std::endl;
 	}
 #endif
@@ -102,7 +118,7 @@ bool is_trace_aggregator_events_enabled =
 	    if(lb != addrThreadCount.end() && !(addrThreadCount.key_comp()(aci->first, lb->first))) {
 		if (aci->second > lb->second.second) {
 #if 0
-		    std::cerr << "updateAddrThreadCountMap UPDATE addr " << aci->first
+		    output << "updateAddrThreadCountMap UPDATE addr " << aci->first
 		        << " thread " << tname
 		        << " new count " << aci->second << std::endl;
 #endif
@@ -111,7 +127,7 @@ bool is_trace_aggregator_events_enabled =
 		}
 	    } else {
 #if 0
-		std::cerr << "updateAddrThreadCountMap INSERTS addr " << aci->first
+		output << "updateAddrThreadCountMap INSERTS addr " << aci->first
 		    <<  " thread " << tname
 		    << " count " << aci->second << std::endl;
 #endif
@@ -122,8 +138,13 @@ bool is_trace_aggregator_events_enabled =
 
 #ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
-	    std::cerr << getpid() << " " << "updateAddrThreadCountMap exits, addrThreadCount size is "
+	    output << debug_prefix.str()
+	    << "EXIT updateAddrThreadCountMap addrThreadCount size is "
 	    << addrThreadCount.size() << std::endl;
+	}
+
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
 	}
 #endif
     }
@@ -131,7 +152,8 @@ bool is_trace_aggregator_events_enabled =
     void printAddrThreadCountMap(AddrThreadCountMap& addrTM)
     {
 	std::stringstream output;
-	output << "entered printAddrThreadCountMap addrThreadCount size " << addrTM.size() << std::endl;
+	output << debug_prefix.str() << "ENTERED printAddrThreadCountMap addrThreadCount size " << addrTM.size() << std::endl;
+
 	AddrThreadCountMap::const_iterator aci;
 	for (aci = addrTM.begin(); aci != addrTM.end(); ++aci) {
 	    output << "Address " << aci->first
@@ -377,7 +399,6 @@ bool is_trace_aggregator_events_enabled =
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
 	    int eventcount = 0;
 	    AddressCounts addressTime;
-
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
 		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
@@ -397,7 +418,6 @@ bool is_trace_aggregator_events_enabled =
 		    }
 		}
 	    }
-
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
@@ -420,6 +440,7 @@ bool is_trace_aggregator_events_enabled =
 		    (*it).second += data.time.time_val[i];
 		}
 	    }
+
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
@@ -430,7 +451,6 @@ bool is_trace_aggregator_events_enabled =
             unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
 	    int eventcount = 0;
 	    AddressCounts addressTime;
-
 	    for(unsigned i = 0; i < data.events.events_len; ++i) {
 		++eventcount;
 		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
@@ -450,7 +470,6 @@ bool is_trace_aggregator_events_enabled =
 		    }
 		}
 	    }
-
 	    StacktraceData stdata;
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data),
@@ -554,22 +573,45 @@ private:
     /** Handlers for the inputs.*/
     void threadnamesHandler(const ThreadNameVec& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_aggregator_events_enabled) {
+	    if (threadnames.size() == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< " AddressAggregator::threadnamesHandler." << std::endl;
+	    }
+	}
+#endif
+
         threadnames = in;
 #ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
-            std::cerr << getpid() << " "
-	    << "Entered AddressAggregator::threadnamesHandler threadnames size is "
+            output << debug_prefix.str() << " "
+	    << "ENTERED AddressAggregator::threadnamesHandler threadnames size is "
 	    << threadnames.size() << std::endl;
+	}
+
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
 	}
 #endif
     }
 
     void finishedHandler(const bool& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_aggregator_events_enabled) {
+	    output << Time::Now() << " " << debug_prefix.str()
+		<< " AddressAggregator::finishedHandler entered." << std::endl;
+	}
+#endif
         is_finished = in;
 #ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str() << " "
 	    << "ENTERED AddressAggregator::finishedHandler finished is " << is_finished
 	    << " for " << threadnames.size() << " threadnames seen"
 	    << std::endl;
@@ -583,18 +625,40 @@ private:
 	// anymore...
 	if (!sent_buffer) {
 #ifndef NDEBUG
-            if (is_debug_aggregator_events_enabled) {
-                std::cerr << getpid() << " "
-	        << "AddressAggregator::finishedHandler sends buffer addr size " << abuffer.addresscounts.size()
-		<< std::endl;
+	    if (is_trace_aggregator_events_enabled) {
+	        output << debug_prefix.str() <<
+		"AddressAggregator::finishedHandler EMIT abuffer size:"
+		<< abuffer.addresscounts.size() << std::endl;
 	    }
 #endif
-            //std::cerr << getpid() << " " << "AddressAggregator::finishedHandler EMITS buffer " << std::endl;
+
 	    emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-            //std::cerr << getpid() << " " << "AddressAggregator::finishedHandler EMITS threadaddrbufmap size "<< threadaddrbufmap.size() << std::endl;
+
+#ifndef NDEBUG
+	    if (is_trace_aggregator_events_enabled) {
+	        output << debug_prefix.str() <<
+		"AddressAggregator::finishedHandler EMIT threadaddrbufmap size:"
+		    << threadaddrbufmap.size() << std::endl;
+	    }
+#endif
+
             emitOutput<ThreadAddrBufMap>("ThreadAddrBufMap",threadaddrbufmap);
+
 	    sent_buffer = true;
+#ifndef NDEBUG
+	    DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	    if (is_time_aggregator_events_enabled) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "AddressAggregator::finishedHandler finished." << std::endl;
+	    }
+#endif
 	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
+	}
+#endif
     }
  
 
@@ -760,8 +824,23 @@ private:
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_aggregator_events_enabled) {
+	    if (data_blobs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "AddressAggregator::cbtf_protocol_blob_Handler first data blob."
+		<< std::endl;
+	    }
+	}
+#endif
+
+	++data_blobs;
+
+#ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
-	    std::cerr << "ENTERED AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
+	    output << debug_prefix.str() <<
+	    	"ENTERED AddressAggregator::cbtf_protocol_blob_Handler" << std::endl;
 	}
 #endif
 
@@ -770,7 +849,12 @@ private:
 	    abort();
 	}
 
-	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    output << debug_prefix.str()
+	    << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+	}
+#endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
 
 	Blob myblob(in.get()->data.data_len, in.get()->data.data_val);
@@ -786,6 +870,9 @@ private:
 	std::string collectorID(header.id);
 
 	// find the actual data blob after the header and create a Blob.
+	// TODO: Map the incoming data size to it's thread and increment as new
+	// data for same thread arrives.  Could be use to identify threads
+	// that are generating more data than others. REDUCTION.
 	unsigned data_size = myblob.getSize() - header_size;
 	total_data_size += data_size;
 	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
@@ -793,7 +880,7 @@ private:
 
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << getpid() << " " << "Aggregating CBTF_Protocol_Blob addresses for "
+	    output << debug_prefix.str() << "Aggregating CBTF_Protocol_Blob addresses for "
 	    << collectorID << " data from thread " << threadname
 	    << " total data bytes so far: " << total_data_size
 	    << std::endl;
@@ -829,22 +916,49 @@ private:
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
 
-	//std::cerr << "AddressAggregator::cbtf_protocol_blob_Handler: EMITS Addressbuffer" << std::endl;
+#ifndef NDEBUG
+        if (is_trace_aggregator_events_enabled) {
+	    output << debug_prefix.str()
+	    << "AddressAggregator::cbtf_protocol_blob_Handler: EMIT Addressbuffer size:"
+	    << abuffer.addresscounts.size() << std::endl;
+	}
+#endif
+
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
         xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), reinterpret_cast<char*>(&header));
+
+        //std::cerr << Time::Now() << " " << debug_prefix.str() << " AddressAggregator::cbtf_protocol_blob_Handler exits." << std::endl;
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
+	}
+#endif
 
     }
 
     /** Pass Through Handler for the "CBTF_Protocol_Blob" input.*/
     void pass_cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
-	// Would be nice to group these on their way up the tree.
 #ifndef NDEBUG
-        if (is_trace_aggregator_events_enabled) {
-	    std::cerr << "AddressAggregator::pass_cbtf_protocol_blob_Handler: EMITS CBTF_Protocol_Blob" << std::endl;
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+#endif
+	if (!is_defer_emit) {
+#ifndef NDEBUG
+            if (is_trace_aggregator_events_enabled) {
+	    output << debug_prefix.str() <<
+		"AddressAggregator::pass_cbtf_protocol_blob_Handler: EMIT CBTF_Protocol_Blob" << std::endl;
+	    }
+#endif
+	    emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
+	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
 	}
 #endif
-	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
+
     }
 
     /** Handler for the "addressBuffer" input.
@@ -852,10 +966,26 @@ private:
       */
     void addressBufferHandler(const AddressBuffer& in)
     {
+
+	//if (is_finished) return;
+
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_aggregator_events_enabled) {
+	    if (handled_buffers == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "AddressAggregator::addressBufferHandler." << std::endl;
+	    }
+	}
+#endif
+
 	
 #ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
-	    std::cerr << "ENTERED AddressAggregator::addressBufferHandler" << std::endl;
+	    output << debug_prefix.str()
+	    	<< "ENTERED AddressAggregator::addressBufferHandler addresscounts size:"
+		<< in.addresscounts.size()  << std::endl;
 	}
 #endif
 	AddressCounts::const_iterator aci;
@@ -868,7 +998,7 @@ private:
         handled_buffers++;
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
- 	    std::cerr << getpid() << " " << "AddressAggregator::addressBufferHandler"
+ 	    output << debug_prefix.str() << "AddressAggregator::addressBufferHandler"
 	    << " handled buffers " << handled_buffers
 	    << " known threads " << threadnames.size()
 	    << " is_finished " << is_finished
@@ -878,13 +1008,20 @@ private:
         if (handled_buffers == threadnames.size()) {
 #ifndef NDEBUG
             if (is_debug_aggregator_events_enabled) {
- 	        std::cerr << getpid() << " " << "AddressAggregator::addressBufferHandler "
+ 	        output << debug_prefix.str() << "AddressAggregator::addressBufferHandler "
  	        << "handled " << handled_buffers
 		<< " buffers for known total threads" << threadnames.size()
  	        << std::endl;
 	    }
 #endif
 	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
+	}
+#endif
+
     }
 
     /** Handler for the "blob" input.*/
@@ -902,7 +1039,7 @@ private:
 	std::string collectorID(header.id);
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
-	    std::cerr << getpid() << " blobHandler: Aggregating Blob addresses for "
+	    std::cerr << debug_prefix.str() << " blobHandler: Aggregating Blob addresses for "
 	    << collectorID << " data from thread " << tname
 	    << std::endl;
 	}

@@ -385,6 +385,7 @@ AX_LIBUNWIND()
 AX_PAPI()
 AX_LW_MRNET()
 AX_MESSAGES()
+AX_LIBIOMP()
 
 AC_CONFIG_FILES([
     Makefile
@@ -399,6 +400,7 @@ AC_CONFIG_FILES([
     src/monitor/Makefile
     src/mrnet/Makefile
     src/offline/Makefile
+    src/ompt/Makefile
     src/papi/Makefile
     src/timer/Makefile
     src/unwind/Makefile

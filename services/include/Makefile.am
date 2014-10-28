@@ -25,6 +25,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Services/FPE.h \
 	KrellInstitute/Services/Monitor.h \
 	KrellInstitute/Services/Offline.h \
+	KrellInstitute/Services/Ompt.h \
 	KrellInstitute/Services/PapiAPI.h \
 	KrellInstitute/Services/Parameter.h \
 	KrellInstitute/Services/Path.h \

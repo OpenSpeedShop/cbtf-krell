@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,8 +16,20 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-#SUBDIRS = common binutils data fileio fpe monitor mrnet offline papi timer unwind xdr
-SUBDIRS = common binutils data fileio fpe mrnet monitor offline papi timer unwind xdr
 if HAVE_OMPT
-SUBDIRS += ompt
+lib_LTLIBRARIES = libcbtf-services-ompt.la
+
+libcbtf_services_ompt_la_CFLAGS = \
+	-I$(top_srcdir)/include \
+	@LIBIOMP_CPPFLAGS@ \
+	@LTDLINCL@ 
+
+libcbtf_services_ompt_la_LDFLAGS = \
+	-version-info 0:0:0
+
+libcbtf_services_ompt_la_LIBADD = \
+	@LIBLTDL@
+
+libcbtf_services_ompt_la_SOURCES = \
+	callbacks.c
 endif

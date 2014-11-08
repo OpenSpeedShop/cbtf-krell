@@ -19,6 +19,26 @@ libunwind_prefix=@@libunwinddir@@
 libunwind_libdir="${libunwind_prefix}/${machlibdir}"
 libunwind="${libunwind_libdir}/libunwind.so"
 
+## testing for libiomp alone is likely not enough.  We need
+## a libiomp with ompt api support.  Maybe add test for ompt.h
+## in addition to libiomp5.so to be certain. Of course the
+## existance of the ompt_service so below would likely ensure that
+## at least when the ctf-krell services where built ompt.h
+## was found.  But checking at runtime may be safest.
+libiomp_prefix=@@libiompdir@@
+libiomp_libdir=
+libiomp=
+use_ompt="false"
+if test -f ${libiomp_prefix}/${machlibdir}/libiomp5.so; then
+  use_ompt="true"
+  libiomp_libdir="${libiomp_prefix}/${machlibdir}"
+  libiomp="${libiomp_prefix}/${machlibdir}/libiomp5.so"
+elif test -f ${libiomp_prefix}/${altmachlibdir}/libiomp5.so; then
+  use_ompt="true"
+  libiomp_libdir="${libiomp_prefix}/${altmachlibdir}"
+  libiomp="${libiomp_prefix}/${altmachlibdir}/libiomp5.so"
+fi
+
 libmrnet_prefix=@@libmrnetdir@@
 libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
@@ -45,6 +65,14 @@ papi_service="${cbtf_libdir}/libcbtf-services-papi.so"
 send_service="${cbtf_libdir}/libcbtf-services-send.so"
 timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
 unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
+
+## only allow ompt_service IFF we have libiomp.
+ompt_service=
+if [ "use_ompt" == "true" ] ; then
+  if test -f ${libiomp_prefix}/libcbtf-services-ompt.so ; then
+    ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
+  fi
+fi
 
 lam_prefix=@@lamdir@@
 lampi_prefix=@@lampidir@@
@@ -244,13 +272,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}:${libiomp}
 	else
-	    export LD_PRELOAD=${monitor_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}:${libiomp}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}:${libiomp}
     fi
     ;;
 

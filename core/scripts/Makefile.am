@@ -34,6 +34,13 @@ mrnet_dir=$(MRNET_DIR)
 xercesc_dir=$(LIBXERCES_C_DIR)
 boost_dir=$(BOOST_DIR)
 
+#if HAVE_OMPT
+#libiomp_dir=$(LIBIOMP_DIR)
+#else
+libiomp_dir=
+#endif
+
+
 if !BUILD_RUNTIME
 cbtfrun: cbtfrun.in
 endif
@@ -46,6 +53,7 @@ endif
 		-e 's,@@libunwinddir@@,$(unwind_dir),' \
 		-e 's,@@libmrnetdir@@,$(mrnet_dir),' \
 		-e 's,@@libpapidir@@,$(papi_dir),' \
+		-e 's,@@libiompdir@@,$(libiomp_dir),' \
 		-e 's,@@lamdir@@,$(LAM_DIR),' \
 		-e 's,@@lampidir@@,$(LAMPI_DIR),' \
 		-e 's,@@mpichdir@@,$(MPICH_DIR),' \

@@ -171,7 +171,7 @@ echo "-- INSTALLING CORE ----------------------------------"
 make install
 echo "-- FINISHED BUILDING CORE ----------------------------------"
 
-if [ -f $CBTF_PREFIX/$LIBDIR/libcbtf-core-symtabapi.so -a -f $CBTF_PREFIX/$LIBDIR/libcbtf-core.so -a -f $CBTF_PREFIX/$LIBDIR/KrellInstitute/Components/CollectionPlugin.so ]; then
+if [ -f $CBTF_PREFIX/$LIBDIR/libcbtf-core-symtabapi.so -a -f $CBTF_PREFIX/$LIBDIR/libcbtf-core.so -a -f $CBTF_PREFIX/$LIBDIR/KrellInstitute/Components/SymbolPlugin.so ]; then
    echo "CBTF CORE BUILT SUCCESSFULLY into $CBTF_PREFIX."
 else
    echo "CBTF CORE FAILED TO BUILD - TERMINATING BUILD SCRIPT.  Please check for errors."

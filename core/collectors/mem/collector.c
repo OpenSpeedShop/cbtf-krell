@@ -471,7 +471,8 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling = 1;
+    tls->do_trace = 0;
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...
@@ -516,7 +517,8 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
  
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    tls->do_trace = TRUE;
+    tls->defer_sampling = 0;
+    tls->do_trace = 1;
 }
 
 
@@ -534,8 +536,8 @@ void cbtf_collector_pause()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
-    tls->do_trace = FALSE;
+    tls->defer_sampling = 1;
+    tls->do_trace = 0;
 }
 
 
@@ -554,8 +556,8 @@ void cbtf_collector_resume()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
-    tls->do_trace = TRUE;
+    tls->defer_sampling = 0;
+    tls->do_trace = 1;
 }
 
 
@@ -689,7 +691,8 @@ void cbtf_offline_service_resume_sampling()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling = 0;
+    tls->do_trace = 1;
 }
 
 void cbtf_offline_service_defer_sampling()
@@ -703,6 +706,7 @@ void cbtf_offline_service_defer_sampling()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+    tls->defer_sampling = 1;
+    tls->do_trace = 0;
 }
 #endif

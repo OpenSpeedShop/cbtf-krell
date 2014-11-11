@@ -56,7 +56,11 @@ struct CBTF_Protocol_ThreadName
     /** POSIX identifier of this thread. */
     int64_t posix_tid;
 
+    /** MPI rank identifier. */
     int32_t rank;
+
+    /** OpenMP thread identifier. */
+    int32_t omp_tid;
 };
 
 

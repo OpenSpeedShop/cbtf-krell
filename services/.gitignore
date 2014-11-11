@@ -40,6 +40,8 @@ src/offline/.deps/*
 src/offline/.libs/*
 src/offline/offline.c
 src/offline/offline.h
+src/ompt/.deps/*
+src/ompt/.libs/*
 src/papi/.deps/*
 src/papi/.libs/*
 src/timer/.deps/*

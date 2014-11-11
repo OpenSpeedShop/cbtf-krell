@@ -104,7 +104,9 @@ libcbtf_core_la_SOURCES = \
 	ExtentGroup.cpp \
 	Graph.cpp \
 	LinkedObjectEntry.cpp \
+	LinkedObject.cpp \
 	Path.cpp \
+	PerfData.cpp \
 	PCData.cpp \
 	StacktraceData.cpp \
 	SymbolTable.cpp \

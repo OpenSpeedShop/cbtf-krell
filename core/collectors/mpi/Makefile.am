@@ -805,27 +805,30 @@ ANY_MPI_HEADER = $($(ANY_MPI_IMPL)_HEADER)
 
 CLEANFILES = $(BUILT_FILES)
 
-mpi.xml: mpi.xml.in
+mpi.xml: ../template.xml.in
 
 	@rm -f mpi.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/mpi.xml.in > mpi.xml
-mpip.xml: mpip.xml.in
+		-e 's,@@collector_name@@,mpi,' \
+		../template.xml.in > mpi.xml
+mpip.xml: ../template.xml.in
 
 	@rm -f mpip.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/mpip.xml.in > mpip.xml
+		-e 's,@@collector_name@@,mpip,' \
+		../template.xml.in > mpip.xml
 	
-mpit.xml: mpit.xml.in
+mpit.xml: ../template.xml.in
 
 	@rm -f mpit.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/mpit.xml.in > mpit.xml
+		-e 's,@@collector_name@@,mpit,' \
+		../template.xml.in > mpit.xml
 
-EXTRA_DIST = mpi.xml.in mpit.xml.in
+#EXTRA_DIST = mpi.xml.in mpit.xml.in

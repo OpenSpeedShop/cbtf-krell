@@ -18,3 +18,5 @@
 
 
 SUBDIRS = pcsamp usertime io hwc hwcsamp hwctime mem mpi pthreads
+
+EXTRA_DIST = template.xml.in

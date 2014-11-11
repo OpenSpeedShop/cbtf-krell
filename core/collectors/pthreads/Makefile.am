@@ -246,12 +246,13 @@ endif
 
 CLEANFILES = $(BUILT_SOURCES)
 
-pthreads.xml: pthreads.xml.in
+pthreads.xml: ../template.xml.in
 
 	@rm -f pthreads.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/pthreads.xml.in > pthreads.xml
+		-e 's,@@collector_name@@,pthreads,' \
+		../template.xml.in > pthreads.xml
 
-EXTRA_DIST = pthreads.xml.in
+#EXTRA_DIST = pthreads.xml.in

@@ -52,6 +52,7 @@ typedef struct {
     bool connected_to_mrnet;
     bool is_mpi_job;
     bool is_threaded_job;
+    bool has_ompt;
     bool sent_attached_to_threads;
 
     struct {
@@ -175,6 +176,20 @@ void set_threaded_flag(bool flag)
 	return;
 
     tls->is_threaded_job = flag;
+}
+
+void set_ompt_flag(bool flag)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->has_ompt = flag;
 }
 
 void set_threaded_mrnet_connection()

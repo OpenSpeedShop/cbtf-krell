@@ -27,12 +27,9 @@
 #include <KrellInstitute/CBTF/Component.hpp>
 #include <KrellInstitute/CBTF/Type.hpp>
 #include <KrellInstitute/CBTF/Version.hpp>
-#if 0
 #include <KrellInstitute/CBTF/Impl/MRNet.hpp>
-#endif
 
 #include "KrellInstitute/Core/Blob.hpp"
-#include "KrellInstitute/Core/PCData.hpp"
 #include "KrellInstitute/Messages/Blob.h"
 
 using namespace KrellInstitute::CBTF;
@@ -80,19 +77,6 @@ private:
     /** Handler for the "CBTF_Protocol_Blob" input.*/
     void cbtf_protocol_blob_Handler(const boost::shared_ptr<CBTF_Protocol_Blob>& in)
     {
-#if 0
-std::cerr << "cbtf_protocol_blob_Handler TheTopologyInfo:"
-<< "\nRank " << KrellInstitute::CBTF::Impl::TheTopologyInfo.Rank
-<< "\nNumChildren " << KrellInstitute::CBTF::Impl::TheTopologyInfo.NumChildren
-<< "\nNumSiblings " << KrellInstitute::CBTF::Impl::TheTopologyInfo.NumSiblings
-<< "\nNumDescendants " << KrellInstitute::CBTF::Impl::TheTopologyInfo.NumDescendants
-<< "\nNumLeafDescendants " << KrellInstitute::CBTF::Impl::TheTopologyInfo.NumLeafDescendants
-<< "\nRootDistance " << KrellInstitute::CBTF::Impl::TheTopologyInfo.RootDistance
-<< "\nMaxLeafDistance " << KrellInstitute::CBTF::Impl::TheTopologyInfo.MaxLeafDistance
-<< std::endl;
-#endif
-
-	std::cerr << "ENTER BlobComponent::cbtf_protocol_blob_Handler" << std::endl;
         CBTF_Protocol_Blob *B = in.get();
 	Blob myblob(B->data.data_len, B->data.data_val);
 
@@ -101,7 +85,6 @@ std::cerr << "cbtf_protocol_blob_Handler TheTopologyInfo:"
 	    abort();
 	}
 
-	std::cerr << "BlobComponent::cbtf_protocol_blob_Handler: emit output on blob_xdr_out" << std::endl;
 	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("blob_xdr_out",in);
     }
 

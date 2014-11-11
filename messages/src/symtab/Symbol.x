@@ -110,3 +110,18 @@ struct CBTF_Protocol_SymbolTable
     /** Statements contained in this linked object. */
     CBTF_Protocol_StatementEntry statements<>;
 };
+
+
+
+/**
+ * Symbol table group.
+ *
+ * Issued by a backend to provide the frontend with the symbol tables for a
+ * group of linked objects.
+ *
+ */
+struct CBTF_Protocol_SymbolTable_Group
+{
+    /** Group of SymbolTable. */
+    CBTF_Protocol_SymbolTable group<>;
+};

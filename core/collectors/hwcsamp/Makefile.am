@@ -221,12 +221,13 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-hwcsamp.xml: hwcsamp.xml.in
+hwcsamp.xml: ../template.xml.in
 
 	@rm -f hwcsamp.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/hwcsamp.xml.in > hwcsamp.xml
+		-e 's,@@collector_name@@,hwcsamp,' \
+		../template.xml.in > hwcsamp.xml
 
-EXTRA_DIST = hwcsamp.xml.in
+#EXTRA_DIST = hwcsamp.xml.in

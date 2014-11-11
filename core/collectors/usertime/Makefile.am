@@ -246,12 +246,13 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-usertime.xml: usertime.xml.in
+usertime.xml: ../template.xml.in
 
 	@rm -f usertime.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/usertime.xml.in > usertime.xml
+		-e 's,@@collector_name@@,usertime,' \
+		../template.xml.in > usertime.xml
 
-EXTRA_DIST = usertime.xml.in
+#EXTRA_DIST = usertime.xml.in

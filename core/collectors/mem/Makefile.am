@@ -238,12 +238,13 @@ endif
 
 CLEANFILES = $(BUILT_SOURCES)
 
-mem.xml: mem.xml.in
+mem.xml: ../template.xml.in
 
 	@rm -f mem.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/mem.xml.in > mem.xml
+		-e 's,@@collector_name@@,mem,' \
+		../template.xml.in > mem.xml
 
-EXTRA_DIST = mem.xml.in
+#EXTRA_DIST = mem.xml.in

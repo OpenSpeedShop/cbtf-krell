@@ -142,7 +142,7 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 	    if (frange.doesContain( theAddr )) {
 
 		std::string fname =
-			(*fsit)->getFirstSymbol()->getPrettyName();
+			(*fsit)->getFirstSymbol()->getMangledName();
 // DEBUG
 #ifndef NDEBUG
 		if(is_debug_symtabapi_symbols_detailed_enabled) {
@@ -153,7 +153,8 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
 		    << std::endl;
 		}
 #endif
-		st.addFunction(begin+base,end+base,fname);
+		//st.addFunction(begin+base,end+base,fname);
+		st.addFunction(begin,end,base,fname);
 
 		// Record the function begin addresses, This allows the
 		// cli and gui to focus on or display the first
@@ -364,11 +365,11 @@ SymtabAPISymbols::getAllSymbols(const LinkedObjectEntry& linkedobject,
 #ifndef NDEBUG
 	if(is_debug_symtabapi_symbols_enabled) {
 	    output << "SymtabAPISymbols::getAllSymbols: ADDING FUNCTION "
-		<< (*fsit)->getFirstSymbol()->getPrettyName()
+		<< (*fsit)->getFirstSymbol()->getMangledName()
 		<< " RANGE " << begin << "," << end << std::endl;
 	}
 #endif
-	st.addFunction(begin + base, end + base,(*fsit)->getFirstSymbol()->getPrettyName());
+	st.addFunction(begin + base, end + base,(*fsit)->getFirstSymbol()->getMangledName());
     }
 
 #ifndef NDEBUG

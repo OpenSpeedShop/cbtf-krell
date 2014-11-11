@@ -38,16 +38,18 @@
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
-#include "KrellInstitute/Core/Graph.hpp"
-#include "KrellInstitute/Core/PCData.hpp"
-#include "KrellInstitute/Core/Path.hpp"
-#include "KrellInstitute/Core/StacktraceData.hpp"
+//#include "KrellInstitute/Core/Graph.hpp"
+//#include "KrellInstitute/Core/PCData.hpp"
+#include "KrellInstitute/Core/PerfData.hpp"
+//#include "KrellInstitute/Core/Path.hpp"
+//#include "KrellInstitute/Core/StacktraceData.hpp"
 #include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/TimeInterval.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 #include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Address.h"
+#if 0
 #include "KrellInstitute/Messages/PCSamp_data.h"
 #include "KrellInstitute/Messages/Usertime_data.h"
 #include "KrellInstitute/Messages/Hwc_data.h"
@@ -57,6 +59,7 @@
 #include "KrellInstitute/Messages/Mem_data.h"
 #include "KrellInstitute/Messages/Mpi_data.h"
 #include "KrellInstitute/Messages/Pthreads_data.h"
+#endif
 #include "KrellInstitute/Messages/ThreadEvents.h"
 
 using namespace KrellInstitute::CBTF;
@@ -165,321 +168,13 @@ bool is_time_aggregator_events_enabled =
     }
 
 
-    Graph dGraph;
+    //Graph dGraph;
 
     // threads finished.
     int threads_finished = 0;
 
     // total size of performance data seen.
     int total_data_size = 0;
-
-    void aggregatePCData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf, uint64_t &interval,
-			 ThreadName &tname)
-    {
-	if (id == "pcsamp") {
-            CBTF_pcsamp_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data), &data);
-	    interval = data.interval;
-	    PCData pcdata;
-            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pcsamp_data),
-                     reinterpret_cast<char*>(&data));
-
-	} else if (id == "hwc") {
-            CBTF_hwc_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data), &data);
-	    interval = data.interval;
-	    PCData pcdata;
-            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwc_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "hwcsamp") {
-            CBTF_hwcsamp_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data), &data);
-	    interval = data.interval;
-	    PCData pcdata;
-            pcdata.aggregateAddressCounts(data.pc.pc_len, data.pc.pc_val, data.count.count_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwcsamp_data),
-                     reinterpret_cast<char*>(&data));
-	} else {
-	    return;
-	}
-    }
-
-    void aggregateSTSampleData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf, uint64_t &interval,
-			 ThreadName &tname)
-    {
-	if (id == "usertime") {
-            CBTF_usertime_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data), &data);
-	    interval = data.interval;
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val,
-				data.count.count_val, buf);
-
-#if 0
-	    stdata.graphAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val,
-				data.count.count_val, dGraph);
-
-	    dGraph.printGraph();
-#endif
-
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_usertime_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "hwctime") {
-            CBTF_hwctime_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data), &data);
-	    interval = data.interval;
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(data.stacktraces.stacktraces_len,
-				data.stacktraces.stacktraces_val,
-				data.count.count_val, buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_hwctime_data),
-                     reinterpret_cast<char*>(&data));
-	} else {
-	    return;
-	}
-
-    }
-
-    void aggregateSTTraceData(const std::string id, const Blob &blob,
-			 AddressBuffer &buf, ThreadName &tname)
-    {
-	if (id == "io") {
-            CBTF_io_trace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-	        	Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_trace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "iop") {
-            CBTF_io_profile_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.time.time_len; ++i) {
-		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[i]);
-
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.time.time_val[i]));
-		} else {
-		    (*it).second += data.time.time_val[i];
-		}
-	    }
-
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_profile_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "iot") {
-            CBTF_io_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-	        	Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_io_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mem") {
-            CBTF_mem_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-	        	Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "pthreads") {
-            CBTF_pthreads_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-	        	Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_pthreads_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mpi") {
-            CBTF_mpi_trace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-	        	Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_trace_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mpip") {
-            CBTF_mpi_profile_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.time.time_len; ++i) {
-		++eventcount;
-	        Address a;
-		a = Address(data.stacktraces.stacktraces_val[i]);
-
-		AddressCounts::iterator it = addressTime.find(a);
-		if (it == addressTime.end() ) {
-		    addressTime.insert(std::make_pair(a,data.time.time_val[i]));
-		} else {
-		    (*it).second += data.time.time_val[i];
-		}
-	    }
-
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_profile_data),
-                     reinterpret_cast<char*>(&data));
-	} else if (id == "mpit") {
-            CBTF_mpi_exttrace_data data;
-            memset(&data, 0, sizeof(data));
-            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data), &data);
-	    int eventcount = 0;
-	    AddressCounts addressTime;
-	    for(unsigned i = 0; i < data.events.events_len; ++i) {
-		++eventcount;
-		uint64_t event_time = data.events.events_val[i].stop_time - data.events.events_val[i].start_time;
-
-		for (unsigned j = data.events.events_val[i].stacktrace;
-		     j < data.stacktraces.stacktraces_len; ++j) {
-
-		    if (data.stacktraces.stacktraces_val[j] == 0) break; // end of stack
-			Address a;
-			a = Address(data.stacktraces.stacktraces_val[j]);
-
-			AddressCounts::iterator it = addressTime.find(a);
-			if (it == addressTime.end() ) {
-			    addressTime.insert(std::make_pair(a,event_time));
-			} else {
-			    (*it).second += event_time;
-		    }
-		}
-	    }
-	    StacktraceData stdata;
-	    stdata.aggregateAddressCounts(addressTime,buf);
-            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mpi_exttrace_data),
-                     reinterpret_cast<char*>(&data));
-	} else {
-	    return;
-	}
-
-    }
-
 }
 
 /**
@@ -523,39 +218,6 @@ private:
             boost::bind(
                 &AddressAggregator::pass_cbtf_protocol_blob_Handler, this, _1
                 )
-            );
-        declareInput<boost::shared_ptr<CBTF_pcsamp_data> >(
-            "pcsamp", boost::bind(&AddressAggregator::pcsampHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_usertime_data> >(
-            "usertime", boost::bind(&AddressAggregator::usertimeHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_io_trace_data> >(
-            "io", boost::bind(&AddressAggregator::ioHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_io_profile_data> >(
-            "iop", boost::bind(&AddressAggregator::iopHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_io_exttrace_data> >(
-            "iot", boost::bind(&AddressAggregator::iotHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_hwc_data> >(
-            "hwc", boost::bind(&AddressAggregator::hwcHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_hwcsamp_data> >(
-            "hwcsamp", boost::bind(&AddressAggregator::hwcsampHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_mem_exttrace_data> >(
-            "mem", boost::bind(&AddressAggregator::memHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_pthreads_exttrace_data> >(
-            "pthreads", boost::bind(&AddressAggregator::pthreadsHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_mpi_trace_data> >(
-            "mpi", boost::bind(&AddressAggregator::mpiHandler, this, _1)
-            );
-        declareInput<boost::shared_ptr<CBTF_mpi_exttrace_data> >(
-            "mpit", boost::bind(&AddressAggregator::mpitHandler, this, _1)
             );
 	declareInput<ThreadNameVec>(
             "threadnames", boost::bind(&AddressAggregator::threadnamesHandler, this, _1)
@@ -661,158 +323,6 @@ private:
 #endif
     }
  
-
-    /** Handler for the "in1" input.*/
-    void pcsampHandler(const boost::shared_ptr<CBTF_pcsamp_data>& in)
-    {
-        CBTF_pcsamp_data *data = in.get();
-
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(data->pc.pc_len,
-                                data->pc.pc_val,
-                                data->count.count_val,
-                                abuffer);
-
-	emitOutput<uint64_t>("interval",  data->interval);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "hwc" input.*/
-    void hwcHandler(const boost::shared_ptr<CBTF_hwc_data>& in)
-    {
-        CBTF_hwc_data *data = in.get();
-
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(data->pc.pc_len,
-                                data->pc.pc_val,
-                                data->count.count_val,
-                                abuffer);
-
-	emitOutput<uint64_t>("interval",  data->interval);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "hwcsamp" input.*/
-    void hwcsampHandler(const boost::shared_ptr<CBTF_hwcsamp_data>& in)
-    {
-        CBTF_hwcsamp_data *data = in.get();
-
-	PCData pcdata;
-        pcdata.aggregateAddressCounts(data->pc.pc_len,
-                                data->pc.pc_val,
-                                data->count.count_val,
-                                abuffer);
-
-	emitOutput<uint64_t>("interval",  data->interval);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "usertime" input.*/
-    void usertimeHandler(const boost::shared_ptr<CBTF_usertime_data>& in)
-    {
-        CBTF_usertime_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				data->count.count_val,
-				abuffer);
-
-	emitOutput<uint64_t>("interval",  data->interval);
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "io" input.*/
-    void ioHandler(const boost::shared_ptr<CBTF_io_trace_data>& in)
-    {
-        CBTF_io_trace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "iot" input.*/
-    void iopHandler(const boost::shared_ptr<CBTF_io_profile_data>& in)
-    {
-        CBTF_io_profile_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "iot" input.*/
-    void iotHandler(const boost::shared_ptr<CBTF_io_exttrace_data>& in)
-    {
-        CBTF_io_exttrace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "mem" input.*/
-    void memHandler(const boost::shared_ptr<CBTF_mem_exttrace_data>& in)
-    {
-        CBTF_mem_exttrace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "mem" input.*/
-    void pthreadsHandler(const boost::shared_ptr<CBTF_pthreads_exttrace_data>& in)
-    {
-        CBTF_pthreads_exttrace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "mpi" input.*/
-    void mpiHandler(const boost::shared_ptr<CBTF_mpi_trace_data>& in)
-    {
-        CBTF_mpi_trace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
-    /** Handler for the "mpit" input.*/
-    void mpitHandler(const boost::shared_ptr<CBTF_mpi_exttrace_data>& in)
-    {
-        CBTF_mpi_exttrace_data *data = in.get();
-
-	StacktraceData stdata;
-	stdata.aggregateAddressCounts(data->stacktraces.stacktraces_len,
-				data->stacktraces.stacktraces_val,
-				abuffer);
-
-        emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
-    }
-
     /** Handler for the "CBTF_Protocol_Blob" input.*/
     // This is the main handler of performance data blobs streaming up from
     // the collector BE's connected to this filter node. A CBTF_Protocol_Blob
@@ -857,64 +367,44 @@ private:
 #endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_Blob> >("datablob_xdr_out",in);
 
-	Blob myblob(in.get()->data.data_len, in.get()->data.data_val);
+	Blob perfdatablob(in.get()->data.data_len, in.get()->data.data_val);
 
 	// decode this blobs data header and create a threadname object
 	// and collector id object.
         CBTF_DataHeader header;
         memset(&header, 0, sizeof(header));
-        unsigned header_size = myblob.getXDRDecoding(
+        unsigned header_size = perfdatablob.getXDRDecoding(
             reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
             );
         ThreadName threadname(header.host,header.pid,header.posix_tid,header.rank);
-	std::string collectorID(header.id);
 
 	// find the actual data blob after the header and create a Blob.
 	// TODO: Map the incoming data size to it's thread and increment as new
 	// data for same thread arrives.  Could be use to identify threads
 	// that are generating more data than others. REDUCTION.
-	unsigned data_size = myblob.getSize() - header_size;
-	total_data_size += data_size;
-	const void* data_ptr = &(reinterpret_cast<const char *>(myblob.getContents())[header_size]);
-	Blob dblob(data_size,data_ptr);
+	//unsigned data_size = perfdatablob.getSize() - header_size;
+	//total_data_size += data_size;
+	//const void* data_ptr = &(reinterpret_cast<const char *>(perfdatablob.getContents())[header_size]);
+	//Blob dblob(data_size,data_ptr);
+
+	AddressBuffer buf;
+        // CALL PERFDATA HERE
+        // aggregatePCData(collectorID, dblob, buf, interval, threadname);
+	// update aggregate addresses and counts. 
+	//total_data_size += perfdata.aggregate(perfdatablob,buf,threadname);
+	total_data_size += perfdata.aggregate(perfdatablob,buf);
 
 #ifndef NDEBUG
         if (is_debug_aggregator_events_enabled) {
 	    output << debug_prefix.str() << "Aggregating CBTF_Protocol_Blob addresses for "
-	    << collectorID << " data from thread " << threadname
-	    << " total data bytes so far: " << total_data_size
+	    << "data from thread " << threadname << " total data bytes: " << total_data_size
 	    << std::endl;
 	}
 #endif
+	abuffer.updateAddressCounts(buf);
 
-	// The following does a global aggregation of the data. Not per thread of execution.
-	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
-	    AddressBuffer buf;
-            aggregatePCData(collectorID, dblob, buf, interval, threadname);
-	    // update aggregate addresses and counts. 
-	    abuffer.updateAddressCounts(buf);
-
-	    // load balance on address counts.
-	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
-	    emitOutput<uint64_t>("interval",  interval);
-	} else if (collectorID == "usertime" || collectorID == "hwctime") {
-	    AddressBuffer buf;
-            aggregateSTSampleData(collectorID, dblob, buf, interval, threadname);
-	    abuffer.updateAddressCounts(buf);
-	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
-	    emitOutput<uint64_t>("interval",  interval);
-        } else if (collectorID == "io" || collectorID == "iot" ||
-		   collectorID == "iop" || collectorID == "mem" ||
-		   collectorID == "mpi" || collectorID == "mpit" ||
-		   collectorID == "mpip" || collectorID == "pthreads") {
-            //aggregateSTTraceData(collectorID, dblob, abuffer, threadname);
-	    AddressBuffer buf;
-            aggregateSTTraceData(collectorID, dblob, buf, threadname);
-	    abuffer.updateAddressCounts(buf);
-	    updateAddrThreadCountMap(buf, addrThreadCount, threadname);
-	} else {
-	    std::cerr << "Unknown collector data handled!" << std::endl;
-	}
+	// load balance on address counts.
+	updateAddrThreadCountMap(buf, addrThreadCount, threadname);
 
 #ifndef NDEBUG
         if (is_trace_aggregator_events_enabled) {
@@ -1050,6 +540,7 @@ private:
 	const void* data_ptr = &(reinterpret_cast<const char *>(in.getContents())[header_size]);
 	Blob dblob(data_size,data_ptr);
 
+#if 0
 	if (collectorID == "pcsamp" || collectorID == "hwc" || collectorID == "hwcsamp") {
             aggregatePCData(collectorID, dblob, abuffer, interval,tname);
 	    emitOutput<uint64_t>("interval",  interval);
@@ -1064,6 +555,7 @@ private:
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;
 	}
+#endif
 
 	//std::cerr << "AddressAggregator::blobHandler: EMIT Addressbuffer" << std::endl;
         emitOutput<AddressBuffer>("Aggregatorout",  abuffer);
@@ -1078,6 +570,7 @@ private:
 
     AddressBuffer abuffer;
     AddrThreadCountMap addrThreadCount;
+    PerfData perfdata;
     int handled_buffers;
 
 }; // class AddressAggregator

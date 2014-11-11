@@ -251,12 +251,13 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-hwctime.xml: hwctime.xml.in
+hwctime.xml: ../template.xml.in
 
 	@rm -f hwctime.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/hwctime.xml.in > hwctime.xml
+		-e 's,@@collector_name@@,hwctime,' \
+		../template.xml.in > hwctime.xml
 
-EXTRA_DIST = hwctime.xml.in
+#EXTRA_DIST = hwctime.xml.in

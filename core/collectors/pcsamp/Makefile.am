@@ -215,12 +215,13 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-pcsamp.xml: pcsamp.xml.in
+pcsamp.xml: ../template.xml.in
 
 	@rm -f pcsamp.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/pcsamp.xml.in > pcsamp.xml
+		-e 's,@@collector_name@@,pcsamp,' \
+		../template.xml.in > pcsamp.xml
 
-EXTRA_DIST = pcsamp.xml.in
+#EXTRA_DIST = pcsamp.xml.in

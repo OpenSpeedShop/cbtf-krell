@@ -29,11 +29,10 @@
 #include <bfd.h>
 #include <stdint.h>
 #include <vector>
-//#include "OfflineExperiment.hxx"
-//#include "LinkedObject.hxx"
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/LinkedObjectEntry.hpp"
+#include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Core/SymbolTable.hpp"
 
 namespace KrellInstitute { namespace Core {

@@ -221,12 +221,13 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-hwc.xml: hwc.xml.in
+hwc.xml: ../template.xml.in
 
 	@rm -f hwc.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/hwc.xml.in > hwc.xml
+		-e 's,@@collector_name@@,hwc,' \
+		../template.xml.in > hwc.xml
 
-EXTRA_DIST = hwc.xml.in
+#EXTRA_DIST = hwc.xml.in

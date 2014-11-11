@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
 
-  <Type>pcsamp</Type>
+  <Type>@@collector_name@@</Type>
   <Version>1.0.0</Version>
 
 <!--
@@ -202,7 +202,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
 
-      <Type>pcsamp_Frontend</Type>
+      <Type>@@collector_name@@_Frontend</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -227,7 +227,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 -->
       <Component>
         <Name>LinkedObject</Name>
-        <Type>LinkedObject</Type>
+        <Type>LinkedObjectComponent</Type>
       </Component>
 
 <!--
@@ -316,6 +316,16 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         </To>
       </Input>
 
+      <Connection>
+        <From>
+            <Name>Aggregator</Name>
+            <Output>Aggregatorout</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>abufferin</Input>
+        </To>
+      </Connection>
 <!--
     Input to handle incoming thread state changed events.  These are
     passed on untouched by this FrontEnd network to a client tool.
@@ -395,6 +405,14 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <To>
           <Name>ResolveSymbols</Name>
           <Input>avgfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingSymbolTable</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>symboltable_xdr_in</Input>
         </To>
       </Input>
 <!--
@@ -718,6 +736,11 @@ it is here as an example of resolving symbols in the Frontend.
       <To><Input>IncomingAvgFunctionValues</Input></To>
     </IncomingUpstream>
 
+    <IncomingUpstream>
+      <Name>SymbolTable</Name>
+      <To><Input>IncomingSymbolTable</Input></To>
+    </IncomingUpstream>
+
   </Frontend>
 
 <!--
@@ -735,13 +758,13 @@ it is here as an example of resolving symbols in the Frontend.
     Run this filter only on CP's that are connected to a lightweight mrnet BE.
 -->
     <Depth>
-	<LeafRelative>
-	    <Offset>1</Offset>
-	</LeafRelative>
+	<Expression>
+	    cp:bottom
+	</Expression>
     </Depth>
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
-      <Type>pcsamp_Filter</Type>
+      <Type>@@collector_name@@_Filter</Type>
       <Version>1.0.0</Version>
 
       <SearchPath>@@component_location@@</SearchPath>
@@ -767,7 +790,7 @@ it is here as an example of resolving symbols in the Frontend.
 -->
       <Component>
         <Name>LinkedObject</Name>
-        <Type>LinkedObject</Type>
+        <Type>LinkedObjectComponent</Type>
       </Component>
 
 <!--
@@ -887,6 +910,29 @@ it is here as an example of resolving symbols in the Frontend.
         <To>
             <Name>ResolveSymbols</Name>
             <Input>linkedobjectvecin</Input>
+        </To>
+      </Connection>
+
+
+      <Connection>
+        <From>
+            <Name>LinkedObject</Name>
+            <Output>linkedobject_threadmap_out</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>linkedobject_threadmap_in</Input>
+        </To>
+      </Connection>
+
+      <Connection>
+        <From>
+            <Name>Aggregator</Name>
+            <Output>Aggregatorout</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>abufferin</Input>
         </To>
       </Connection>
 
@@ -1022,12 +1068,20 @@ it is here as an example of resolving symbols in the Frontend.
             <Output>avgfunctionvalues_xdr_out</Output>
          </From>
       </Output>
+
+      <Output>
+         <Name>OutgoingSymbolTable</Name>
+         <From>
+            <Name>ResolveSymbols</Name>
+            <Output>symboltable_xdr_out</Output>
+         </From>
+      </Output>
  
     </Network>    
 
 <!--
     Incoming performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For pcsamp, the xdr data blob is
+    and an actual xdr data blob.  For @@collector_name@@, the xdr data blob is
     the actual sample payload sent from a collection service. 
 -->
     <IncomingUpstream>
@@ -1075,7 +1129,7 @@ it is here as an example of resolving symbols in the Frontend.
 
 <!--
     Outgoing performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For pcsamp, the xdr data blob is
+    and an actual xdr data blob.  For @@collector_name@@, the xdr data blob is
     the actual sample payload sent from a collection service. 
     This stream essentially passes on the incoming blobs upstream
     where eventually a client can record them to a database if desired.
@@ -1113,6 +1167,11 @@ it is here as an example of resolving symbols in the Frontend.
     <OutgoingUpstream>
       <Name>AvgFunctionValues</Name>
       <From><Output>OutgoingAvgFunctionValues</Output></From>
+    </OutgoingUpstream>
+
+    <OutgoingUpstream>
+      <Name>SymbolTable</Name>
+      <From><Output>OutgoingSymbolTable</Output></From>
     </OutgoingUpstream>
 
   </Filter>

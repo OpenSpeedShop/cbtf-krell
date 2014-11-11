@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2014 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -16,14 +16,31 @@
 // 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Declaration and definition of the XDR/MRNet conversion classes. */
+/** @file
+ *
+ * typedef AddressSpace
+ *
+ */
 
-#include <KrellInstitute/CBTF/XDR.hpp>
+#ifndef _KrellInstitute_Core_AddressSpace_
+#define _KrellInstitute_Core_AddressSpace_
 
-#include "Symbol.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_AddressBitmap)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_FunctionEntry)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_StatementEntry)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable_Group)
+#include "KrellInstitute/Core/LinkedObject.hpp"
+#include "KrellInstitute/Core/ThreadName.hpp"
+
+#include <vector>
+#include <map>
+
+
+
+namespace KrellInstitute { namespace Core {
+    typedef std::map<ThreadName,LinkedObjectVec> AddressSpace;
+} }
+
+
+
+#endif

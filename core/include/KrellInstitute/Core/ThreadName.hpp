@@ -36,6 +36,7 @@
 #include <iostream>
 #include <stdint.h>
 
+#include "KrellInstitute/Core/Path.hpp"
 #include "KrellInstitute/Messages/Thread.h"
 
 

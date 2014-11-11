@@ -22,6 +22,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/AddressBuffer.hpp \
 	KrellInstitute/Core/AddressEntry.hpp \
 	KrellInstitute/Core/AddressRange.hpp \
+	KrellInstitute/Core/AddressSpace.hpp \
 	KrellInstitute/Core/Assert.hpp \
 	KrellInstitute/Core/BFDSymbols.hpp \
 	KrellInstitute/Core/Blob.hpp \
@@ -32,6 +33,7 @@ nobase_include_HEADERS = \
 	KrellInstitute/Core/Interval.hpp \
 	KrellInstitute/Core/LinkedObjectEntry.hpp \
 	KrellInstitute/Core/Path.hpp \
+	KrellInstitute/Core/PerfData.hpp \
 	KrellInstitute/Core/PCData.hpp \
 	KrellInstitute/Core/StackTrace.hpp \
 	KrellInstitute/Core/StacktraceData.hpp \

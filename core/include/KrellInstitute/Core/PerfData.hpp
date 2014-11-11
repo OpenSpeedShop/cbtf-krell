@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2014 The Krell Institue. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -16,14 +16,34 @@
 // 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ////////////////////////////////////////////////////////////////////////////////
 
-/** @file Declaration and definition of the XDR/MRNet conversion classes. */
+/** @file
+ *
+ * Definition of the  PerfData handlers and aggregators
+ *
+ */
+#ifndef _KrellInsitute_Core_PerfData_
+#define _KrellInsitute_Core_PerfData_
 
-#include <KrellInstitute/CBTF/XDR.hpp>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include "Symbol.h"
+#include "KrellInstitute/Core/AddressBuffer.hpp"
+#include "KrellInstitute/Core/Blob.hpp"
+//#include "KrellInstitute/Core/ThreadName.hpp"
 
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_AddressBitmap)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_FunctionEntry)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_StatementEntry)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable)
-KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_SymbolTable_Group)
+namespace KrellInstitute { namespace Core {
+
+
+    class PerfData {
+
+	public:
+	   int aggregate(const Blob&, AddressBuffer &buf);
+
+
+	private:
+
+    };
+
+} }
+#endif

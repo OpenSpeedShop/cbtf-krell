@@ -31,8 +31,8 @@
 
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
-#include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/Path.hpp"
+#include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 
 #include <vector>
@@ -41,7 +41,6 @@
 
 namespace KrellInstitute { namespace Core {
 
-    class AddressSpace;
     class Path;
     
     /**
@@ -55,16 +54,12 @@ namespace KrellInstitute { namespace Core {
      */
     class LinkedObjectEntry
     {
-	friend class AddressSpace;
-	
     public:
 
 	Path getPath() const;
 	bool isExecutable() const;
 	
-	//std::set<AddressRange> getAddressRange() const;
 	AddressRange getAddressRange() const;
-
 
 	ThreadName tname;
         Time time_loaded;

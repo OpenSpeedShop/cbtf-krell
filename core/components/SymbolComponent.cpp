@@ -34,34 +34,38 @@
 #include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
+#include "KrellInstitute/Core/AddressSpace.hpp"
 #if BFD_AVAILABLE_DPM
 #include "KrellInstitute/Core/BFDSymbols.hpp"
 #endif
 #include "KrellInstitute/Core/Blob.hpp"
 #include "KrellInstitute/Core/LinkedObjectEntry.hpp"
+#include "KrellInstitute/Core/LinkedObject.hpp"
 #include "KrellInstitute/Core/Path.hpp"
-#include "KrellInstitute/Core/PCData.hpp"
-#include "KrellInstitute/Core/StacktraceData.hpp"
 #include "KrellInstitute/Core/SymbolTable.hpp"
 #include "KrellInstitute/Core/SymtabAPISymbols.hpp"
 #include "KrellInstitute/Core/Time.hpp"
 #include "KrellInstitute/Core/ThreadName.hpp"
 
 #include "KrellInstitute/Messages/Address.h"
-#include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Messages/File.h"
-#include "KrellInstitute/Messages/LinkedObjectEvents.h"
-#include "KrellInstitute/Messages/PCSamp_data.h"
-#include "KrellInstitute/Messages/Usertime_data.h"
 #include <KrellInstitute/Messages/Symbol.h>
 #include "KrellInstitute/Messages/Thread.h"
-#include "KrellInstitute/Messages/ThreadEvents.h"
 #include "KrellInstitute/Messages/Stats.h"
 
 
 using namespace KrellInstitute::CBTF;
 using namespace KrellInstitute::Core;
+
+/** requires std::ostringstream debug_prefix in namespace **/
+#define DEBUGPREFIX(x,y) \
+	if (debug_prefix.str().empty()) { \
+	    if (x) debug_prefix << "FE:"; \
+	    else  if (y == 1) debug_prefix << "LCP:"; \
+	    else  debug_prefix << "ICP:"; \
+	    debug_prefix << getpid() << " "; \
+	}
 
 
 // FIXME: Move these to include file.
@@ -137,6 +141,9 @@ bool is_debug_symbol_events_enabled =
 /** Flag indicating if tracing for Symbol events is enabled. */
 bool is_trace_symbol_events_enabled =
     (getenv("CBTF_TRACE_SYMBOL_EVENTS") != NULL);
+/** Flag indicating if timing for Symbol events is enabled. */
+bool is_time_symbol_events_enabled =
+    (getenv("CBTF_TIME_SYMBOL_EVENTS") != NULL);
 #endif
 
 
@@ -148,9 +155,15 @@ bool is_trace_symbol_events_enabled =
     int min_msgs = 0;
 /** count indicating number of avg value messages to expect at FE. */
     int avg_msgs = 0;
+/** count indicating number of linkedobjectvec messages to expect at FE. */
+    int lov_msgs = 0;
+    int lovmap_msgs = 0;
+    int thread_msgs = 0;
+    int sym_msgs = 0;
 /** flag indicating FE has count of leaf CP's in tree. */
     bool handle_leafcp_msg = false;
 
+    std::ostringstream debug_prefix;
 }
 
 
@@ -194,6 +207,9 @@ private:
         declareInput<LinkedObjectEntryVec>(
             "linkedobjectvecin", boost::bind(&ResolveSymbols::LinkedObjectVecHandler, this, _1)
             );
+        declareInput<AddressSpace>(
+            "linkedobject_threadmap_in", boost::bind(&ResolveSymbols::AddressSpaceHandler, this, _1)
+            );
         declareInput<SymtabAPISymbols>(
             "symtabapisymsin", boost::bind(&ResolveSymbols::symtabAPISymbolHandler, this, _1)
             );
@@ -219,10 +235,19 @@ private:
         declareInput<boost::shared_ptr<CBTF_Protocol_FunctionAvgValues> >(
             "avgfunctionvalues", boost::bind(&ResolveSymbols::AvgFunctionValuesHandler, this, _1)
             );
+        declareInput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
+            "symboltable_xdr_in", boost::bind(&ResolveSymbols::CbtfProtocolSymbolTableHandler, this, _1)
+            );
+        declareInput<boost::shared_ptr<CBTF_Protocol_SymbolTable_Group> >(
+            "symboltablegroup_xdr_in", boost::bind(&ResolveSymbols::CbtfProtocolSymbolTableGroupHandler, this, _1)
+            );
 
         declareOutput<SymtabAPISymbols>("symtabapisymsout");
 	declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >(
 	    "symboltable_xdr_out"
+	    );
+	declareOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable_Group> >(
+	    "symboltablegroup_xdr_out"
 	    );
 	declareOutput<boost::shared_ptr<CBTF_Protocol_FunctionThreadValues> >(
 	    "maxfunctionvalues_xdr_out"
@@ -238,14 +263,31 @@ private:
 
     void leafCPHandler(const int& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (num_leafcp == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::leafCPHandler." << std::endl;
+	    }
+	}
+#endif
+
         num_leafcp++;
+
 #ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
             << "ENTERED ResolveSymbols::leafCPHandler number leafCP's " << num_leafcp
             << std::endl;
         }
+
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
 #endif
+
     }
 
 
@@ -255,11 +297,23 @@ private:
     // that represents the max from all leafCPs.
     void MaxFunctionThreadValuesHandler(const boost::shared_ptr<CBTF_Protocol_FunctionThreadValues>& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (max_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::MaxFunctionThreadValuesHandler entered." << std::endl;
+	    }
+	}
+#endif
+
 	++max_msgs;
+
 	CBTF_Protocol_FunctionThreadValues *message = in.get();
 #ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::MaxFunctionThreadValuesHandler"
 	    << " num values " << message->values.values_len
 	    << " num msgs " << max_msgs
@@ -277,7 +331,7 @@ private:
 	    if ( it == maxvals.end() ) {
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::MaxFunctionThreadValuesHandler: NEW max for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::MaxFunctionThreadValuesHandler: NEW max for " << f
 			<< " in thread:" << fts.first << " value:" << fts.second << std::endl; 
 		}
 #endif
@@ -285,7 +339,7 @@ private:
 	    } else if ( f == (*it).first && fts.second > (*it).second.second ) {
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::MaxFunctionThreadValuesHandler: UPDATE max for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::MaxFunctionThreadValuesHandler: UPDATE max for " << f
 			<< " in thread:" << fts.first << " value:" << fts.second << std::endl; 
 		}
 #endif
@@ -297,16 +351,28 @@ private:
 	// This output is for demo purposes.
 	if (max_msgs == num_leafcp) {
 	    FunctionThreadCount::const_iterator it;
-	    std::stringstream output;
+	    std::stringstream demo_output;
 	    for(it = maxvals.begin(); it != maxvals.end(); ++it) {
-		output << "Max: "
+		demo_output << "Max: "
 		<< " function:" << (*it).first
 		<< " thread:" << (*it).second.first
 		<< " max:" << (*it).second.second
 		<< std::endl;
 	    }
-	    std::cerr << output.str();
+	    std::cerr << demo_output.str();
+#ifndef NDEBUG
+	    if (is_time_symbol_events_enabled) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< " ResolveSymbols::MaxFunctionValuesHandler finished." << std::endl;
+	    }
+#endif
 	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
     /** Handler for the "minfunctionvalues" input.*/
@@ -315,11 +381,23 @@ private:
     // that represents the min from all leafCPs.
     void MinFunctionThreadValuesHandler(const boost::shared_ptr<CBTF_Protocol_FunctionThreadValues>& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (min_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::MinFunctionThreadValuesHandler entered." << std::endl;
+	    }
+	}
+#endif
+
 	++min_msgs;
+
 	CBTF_Protocol_FunctionThreadValues *message = in.get();
 #ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::MinFunctionThreadValuesHandler"
 	    << " num values " << message->values.values_len
 	    << " num msgs " << min_msgs
@@ -337,7 +415,7 @@ private:
 	    if ( it == minvals.end() ) {
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::MinFunctionThreadValuesHandler: NEW min for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::MinFunctionThreadValuesHandler: NEW min for " << f
 			<< " in thread:" << fts.first << " value:" << fts.second << std::endl; 
 		}
 #endif
@@ -346,7 +424,7 @@ private:
 	    } else if ( f == (*it).first && fts.second < (*it).second.second ) {
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::MinFunctionThreadValuesHandler: UPDATE min for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::MinFunctionThreadValuesHandler: UPDATE min for " << f
 			<< " in thread:" << fts.first << " value:" << fts.second << std::endl; 
 		}
 #endif
@@ -357,17 +435,30 @@ private:
 
 	// This output is for demo purposes.
 	if (min_msgs == num_leafcp) {
-	   std::stringstream output;
+	   std::stringstream demo_output;
 	   FunctionThreadCount::const_iterator it;
 	   for(it = minvals.begin(); it != minvals.end(); ++it) {
-		output << "Min: "
+		demo_output << "Min: "
 		<< " function:" << (*it).first
 		<< " thread:" << (*it).second.first
 		<< " min:" << (*it).second.second
 		<< std::endl;
 	    }
-	    std::cerr << output.str();
+	    std::cerr << demo_output.str();
+
+#ifndef NDEBUG
+	    if (is_time_symbol_events_enabled) {
+		std::cerr << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::MinFunctionValuesHandler finished." << std::endl;
+	    }
+#endif
 	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
     /** Handler for the "avgfunctionvalues" input.*/
@@ -376,11 +467,23 @@ private:
     // that represents the avg from all leafCPs.
     void AvgFunctionValuesHandler(const boost::shared_ptr<CBTF_Protocol_FunctionAvgValues>& in)
     {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (avg_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::AvgFunctionThreadValuesHandler entered." << std::endl;
+	    }
+	}
+#endif
+
 	++avg_msgs;
+
 	CBTF_Protocol_FunctionAvgValues *message = in.get();
 #ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::AvgFunctionValuesHandler"
 	    << " num values " << message->values.values_len
 	    << " num msgs " << avg_msgs
@@ -398,7 +501,7 @@ private:
 	    if ( it == avgvals.end() ) {
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::AvgFunctionValuesHandler: NEW avg for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::AvgFunctionValuesHandler: NEW avg for " << f
 			<< " value:" << fts.first << " count:" << fts.second << std::endl; 
 		}
 #endif
@@ -409,7 +512,7 @@ private:
 		(*it).second.second += fts.second;
 #ifndef NDEBUG
 	        if (is_debug_symbol_events_enabled) {
-		    std::cerr << "ResolveSymbols::AvgFunctionValuesHandler: UPDATE avg for " << f
+		    output << debug_prefix.str() << "ResolveSymbols::AvgFunctionValuesHandler: UPDATE avg for " << f
 			<< " value:" << fts.first << " count:" << fts.second << std::endl; 
 		}
 #endif
@@ -418,11 +521,11 @@ private:
 
 	// This output is for demo purposes.
 	if (avg_msgs == num_leafcp) {
-	    std::stringstream output;
+	    std::stringstream demo_output;
 	    FunctionAvgMap::const_iterator it;
 	    for(it = avgvals.begin(); it != avgvals.end(); ++it) {
 	      if ((*it).second.first > 0) {
-		output << "Avg: "
+		demo_output << "Avg: "
 		<< " function:" << (*it).first
 		<< " total value:" << (*it).second.first
 		<< " total count:" << (*it).second.second
@@ -430,32 +533,75 @@ private:
 		<< std::endl;
 	      }
 	    }
-	    std::cerr << output.str();
+	    std::cerr << demo_output.str();
+#ifndef NDEBUG
+	    if (is_time_symbol_events_enabled) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< " ResolveSymbols::AvgFunctionValuesHandler finished." << std::endl;
+	    }
+#endif
 	}
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
     /** Handler for the "abuffer" input.*/
     void AddressBufferHandler(const AddressBuffer& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (abuffer.addresscounts.size() == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::AddressBufferHandler." << std::endl;
+	    }
+	}
+#endif
+
+#ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::AddressBufferHandler"
 	    << " with " << in.addresscounts.size() << " addresses"
 	    << std::endl;
 	}
 #endif
 	abuffer = in;
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
     /** Handler for the "threadaddrbufmap" input.*/
     void ThreadAddrBufMapHandler(const ThreadAddrBufMap& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (thread_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::ThreadAddrBufMapHandler." << std::endl;
+	    }
+	}
+#endif
+
+	++thread_msgs;
+
+#ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::ThreadAddrBufMapHandler"
 	    << " with " << in.size() << " thread address buffers"
+	    << " thread messages:" << thread_msgs
 	    << std::endl;
 	}
 #endif
@@ -464,14 +610,18 @@ private:
 
 #ifndef NDEBUG
         if (is_debug_symbol_events_enabled) {
-	ThreadAddrBufMap::const_iterator avi;
-	std::stringstream output;
-	for (avi = threadAddrBufMap.begin(); avi != threadAddrBufMap.end(); ++avi) {
-	    output << "ResolveSymbols::ThreadAddrBufMapHandler thread:" << (*avi).first
+	    ThreadAddrBufMap::const_iterator avi;
+	    for (avi = threadAddrBufMap.begin(); avi != threadAddrBufMap.end(); ++avi) {
+	        output << debug_prefix.str() << "ResolveSymbols::ThreadAddrBufMapHandler thread:" << (*avi).first
 		<< " buffer size " << (*avi).second.addresscounts.size()
 		<< std::endl;
+	    }
 	}
-	std::cerr << output.str();
+#endif
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
 	}
 #endif
     }
@@ -480,22 +630,91 @@ private:
     void LinkedObjectVecHandler(const LinkedObjectEntryVec& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (lov_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::LinkedObjectVecHandler." << std::endl;
+	    }
+	}
+#endif
+
+	++lov_msgs;
+
+#ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::LinkedObjectVecHandler"
 	    << " with " << in.size() << " objects"
+	    << " linkedobjectvec messages:" << lov_msgs
 	    << std::endl;
 	}
 #endif
 	linkedobjectvec = in;
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
+    }
+
+    void AddressSpaceHandler(const AddressSpace& in)
+    {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (lovmap_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::AddressSpaceHandler." << std::endl;
+	    }
+	}
+#endif
+
+	++lovmap_msgs;
+	addressspace = in;
+
+#ifndef NDEBUG
+        if (is_trace_symbol_events_enabled) {
+            output << debug_prefix.str()
+	    << "ENTERED ResolveSymbols::AddressSpaceHandler"
+	    << " with " << in.size() << " entries"
+	    << " num messages:" << lovmap_msgs
+	    << std::endl;
+	}
+#endif
+
+#ifndef NDEBUG
+        if (is_debug_symbol_events_enabled) {
+	    AddressSpace::iterator i;
+	    for (i = addressspace.begin(); i != addressspace.end(); ++i) {
+		output << debug_prefix.str() << "addressspace  thread:" << (*i).first << std::endl;
+		for (LinkedObjectVec::iterator k = (*i).second.begin();
+		     k != (*i).second.end(); ++k) {
+		    output << "\t name:" << (*k).getPath() << std::endl;
+		}
+	    }
+	    output << std::endl;
+	}
+#endif
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
     /** Handler for the "symtabapisymsin" input.*/
     void symtabAPISymbolHandler(const SymtabAPISymbols& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " "
+            output << debug_prefix.str()
 	    << "ENTERED ResolveSymbols::symtabAPISymbolHandler"
 	    << std::endl;
 	}
@@ -517,7 +736,7 @@ private:
 	    }
 
 	    if(!foundit) {
-		std::cerr << "ResolveSymbols::symtabAPISymbolHandler: CANNOT RESOLVE symbols for address "
+		output << "ResolveSymbols::symtabAPISymbolHandler: CANNOT RESOLVE symbols for address "
 			<< aci->first  << std::endl;
 	    }
 	}
@@ -530,17 +749,38 @@ private:
 		SymbolTable st = i->first;
 #ifndef NDEBUG
         	if (is_debug_symbol_events_enabled) {
-		    std::cerr << getpid() << " "
+		    output << debug_prefix.str()
 			<< "ResolveSymbols::symtabAPISymbolHandler: resolve symbols for "
 			<< le.path  << std::endl;
 		}
 #endif
 		stapi_symbols.getSymbols(abuffer,le,st);
+		//boost::shared_ptr<CBTF_Protocol_SymbolTable> table( new CBTF_Protocol_SymbolTable());
+		//table->linked_object.path = strdup(le.path.c_str());
+		CBTF_Protocol_SymbolTable pst;
+		pst = st;
+		pst.linked_object.path = strdup(le.path.c_str());
+		boost::shared_ptr<CBTF_Protocol_SymbolTable> symtable_out =
+			boost::make_shared<CBTF_Protocol_SymbolTable>(pst);
+		emitOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >("symboltable_xdr_out",symtable_out);
+
 	}
-	emitOutput<SymtabAPISymbols>("symtabapisymsout",stapi_symbols);
+#ifndef NDEBUG
+      	if (is_trace_symbol_events_enabled) {
+	    output << debug_prefix.str()
+	    << "ResolveSymbols::symtabAPISymbolHandler: EMIT SymtabAPISymbols" << std::endl;
+	}
+#endif
+	//emitOutput<SymtabAPISymbols>("symtabapisymsout",stapi_symbols);
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
     }
 
-#if BFD_AVAILABLE_DPM
+#if defined(BFD_AVAILABLE_DPM) && defined(USE_LINKEDOBJECT_VEC)
     /** Handler for the "bfdsymsin" input.*/
     void BFDSymbolHandler(const BFDSymbols& in)
     {
@@ -580,8 +820,17 @@ private:
     void finishedHandler(const bool& in)
     {
 #ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    output << Time::Now() << " " << debug_prefix.str()
+	    << "ResolveSymbols::finishedHandler entered." << std::endl;
+	}
+#endif
+
+#ifndef NDEBUG
         if (is_trace_symbol_events_enabled) {
-            std::cerr << getpid() << " " << "ENTERED ResolveSymbols::finishedHandler" << std::endl;
+            output << debug_prefix.str() << "ENTERED ResolveSymbols::finishedHandler" << std::endl;
 	}
 #endif
 
@@ -604,7 +853,7 @@ private:
 	    if(!foundit) {
 #ifndef NDEBUG
         	if (is_debug_symbol_events_enabled) {
-		    std::cerr << getpid() << " "
+		    output << debug_prefix.str()
 		        << "ResolveSymbols::finishedHandler: CANNOT RESOLVE symbols for address "
 			<< aci->first  << std::endl;
 		}
@@ -615,24 +864,32 @@ private:
 	// Now cycle through these symboltables and find functions and statements.
 	SymtabAPISymbols stapi_symbols;
 
-	for(SymbolTableMap::iterator ii = symtabmap.begin(); ii != symtabmap.end(); ++ii) {
+	for(SymbolTableMap::iterator ii = symtabmap.begin(); ii != symtabmap.end(); ++ii)
+	{
 	    LinkedObjectEntry le = ii->second.second;
 	    SymbolTable st = ii->first;
 #ifndef NDEBUG
-	    std::stringstream output;
             if (is_debug_symbol_events_enabled) {
-	        output << "ResolveSymbols::finishedHandler: resolve symbols for " << le.path
+	        output << debug_prefix.str()
+		<< "ResolveSymbols::finishedHandler: resolve symbols for " << le.path
 			<< std::endl;
 	    }
 #endif
 
 	    stapi_symbols.getSymbols(abuffer,le,st);
+		CBTF_Protocol_SymbolTable pst;
+		pst = st;
+		pst.linked_object.path = strdup(le.path.c_str());
+		boost::shared_ptr<CBTF_Protocol_SymbolTable> symtable_out =
+			boost::make_shared<CBTF_Protocol_SymbolTable>(pst);
+		emitOutput<boost::shared_ptr<CBTF_Protocol_SymbolTable> >("symboltable_xdr_out",symtable_out);
 	    AddressRange stRange = st.getAddressRange();
 	    FunctionMap stFuncs = st.getFunctions();
 
 #ifndef NDEBUG
             if (is_debug_symbol_events_enabled) {
-	        output << "ResolveSymbols::finishedHandler: num functions:" << stFuncs.size()
+	        output << debug_prefix.str()
+		<< "ResolveSymbols::finishedHandler: num functions:" << stFuncs.size()
 	        << " stRange:" << stRange << std::endl;
 	    }
 #endif
@@ -642,7 +899,8 @@ private:
 	    for (avi = threadAddrBufMap.begin(); avi != threadAddrBufMap.end(); ++avi) {
 #ifndef NDEBUG
 		if (is_debug_symbol_events_enabled) {
-		    output << "ResolveSymbols::finishedHandler: thread:" << (*avi).first
+		    output << debug_prefix.str()
+		    << "ResolveSymbols::finishedHandler: thread:" << (*avi).first
 		    << " buffer size " << (*avi).second.addresscounts.size()
 		    << std::endl;
 		}
@@ -665,11 +923,6 @@ private:
 		    }
 		}
 	    }
-#ifndef NDEBUG
-	    if (is_debug_symbol_events_enabled) {
-	        std::cerr << output.str();
-	    }
-#endif
 	}
 
 	FuncStatsVec::iterator fit;
@@ -678,7 +931,7 @@ private:
 	for(fit = fstatvec.begin(); fit != fstatvec.end(); ++fit) {
 #ifndef NDEBUG
 	    if (is_debug_symbol_events_enabled) {
-	        std::cerr << "FuncStatsVec: function:" << (*fit).funcname
+	        output << debug_prefix.str() << "FuncStatsVec: function:" << (*fit).funcname
 		<< " thread:" << (*fit).tname
 		<< " count:" << (*fit).value
 		<< std::endl;
@@ -692,7 +945,7 @@ private:
 				       std::make_pair((*fit).value,1)));
 #ifndef NDEBUG
 		if (is_debug_symbol_events_enabled) {
-		std::cerr << "FuncStatsVec: function:" << (*fit).funcname
+		output << debug_prefix.str() << "FuncStatsVec: function:" << (*fit).funcname
 		<< " total counts:" << (*fit).value << " num threads:" << 1
 		<< " avg:" << (*fit).value << std::endl;
 		}
@@ -702,7 +955,7 @@ private:
 		++(*it).second.second;
 #ifndef NDEBUG
 		if (is_debug_symbol_events_enabled) {
-		std::cerr << "FuncStatsVec: function:" << (*fit).funcname
+		output << debug_prefix.str() << "FuncStatsVec: function:" << (*fit).funcname
 		<< " UPDATE total counts:" << (*it).second.first << " num threads:" << (*it).second.second
 		<< " avg:" << (*it).second.first/(*it).second.second
 		<< std::endl;
@@ -723,7 +976,7 @@ private:
 	    for(it = functionscounts.begin(); it != functionscounts.end(); ++it) {
 #ifndef NDEBUG
 		if (is_debug_symbol_events_enabled) {
-		std::cerr << "FuncAvgMap: function:" << (*it).first
+		output << debug_prefix.str() << "FuncAvgMap: function:" << (*it).first
 		<< " counts:" << (*it).second.first
 		<< " threads:" << (*it).second.second
 		<< " avg:" << (*it).second.first/(*it).second.second
@@ -738,6 +991,7 @@ private:
 		++i;
 	    }
 	}
+
 	boost::shared_ptr<CBTF_Protocol_FunctionAvgValues> avgvals_xdr =
                boost::make_shared<CBTF_Protocol_FunctionAvgValues>(avgVals);
 
@@ -813,19 +1067,92 @@ private:
 	boost::shared_ptr<CBTF_Protocol_FunctionThreadValues> minvals_xdr =
                 boost::make_shared<CBTF_Protocol_FunctionThreadValues>(minVals);
 
-	//std::cerr << "EMIT maxfunctionvalues_xdr_out" << std::endl;
+#ifndef NDEBUG
+	if (is_time_symbol_events_enabled) {
+	    output << debug_prefix.str()
+		<< "EMIT max,min,avg functionvalues_xdr_out" << std::endl;
+	}
+#endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_FunctionThreadValues> >("maxfunctionvalues_xdr_out",maxvals_xdr);
-	//std::cerr << "EMIT minfunctionvalues_xdr_out" << std::endl;
 	emitOutput<boost::shared_ptr<CBTF_Protocol_FunctionThreadValues> >("minfunctionvalues_xdr_out",minvals_xdr);
-	//std::cerr << "EMIT avgfunctionvalues_xdr_out" << std::endl;
 	emitOutput<boost::shared_ptr<CBTF_Protocol_FunctionAvgValues> >("avgfunctionvalues_xdr_out",avgvals_xdr);
 	
 	//emitOutput<SymbolTableMap>("symbtabmapout",symtabmap);
 	
+#ifndef NDEBUG
+	if (is_time_symbol_events_enabled) {
+	    output << Time::Now() << " " << debug_prefix.str()
+	    << "ResolveSymbols::finishedHandler exits." << std::endl;
+	}
+#endif
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
+    }
+
+    void CbtfProtocolSymbolTableHandler(const boost::shared_ptr<CBTF_Protocol_SymbolTable>& in)
+    {
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	if (is_time_symbol_events_enabled) {
+	    if (sym_msgs == 0) {
+		output << Time::Now() << " " << debug_prefix.str()
+		<< "ResolveSymbols::CbtfProtocolSymbolTableHandler entered." << std::endl;
+	    }
+	}
+#endif
+	++sym_msgs;
+
+	CBTF_Protocol_SymbolTable *message = in.get();
+
+#ifndef NDEBUG
+        if (is_trace_symbol_events_enabled) {
+            output << debug_prefix.str()
+	    << "ENTERED ResolveSymbols::CbtfProtocolSymbolTableHandler"
+	    << " num msgs " << sym_msgs
+	    << " num leafCP " << num_leafcp
+	    << std::endl;
+	}
+#endif
+
+#ifndef NDEBUG
+        if (is_debug_symbol_events_enabled) {
+	  for (int i=0; i< message->functions.functions_len; ++i) {
+	    const CBTF_Protocol_FunctionEntry& msg_function =
+                        message->functions.functions_val[i];
+	    output << debug_prefix.str()
+	    << "function name:" << msg_function.name
+	    << std::endl;
+	    for(int k = 0; k < msg_function.bitmaps.bitmaps_len; ++k) {
+                        const CBTF_Protocol_AddressBitmap& msg_bitmap =
+                            msg_function.bitmaps.bitmaps_val[k];
+		output << debug_prefix.str()
+		<< "function range:" << AddressRange(Address(msg_bitmap.range.begin),
+						     Address(msg_bitmap.range.end))
+		<< std::endl;
+	    }
+	  }
+	}
+#endif
+
+#ifndef NDEBUG
+	if ( !output.str().empty() ) {
+            std::cerr << output.str();
+	}
+#endif
+    }
+
+    void CbtfProtocolSymbolTableGroupHandler(const boost::shared_ptr<CBTF_Protocol_SymbolTable_Group>& in)
+    {
     }
     
     SymbolTableMap symtabmap;
     LinkedObjectEntryVec linkedobjectvec;
+    AddressSpace addressspace;
     AddressBuffer abuffer;
     FuncStatsVec fstatvec;
     ThreadAddrBufMap threadAddrBufMap;

@@ -18,25 +18,50 @@
 
 plugindir = $(libdir)/KrellInstitute/Components
 
-plugin_LTLIBRARIES = CollectionPlugin.la
+plugin_LTLIBRARIES = MRNetConvertorsPlugin.la \
+		     AggregationPlugin.la \
+		     ThreadPlugin.la \
+		     LinkedObjectPlugin.la \
+		     SymbolPlugin.la
 
-CollectionPlugin_la_CXXFLAGS = \
+MRNetConvertorsPlugin_la_CXXFLAGS = \
 	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
         @MESSAGES_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
-CollectionPlugin_la_LDFLAGS = \
+MRNetConvertorsPlugin_la_LDFLAGS = \
 	-module -avoid-version \
 	-L$(top_srcdir)/src \
         @MESSAGES_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 
-CollectionPlugin_la_LIBADD = \
+MRNetConvertorsPlugin_la_LIBADD = \
 	-lcbtf-core \
-	-lcbtf-core-symtabapi \
+	@CBTF_LIBS@ \
+	@MRNET_LIBS@
+
+MRNetConvertorsPlugin_la_SOURCES = \
+	MRNetConverters.cpp
+
+AggregationPlugin_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+AggregationPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @MESSAGES_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+AggregationPlugin_la_LIBADD = \
+	-lcbtf-core \
 	-lcbtf-messages-base \
 	-lcbtf-messages-converters-base \
 	-lcbtf-messages-collector \
@@ -45,22 +70,101 @@ CollectionPlugin_la_LIBADD = \
 	-lcbtf-messages-converters-events \
 	-lcbtf-messages-perfdata \
 	-lcbtf-messages-converters-perfdata \
-	-lcbtf-messages-symtab \
-	-lcbtf-messages-converters-symtab \
-	-lcbtf-messages-thread \
-	-lcbtf-messages-converters-thread \
 	@CBTF_LIBS@ \
         @MESSAGES_BASE_LIBS@ \
         @MESSAGES_EVENTS_LIBS@ \
         @MESSAGES_PERFDATA_LIBS@ \
 	@MRNET_LIBS@
 
-CollectionPlugin_la_SOURCES = \
+AggregationPlugin_la_SOURCES = \
 	AddressAggregatorComponent.cpp \
-	AddressBufferComponent.cpp \
-	BlobComponent.cpp \
-	LinkedObjectComponent.cpp \
-	MRNetConverters.cpp \
-	SymbolComponent.cpp \
+	AddressBufferComponent.cpp
+
+SymbolPlugin_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+SymbolPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @MESSAGES_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+SymbolPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-core-symtabapi \
+	-lcbtf-messages-base \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-events \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-symtab \
+	-lcbtf-messages-converters-symtab \
+	@CBTF_LIBS@ \
+        @MESSAGES_BASE_LIBS@ \
+        @MESSAGES_EVENTS_LIBS@ \
+	@MRNET_LIBS@
+
+SymbolPlugin_la_SOURCES = \
+	SymbolComponent.cpp
+
+ThreadPlugin_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+ThreadPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @MESSAGES_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+ThreadPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-base \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-events \
+	-lcbtf-messages-converters-events \
+	-lcbtf-messages-thread \
+	-lcbtf-messages-converters-thread \
+	@CBTF_LIBS@ \
+        @MESSAGES_BASE_LIBS@ \
+        @MESSAGES_EVENTS_LIBS@ \
+	@MRNET_LIBS@
+
+ThreadPlugin_la_SOURCES = \
 	ThreadEventComponent.cpp
 
+LinkedObjectPlugin_la_CXXFLAGS = \
+	-I$(top_srcdir)/include \
+	@BOOST_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
+        @MESSAGES_CPPFLAGS@ \
+	@MRNET_CPPFLAGS@
+
+LinkedObjectPlugin_la_LDFLAGS = \
+	-module -avoid-version \
+	-L$(top_srcdir)/src \
+        @MESSAGES_LDFLAGS@ \
+	@CBTF_LDFLAGS@ \
+	@MRNET_LDFLAGS@
+
+LinkedObjectPlugin_la_LIBADD = \
+	-lcbtf-core \
+	-lcbtf-messages-base \
+	-lcbtf-messages-converters-base \
+	-lcbtf-messages-events \
+	-lcbtf-messages-converters-events \
+	@CBTF_LIBS@ \
+        @MESSAGES_BASE_LIBS@ \
+        @MESSAGES_EVENTS_LIBS@ \
+	@MRNET_LIBS@
+
+LinkedObjectPlugin_la_SOURCES = \
+	LinkedObjectComponent.cpp

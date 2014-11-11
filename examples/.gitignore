@@ -27,7 +27,11 @@ src/daemonToolDemo/.deps/*
 src/daemonToolDemo/.libs/*
 src/daemonToolDemo/daemonToolDemo
 src/daemonToolDemo/daemonToolDemo.xml
+src/python/.deps/
+src/python/.libs/
+src/python/pyexample.xml
 Makefile
 Makefile.in
 missing
 stamp-h1
+

@@ -676,21 +676,23 @@ endif
 
 CLEANFILES = $(BUILT_FILES)
 
-io.xml: io.xml.in
+io.xml: ../template.xml.in
 
 	@rm -f io.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/io.xml.in > io.xml
+		-e 's,@@collector_name@@,io,' \
+		../template.xml.in > io.xml
 
-iop.xml: iop.xml.in
+iop.xml: ../template.xml.in
 
 	@rm -f iop.xml
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/iop.xml.in > iop.xml
+		-e 's,@@collector_name@@,iop,' \
+		../template.xml.in > iop.xml
 
 iot.xml: iot.xml.in
 
@@ -698,6 +700,7 @@ iot.xml: iot.xml.in
 	@sed \
 		-e 's,@@component_location@@,$(plugindir),' \
 		-e 's,@@cbtflib_location@@,$(libdir),' \
-		$(srcdir)/iot.xml.in > iot.xml
+		-e 's,@@collector_name@@,iot,' \
+		../template.xml.in > iot.xml
 
-EXTRA_DIST = io.xml.in iot.xml.in
+#EXTRA_DIST = io.xml.in iot.xml.in

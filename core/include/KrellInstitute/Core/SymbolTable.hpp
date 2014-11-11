@@ -30,7 +30,10 @@
 #include "config.h"
 #endif
 
+//#include "KrellInstitute/Core/AddressBitmap.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
+#include "KrellInstitute/Messages/File.h"
+#include "KrellInstitute/Messages/Symbol.h"
 
 #include <map>
 #include <set>
@@ -42,6 +45,7 @@
 namespace KrellInstitute { namespace Core {
 
     class Address;
+    class AddressBitmap;
     class LinkedObjectEntry;
     class Path;
 
@@ -66,6 +70,7 @@ namespace KrellInstitute { namespace Core {
 	SymbolTable(const AddressRange&);
 	
 	void addFunction(const Address&, const Address&, const std::string&);
+	void addFunction(const Address&, const Address&, const Address&, const std::string&);
 	void addStatement(const Address&, const Address&,
 			  const Path&, const int&, const int&);
 	
@@ -76,14 +81,26 @@ namespace KrellInstitute { namespace Core {
 	std::map<AddressRange, std::string> getFunctions()
 		{ return dm_functions;};
 
+	operator CBTF_Protocol_SymbolTable() const;
+
 	
     private:
+        static std::vector<KrellInstitute::Core::AddressBitmap>
+	partitionAddressRanges(const std::vector<AddressRange>&);
 
 	static std::vector<std::set<Address> >
 	partitionAddressSet(const std::set<Address>&);
+	static void convert(const std::vector<KrellInstitute::Core::AddressBitmap>&,
+                            u_int&, CBTF_Protocol_AddressBitmap*&);
 	
 	/** Address range occupied by this symbol table. */
 	AddressRange dm_range;
+
+        /** Table mapping function names to their address ranges. */
+        typedef std::map<std::string, std::vector<AddressRange> > FunctionTable;
+
+        /** Functions in this symbol table. */
+        FunctionTable table_functions;
 
 	/** Functions in this symbol table. */
 	std::map<AddressRange, std::string> dm_functions;
@@ -127,6 +144,13 @@ namespace KrellInstitute { namespace Core {
 	    }
 
 	};
+
+        /** Table mapping statments to their address ranges. */
+        typedef std::map<StatementEntry,
+                         std::vector<AddressRange> > StatementTable;
+
+        /** Statements in this symbol table. */
+        StatementTable table_statements;
 	
 	/** Statements in this symbol table. */
 	std::map<StatementEntry, std::vector<AddressRange> > dm_statements;

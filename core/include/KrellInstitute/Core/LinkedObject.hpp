@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-// Copyright (c) 2006-2013 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2014 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -30,55 +29,41 @@
 #include "config.h"
 #endif
 
+#include "KrellInstitute/Core/Address.hpp"
 #include "KrellInstitute/Core/AddressRange.hpp"
+#include "KrellInstitute/Core/Time.hpp"
+#include "KrellInstitute/Core/TimeInterval.hpp"
+#include "KrellInstitute/Core/Path.hpp"
 
-#include <set>
+#include <vector>
+#include <map>
 
 
 
-namespace KrellInsitute { namespace Core {
+namespace KrellInstitute { namespace Core {
 
-    class AddressSpace;
-    class Function;
-    class FunctionCache;
     class Path;
-    class Statement;
-    class StatementCache;
     
-    /**
-     * Linked object.
-     *
-     * Representation of a single executable or library (a "linked object").
-     * Provides member functions for requesting information about this linked
-     * object, where it is contained, and what it contains.
-     *
-     * @ingroup CollectorAPI ToolAPI
-     */
     class LinkedObject
     {
-	friend class AddressSpace;
-	friend class Function;
-	friend class FunctionCache;
-	friend class Statement;
-	friend class StatementCache;
-	
     public:
 
 	Path getPath() const;
 	bool isExecutable() const;
+	AddressRange getAddressRange() const;
+	TimeInterval getTimeInterval() const;
 	
-	std::set<Function> getFunctions() const;
-	std::set<Statement> getStatements() const;
-
-	// Used by the Offline Experiment BFDSymbol code.
-	std::set<AddressRange> getAddressRange() const;
-
-    private:
+	TimeInterval time;
+	AddressRange range;
+        Path path;
+        bool  is_executable;
 
 	LinkedObject();
-	
+	bool operator==(const LinkedObject&) const;
+
     };
-    
+    typedef std::vector<LinkedObject> LinkedObjectVec;
+
 } }
 
 

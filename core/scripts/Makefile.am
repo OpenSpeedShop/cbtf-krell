@@ -34,11 +34,11 @@ mrnet_dir=$(MRNET_DIR)
 xercesc_dir=$(LIBXERCES_C_DIR)
 boost_dir=$(BOOST_DIR)
 
-#if HAVE_OMPT
-#libiomp_dir=$(LIBIOMP_DIR)
-#else
+if HAVE_OMPT
+libiomp_dir=$(LIBIOMP_DIR)
+else
 libiomp_dir=
-#endif
+endif
 
 
 if !BUILD_RUNTIME
@@ -62,6 +62,7 @@ endif
 		-e 's,@@mvapich2dir@@,$(MVAPICH2_DIR),' \
 		-e 's,@@mptdir@@,$(MPT_DIR),' \
 		-e 's,@@openmpidir@@,$(OPENMPI_DIR),' \
+                -e 's,@@libiompdir@@,$(libiomp_dir),' \
 		-e 's,@@cbtfdefaultmpi@@,$(DEFAULT_MPI_IMPL),' \
 			$(srcdir)/cbtfrun.in > cbtfrun
 	@chmod 755 cbtfrun

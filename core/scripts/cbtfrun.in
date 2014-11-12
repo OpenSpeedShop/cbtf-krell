@@ -66,20 +66,6 @@ send_service="${cbtf_libdir}/libcbtf-services-send.so"
 timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
 unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
 
-## Currently the ompt service is strictly intel based.
-## has_openmp can be true if the users program was linked with libgomp.
-## Only allow ompt_service IFF we have libiomp, the ompt service exists
-## and we were passed the --openmp flag signifying the executalbe is an
-## openmp program.
-ompt_service=
-if [ "has_openmp" == "true" ] ; then
-  if [ "use_ompt" == "true" ] ; then
-    if test -f ${libiomp_prefix}/libcbtf-services-ompt.so ; then
-      ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
-    fi
-  fi
-fi
-
 lam_prefix=@@lamdir@@
 lampi_prefix=@@lampidir@@
 mpich_prefix=@@mpichdir@@
@@ -243,6 +229,20 @@ do
             ;;
     esac
 done
+
+## Currently the ompt service is strictly intel based.
+## has_openmp can be true if the users program was linked with libgomp.
+## Only allow ompt_service IFF we have libiomp, the ompt service exists
+## and we were passed the --openmp flag signifying the executalbe is an
+## openmp program.
+ompt_service=
+if [ "$has_openmp" == "true" ] ; then
+  if [ "$use_ompt" == "true" ] ; then
+    if test -f ${cbtf_libdir}/libcbtf-services-ompt.so ; then
+      ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
+    fi
+  fi
+fi
 
 
 if [ "use_fileio" == "true" ]

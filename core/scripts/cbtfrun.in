@@ -66,11 +66,17 @@ send_service="${cbtf_libdir}/libcbtf-services-send.so"
 timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
 unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
 
-## only allow ompt_service IFF we have libiomp.
+## Currently the ompt service is strictly intel based.
+## has_openmp can be true if the users program was linked with libgomp.
+## Only allow ompt_service IFF we have libiomp, the ompt service exists
+## and we were passed the --openmp flag signifying the executalbe is an
+## openmp program.
 ompt_service=
-if [ "use_ompt" == "true" ] ; then
-  if test -f ${libiomp_prefix}/libcbtf-services-ompt.so ; then
-    ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
+if [ "has_openmp" == "true" ] ; then
+  if [ "use_ompt" == "true" ] ; then
+    if test -f ${libiomp_prefix}/libcbtf-services-ompt.so ; then
+      ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
+    fi
   fi
 fi
 
@@ -119,6 +125,10 @@ usage()
     cat <<EOF
 Usage: $0 [options] command arg ...
 
+Note: typically this command is never issued by the user.
+The user should run cbtf collection via the collectionTool client
+or OpenSpeedShops osscollect client (or via oss convenience scripts).
+
 If command uses arguments then command and arg
 must be quoted. example:
 $0 "mpirun -np 2 foo"
@@ -141,6 +151,9 @@ need this to properly connect to the mrnet tree for mpi programs.
    -i, --fileio
 Save data to files.
 
+   --openmp
+Use this if the executable is linked with an openmp library
+
    -o, --output  <directory>
 Where directory is the location to write the
 raw performance data files. The utility tool
@@ -160,6 +173,7 @@ EOF
 use_mrnet="true"
 use_fileo="false"
 use_mpi="false"
+has_openmp="false"
 
 while test "x$1" != x
 do
@@ -196,6 +210,11 @@ do
 
         --mpi )
             use_mpi="true";
+	    shift
+            ;;
+
+        --openmp )
+            has_openmp="true";
 	    shift
             ;;
 
@@ -272,13 +291,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}:${libiomp}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}:${libiomp}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}:${libiomp}
+      export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 

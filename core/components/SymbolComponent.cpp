@@ -144,6 +144,9 @@ bool is_trace_symbol_events_enabled =
 /** Flag indicating if timing for Symbol events is enabled. */
 bool is_time_symbol_events_enabled =
     (getenv("CBTF_TIME_SYMBOL_EVENTS") != NULL);
+/** Flag indicating if displaying of metric events is enabled. */
+bool is_show_metric_events_enabled =
+    (getenv("CBTF_SHOW_METRIC_EVENTS") != NULL);
 #endif
 
 
@@ -359,7 +362,13 @@ private:
 		<< " max:" << (*it).second.second
 		<< std::endl;
 	    }
-	    std::cerr << demo_output.str();
+
+#ifndef NDEBUG
+	    if (is_show_metric_events_enabled) {
+		std::cerr << demo_output.str();
+	    }
+#endif
+
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -444,7 +453,12 @@ private:
 		<< " min:" << (*it).second.second
 		<< std::endl;
 	    }
-	    std::cerr << demo_output.str();
+
+#ifndef NDEBUG
+	    if (is_show_metric_events_enabled) {
+		std::cerr << demo_output.str();
+	    }
+#endif
 
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
@@ -533,7 +547,13 @@ private:
 		<< std::endl;
 	      }
 	    }
-	    std::cerr << demo_output.str();
+
+#ifndef NDEBUG
+	    if (is_show_metric_events_enabled) {
+		std::cerr << demo_output.str();
+	    }
+#endif
+
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
 		output << Time::Now() << " " << debug_prefix.str()

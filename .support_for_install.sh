@@ -124,9 +124,9 @@ cd services
 echo "-- CONFIGURING SERVICES ----------------------------------"
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
 else
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-target-os=$CBTF_TARGET_ARCH
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-target-os=$CBTF_TARGET_ARCH --with-libiomp=$CBTF_LIBIOMP_ROOT
 fi
 echo "-- UNINSTALLING SERVICES ----------------------------------"
 make uninstall

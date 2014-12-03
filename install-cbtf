@@ -598,6 +598,17 @@ do
             shift ; shift
             ;;
 
+      --with-libiomp)
+            test "x$2" != x || die "missing argument: $*"
+            case "$2" in
+                /* )  dir="$2" ;;
+                * )   dir="`pwd`/$2" ;;
+            esac
+            test -d "$dir" || die "unable to find: $dir"
+            export CBTF_LIBIOMP_ROOT="${dir}"
+            shift ; shift
+            ;;
+
        --target-arch)
             test "x$2" != x || die "missing argument: $*"
             target="$2"

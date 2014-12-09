@@ -49,9 +49,11 @@ libcbtf_messages_perfdata_la_CFLAGS = \
 	@LTDLINCL@ 
 
 libcbtf_messages_perfdata_la_LDFLAGS = \
+	-L$(top_srcdir)/src/base \
 	-version-info 0:0:0
 
 libcbtf_messages_perfdata_la_LIBADD = \
+	-lcbtf-messages-base
 	@LIBLTDL@
 
 libcbtf_messages_perfdata_la_SOURCES = \

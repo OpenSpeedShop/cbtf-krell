@@ -92,9 +92,12 @@ cd messages
 
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB  --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-xml=$CBTF_PREFIX
+./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX \
+              --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB  --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-xml=$CBTF_PREFIX
 else
-./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB  --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-xml=$CBTF_PREFIX --with-target-os=$CBTF_TARGET_ARCH
+./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX \
+              --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB  --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT \
+              --with-cbtf-xml=$CBTF_PREFIX --with-target-os=$CBTF_TARGET_ARCH
 fi
 echo "-- UNINSTALLING MESSAGES ----------------------------------"
 make uninstall
@@ -124,9 +127,13 @@ cd services
 echo "-- CONFIGURING SERVICES ----------------------------------"
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX \
+              --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  \
+              --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
 else
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-target-os=$CBTF_TARGET_ARCH --with-libiomp=$CBTF_LIBIOMP_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX \
+              --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  \
+              --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT --with-target-os=$CBTF_TARGET_ARCH --with-libiomp=$CBTF_LIBIOMP_ROOT
 fi
 echo "-- UNINSTALLING SERVICES ----------------------------------"
 make uninstall
@@ -157,9 +164,23 @@ cd core
 echo "-- CONFIGURING CORE ----------------------------------"
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-messages-cuda=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-cbtf-xml=$CBTF_PREFIX --with-papi=$CBTF_PAPI_ROOT --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-cbtf-services=$CBTF_PREFIX --with-tls=implicit --with-libelf=$CBTF_LIBELF_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-binutils=$CBTF_BINUTILS_ROOT --with-mpich2=$CBTF_MPI_MPICH2 --with-mvapich=$CBTF_MPI_MVAPICH --with-mvapich2=$CBTF_MPI_MVAPICH2 --with-openmpi=$CBTF_MPI_OPENMPI --with-mpt=$CBTF_MPI_MPT --with-alps=$CBTF_ALPS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-messages-cuda=$CBTF_PREFIX \
+              --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB \
+              --with-cbtf-xml=$CBTF_PREFIX --with-papi=$CBTF_PAPI_ROOT --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT \
+              --with-cbtf-services=$CBTF_PREFIX --with-tls=explicit --with-libelf=$CBTF_LIBELF_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT \
+              --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB \
+              --with-dyninst-version=$CBTF_DYNINST_VERS --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-binutils=$CBTF_BINUTILS_ROOT \
+              --with-mpich2=$CBTF_MPI_MPICH2 --with-mvapich=$CBTF_MPI_MVAPICH --with-mvapich2=$CBTF_MPI_MVAPICH2 --with-openmpi=$CBTF_MPI_OPENMPI \
+              --with-mpt=$CBTF_MPI_MPT --with-alps=$CBTF_ALPS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
 else
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-messages-cuda=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-cbtf-xml=$CBTF_PREFIX --with-papi=$CBTF_PAPI_ROOT --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-cbtf-services=$CBTF_PREFIX --with-tls=implicit --with-libelf=$CBTF_LIBELF_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-binutils=$CBTF_BINUTILS_ROOT --with-target-os=$CBTF_TARGET_ARCH --with-mpich2=$CBTF_MPI_MPICH2 --with-mvapich=$CBTF_MPI_MVAPICH --with-mvapich2=$CBTF_MPI_MVAPICH2 --with-openmpi=$CBTF_MPI_OPENMPI --with-mpt=$CBTF_MPI_MPT --with-alps=$CBTF_ALPS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-messages-cuda=$CBTF_PREFIX \
+              --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-mrnet=$CBTF_PREFIX --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB \
+              --with-cbtf-xml=$CBTF_PREFIX --with-papi=$CBTF_PAPI_ROOT --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT \
+              --with-cbtf-services=$CBTF_PREFIX --with-tls=explicit --with-libelf=$CBTF_LIBELF_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT \
+              --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB \
+              --with-dyninst-version=$CBTF_DYNINST_VERS --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-binutils=$CBTF_BINUTILS_ROOT \
+              --with-target-os=$CBTF_TARGET_ARCH --with-mpich2=$CBTF_MPI_MPICH2 --with-mvapich=$CBTF_MPI_MVAPICH --with-mvapich2=$CBTF_MPI_MVAPICH2 \
+              --with-openmpi=$CBTF_MPI_OPENMPI --with-mpt=$CBTF_MPI_MPT --with-alps=$CBTF_ALPS_ROOT --with-libiomp=$CBTF_LIBIOMP_ROOT
 fi
 echo "-- UNINSTALLING CORE ----------------------------------"
 make uninstall
@@ -189,9 +210,17 @@ cd examples
 #./bootstrap
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-tls=implicit --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-python=$CBTF_PYTHON_ROOT --with-boost-python=$CBTF_BOOST_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT \
+              --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-tls=implicit --with-boost=$CBTF_BOOST_ROOT \
+              --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT \
+              --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB \
+              --with-dyninst-version=$CBTF_DYNINST_VERS --with-python=$CBTF_PYTHON_ROOT --with-boost-python=$CBTF_BOOST_ROOT
 else
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-tls=implicit --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-target-os=$CBTF_TARGET_ARCH --with-python=$CBTF_PYTHON_ROOT --with-boost-python=$CBTF_BOOST_ROOT
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT \
+              --with-cbtf-messages=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-tls=implicit --with-boost=$CBTF_BOOST_ROOT \
+              --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT \
+              --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB \
+              --with-dyninst-version=$CBTF_DYNINST_VERS --with-target-os=$CBTF_TARGET_ARCH --with-python=$CBTF_PYTHON_ROOT --with-boost-python=$CBTF_BOOST_ROOT
 fi
 
 make uninstall; make clean; make; make install
@@ -212,9 +241,20 @@ cd test
 #./bootstrap
 if [ -z "$CBTF_TARGET_ARCH" ];
 then
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-core=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-mrnet=$CBTF_PREFIX 
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT \
+              --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT \
+              --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-cbtf-messages=$CBTF_PREFIX \
+              --with-cbtf-core=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  \
+              --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB \
+              --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-mrnet=$CBTF_PREFIX 
 else
-  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-cbtf-messages=$CBTF_PREFIX --with-cbtf-core=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-mrnet=$CBTF_PREFIX  --with-target-os=$CBTF_TARGET_ARCH
+  ./configure --prefix=$CBTF_PREFIX $bmode --with-cbtf=$CBTF_PREFIX --with-cbtf-xml=$CBTF_PREFIX --with-mrnet=$CBTF_MRNET_ROOT \
+              --with-libdwarf=$CBTF_LIBDWARF_ROOT --with-libdwarf-libdir=$CBTF_LIBDWARF_ROOT_LIB --with-dyninst=$CBTF_DYNINST_ROOT \
+              --with-dyninst-libdir=$CBTF_DYNINST_ROOT_LIB --with-dyninst-version=$CBTF_DYNINST_VERS --with-cbtf-messages=$CBTF_PREFIX \
+              --with-cbtf-core=$CBTF_PREFIX --with-libmonitor=$CBTF_LIBMONITOR_ROOT --with-libunwind=$CBTF_LIBUNWIND_ROOT \
+              --with-papi=$CBTF_PAPI_ROOT  --with-tls=implicit  --with-binutils=$CBTF_BINUTILS_ROOT  --with-boost=$CBTF_BOOST_ROOT \
+              --with-boost-libdir=$CBTF_BOOST_ROOT_LIB --with-libxerces-c-prefix=$CBTF_XERCESC_ROOT --with-cbtf-mrnet=$CBTF_PREFIX  \
+              --with-target-os=$CBTF_TARGET_ARCH
 fi
 
 make uninstall; make clean; make; make install

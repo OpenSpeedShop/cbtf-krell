@@ -376,7 +376,7 @@ private:
         unsigned header_size = perfdatablob.getXDRDecoding(
             reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), &header
             );
-        ThreadName threadname(header.host,header.pid,header.posix_tid,header.rank);
+        ThreadName threadname(header.host,header.pid,header.posix_tid,header.rank,header.omp_tid);
 
 	// find the actual data blob after the header and create a Blob.
 	// TODO: Map the incoming data size to it's thread and increment as new

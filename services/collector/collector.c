@@ -42,6 +42,8 @@ typedef struct {
     CBTF_DataHeader header;  /**< Header for data blobs. */
 
     bool_t defer_sampling;
+    bool is_openmp;
+    bool has_ompt;
 
 #if defined(CBTF_SERVICE_USE_MRNET)
     CBTF_Protocol_ThreadNameGroup tgrp;
@@ -52,7 +54,6 @@ typedef struct {
     bool connected_to_mrnet;
     bool is_mpi_job;
     bool is_threaded_job;
-    bool has_ompt;
     bool sent_attached_to_threads;
 
     struct {
@@ -106,6 +107,8 @@ void init_process_thread()
 
     tls->tname.rank = monitor_mpi_comm_rank();
     tls->header.rank = monitor_mpi_comm_rank();
+    tls->header.omp_tid = monitor_get_thread_num();
+    tls->tname.omp_tid = monitor_get_thread_num();
 
     // removed CBTF_Protocol_CreatedProcess message;
 
@@ -138,9 +141,12 @@ void send_attached_to_threads_message()
 #ifndef NDEBUG
         if (tls->debug_mrnet) {
     	     fprintf(stderr,
-	   "SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d\n",
+	   "SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d:%d\n",
                      tls->header.host, (long long)tls->header.pid,
-                     (long long)tls->header.posix_tid, tls->header.rank);
+                     (long long)tls->header.posix_tid,
+		     tls->header.rank,
+		     tls->header.omp_tid
+	    );
         }
 #endif
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
@@ -176,6 +182,41 @@ void set_threaded_flag(bool flag)
 	return;
 
     tls->is_threaded_job = flag;
+}
+
+void cbtf_collector_set_openmp_threadid(int32_t omptid)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->header.omp_tid = omptid;
+    tls->tname.omp_tid = omptid;
+    tls->has_ompt = true;
+    tls->is_openmp = true;
+}
+
+int32_t cbtf_collector_get_openmp_threadid()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    // valid openmp thread id is 0 or greater...
+    if (tls->header.omp_tid >= 0)
+	return tls->header.omp_tid;
+    else
+	return -1;
 }
 
 void set_ompt_flag(bool flag)
@@ -236,13 +277,14 @@ void connect_to_mrnet()
 
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
     tls->header.rank = monitor_mpi_comm_rank();
+    tls->header.omp_tid = monitor_get_thread_num();
     tls->connected_to_mrnet = true;
 
 #ifndef NDEBUG
     if (tls->debug_mrnet) {
 	 fprintf(stderr,
-        "connect_to_mrnet reports connection successful for %s:%lld rank %d\n",
-             tls->header.host, (long long)tls->header.pid, tls->header.rank);
+        "connect_to_mrnet reports connection successful for %s:%lld:%lld:%d:%d\n",
+             tls->header.host, (long long)tls->header.pid,tls->header.posix_tid,tls->header.rank,tls->header.omp_tid);
     }
 #endif
 
@@ -277,9 +319,12 @@ void send_thread_state_changed_message()
 #ifndef NDEBUG
 	if (tls->debug_mrnet) {
             fprintf(stderr,
-	    "SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d\n",
+	    "SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d:%d\n",
                      tls->header.host, (long long)tls->header.pid,
-                     (long long)tls->header.posix_tid, tls->header.rank);
+                     (long long)tls->header.posix_tid,
+		     tls->header.rank,
+		     tls->header.omp_tid
+		);
 	}
 #endif
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED,
@@ -303,9 +348,10 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"cbtf_collector_send DATA for %s:%lld:%lld:%d:\n",
+        fprintf(stderr,"cbtf_collector_send DATA for %s:%lld:%lld:%d:%d\n",
                      tls->header.host, (long long)tls->header.pid,
-                     (long long)tls->header.posix_tid, tls->header.rank);
+                     (long long)tls->header.posix_tid, tls->header.rank,
+		     tls->header.omp_tid);
         fprintf(stderr,"time_range[%lu, %lu) addr range [%#lx, %#lx]\n",
             (uint64_t)header->time_begin, (uint64_t)header->time_end,
 	    header->addr_begin, header->addr_end);
@@ -399,6 +445,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->tname.has_posix_tid = true;
     tls->tname.posix_tid = local_data_header.posix_tid;
     tls->tname.rank = local_data_header.rank;
+    tls->tname.omp_tid = monitor_get_thread_num();
 
     tls->tgrp.names.names_len = 0;
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
@@ -434,6 +481,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
     tls->header.posix_tid = local_data_header.posix_tid;
     tls->header.rank = local_data_header.rank;
+    tls->header.omp_tid = monitor_get_thread_num();
     /* Begin collection */
     cbtf_collector_start(&tls->header);
 }

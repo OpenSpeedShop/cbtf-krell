@@ -50,6 +50,11 @@
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
 
+#if defined (HAVE_OMPT)
+void cbtf_thread_idle(bool flag);
+void cbtf_thread_wait_barrier(bool flag);
+#endif
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 

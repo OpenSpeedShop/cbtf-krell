@@ -586,9 +586,10 @@ int ompt_initialize(ompt_function_lookup_t lookup_func,
     if ( (getenv("CBTF_DEBUG_OMPT") != NULL)) {
 	cbtf_ompt_debug = 1;
     }
-#endif
 
     fprintf(stderr, "CBTF OMPT Init: %s ver %i\n",rtver,omptver);
+    fprintf(stderr, "CBTF OMPT Init: Registering callbacks\n");
+#endif
 
     ompt_enumerate_state = (ompt_enumerate_state_t) lookup_func("ompt_enumerate_state");
     ompt_set_callback = (ompt_set_callback_t) lookup_func("ompt_set_callback");
@@ -601,7 +602,6 @@ int ompt_initialize(ompt_function_lookup_t lookup_func,
     ompt_get_thread_id = (ompt_get_thread_id_t) lookup_func("ompt_get_thread_id");
 
 
-    fprintf(stderr, "CBTF OMPT Init: Registering callbacks\n");
     CBTF_register_ompt_callback(ompt_event_parallel_begin,CBTF_ompt_cb_parallel_region_begin);
     CBTF_register_ompt_callback(ompt_event_parallel_end,CBTF_ompt_cb_parallel_region_end);
     CBTF_register_ompt_callback(ompt_event_task_begin,CBTF_ompt_cb_task_begin);
@@ -657,6 +657,10 @@ int ompt_initialize(ompt_function_lookup_t lookup_func,
     CBTF_register_ompt_callback(ompt_event_workshare_end,CBTF_ompt_cb_workshare_end);
     CBTF_register_ompt_callback(ompt_event_idle_begin,CBTF_ompt_cb_idle_begin);
     CBTF_register_ompt_callback(ompt_event_idle_end,CBTF_ompt_cb_idle_end);
-    //fprintf(stderr, "CBTF OMPT Init: FINISHED Registering callbacks\n");
+#ifndef NDEBUG
+    if (cbtf_ompt_debug) {
+	fprintf(stderr, "CBTF OMPT Init: FINISHED Registering callbacks\n");
+    }
+#endif
     return 1;
 }

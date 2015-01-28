@@ -495,7 +495,11 @@ void cbtf_thread_barrier(bool flag) {
 #endif
     if (tls == NULL)
 	return;
+#if 0
+    // this is not in use for now. we are not interested in barrier.
+    // just the wait_barriers...
     tls->thread_barrier=flag;
+#endif
 }
 
 void cbtf_thread_wait_barrier(bool flag) {

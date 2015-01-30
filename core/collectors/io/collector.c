@@ -888,7 +888,11 @@ bool_t io_do_trace(const char* traced_func)
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    // we may be called early in process startup but we have
+    // not called collectors start collecting.  Just return false.
+    if (tls == NULL) {
+	return FALSE;
+    }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 

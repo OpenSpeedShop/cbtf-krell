@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2013 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2015 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -174,15 +174,19 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
 
 
 /**
- * Send events.
+ * Send samples.
  *
+ * This function can be called from within the sigprof handler and therefore
+ * must be signal safe.  no strdup and friends.
  */
 static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
+
+    /* the mpi rank is not available until applications has called mpi_init.*/
+    /* safe to call here. */
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     tls->header.rank = monitor_mpi_comm_rank();
 #endif
@@ -377,6 +381,17 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
+
+
+    /* We can not assign mpi rank in the header at this point as it may not
+     * be set yet. assign an integer tid value.  omp_tid is used regardless of
+     * whether the application is using openmp threads.
+     * libmonitor uses the same numbering scheme as openmp.
+     */
+    tls->header.omp_tid = monitor_get_thread_num();
+    tls->header.id = strdup(cbtf_collector_unique_id);
+
+    /* begin sampling*/
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
 

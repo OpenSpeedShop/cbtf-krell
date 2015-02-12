@@ -254,7 +254,7 @@ static void send_samples(TLS *tls)
 /*
 NO DEBUG PRINT STATEMENTS HERE.
 */
-void pthreads_start_event(CBTF_pthreadt_event* event)
+int pthreads_start_event(CBTF_pthreadt_event* event)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -262,7 +262,11 @@ void pthreads_start_event(CBTF_pthreadt_event* event)
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    // return 0 to indicate we are not yet ready to start collecting
+    // or have finished collecting and out tls is gone. This is mainly
+    // an issue with explicit tls.
+    if (tls == NULL)
+	return 0;
 
     int saved_do_trace = tls->do_trace;
     tls->do_trace = 0;
@@ -274,6 +278,7 @@ void pthreads_start_event(CBTF_pthreadt_event* event)
     memset(event, 0, sizeof(CBTF_pthreadt_event));
 
     tls->do_trace = saved_do_trace;
+    return 1;
 }
 
 
@@ -446,15 +451,14 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
  */
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
-    TLS* tls;
-    if (!pthreads_init_tls_done) {
-	tls = malloc(sizeof(TLS));
-	Assert(tls != NULL);
-	CBTF_SetTLS(TLSKey, tls);
-	pthreads_init_tls_done = true;
-    } else if (pthreads_init_tls_done) {
-        tls = CBTF_GetTLS(TLSKey);
-    }
+    // this is the one and only place for the collector
+    // to setup explicit tls. if it fails here then assert.
+    // Any other collector function accessing tls before this
+    // malloc was early in process startup or mpi startup where
+    // we are not yet ready to start our collector.
+    TLS* tls = malloc(sizeof(TLS));
+    Assert(tls != NULL);
+    CBTF_SetTLS(TLSKey, tls);
 #else
     TLS* tls = &the_tls;
 #endif
@@ -578,7 +582,7 @@ void cbtf_collector_stop()
 #endif
 
     if (tls == NULL) {
-	fprintf(stderr,"cbtf_collector_stop called without TLS!\n");
+	//fprintf(stderr,"cbtf_collector_stop called without TLS!\n");
 	return;
     }
 
@@ -603,24 +607,13 @@ bool_t pthreads_do_trace(const char* traced_func)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
-
-    TLS* tls;
-    if (tls == NULL && !pthreads_init_tls_done) {
-       tls = malloc(sizeof(TLS));
-       Assert(tls != NULL);
-       CBTF_SetTLS(TLSKey, tls);
-       pthreads_init_tls_done = true;
-    } else if (pthreads_init_tls_done) {
-        tls = CBTF_GetTLS(TLSKey);
-    } else {
-	return FALSE;
-    }
+    TLS* tls = CBTF_GetTLS(TLSKey);
 #else
     TLS* tls = &the_tls;
 #endif
     if (tls == NULL) {
-	fprintf(stderr,"pthreads_do_trace called without TLS!\n");
-	return;
+	//fprintf(stderr,"pthreads_do_trace called without TLS!\n");
+	return FALSE;
     }
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)

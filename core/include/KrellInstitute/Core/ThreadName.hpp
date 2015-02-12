@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2007 William Hachfeld. All Rights Reserved.
-// Copyright (c) 2006-2013 The Krell Institute All Rights Reserved.
+// Copyright (c) 2006-2014 The Krell Institute All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -66,6 +66,12 @@ namespace KrellInstitute { namespace Core {
 	ThreadName(const std::string&, const std::string&,
 		   const int64_t&, const int64_t&,
 		   const int32_t&, const Path&);
+	ThreadName(const std::string&, const std::string&,
+		   const int64_t&, const int64_t&,
+		   const int32_t&, const int32_t&, const Path&);
+	ThreadName(const std::string&,
+		   const int64_t&, const int64_t&,
+		   const int32_t&, const int32_t&);
 	ThreadName(const std::string&,
 		   const int64_t&, const int64_t&,
 		   const int32_t&);
@@ -82,6 +88,7 @@ namespace KrellInstitute { namespace Core {
             object.has_posix_tid = dm_posixtid.first;
             object.posix_tid = dm_posixtid.second;
             object.rank = dm_rank;
+            object.omp_tid = dm_omptid;
             return object;
         }
 
@@ -137,6 +144,12 @@ namespace KrellInstitute { namespace Core {
 	}
 
 	/** Read-only data member accessor function. */
+	const int32_t& getOmpTid() const
+	{
+	    return dm_omptid;
+	}
+
+	/** Read-only data member accessor function. */
 	const std::pair<bool, Path>& getExecutable() const
 	{
 	    return dm_executable;
@@ -149,6 +162,7 @@ namespace KrellInstitute { namespace Core {
             stream << object.dm_host << ":" << object.dm_pid;
 	    stream << ":" << object.dm_rank;
 	    stream << ":" << object.dm_posixtid.second;
+	    stream << ":" << object.dm_omptid;
             return stream;
         }
 
@@ -168,6 +182,9 @@ namespace KrellInstitute { namespace Core {
 
 	/** MPI rank of this thread. */
 	int32_t dm_rank;
+
+	/** OpenMP id of this thread. */
+	int32_t dm_omptid;
 
 	/** Path of this thread's executable. */
 	std::pair<bool, Path> dm_executable;

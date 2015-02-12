@@ -48,5 +48,6 @@ struct CBTF_EventHeader
     int64_t pid;               /**< Identifier of gathered data's process. */
     int64_t posix_tid;         /**< Identifier of gathered data's thread. */
     int32_t rank;              /**< Identifier of gathered data's mpi rank. */
-    bool has_posix_tid;           /**< Identifier of gathered data's openmp tid. */
+    int32_t omp_tid;           /**< Identifier of gathered data's openmp_tid. */
+    bool has_posix_tid;        /**< has posix tid. */
 };

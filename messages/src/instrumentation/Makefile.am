@@ -33,9 +33,13 @@ libcbtf_messages_instrumentation_la_CFLAGS = \
 	@LTDLINCL@ 
 
 libcbtf_messages_instrumentation_la_LDFLAGS = \
+	-L$(top_srcdir)/src/base \
+	-L$(top_srcdir)/src/collector \
 	-version-info 0:0:0
 
 libcbtf_messages_instrumentation_la_LIBADD = \
+	-lcbtf-messages-base \
+	-lcbtf-messages-collector \
 	@LIBLTDL@
 
 libcbtf_messages_instrumentation_la_SOURCES = \

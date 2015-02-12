@@ -98,6 +98,7 @@ bool is_trace_thread_events_enabled =
 	if(posix_tid.first)
 	    out.posix_tid = posix_tid.second;
 	out.rank = in.getMPIRank();
+	out.omp_tid = in.getOmpTid();
     }
 
     /**
@@ -330,6 +331,8 @@ private:
 	    //std::cerr << getpid() << " " << "ThreadEventComponent::threadstateHandler EMITS CBTF_Protocol_ThreadsStateChanged" << std::endl;
 	    emitOutput<boost::shared_ptr<CBTF_Protocol_ThreadsStateChanged> >("ThreadsStateChanged_xdr_out", threadsstate_out);
 
+	    emitOutput<ThreadNameVec>("ThreadNameVecOut", threadnamevec);
+	
 	    //std::cerr << getpid() << " " << "ThreadEventComponent::threadstateHandler EMITS finished" << std::endl;
 	    emitOutput<bool>("Threads_finished", true);
 	    is_finished = true;
@@ -383,7 +386,7 @@ private:
 #endif
 
 	//std::cerr << "ThreadEventComponent::threadsHandler EMITS ThreadNameVec of size " << threadnamevec.size() << std::endl;
-	emitOutput<ThreadNameVec>("ThreadNameVecOut", threadnamevec);
+	//emitOutput<ThreadNameVec>("ThreadNameVecOut", threadnamevec);
     }
 
     void createdprocessHandler(const boost::shared_ptr<CBTF_Protocol_CreatedProcess>& in)

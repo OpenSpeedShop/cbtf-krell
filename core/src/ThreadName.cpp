@@ -27,6 +27,8 @@
 #include "KrellInstitute/Core/ThreadName.hpp"
 #include "KrellInstitute/Messages/Thread.h"
 
+#include "unistd.h"
+
 using namespace KrellInstitute::Core;
 
 
@@ -53,6 +55,25 @@ ThreadName::ThreadName(const std::string& command,
     dm_pid(pid),
     dm_posixtid(true, posixtid),
     dm_rank(rank),
+    dm_omptid(-1),
+    dm_executable(true, executable)
+{
+}
+
+ThreadName::ThreadName(const std::string& command,
+		       const std::string& host,
+		       const int64_t& pid,
+		       const int64_t& posixtid,
+		       const int32_t& rank,
+		       const int32_t& omptid,
+		       const Path& executable
+		       ) :
+    dm_command(true, command),
+    dm_host(host),
+    dm_pid(pid),
+    dm_posixtid(true, posixtid),
+    dm_rank(rank),
+    dm_omptid(omptid),
     dm_executable(true, executable)
 {
 }
@@ -67,6 +88,23 @@ ThreadName::ThreadName(const std::string& host,
     dm_pid(pid),
     dm_posixtid(true, posixtid),
     dm_rank(rank),
+    dm_omptid(-1),
+    dm_executable(false,"no executable provided")
+{
+}
+
+ThreadName::ThreadName(const std::string& host,
+		       const int64_t& pid,
+		       const int64_t& posixtid,
+		       const int32_t& rank,
+		       const int32_t& omptid
+		       ) :
+    dm_command(false,"empty command"),
+    dm_host(host),
+    dm_pid(pid),
+    dm_posixtid(true, posixtid),
+    dm_rank(rank),
+    dm_omptid(omptid),
     dm_executable(false,"no executable provided")
 {
 }
@@ -75,8 +113,9 @@ ThreadName::ThreadName(const CBTF_Protocol_ThreadName& object) :
     dm_command(false,"empty command"),
     dm_host(object.host),
     dm_pid(object.pid),
-    dm_posixtid(std::make_pair(object.has_posix_tid, object.posix_tid)),
+    dm_posixtid(object.has_posix_tid, object.posix_tid),
     dm_rank(object.rank),
+    dm_omptid(object.omp_tid),
     dm_executable(false,"no executable provided")
 {
 }
@@ -98,6 +137,7 @@ bool ThreadName::operator==(const ThreadName& other) const
     if (dm_host == other.dm_host &&
       dm_pid == other.dm_pid &&
       dm_rank == other.dm_rank &&
+      dm_omptid == other.dm_omptid &&
       dm_posixtid.first == other.dm_posixtid.first &&
       dm_posixtid.second == other.dm_posixtid.second) {
       return true;

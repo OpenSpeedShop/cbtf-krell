@@ -178,6 +178,7 @@ private:
     void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
     {
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
+	ThreadName tname(message->thread);
 	handled_threads++;
 
 #ifndef NDEBUG
@@ -190,11 +191,13 @@ private:
 	    << " handled_threads:" << handled_threads
 	    << " of:" << threadnames.size()
 	    << std::endl;
+	    output << debug_prefix.str()
+	    << "LinkedObjectComponent::groupHandler message thread:" << tname
+	    << std::endl;
 	}
 #endif
 
 
-	ThreadName tname(message->thread);
 	AddressCounts ac = abuffer.addresscounts;
 	bool havecounts = (ac.size() > 0) ? true : false ;
 	bool havethreads = (threadnames.size() > 0) ? true : false ;

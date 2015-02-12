@@ -53,15 +53,19 @@ int pthreads_pthread_create(pthread_t *thread, const pthread_attr_t *attr,
                           void *(*start_routine) (void *), void *arg)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_create");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_CREATE;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real MEM function */
@@ -103,15 +107,19 @@ int pthreads_pthread_mutex_init( pthread_mutex_t* mtx,
                        const pthread_mutexattr_t* attr)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_mutex_init");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_MUTEX_INIT;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real MEM function */
@@ -150,15 +158,19 @@ int __wrap_pthread_mutex_destroy( pthread_mutex_t* mtx)
 int pthreads_pthread_mutex_init( pthread_mutex_t* mtx)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_mutex_destroy");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_MUTEX_DESTROY;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -197,15 +209,19 @@ int __wrap_pthread_mutex_lock( pthread_mutex_t* mtx)
 int pthreads_pthread_mutex_lock( pthread_mutex_t* mtx)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_mutex_lock");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_MUTEX_LOCK;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -244,15 +260,19 @@ int __wrap_pthread_mutex_unlock( pthread_mutex_t* mtx)
 int pthreads_pthread_mutex_unlock( pthread_mutex_t* mtx)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_mutex_unlock");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_MUTEX_UNLOCK;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -291,15 +311,19 @@ int __wrap_pthread_mutex_trylock( pthread_mutex_t* mtx)
 int pthreads_pthread_mutex_trylock( pthread_mutex_t* mtx)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_mutex_trylock");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_MUTEX_TRYLOCK;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -342,15 +366,19 @@ int __wrap_pthread_cond_init(pthread_cond_t* cnd, const pthread_condattr_t* attr
 int pthreads_pthread_cond_init(pthread_cond_t* cnd, const pthread_condattr_t* attr)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_init");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_INIT;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -389,15 +417,19 @@ int __wrap_pthread_cond_destroy(pthread_cond_t* cnd)
 int pthreads_pthread_cond_destroy(pthread_cond_t* cnd)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_destroy");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_DESTROY;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -436,15 +468,19 @@ int __wrap_pthread_cond_signal(pthread_cond_t* cnd)
 int pthreads_pthread_cond_signal(pthread_cond_t* cnd)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_signal");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_SIGNAL;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -483,15 +519,19 @@ int __wrap_pthread_cond_broadcast(pthread_cond_t* cnd)
 int pthreads_pthread_cond_broadcast(pthread_cond_t* cnd)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_broadcast");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_BROADCAST;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -530,15 +570,19 @@ int __wrap_pthread_cond_wait(pthread_cond_t* cnd, pthread_mutex_t* mtx)
 int pthreads_pthread_cond_wait(pthread_cond_t* cnd, pthread_mutex_t* mtx)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_wait");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_WAIT;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */
@@ -581,15 +625,19 @@ int pthreads_pthread_cond_timedwait(pthread_cond_t* cnd, pthread_mutex_t* mtx,
 			   const struct timespec* tspec)
 #endif
 {
-    int retval;
+    int retval,eval;
     CBTF_pthreadt_event event;
 
     bool_t dotrace = pthreads_do_trace("pthread_cond_timedwait");
 
     if (dotrace) {
-        pthreads_start_event(&event);
+        eval = pthreads_start_event(&event);
+	if (eval) {
         event.start_time = CBTF_GetTime();
         event.pthread_type = CBTF_PTHREAD_COND_TIMEDWAIT;
+	} else {
+	    dotrace = FALSE;
+	}
     }
 
     /* Call the real function */

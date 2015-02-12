@@ -55,6 +55,7 @@ struct CBTF_DataHeader
     int64_t pid;               /**< Identifier of gathered data's process. */
     int64_t posix_tid;         /**< Identifier of gathered data's thread. */
     int32_t rank;
+    int32_t omp_tid;
         
     uint64_t time_begin;  /**< Beginning of gathered data's time interval. */
     uint64_t time_end;    /**< End of gathered data's time interval. */

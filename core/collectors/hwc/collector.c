@@ -160,11 +160,14 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
     }
 }
 
+
+/* This function can be called from within the sigprof handler and therefore
+ * must be signal safe.  no strdup and friends.
+ */
 static void send_samples (TLS* tls)
 {
     Assert(tls != NULL);
 
-    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
@@ -279,6 +282,15 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));
     initialize_data(tls);
+
+
+    /* We can not assign mpi rank in the header at this point as it may not
+     * be set yet. assign an integer tid value.  omp_tid is used regardless of
+     * whether the application is using openmp threads.
+     * libmonitor uses the same numbering scheme as openmp.
+     */
+    tls->header.omp_tid = monitor_get_thread_num();
+    tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_begin = CBTF_GetTime();
 
     if(hwc_papi_init_done == 0) {

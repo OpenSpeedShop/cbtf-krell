@@ -110,6 +110,8 @@ extern void cbtf_offline_service_stop_timer();
 extern void set_mpi_flag(bool);
 extern void set_threaded_flag(bool);
 extern void set_threaded_mrnet_connection();
+// omp,ompt
+extern int32_t cbtf_collector_get_openmp_threadid();
 
 // external functions for using mrnet.
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -271,9 +273,9 @@ void cbtf_offline_send_dsos(TLS *tls)
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
         fprintf(stderr,
-    "cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d\n",
+    "cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
                 tls->dso_header.host, (long long)tls->dso_header.pid, 
-                (long long)tls->dso_header.posix_tid, tls->dso_header.rank);
+                (long long)tls->dso_header.posix_tid, tls->dso_header.rank,tls->dso_header.omp_tid);
     }
 #endif
 
@@ -358,12 +360,28 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 
     connect_to_mrnet();
     tls->connected_to_mrnet = true;
+
+    /* Initialize the offline "dso" blob's header */
+    CBTF_EventHeader local_header;
+    CBTF_InitializeEventHeader(&local_header);
+    local_header.rank = monitor_mpi_comm_rank();
+    local_header.omp_tid = monitor_get_thread_num();
+    memcpy(&tls->dso_header, &local_header, sizeof(CBTF_EventHeader));
+
 #endif
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
 	fprintf(stderr,"cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n");
     }
 #endif
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+	    fprintf(stderr,"cbtf_offline_start_sampling BEGINS for %s:%lld:%lld:%d:%d\n",
+                (long long)tls->dso_header.host,
+                (long long)tls->dso_header.pid,
+                (long long)tls->dso_header.posix_tid,
+                (long long)tls->dso_header.omp_tid,
+                (long long)tls->dso_header.rank);
+    }
     cbtf_timer_service_start_sampling(NULL);
     tls->started = true;
 }
@@ -412,10 +430,11 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
     if (finished && tls->sent_data) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_offline_stop_sampling FINISHED for %s:%lld:%lld:%d\n",
+	    fprintf(stderr,"cbtf_offline_stop_sampling FINISHED for %s:%lld:%lld:%d:%d\n",
                 (long long)tls->dso_header.host,
                 (long long)tls->dso_header.pid,
                 (long long)tls->dso_header.posix_tid,
+                (long long)tls->dso_header.omp_tid,
                 (long long)tls->dso_header.rank);
 	}
 #endif
@@ -520,6 +539,8 @@ void cbtf_send_info()
     /* Initialize the offline "info" blob's header */
     CBTF_EventHeader local_header;
     CBTF_InitializeEventHeader(&local_header);
+    local_header.rank = monitor_mpi_comm_rank();
+    local_header.omp_tid = monitor_get_thread_num();
     
     /* Initialize the offline "info" blob */
     CBTF_Protocol_Offline_Parameters info;
@@ -537,9 +558,12 @@ void cbtf_send_info()
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
         fprintf(stderr,
-            "cbtf_send_info SENDS INFO for HOST %s, PID %lld, POSIX_TID %lld\n",
+            "cbtf_send_info SENDS INFO for %s:%lld:%lld:%d:%d\n",
                 local_header.host, (long long)local_header.pid, 
-                (long long)local_header.posix_tid);
+                (long long)local_header.posix_tid,
+                local_header.rank,
+                local_header.omp_tid
+		);
     }
 #endif
 
@@ -565,13 +589,14 @@ void cbtf_record_dsos()
     CBTF_EventHeader local_header;
     CBTF_InitializeEventHeader(&local_header);
     local_header.rank = monitor_mpi_comm_rank();
+    local_header.omp_tid = monitor_get_thread_num();
 
     /* Write the thread's initial address space to the appropriate buffer */
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d\n",
+	fprintf(stderr,"cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d:%d\n",
 		local_header.host, (long long)local_header.pid,
-		(long long)local_header.posix_tid, local_header.rank);
+		(long long)local_header.posix_tid, local_header.rank, local_header.omp_tid);
     }
 #endif
     CBTF_GetDLInfo(getpid(), NULL);
@@ -580,10 +605,10 @@ void cbtf_record_dsos()
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
            fprintf(stderr,
-            "cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d\n",
+            "cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d:%d\n",
 		   tls->data.linkedobjects.linkedobjects_len,
                    local_header.host, (long long)local_header.pid, 
-                   (long long)local_header.posix_tid, local_header.rank);
+                   (long long)local_header.posix_tid, local_header.rank, local_header.omp_tid);
 	}
 #endif
 	cbtf_offline_send_dsos(tls);
@@ -627,6 +652,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     CBTF_EventHeader local_header;
     CBTF_InitializeEventHeader(&local_header);
     local_header.rank = monitor_mpi_comm_rank();
+    local_header.omp_tid = monitor_get_thread_num();
     memcpy(&tls->dso_header, &local_header, sizeof(CBTF_EventHeader));
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
@@ -686,6 +712,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     tname.has_posix_tid = true;
     tname.posix_tid = local_header.posix_tid;
     tname.rank = monitor_mpi_comm_rank();
+    tname.omp_tid = monitor_get_thread_num();
     memcpy(&(tls->tname), &tname, sizeof(tname));
 
     tls->tgrp.names.names_len = 0;
@@ -751,7 +778,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-            fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d\n",
+            fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid,
 		    tls->dso_header.rank);
@@ -811,6 +838,7 @@ void cbtf_offline_record_dlopen(const char* dsoname,
     CBTF_EventHeader local_header;
     CBTF_InitializeEventHeader(&local_header);
     local_header.rank = monitor_mpi_comm_rank();
+    local_header.omp_tid = monitor_get_thread_num();
     memcpy(&tls->dso_header, &local_header, sizeof(CBTF_EventHeader));
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
@@ -859,6 +887,7 @@ void cbtf_offline_record_dlopen(const char* dsoname,
     tname.has_posix_tid = true;
     tname.posix_tid = local_header.posix_tid;
     tname.rank = monitor_mpi_comm_rank();
+    tname.omp_tid = monitor_get_thread_num();
     memcpy(&(tls->tname), &tname, sizeof(tname));
 
     tls->tgrp.names.names_len = 0;
@@ -899,10 +928,12 @@ void cbtf_offline_record_dlopen(const char* dsoname,
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-            fprintf(stderr,"cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d\n",
+            fprintf(stderr,"cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d:%d\n",
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid,
-		    tls->dso_header.rank);
+		    tls->dso_header.rank,
+		    tls->dso_header.omp_tid
+		    );
 	}
 #endif
 	cbtf_offline_send_dsos(tls);

@@ -710,8 +710,16 @@ if [ -z $CBTF_LIBDWARF_ROOT ]; then
 fi
 
 if [ -z $CBTF_DYNINST_ROOT ]; then
-   export CBTF_DYNINST_ROOT=$CBTF_ROOT
-   export DYNINST_ROOT=$CBTF_ROOT
+   if [ -f $CBTF_ROOT/lib64/libdyninstAPI.so ]; then
+     export CBTF_DYNINST_ROOT=$CBTF_ROOT
+     export DYNINST_ROOT=$CBTF_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_DYNINST_ROOT=$CBTF_ROOT
+     export DYNINST_ROOT=$CBTF_ROOT
+   else
+     export CBTF_DYNINST_ROOT="/usr"
+     export DYNINST_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_DYNINST_ROOT was not set, setting CBTF_DYNINST_ROOT=$CBTF_DYNINST_ROOT"
    fi

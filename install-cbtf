@@ -673,24 +673,48 @@ if [ -z $CBTF_MRNET_ROOT ]; then
 fi
 
 if [ -z $CBTF_XERCESC_ROOT ]; then
-   export CBTF_XERCESC_ROOT=$CBTF_ROOT
-   export XERCESC_ROOT=$CBTF_XERCES_ROOT
+   if [ -f $CBTF_ROOT/lib64/libxerces-c.so ]; then
+     export CBTF_XERCESC_ROOT=$CBTF_ROOT
+     export XERCESC_ROOT=$CBTF_XERCESC_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_XERCESC_ROOT=$CBTF_ROOT
+     export XERCESC_ROOT=$CBTF_XERCESC_ROOT
+   else
+     export CBTF_XERCESC_ROOT="/usr"
+     export XERCESC_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_XERCESC_ROOT was not set, setting CBTF_XERCESC_ROOT=$CBTF_XERCESC_ROOT"
    fi
 fi
 
 if [ -z $CBTF_PAPI_ROOT ]; then
-   export CBTF_PAPI_ROOT=$CBTF_ROOT
-   export PAPI_ROOT=$CBTF_PAPI_ROOT
+   if [ -f $CBTF_ROOT/lib64/libpapi.so ]; then
+     export CBTF_PAPI_ROOT=$CBTF_ROOT
+     export PAPI_ROOT=$CBTF_PAPI_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_PAPI_ROOT=$CBTF_ROOT
+     export PAPI_ROOT=$CBTF_PAPI_ROOT
+   else
+     export CBTF_PAPI_ROOT="/usr"
+     export PAPI_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_PAPI_ROOT was not set, setting CBTF_PAPI_ROOT=$CBTF_PAPI_ROOT"
    fi
 fi
 
 if [ -z $CBTF_LIBUNWIND_ROOT ]; then
-   export CBTF_LIBUNWIND_ROOT=$CBTF_ROOT
-   export LIBUNWIND_ROOT=$CBTF_ROOT
+   if [ -f $CBTF_ROOT/lib64/libunwind.so ]; then
+     export CBTF_LIBUNWIND_ROOT=$CBTF_ROOT
+     export LIBUNWIND_ROOT=$CBTF_LIBUNWIND_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_LIBUNWIND_ROOT=$CBTF_ROOT
+     export LIBUNWIND_ROOT=$CBTF_LIBUNWIND_ROOT
+   else
+     export CBTF_LIBUNWIND_ROOT="/usr"
+     export LIBUNWIND_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_LIBUNWIND_ROOT was not set, setting CBTF_LIBUNWIND_ROOT=$CBTF_LIBUNWIND_ROOT"
    fi
@@ -705,16 +729,32 @@ if [ -z $CBTF_LIBMONITOR_ROOT ]; then
 fi
 
 if [ -z $CBTF_LIBELF_ROOT ]; then
-   export CBTF_LIBELF_ROOT=$CBTF_ROOT
-   export LIBELF_ROOT=$CBTF_ROOT
+   if [ -f $CBTF_ROOT/lib64/libelf.so ]; then
+     export CBTF_LIBELF_ROOT=$CBTF_ROOT
+     export LIBELF_ROOT=$CBTF_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_LIBELF_ROOT=$CBTF_ROOT
+     export LIBELF_ROOT=$CBTF_ROOT
+   else
+     export CBTF_LIBELF_ROOT="/usr"
+     export LIBELF_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_LIBELF_ROOT was not set, setting CBTF_LIBELF_ROOT=$CBTF_LIBELF_ROOT"
    fi
 fi
 
 if [ -z $CBTF_LIBDWARF_ROOT ]; then
-   export CBTF_LIBDWARF_ROOT=$CBTF_ROOT
-   export LIBDWARF_ROOT=$CBTF_ROOT
+   if [ -f $CBTF_ROOT/lib64/libelf.so ]; then
+     export CBTF_LIBDWARF_ROOT=$CBTF_ROOT
+     export LIBDWARF_ROOT=$CBTF_ROOT
+   elif [ -f $CBTF_ROOT/lib/libdyninstAPI.so ]; then
+     export CBTF_LIBDWARF_ROOT=$CBTF_ROOT
+     export LIBDWARF_ROOT=$CBTF_ROOT
+   else
+     export CBTF_LIBDWARF_ROOT="/usr"
+     export LIBDWARF_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_LIBDWARF_ROOT was not set, setting CBTF_LIBDWARF_ROOT=$CBTF_LIBDWARF_ROOT"
    fi
@@ -744,19 +784,36 @@ if [ -z $CBTF_DYNINST_VERS ]; then
 fi
 
 if [ -z $CBTF_BINUTILS_ROOT ]; then
-   export CBTF_BINUTILS_ROOT=$CBTF_ROOT
-   #export CBTF_BINUTILS_ROOT_LIB=$CBTF_ROOT/lib
+   if [ -f $CBTF_ROOT/lib64/libbfd.so ]; then
+     export CBTF_BINUTILS_ROOT=$CBTF_ROOT
+     export BINUTILS_ROOT=$CBTF_ROOT
+   elif [ -f $CBTF_ROOT/lib/libbfd.so ]; then
+     export CBTF_BINUTILS_ROOT=$CBTF_ROOT
+     export BINUTILS_ROOT=$CBTF_ROOT
+   else
+     export CBTF_BINUTILS_ROOT="/usr"
+     export BINUTILS_ROOT="/usr"
+   fi
    if [ $CBTF_DEBUG_BUILD ]; then
      echo "[install-cbtf: CBTF_BINUTILS_ROOT was not set, using CBTF_BINUTILS_ROOT=$CBTF_BINUTILS_ROOT"
    fi
 fi
 
 if [ -z $CBTF_BOOST_ROOT ]; then
-   export CBTF_BOOST_ROOT=$CBTF_ROOT
-   export BOOST_ROOT=$CBTF_BOOST_ROOT
-   export Boost_NO_SYSTEM_PATH=1
+   if [ -f $CBTF_ROOT/lib64/libboost_system.so ]; then
+     export CBTF_BOOST_ROOT=$CBTF_ROOT
+     export BOOST_ROOT=$CBTF_ROOT
+     export Boost_NO_SYSTEM_PATH=1
+   elif [ -f $CBTF_ROOT/lib/libboost_system.so ]; then
+     export CBTF_BOOST_ROOT=$CBTF_ROOT
+     export BOOST_ROOT=$CBTF_ROOT
+     export Boost_NO_SYSTEM_PATH=1
+   else
+     export CBTF_BOOST_ROOT="/usr"
+     export BOOST_ROOT="/usr"
+   fi
    if [ -z $BOOST_INCLUDEDIR ]; then
-     export BOOST_INCLUDEDIR=${dir}/include/boost
+     export BOOST_INCLUDEDIR=$BOOST_ROOT/include/boost
    fi
 
    if [ -z $BOOST_LIBRARYDIR ]; then

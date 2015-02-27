@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -23,6 +23,7 @@ testXDR_CXXFLAGS = \
 	-DTOPDIR="\"$(top_srcdir)\"" \
 	@BOOST_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
+	@CORE_CPPFLAGS@ \
 	@BINUTILS_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@
 
@@ -31,6 +32,7 @@ testXDR_LDFLAGS = \
 	@BOOST_LDFLAGS@ \
 	@LIBXERCES_C_LDFLAGS@ \
 	@CBTF_LDFLAGS@ \
+	@CORE_LDFLAGS@ \
 	@BINUTILS_LDFLAGS@ \
 	@MRNET_LDFLAGS@
 

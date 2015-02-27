@@ -30,17 +30,21 @@ AC_DEFUN([AX_LW_MRNET], [
                                [MRNet installation @<:@/usr@:>@]),
                 mrnet_dir=$withval, mrnet_dir="/usr")
 
+    MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
     if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+    elif test -f $mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+       MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
     elif test -f $mrnet_dir/$abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir -Dos_linux"
     elif test -f $mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir -Dos_linux"
+       MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
     else
        MRNET_CPPFLAGS="-I$mrnet_dir/include -Dos_linux"
     fi
 
-    MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
     MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"
     MRNET_LW_LIBS="$MRNET_LW_LIBS -lpthread -ldl"
     MRNET_LWR_LIBS="-Wl,--whole-archive -lmrnet_lightweight_r -lxplat_lightweight_r -Wl,--no-whole-archive"

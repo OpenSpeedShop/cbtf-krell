@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2014 Krell Institute. All Rights Reserved.
+# Copyright (c) 2010-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -31,18 +31,21 @@ AC_DEFUN([AX_MRNET], [
                                [MRNet installation @<:@/usr@:>@]),
                 mrnet_dir=$withval, mrnet_dir="/usr")
 
+    MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
     if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
     elif test -f $mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+       MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
     elif test -f $mrnet_dir/$abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir -Dos_linux"
     elif test -f $mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir -Dos_linux"
+       MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
     else
        MRNET_CPPFLAGS="-I$mrnet_dir/include -Dos_linux"
     fi
-    MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
+
     MRNET_LIBS="-Wl,--whole-archive -lmrnet -lxplat -Wl,--no-whole-archive"
     MRNET_LIBS="$MRNET_LIBS -lpthread -ldl"
     MRNET_LW_LIBS="-Wl,--whole-archive -lmrnet_lightweight -lxplat_lightweight -Wl,--no-whole-archive"

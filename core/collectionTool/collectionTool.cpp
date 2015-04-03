@@ -369,7 +369,7 @@ int main(int argc, char** argv)
 	    boost::program_options::value<std::string>(&arch)->default_value(""),
 	    "automatic topology type defaults to a standard cluster.  These options are specific to a Cray or BlueGene. [cray | bluegene]")
         ("topology",
-	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
+	    boost::program_options::value<std::string>(&topology)->default_value(""),
 	    "By default the tool will create a topology for you.  Use this option to pass a path name to a valid mrnet topology file. (i.e. from mrnet_topgen). Use this options with care.")
         ("connections",
 	    boost::program_options::value<std::string>(&connections)->default_value(default_connections),

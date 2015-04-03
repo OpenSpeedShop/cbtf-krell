@@ -233,7 +233,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	        connect_to_mrnet();
 		tls->connected_to_mrnet = true;
 		// defer send_attached_to_threads_message()
-		send_attached_to_threads_message();
+		// send_attached_to_threads_message();
 		// defer cbtf_record_dsos()
 		cbtf_send_info();
 		cbtf_offline_service_start_timer();

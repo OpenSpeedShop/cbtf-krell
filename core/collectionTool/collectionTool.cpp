@@ -55,10 +55,11 @@ namespace {
         wait.tv_nsec = 500 * 1000 * 1000;
         while(nanosleep(&wait, &wait));
     }
+
     bool is_debug_timing_enabled = (getenv("CBTF_TIME_CLIENT_EVENTS") != NULL);
 }
 
-// Experiment Utilities.
+// Client Utilities.
 
 // Function that returns the number of BE processes that are required for LW MRNet BEs.
 // The function tokenizes the program command and searches for -np or -n.
@@ -104,7 +105,7 @@ static bool isOpenMPExe(const std::string exe) {
     SymtabAPISymbols stapi_symbols;
     bool found_openmp = stapi_symbols.foundLibrary(exe,"libiomp5");
     if (!found_openmp) {
-       found_openmp = stapi_symbols.foundLibrary(exe,"libgomp");
+	found_openmp = stapi_symbols.foundLibrary(exe,"libgomp");
     }
     return found_openmp;
 }
@@ -115,23 +116,17 @@ static bool isOpenMPExe(const std::string exe) {
 // We catagorize these into three types: mpi, seq runing under mpi driver, and sequential
 //
 static exe_class_types typeOfExecutable ( std::string program, const std::string exe ) {
-
-   exe_class_types tmp_exe_type;
-
-   if ( isMpiExe(exe) ) { 
-          tmp_exe_type = MPI_exe_type;
-   } else {
-
-    if ( std::string::npos != program.find("aprun")) {
-        tmp_exe_type = SEQ_RunAs_MPI_exe_type;
+    exe_class_types tmp_exe_type;
+    if ( isMpiExe(exe) ) { 
+	tmp_exe_type = MPI_exe_type;
     } else {
-        tmp_exe_type = SEQ_exe_type;
+	if ( std::string::npos != program.find("aprun")) {
+	    tmp_exe_type = SEQ_RunAs_MPI_exe_type;
+	} else {
+	    tmp_exe_type = SEQ_exe_type;
+	}
     }
-
-  }
- 
-  return tmp_exe_type;
-
+    return tmp_exe_type;
 }
 
 // Function that returns whether the filename is an executable file.
@@ -142,11 +137,11 @@ static bool is_executable(std::string file)
 
     // Call stat with filename which will fill status_buffer
     if (stat(file.c_str(), &status_buffer) < 0)
-        return false;
+	return false;
 
     // Examine for executable status
     if ((status_buffer.st_mode & S_IEXEC) != 0)
-        return true;
+	return true;
 
     return false;
 }
@@ -162,15 +157,15 @@ static std::string getMPIExecutableFromCommand(std::string command) {
     boost::tokenizer<boost::char_separator<char> > btokens(command, sep);
 
     BOOST_FOREACH (const std::string& t, btokens) {
-      if (is_executable( t )) {
-         exe_class_types local_exe_type = typeOfExecutable(command, t);
-         if (local_exe_type == MPI_exe_type || local_exe_type == SEQ_RunAs_MPI_exe_type ) {
-           return t;
-         }
-      }
+	if (is_executable( t )) {
+	    exe_class_types local_exe_type = typeOfExecutable(command, t);
+	    if (local_exe_type == MPI_exe_type || local_exe_type == SEQ_RunAs_MPI_exe_type ) {
+		return t;
+	    }
+	}
     } // end foreach
 
-  return retval;
+    return retval;
 }
 
 
@@ -185,15 +180,15 @@ static std::string getSeqExecutableFromCommand(std::string command) {
     boost::tokenizer<boost::char_separator<char> > btokens(command, sep);
 
     BOOST_FOREACH (const std::string& t, btokens) {
-      if (is_executable( t )) {
-         exe_class_types local_exe_type = typeOfExecutable(command, t);
-         if (local_exe_type == SEQ_exe_type ) {
-           return t;
-         }
-      }
+	if (is_executable( t )) {
+	    exe_class_types local_exe_type = typeOfExecutable(command, t);
+	    if (local_exe_type == SEQ_exe_type ) {
+		return t;
+	    }
+	}
     } // end foreach
 
-  return retval;
+    return retval;
 }
 
 /**
@@ -228,7 +223,9 @@ class FEThread
 
 #ifndef NDEBUG
     if (is_debug_timing_enabled) {
-	std::cerr << Time::Now() << " collectionTool FE thread starts cbtf network." << std::endl;
+	std::cerr << Time::Now()
+	<< " collectionTool FE thread starts cbtf network."
+	<< std::endl;
     }
 #endif
 
@@ -256,7 +253,6 @@ class FEThread
         backend_attach_count_component, "value", launcher, "BackendAttachCount"
         );
 
-
     shared_ptr<ValueSource<filesystem::path> > backend_attach_file =
         ValueSource<filesystem::path>::instantiate();
     Component::Instance backend_attach_file_component = 
@@ -264,7 +260,6 @@ class FEThread
     Component::connect(
         backend_attach_file_component, "value", launcher, "BackendAttachFile"
         );    
-
 
     shared_ptr<ValueSource<filesystem::path> > topology_file =
         ValueSource<filesystem::path>::instantiate();
@@ -274,14 +269,12 @@ class FEThread
         topology_file_component, "value", launcher, "TopologyFile"
         );
 
-    //shared_ptr<ValueSink<bool> > done = ValueSink<bool>::instantiate();
-    //Component::Instance outputs_component =
-     //       reinterpret_pointer_cast<Component>(done);
-    //Component::connect(network, "output", outputs_component, "value");
-    shared_ptr<ValueSink<bool> > threads_finished = ValueSink<bool>::instantiate();
+    shared_ptr<ValueSink<bool> > threads_finished =
+		ValueSink<bool>::instantiate();
     Component::Instance threads_finished_output_component =
-            reinterpret_pointer_cast<Component>(threads_finished);
-    Component::connect(network, "threads_finished", threads_finished_output_component, "value");
+		reinterpret_pointer_cast<Component>(threads_finished);
+    Component::connect(network, "threads_finished",
+		       threads_finished_output_component, "value");
 
 
     Component::connect(launcher, "Network", network, "Network");
@@ -293,20 +286,26 @@ class FEThread
     std::map<std::string, Type> inputs = network->getInputs();
 
     if (inputs.find("numBE") != inputs.end()) {
-    boost::shared_ptr<ValueSource<int> > numberBackends =
-        ValueSource<int>::instantiate();
-    Component::Instance numberBackends_component =
-        boost::reinterpret_pointer_cast<Component>(numberBackends);
-    Component::connect(numberBackends_component, "value", network, "numBE");
-    *numberBackends = numBE;
+	boost::shared_ptr<ValueSource<int> > numberBackends =
+		ValueSource<int>::instantiate();
+	Component::Instance numberBackends_component =
+		boost::reinterpret_pointer_cast<Component>(numberBackends);
+	Component::connect(numberBackends_component, "value", network, "numBE");
+	*numberBackends = numBE;
     }
 
 #ifndef NDEBUG
     if (is_debug_timing_enabled) {
-	std::cerr << Time::Now() << " collectionTool FE cbtf network running." << std::endl;
+	std::cerr << Time::Now() << " collectionTool FE cbtf network running."
+	<< std::endl;
     }
 #endif
 
+
+    // component network emit a threads_finished signal wheh
+    // all ltwt BE's and all threads attached to said backends
+    // have terminated.  We can fall out of this thread and
+    // join in main to finish up and terminate.
     bool threads_done = false;
     while (true) {
         threads_done = *threads_finished;
@@ -318,7 +317,8 @@ class FEThread
     }        
 #ifndef NDEBUG
     if (is_debug_timing_enabled) {
-	std::cerr << Time::Now() << " collectionTool FE cbtf network finished." << std::endl;
+	std::cerr << Time::Now() << " collectionTool FE cbtf network finished."
+	<< std::endl;
     }
 #endif
 
@@ -338,7 +338,8 @@ int main(int argc, char** argv)
 
     unsigned int numBE;
     bool isMPI;
-    std::string topology, arch, connections, collector, program, mpiexecutable, cbtfrunpath, seqexecutable;
+    std::string topology, arch, connections, collector, program, mpiexecutable,
+		cbtfrunpath, seqexecutable;
 
 
     // create a default for topology file.
@@ -348,7 +349,7 @@ int main(int argc, char** argv)
 
 
     std::string default_topology(curr_dir);
-    default_topology += "/cbtf_topology";
+    default_topology += "/cbtfAutoTopology";
 
     // create a default for connections file.
     std::string default_connections(curr_dir);
@@ -368,7 +369,7 @@ int main(int argc, char** argv)
 	    boost::program_options::value<std::string>(&arch)->default_value(""),
 	    "automatic topology type defaults to a standard cluster.  These options are specific to a Cray or BlueGene. [cray | bluegene]")
         ("topology",
-	    boost::program_options::value<std::string>(&topology)->default_value(""),
+	    boost::program_options::value<std::string>(&topology)->default_value(default_topology),
 	    "By default the tool will create a topology for you.  Use this option to pass a path name to a valid mrnet topology file. (i.e. from mrnet_topgen). Use this options with care.")
         ("connections",
 	    boost::program_options::value<std::string>(&connections)->default_value(default_connections),
@@ -380,7 +381,7 @@ int main(int argc, char** argv)
 	    boost::program_options::value<std::string>(&program)->default_value(""),
 	    "Program to collect data from, Program with arguments needs double quotes.  If program is not specified this client will start the mrnet tree and wait for the user to manually attach backends in another window via cbtfrun.")
         ("cbtfrunpath",
-            boost::program_options::value<std::string>(&cbtfrunpath)->default_value(""),
+            boost::program_options::value<std::string>(&cbtfrunpath)->default_value("cbtfrun"),
             "Path to cbtfrun to collect data from, If target is cray or bluegene, use this to point to the targeted client.")
         ("mpiexecutable",
 	    boost::program_options::value<std::string>(&mpiexecutable)->default_value(""),
@@ -401,49 +402,46 @@ int main(int argc, char** argv)
 
 
     // Generate the --mpiexecutable argument value if it is not set
-      
     if (program != "" && mpiexecutable == "") {
-
-      // Find out if there is an mpi driver to key off of
-      // Then match the mpiexecutable value to the program name
-      mpiexecutable = getMPIExecutableFromCommand(program);
-
+	// Find out if there is an mpi driver to key off of
+	// Then match the mpiexecutable value to the program name
+	mpiexecutable = getMPIExecutableFromCommand(program);
     }
 
     if (mpiexecutable != "") {
-         numBE = getBEcountFromCommand(program);
+	numBE = getBEcountFromCommand(program);
     }
 
     if (vm.count("help")) {
-        std::cout << desc << std::endl;
-        return 1;
+	std::cout << desc << std::endl;
+	return 1;
     }
 
     bool finished = false;
     std::string aprunLlist ="";
 
     if (numBE == 0) {
-        std::cout << desc << std::endl;
-        return 1;
+	std::cout << desc << std::endl;
+	return 1;
     }
 
     // TODO: pass numBE to CBTFTopology and record as the number
     // of application processes.
     CBTFTopology cbtftopology;
     if (topology.empty()) {
-      if (arch == "cray") {
-          cbtftopology.autoCreateTopology(BE_CRAY_ATTACH,numBE);
-      } else {
-          cbtftopology.autoCreateTopology(BE_ATTACH,numBE);
-      }
-      topology = cbtftopology.getTopologyFileName();
-      std::cerr << "Generated topology file: " << topology << std::endl;
+	if (arch == "cray") {
+	    cbtftopology.autoCreateTopology(BE_CRAY_ATTACH,numBE);
+	} else {
+	    cbtftopology.autoCreateTopology(BE_ATTACH,numBE);
+	}
+	topology = cbtftopology.getTopologyFileName();
+	std::cerr << "Generated topology file: " << topology << std::endl;
     }
 
     // verify valid numBE.
     if (numBE == 0) {
-        std::cout << desc << std::endl;
-        return 1;
+	std::cout << desc << std::endl;
+	return 1;
     } else if (program == "" && numBE > 0) {
 	// this allows us to start the mrnet client FE
 	// and then start the program with collector in
@@ -451,39 +449,30 @@ int main(int argc, char** argv)
 	FEThread fethread;
 	fethread.start(topology,connections,collector,numBE,finished);
 	std::cout << "Running Frontend for " << collector << " collector."
-	  << "\nNumber of mrnet backends: "  << numBE
-          << "\nTopology file used: " << topology << std::endl;
+	    << "\nNumber of mrnet backends: "  << numBE
+	    << "\nTopology file used: " << topology << std::endl;
 	std::cout << "Start mrnet backends now..." << std::endl;
 	// ctrl-c to exit.  need cbtfdemo to notify us when all threads
 	// have finised.
 	while(true);
-        fethread.join();
+	fethread.join();
 	exit(0);
     } else {
-        std::cout << "Running " << collector << " collector."
-	  << "\nProgram: " << program
-	  << "\nNumber of mrnet backends: "  << numBE
-          << "\nTopology file used: " << topology << std::endl;
-    }
+	std::cout << "Running " << collector << " collector."
+	    << "\nProgram: " << program
+	    << "\nNumber of mrnet backends: "  << numBE
+            << "\nTopology file used: " << topology << std::endl;
 
-    // TODO: need to cleanly terminate mrnet.
-    FEThread fethread;
-    fethread.start(topology,connections,collector,numBE,finished);
-    sleep(3);
+	// TODO: need to cleanly terminate mrnet.
+	FEThread fethread;
+	fethread.start(topology,connections,collector,numBE,finished);
 
-    // simple fork of process to run the program with collector.
-    pid_t child,w;
-    int status;
-
-    child = fork();
-    if(child < 0){
-        std::cout << "fork failed";
-    } else if(child == 0){
+	// sleep just a bit to allow fethread to initiate component network.
+	sleep(1);
 
         bool exe_has_openmp = false;
 
-        if (!mpiexecutable.empty()) {
-
+	if (!mpiexecutable.empty()) {
 	    size_t pos;
 	    if (cbtftopology.getIsCray()) {
 		if (std::string::npos != program.find("aprun")) {
@@ -498,83 +487,51 @@ int main(int argc, char** argv)
 
 	    pos = program.find(mpiexecutable);
 
-            exe_has_openmp = isOpenMPExe(mpiexecutable);
+	    exe_has_openmp = isOpenMPExe(mpiexecutable);
 
-            exe_class_types appl_type =  typeOfExecutable(program, mpiexecutable);
+	    exe_class_types appl_type =  typeOfExecutable(program, mpiexecutable);
  
-            if (appl_type == MPI_exe_type) {
+	    if (appl_type == MPI_exe_type) {
+		if (exe_has_openmp) {
+		    program.insert(pos, " " + cbtfrunpath + " --mrnet --mpi -c " + collector + " --openmp" + " \"");
+		} else {
+		    program.insert(pos, " " + cbtfrunpath + " --mrnet --mpi -c " + collector + " \"");
+		}
+	    } else {
+		if (exe_has_openmp) {
+		    program.insert(pos, " " + cbtfrunpath + " --mrnet -c " + collector + " --openmp" + " \"");
+		} else {
+		    program.insert(pos, " " + cbtfrunpath + " --mrnet -c " + collector + " \"");
+		}
+	    }
 
-              if (!cbtfrunpath.empty()) {
-                if (exe_has_openmp) {
-                  program.insert(pos, " " + cbtfrunpath + " --mrnet --mpi -c " + collector + " --openmp" + " \"");
-                } else {
-                  program.insert(pos, " " + cbtfrunpath + " --mrnet --mpi -c " + collector + " \"");
-                }
-              } else {
-                if (exe_has_openmp) {
-                  program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " --openmp" + " \"");
-                } else {
-                  program.insert(pos, " cbtfrun --mrnet --mpi -c " + collector + " \"");
-                }
-              }
+	    program.append("\"");
 
-            } else {
-
-              if (!cbtfrunpath.empty()) {
-                if (exe_has_openmp) {
-                  program.insert(pos, " " + cbtfrunpath + " --mrnet -c " + collector + " --openmp" + " \"");
-                } else {
-                  program.insert(pos, " " + cbtfrunpath + " --mrnet -c " + collector + " \"");
-                }
-              } else {
-                if (exe_has_openmp) {
-                  program.insert(pos, " cbtfrun --mrnet -c " + collector + " --openmp" + " \"");
-                } else {
-                  program.insert(pos, " cbtfrun --mrnet -c " + collector + " \"");
-                }
-              }
-
-            }
-            program.append("\"");
-            std::cerr << "executing mpi program: " << program << std::endl;
+	    std::cerr << "executing mpi program: " << program << std::endl;
 	    
-            ::system(program.c_str());
+	    ::system(program.c_str());
 
 	} else {
-    	    const char * command = "cbtfrun";
-            if (!cbtfrunpath.empty()) {
-                command = cbtfrunpath.c_str() ;
-            } 
 
-            seqexecutable = getSeqExecutableFromCommand(program);
-            exe_has_openmp = isOpenMPExe(seqexecutable);
+	    seqexecutable = getSeqExecutableFromCommand(program);
+	    exe_has_openmp = isOpenMPExe(seqexecutable);
 
+	    std::string cmdtorun;
+	    cmdtorun.append(cbtfrunpath + " -m -c " + collector);
 
-            if (exe_has_openmp) {
-              std::cerr << "executing sequential program: "
-	 	  << command << " -m -c " << collector << " --openmp" << " " << program << std::endl;
-            } else {
-              std::cerr << "executing sequential program: "
-	 	  << command << " -m -c " << collector << " " << program << std::endl;
-            } 
+	    if (exe_has_openmp) {
+		cmdtorun.append(" --openmp ");
+	    } else {
+		cmdtorun.append(" ");
 
-            if (exe_has_openmp) {
-              execlp(command,"-m", "-c", collector.c_str(), "--openmp", program.c_str(), NULL);
-            } else {
-              execlp(command,"-m", "-c", collector.c_str(), program.c_str(), NULL);
-            }
+	    } 
+
+	    cmdtorun.append(program);
+	    std::cerr << "executing sequential program: " << cmdtorun << std::endl;
+	    ::system(cmdtorun.c_str());
 	}
-    } else {
 
-	do {
-	    w = waitpid(child, &status, WUNTRACED | WCONTINUED);
-	    if (w == -1) {
-		perror("waitpid");
-		exit(EXIT_FAILURE);
-	    }
-	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
-
-        fethread.join();
+	fethread.join();
     }
 
 #ifndef NDEBUG

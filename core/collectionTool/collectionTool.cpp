@@ -425,6 +425,14 @@ int main(int argc, char** argv)
 	return 1;
     }
 
+    // start with a fresh connections file.
+    // FIXME: this likely would remove any connections file passed
+    // on the command line. Should we allow that any more...
+    bool connections_exists = boost::filesystem::exists(connections);
+    if (connections_exists) {
+	boost::filesystem::remove(connections);
+    }
+
     // TODO: pass numBE to CBTFTopology and record as the number
     // of application processes.
     CBTFTopology cbtftopology;
@@ -467,8 +475,16 @@ int main(int argc, char** argv)
 	FEThread fethread;
 	fethread.start(topology,connections,collector,numBE,finished);
 
-	// sleep just a bit to allow fethread to initiate component network.
-	sleep(1);
+	// sleep was not sufficient to ensure we have a connections file
+	// written by the fethread.  Without the connections file the
+	// ltwt mrnet BE's cannot connect to the netowrk.
+	// Wait for the connections file to be written before proceeding
+	// to stat the mpi job and allowing the ltwt BEs to connect to
+	// the component network instantiated by the fethread.
+	bool connections_written = boost::filesystem::exists(connections);
+	while (!connections_written) {
+	   connections_written = boost::filesystem::exists(connections);
+	}
 
         bool exe_has_openmp = false;
 

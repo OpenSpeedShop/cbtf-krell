@@ -86,11 +86,14 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
                         rank,phost,pport,prank);
 		}
 #endif
-                return 0;
+		return 0;
             }
 
-        }
-        fclose(cfile);;
+	}
+	fclose(cfile);;
+    } else {
+	fprintf(stderr, "CBTF_MRNet_getParentInfo: Error opening %s.  File does not exist.\n", file);
+	abort();
     }
 
     return 1;
@@ -106,7 +109,6 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     if (connfile == NULL) {
 	const char* connections_dir = getenv("PWD");
 	char buf[4096];
-	//sprintf(buf,"%s%s",connections_dir,"/.cbtf/attachBE_connections");
 	sprintf(buf,"%s%s",connections_dir,"/attachBE_connections");
 	connfile = strdup(buf);
     }
@@ -130,9 +132,10 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
 
     if( CBTF_MRNet_getParentInfo(connfile, rank_to_use, parHostname, parPort, parRank) != 0 ) {
-	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file\n");
-	fprintf(stderr, "CBTF_MRNet_LW_connect: myRank %s, mrank %d, con_rank %d\n",myRank,mRank,rank_to_use);
-        return -1;
+	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file %s\n",connfile);
+	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed for myRank %s, mrank %d, con_rank %d\n",myRank,mRank,rank_to_use);
+	abort();
+	return -1;
     }
 
     while( gethostname(myHostname, 64) == -1 ) {}

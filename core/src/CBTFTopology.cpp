@@ -440,10 +440,15 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 			} else {
 			    std::ostringstream ostr;
                             ostr << baseNodeName;
+			    // FIXME: Why is this defaulted to padding?
+			    // On chama system, this adds 0 characters to node
+			    // names when in fact they are not needed.
+#if 0
 			    for (int jl = 0 ; jl < minLength - tLength; jl++) {
 				// pad with leading 0's as needed
 				ostr << 0;
 			    }
+#endif
 			    ostr << j;
                             dm_nodelist.push_back(ostr.str());
 			}

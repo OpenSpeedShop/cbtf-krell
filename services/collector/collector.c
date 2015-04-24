@@ -83,7 +83,7 @@ extern void cbtf_send_info();
  * Key used for looking up our thread-local storage. This key <em>must</em>
  * be globally unique across the entire Open|SpeedShop code base.
  */
-static const uint32_t TLSKey = 0x00001EF3;
+static const uint32_t TLSKey = 0x0000EEF3;
 
 #else
 

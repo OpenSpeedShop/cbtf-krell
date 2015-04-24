@@ -160,7 +160,7 @@ typedef struct {
  * unique from any other key used by any of the CBTF services.
  */
 #if defined(PROFILE)
-static const uint32_t TLSKey = 0x0000FEF8;
+static const uint32_t TLSKey = 0x00001EF9;
 #else
 #if defined(EXTENDEDTRACE)
 static const uint32_t TLSKey = 0x00001EF8;

@@ -110,7 +110,7 @@ typedef struct {
  * Key used to look up our thread-local storage. This key <em>must</em> be
  * unique from any other key used by any of the CBTF services.
  */
-static const uint32_t TLSKey = 0x00002EF8;
+static const uint32_t TLSKey = 0x00001EFE ;
 int pthreads_init_tls_done = 0;
 
 #else

@@ -304,10 +304,8 @@ void send_thread_state_changed_message()
 
     if (tls == NULL) {
 #ifndef NDEBUG
-	if (tls->debug_mrnet) {
-	    fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
+        fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
 		monitor_mpi_comm_rank());
-	}
 #endif
 	return;
     }

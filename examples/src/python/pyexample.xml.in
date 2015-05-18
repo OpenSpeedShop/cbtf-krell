@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Copyright (c) 2010 Krell Institute. All Rights Reserved.
+Copyright (c) 2010-2015 Krell Institute. All Rights Reserved.
     
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -39,7 +39,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>pyexample_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>pyExample.so</Plugin>
 
       <!--
@@ -118,7 +118,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Network>
       <Type>pyexample_Backend</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>pyExample.so</Plugin>
 
       <Component>

@@ -7,18 +7,18 @@
 # for  libcbtf-mrnet-backend to call through an environment variable.
 # CBTF_MRNET_BACKEND_PATH.
 # For this installation its location is:
-# @@cbtfinstalldir@@/sbin/cbtf_libcbtf_mrnet_backend.
+# @cbtfinstalldir@/sbin/cbtf_libcbtf_mrnet_backend.
 #
 # rsh starts with no env.  We need at a minumum the library
 # paths set for cbtf and mrnet.
 # Base these on the configuration values.
 #
-mrnetlibdir=@@libmrnetdir@@/@@machine_dependent_libdir@@
-cbtflibdir=@@cbtfinstalldir@@/@@machine_dependent_libdir@@
+mrnetlibdir=@libmrnetdir@/@machine_dependent_libdir@
+cbtflibdir=@cbtfinstalldir@/@machine_dependent_libdir@
 
 # location of the real mrnet_commnode.
 #
-libcbtfmrnetbackend=@@cbtfinstalldir@@/bin/libcbtf-mrnet-backend
+libcbtfmrnetbackend=@cbtfinstalldir@/bin/libcbtf-mrnet-backend
 
 #set up the LD_LIBRARYPATH
 #

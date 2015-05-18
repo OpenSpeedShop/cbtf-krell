@@ -70,7 +70,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
       <Type>memNetwork_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>memPlugin.so</Plugin>
 
@@ -203,7 +203,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     <Network>
       <Type>memNetwork_Backend</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>memPlugin.so</Plugin>
       <Plugin>mrnetPlugin.so</Plugin>
 

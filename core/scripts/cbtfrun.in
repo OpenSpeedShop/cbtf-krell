@@ -3,19 +3,19 @@
 
 # The machine dependent abi libdir name has been computed 
 # so use the information from one central location. 
-machlibdir=@@machine_dependent_libdir@@
-alt_machlibdir=@@alt_machine_dependent_libdir@@
+machlibdir=@machine_dependent_libdir@
+alt_machlibdir=@alt_machine_dependent_libdir@
 
-monitor_prefix=@@libmonitordir@@
+monitor_prefix=@libmonitordir@
 monitor_exec_prefix="${monitor_prefix}"
 monitor_libdir="${monitor_prefix}/${machlibdir}"
 libmonitor="${monitor_libdir}/libmonitor.so"
 
-papi_prefix=@@libpapidir@@
+papi_prefix=@libpapidir@
 papi_libdir="${papi_prefix}/${machlibdir}"
 libpapi="${papi_libdir}/libpapi.so"
 
-libunwind_prefix=@@libunwinddir@@
+libunwind_prefix=@libunwinddir@
 libunwind_libdir="${libunwind_prefix}/${machlibdir}"
 libunwind="${libunwind_libdir}/libunwind.so"
 
@@ -25,7 +25,7 @@ libunwind="${libunwind_libdir}/libunwind.so"
 ## existance of the ompt_service so below would likely ensure that
 ## at least when the ctf-krell services where built ompt.h
 ## was found.  But checking at runtime may be safest.
-libiomp_prefix=@@libiompdir@@
+libiomp_prefix=@libiompdir@
 libiomp_libdir=
 libiomp=
 use_ompt="false"
@@ -39,7 +39,7 @@ elif test -f ${libiomp_prefix}/${altmachlibdir}/libiomp5.so; then
   libiomp="${libiomp_prefix}/${altmachlibdir}/libiomp5.so"
 fi
 
-libmrnet_prefix=@@libmrnetdir@@
+libmrnet_prefix=@libmrnetdir@
 libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
 libmrnet_r="${libmrnet_libdir}/libmrnet_lightweight_r.so"
@@ -47,7 +47,7 @@ libxplat="${libmrnet_libdir}/libxplat_lightweight.so"
 libxplat_r="${libmrnet_libdir}/libxplat_lightweight_r.so"
 
 
-cbtf_prefix=@@cbtfinstalldir@@
+cbtf_prefix=@cbtfinstalldir@
 cbtf_libdir="${cbtf_prefix}/${machlibdir}"
 cbtf_bindir="${cbtf_prefix}/bin"
 cbtf_plugins="${cbtf_libdir}/KrellInstitute/Collectors"
@@ -66,14 +66,14 @@ send_service="${cbtf_libdir}/libcbtf-services-send.so"
 timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
 unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
 
-lam_prefix=@@lamdir@@
-lampi_prefix=@@lampidir@@
-mpich_prefix=@@mpichdir@@
-mpich2_prefix=@@mpich2dir@@
-mvapich_prefix=@@mvapichdir@@
-mvapich2_prefix=@@mvapich2dir@@
-mpt_prefix=@@mptdir@@
-openmpi_prefix=@@openmpidir@@
+lam_prefix=@lamdir@
+lampi_prefix=@lampidir@
+mpich_prefix=@mpichdir@
+mpich2_prefix=@mpich2dir@
+mvapich_prefix=@mvapichdir@
+mvapich2_prefix=@mvapich2dir@
+mpt_prefix=@mptdir@
+openmpi_prefix=@openmpidir@
 
 if test -f ${mpich2_prefix}/${machlibdir}/libfmpich.so; then
   f_mpich2_libs="${mpich2_prefix}/${machlibdir}/libfmpich.so"
@@ -89,7 +89,7 @@ fi
 
 output_dir=
 
-default_mpi_impl=@@cbtfdefaultmpi@@
+default_mpi_impl=@cbtfdefaultmpi@
 
 if [ -n "$CBTF_MPI_IMPLEMENTATION" ]
 then

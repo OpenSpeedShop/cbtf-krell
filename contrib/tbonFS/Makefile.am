@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -120,8 +120,8 @@ tbonFS.xml: tbonFS.xml.in
 
 	@rm -f tbonFS.xml
 	@sed \
-                -e 's,@@contriblib_location@@,$(contribplugindir),' \
-                -e 's,@@cbtflib_location@@,$(libdir),' \
+                -e 's,@contriblib_location@,$(contribplugindir),' \
+                -e 's,@cbtflib_location@,$(libdir),' \
                 $(srcdir)/tbonFS.xml.in > tbonFS.xml
 
 EXTRA_DIST = tbonFS.xml.in

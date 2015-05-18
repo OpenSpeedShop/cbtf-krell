@@ -3,27 +3,27 @@
 #
 # For clusters using rsh, MRNET_COMM_PATH should point to
 # this wrapper.  For this installation its location is:
-# (bash) export MRNET_COMM_PATH=@@cbtfinstalldir@@/sbin/cbtf_mrnet_commnode.
-# (csh)  setenv MRNET_COMM_PATH @@cbtfinstalldir@@/sbin/cbtf_mrnet_commnode.
+# (bash) export MRNET_COMM_PATH=@cbtfinstalldir@/sbin/cbtf_mrnet_commnode.
+# (csh)  setenv MRNET_COMM_PATH @cbtfinstalldir@/sbin/cbtf_mrnet_commnode.
 #
 # rsh starts with no env.  We need at a minumum the library
 # paths set for cbtf and mrnet.
 # Base these on the configuration values.
 #
-mrnetlibdir=@@libmrnetdir@@/@@machine_dependent_libdir@@
-cbtflibdir=@@cbtfinstalldir@@/@@machine_dependent_libdir@@
+mrnetlibdir=@libmrnetdir@/@machine_dependent_libdir@
+cbtflibdir=@cbtfinstalldir@/@machine_dependent_libdir@
 
-if test -f @@boostinstalldir@@/@@machine_dependent_libdir@@/libboost_system.so; then
-   boostlibdir=@@boostinstalldir@@/@@machine_dependent_libdir@@
-elif test -f @@boostinstalldir@@/@@alt_machine_dependent_libdir@@/libboost_system.so; then
-   boostlibdir=@@boostinstalldir@@/@@alt_machine_dependent_libdir@@
+if test -f @boostinstalldir@/@machine_dependent_libdir@/libboost_system.so; then
+   boostlibdir=@boostinstalldir@/@machine_dependent_libdir@
+elif test -f @boostinstalldir@/@alt_machine_dependent_libdir@/libboost_system.so; then
+   boostlibdir=@boostinstalldir@/@alt_machine_dependent_libdir@
 fi
 
-krootlibdir=@@krootinstalldir@@/@@machine_dependent_libdir@@
+krootlibdir=@krootinstalldir@/@machine_dependent_libdir@
 
 # location of the real mrnet_commnode.
 #
-mrnetcommnode=@@libmrnetdir@@/bin/mrnet_commnode
+mrnetcommnode=@libmrnetdir@/bin/mrnet_commnode
 
 #set up the LD_LIBRARYPATH
 #

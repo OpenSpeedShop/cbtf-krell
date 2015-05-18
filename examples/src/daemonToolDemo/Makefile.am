@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -83,8 +83,8 @@ daemonToolDemo.xml: daemonToolDemo.xml.in
 
 	@rm -f daemonToolDemo.xml
 	@sed \
-		-e 's,@@demolib_location@@,$(demoplugindir),' \
-		-e 's,@@cbtflib_location@@,$(libdir),' \
+		-e 's,@demolib_location@,$(demoplugindir),' \
+		-e 's,@cbtflib_location@,$(libdir),' \
 		$(srcdir)/daemonToolDemo.xml.in > daemonToolDemo.xml
 
 EXTRA_DIST = daemonToolDemo.xml.in

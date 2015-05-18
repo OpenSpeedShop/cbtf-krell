@@ -60,7 +60,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
       <Type>tbonFSNetwork_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
 
       <Component>
@@ -235,7 +235,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     <Network>
       <Type>tbonFSNetwork_Filter</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>tbonFSFilter.so</Plugin>
       
@@ -280,7 +280,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     <Network>
       <Type>TestNetwork_Backend</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>tbonFSPlugin.so</Plugin>
 

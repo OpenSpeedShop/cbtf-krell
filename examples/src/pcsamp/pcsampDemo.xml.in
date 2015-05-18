@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Copyright (c) 2011 Krell Institute. All Rights Reserved.
+Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
     
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -63,8 +63,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@demolib_location@@</SearchPath>
-      <SearchPath>@@cbtflib_location@@</SearchPath>
+      <SearchPath>@demolib_location@</SearchPath>
+      <SearchPath>@cbtflib_location@</SearchPath>
 
       <Plugin>pcsampDemoPlugin.so</Plugin>
 
@@ -186,8 +186,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       <Type>PC_Sampling_Demo_Filter</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@demolib_location@@</SearchPath>
-      <SearchPath>@@cbtflib_location@@</SearchPath>
+      <SearchPath>@demolib_location@</SearchPath>
+      <SearchPath>@cbtflib_location@</SearchPath>
 
       <Plugin>pcsampDemoPlugin.so</Plugin>
 

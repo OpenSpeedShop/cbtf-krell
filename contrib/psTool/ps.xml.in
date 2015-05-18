@@ -45,7 +45,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
       <Type>psNetwork_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>mrnetPlugin.so</Plugin>
       <Plugin>psPlugin.so</Plugin>
 
@@ -129,7 +129,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     <Network>
       <Type>psNetwork_Filter</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>psPlugin.so</Plugin>
       <Plugin>mrnetPlugin.so</Plugin>
 
@@ -205,7 +205,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
     <Network>
       <Type>TestNetwork_Backend</Type>
       <Version>1.0.0</Version>
-      <SearchPath>@@contriblib_location@@</SearchPath>
+      <SearchPath>@contriblib_location@</SearchPath>
       <Plugin>psPlugin.so</Plugin>
       <Plugin>mrnetPlugin.so</Plugin>
 

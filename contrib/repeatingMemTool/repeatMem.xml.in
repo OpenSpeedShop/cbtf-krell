@@ -105,7 +105,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
             <Type>repeatMemNetwork_Frontend</Type>
             <Version>1.0.0</Version>
 
-            <SearchPath>@@contriblib_location@@</SearchPath>
+            <SearchPath>@contriblib_location@</SearchPath>
             <Plugin>mrnetPlugin.so</Plugin>
             <Plugin>repeatMemPlugin.so</Plugin>
             <Plugin>statisticsPlugin.so</Plugin>
@@ -351,7 +351,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
         <Network>
             <Type>repeatMemNetwork_Filter</Type>
             <Version>1.0.0</Version>
-            <SearchPath>@@contriblib_location@@</SearchPath>
+            <SearchPath>@contriblib_location@</SearchPath>
             <Plugin>repeatMemPlugin.so</Plugin>
             <Plugin>mrnetPlugin.so</Plugin>
             <Plugin>statisticsPlugin.so</Plugin>
@@ -451,7 +451,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
         <Network>
             <Type>repeatMemNetwork_Backend</Type>
             <Version>1.0.0</Version>
-            <SearchPath>@@contriblib_location@@</SearchPath>
+            <SearchPath>@contriblib_location@</SearchPath>
             <Plugin>repeatMemPlugin.so</Plugin>
             <Plugin>mrnetPlugin.so</Plugin>
             <Plugin>statisticsPlugin.so</Plugin>

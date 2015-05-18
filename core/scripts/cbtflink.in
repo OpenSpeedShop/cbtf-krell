@@ -14,7 +14,7 @@ fi
 
 mach_type=`uname -m`
 
-cbtf_target=@@cbtftargetos@@
+cbtf_target=@cbtftargetos@
 
 if test "$mach_type" == "x86_64" ; then
     machlibdir=lib64
@@ -29,18 +29,18 @@ fi
 
 
 # TODO: handle the target prefix
-cbtf_prefix=@@cbtfinstalldir@@
+cbtf_prefix=@cbtfinstalldir@
 cbtf_libdir="${cbtf_prefix}/${machlibdir}"
 cbtf_bindir="${cbtf_prefix}/bin"
 cbtf_plugins="${cbtf_libdir}/KrellInstitute/Collectors"
 
-libmonitor_prefix=@@libmonitordir@@
+libmonitor_prefix=@libmonitordir@
 libmonitor_libdir="${libmonitor_prefix}/${machlibdir}"
 libmonitor="${libmonitor_libdir}/libmonitor_wrap.a"
-libunwind_prefix=@@libunwinddir@@
+libunwind_prefix=@libunwinddir@
 libunwind_libdir="${libunwind_prefix}/${machlibdir}"
 libunwind="${libunwind_libdir}/libunwind.a"
-libpapi_prefix=@@papidir@@
+libpapi_prefix=@papidir@
 if test -d ${libpapi_prefix}/${machlibdir} ; then
   libpapi_libdir="${libpapi_prefix}/${machlibdir}"
 elif test -d ${libpapi_prefix}/${altmachlibdir} ; then
@@ -49,7 +49,7 @@ fi
 
 libpapi="${libpapi_libdir}/libpapi.a"
 
-libmrnet_prefix=@@libmrnetdir@@
+libmrnet_prefix=@libmrnetdir@
 libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 
 # monitor always has these
@@ -100,7 +100,7 @@ mpi_plugin=
 output_dir=
 insert_files=
 
-default_mpi_impl=@@default_mpi_impl@@
+default_mpi_impl=@default_mpi_impl@
 
 if [ -n "$CBTF_MPI_IMPLEMENTATION" ]
 then

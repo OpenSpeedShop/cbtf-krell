@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2013 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2015 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -809,26 +809,26 @@ mpi.xml: ../template.xml.in
 
 	@rm -f mpi.xml
 	@sed \
-		-e 's,@@component_location@@,$(plugindir),' \
-		-e 's,@@cbtflib_location@@,$(libdir),' \
-		-e 's,@@collector_name@@,mpi,' \
+		-e 's,@component_location@,$(plugindir),' \
+		-e 's,@cbtflib_location@,$(libdir),' \
+		-e 's,@collector_name@,mpi,' \
 		../template.xml.in > mpi.xml
 mpip.xml: ../template.xml.in
 
 	@rm -f mpip.xml
 	@sed \
-		-e 's,@@component_location@@,$(plugindir),' \
-		-e 's,@@cbtflib_location@@,$(libdir),' \
-		-e 's,@@collector_name@@,mpip,' \
+		-e 's,@component_location@,$(plugindir),' \
+		-e 's,@cbtflib_location@,$(libdir),' \
+		-e 's,@collector_name@,mpip,' \
 		../template.xml.in > mpip.xml
 	
 mpit.xml: ../template.xml.in
 
 	@rm -f mpit.xml
 	@sed \
-		-e 's,@@component_location@@,$(plugindir),' \
-		-e 's,@@cbtflib_location@@,$(libdir),' \
-		-e 's,@@collector_name@@,mpit,' \
+		-e 's,@component_location@,$(plugindir),' \
+		-e 's,@cbtflib_location@,$(libdir),' \
+		-e 's,@collector_name@,mpit,' \
 		../template.xml.in > mpit.xml
 
 #EXTRA_DIST = mpi.xml.in mpit.xml.in

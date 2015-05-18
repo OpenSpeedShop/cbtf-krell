@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2010-2013 Krell Institute All Rights Reserved.
+# Copyright (c) 2010-2015 Krell Institute All Rights Reserved.
 #
 # This library is free software; you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -225,9 +225,9 @@ hwc.xml: ../template.xml.in
 
 	@rm -f hwc.xml
 	@sed \
-		-e 's,@@component_location@@,$(plugindir),' \
-		-e 's,@@cbtflib_location@@,$(libdir),' \
-		-e 's,@@collector_name@@,hwc,' \
+		-e 's,@component_location@,$(plugindir),' \
+		-e 's,@cbtflib_location@,$(libdir),' \
+		-e 's,@collector_name@,hwc,' \
 		../template.xml.in > hwc.xml
 
 #EXTRA_DIST = hwc.xml.in

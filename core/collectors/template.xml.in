@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
+Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
     
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -20,7 +20,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 <MRNet xmlns="http://www.krellinst.org/CBTF/MRNet.xsd">
 
-  <Type>@@collector_name@@</Type>
+  <Type>@collector_name@</Type>
   <Version>1.0.0</Version>
 
 <!--
@@ -202,10 +202,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
 
-      <Type>@@collector_name@@_Frontend</Type>
+      <Type>@collector_name@_Frontend</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@component_location@@</SearchPath>
+      <SearchPath>@component_location@</SearchPath>
 
       <Plugin>AggregationPlugin.so</Plugin>
       <Plugin>LinkedObjectPlugin.so</Plugin>
@@ -764,10 +764,10 @@ it is here as an example of resolving symbols in the Frontend.
     </Depth>
 
     <Network xmlns="http://www.krellinst.org/CBTF/Network">
-      <Type>@@collector_name@@_Filter</Type>
+      <Type>@collector_name@_Filter</Type>
       <Version>1.0.0</Version>
 
-      <SearchPath>@@component_location@@</SearchPath>
+      <SearchPath>@component_location@</SearchPath>
 
       <Plugin>AggregationPlugin.so</Plugin>
       <Plugin>LinkedObjectPlugin.so</Plugin>
@@ -1081,7 +1081,7 @@ it is here as an example of resolving symbols in the Frontend.
 
 <!--
     Incoming performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For @@collector_name@@, the xdr data blob is
+    and an actual xdr data blob.  For @collector_name@, the xdr data blob is
     the actual sample payload sent from a collection service. 
 -->
     <IncomingUpstream>
@@ -1129,7 +1129,7 @@ it is here as an example of resolving symbols in the Frontend.
 
 <!--
     Outgoing performance data blobs.  These are encoded as an xdr header
-    and an actual xdr data blob.  For @@collector_name@@, the xdr data blob is
+    and an actual xdr data blob.  For @collector_name@, the xdr data blob is
     the actual sample payload sent from a collection service. 
     This stream essentially passes on the incoming blobs upstream
     where eventually a client can record them to a database if desired.

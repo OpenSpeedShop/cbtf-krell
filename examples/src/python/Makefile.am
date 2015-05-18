@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2013-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -56,7 +56,7 @@ CLEANFILES = $(BUILT_FILES)
 pyexample.xml: pyexample.xml.in
 	@rm -f pyexample.xml
 	@sed \
-                -e 's,@@contriblib_location@@,$(contribplugindir),' \
+                -e 's,@contriblib_location@,$(contribplugindir),' \
                 $(srcdir)/pyexample.xml.in > pyexample.xml
 
 EXTRA_DIST = pyexample.xml.in

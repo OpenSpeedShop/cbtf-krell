@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2011 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2011-2015 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -68,7 +68,7 @@ int pthreads_pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 	}
     }
 
-    /* Call the real MEM function */
+    /* Call the real POSIX thread function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_pthread_create(thread,attr,start_routine,arg);
 #else
@@ -122,7 +122,7 @@ int pthreads_pthread_mutex_init( pthread_mutex_t* mtx,
 	}
     }
 
-    /* Call the real MEM function */
+    /* Call the real POSIX thread function */
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_pthread_mutex_init(mtx,attr);
 #else

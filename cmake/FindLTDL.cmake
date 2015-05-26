@@ -18,22 +18,36 @@
 
 include(FindPackageHandleStandardArgs)
 
-find_library(KRELL_SYMTAB_LIBRARY NAMES libkrell-symtab.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
+
+
+# This project does not use Libtool directly but still uses ltdl for
+# plug-in loading.
+find_library(LTDL_LIBRARY_SHARED NAMES ltdl
+    HINTS $ENV{LTDL_DIR}
+    HINTS ${LTDL_DIR}
+    PATHS /usr /usr/local
     PATH_SUFFIXES lib lib64
     )
 
-find_path(KRELL_SYMTAB_INCLUDE_DIR KrellInstitute/SymbolTable/LinkedObject.hpp
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+include(CheckIncludeFileCXX)
+
+find_path(LTDL_INCLUDE_DIR
+    NAMES ltdl.h
+    PATHS /usr /usr/local
+    HINTS $ENV{LTDL_DIR}
+    HINTS ${LTDL_DIR}
     PATH_SUFFIXES include
     )
 
-find_package_handle_standard_args(
-    Krell-Symtab DEFAULT_MSG
-    KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR
-    )
+GET_FILENAME_COMPONENT(LTDL_LIB_DIR ${LTDL_LIBRARY_SHARED} PATH )
+GET_FILENAME_COMPONENT(LTDL_DIR ${LTDL_INCLUDE_DIR} PATH )
+#message(STATUS "LTDL LTDL_H_FOUND: " ${LTDL_H_FOUND})
+message(STATUS "LTDL shared lib: " ${LTDL_LIBRARY_SHARED})
+message(STATUS "LTDL include dir: " ${LTDL_INCLUDE_DIR})
 
-set(KRELL_SYMTAB_LIBRARIES ${KRELL_SYMTAB_LIBRARY})
-set(KRELL_SYMTAB_INCLUDE_DIRS ${KRELL_SYMTAB_INCLUDE_DIR})
-
-mark_as_advanced(KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR)
+mark_as_advanced(
+            LTDL_INCLUDE_DIR
+	    LTDL_LIBRARY_SHARED
+            )

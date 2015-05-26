@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,24 +16,10 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-include(FindPackageHandleStandardArgs)
-
-find_library(KRELL_SYMTAB_LIBRARY NAMES libkrell-symtab.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_path(KRELL_SYMTAB_INCLUDE_DIR KrellInstitute/SymbolTable/LinkedObject.hpp
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES include
-    )
-
-find_package_handle_standard_args(
-    Krell-Symtab DEFAULT_MSG
-    KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR
-    )
-
-set(KRELL_SYMTAB_LIBRARIES ${KRELL_SYMTAB_LIBRARY})
-set(KRELL_SYMTAB_INCLUDE_DIRS ${KRELL_SYMTAB_INCLUDE_DIR})
-
-mark_as_advanced(KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR)
+add_subdirectory(collector)
+add_subdirectory(base)
+add_subdirectory(instrumentation)
+add_subdirectory(events)
+add_subdirectory(symtab)
+add_subdirectory(perfdata)
+add_subdirectory(thread)

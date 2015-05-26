@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-** Copyright (c) 2011 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2006-2015 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -22,6 +22,10 @@
  * Definition of the CBTF_GetTime() function.
  *
  */
+
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Time.h"

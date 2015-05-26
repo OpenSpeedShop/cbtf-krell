@@ -21,91 +21,91 @@ include(FindPackageHandleStandardArgs)
 
 find_library(CBTF_MESSAGES_BASE_SHARED_LIBRARY
     NAMES libcbtf-messages-base.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_BASE_STATIC_LIBRARY
     NAMES libcbtf-messages-base.a libcbtf-messages-base-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
   
 find_library(CBTF_MESSAGES_COLLECTOR_SHARED_LIBRARY
     NAMES libcbtf-messages-collector.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
   
 find_library(CBTF_MESSAGES_COLLECTOR_STATIC_LIBRARY
     NAMES libcbtf-messages-collector.a libcbtf-messages-collector-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
   
 find_library(CBTF_MESSAGES_EVENTS_SHARED_LIBRARY
     NAMES libcbtf-messages-events.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_EVENTS_STATIC_LIBRARY
     NAMES libcbtf-messages-events.a libcbtf-messages-events-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_INSTRUMENTATION_SHARED_LIBRARY
     NAMES libcbtf-messages-instrumentation.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_INSTRUMENTATION_STATIC_LIBRARY
     NAMES libcbtf-messages-instrumentation.a libcbtf-messages-converters-instrumentation-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_PERFDATA_SHARED_LIBRARY
     NAMES libcbtf-messages-perfdata.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_PERFDATA_STATIC_LIBRARY
     NAMES libcbtf-messages-perfdata.a libcbtf-messages-perfdata-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_SYMTAB_SHARED_LIBRARY
     NAMES libcbtf-messages-symtab.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_SYMTAB_STATIC_LIBRARY
     NAMES libcbtf-messages-symtab.a libcbtf-messages-symtab-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_THREAD_SHARED_LIBRARY
     NAMES libcbtf-messages-thread.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_library(CBTF_MESSAGES_THREAD_STATIC_LIBRARY
     NAMES libcbtf-messages-thread.a libcbtf-messages-thread-static.a
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES lib lib64
     )
 
 find_path(CBTF_MESSAGES_INCLUDE_DIR
     KrellInstitute/Messages/Address.h
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
+    HINTS $ENV{CBTF_KRELL_DIR}
     PATH_SUFFIXES include
     )
 

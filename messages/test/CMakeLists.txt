@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,24 +16,33 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-include(FindPackageHandleStandardArgs)
+add_definitions(${MRNet_DEFINES})
 
-find_library(KRELL_SYMTAB_LIBRARY NAMES libkrell-symtab.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES lib lib64
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/../src/base
+    ${CMAKE_CURRENT_BINARY_DIR}/../src/perfdata
+    ${PROJECT_SOURCE_DIR}/messages/include
+    ${PROJECT_SOURCE_DIR}/core/include
+    ${MRNet_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${CBTF_INCLUDE_DIRS}
+    ${LTDL_INCLUDE_DIR}
     )
 
-find_path(KRELL_SYMTAB_INCLUDE_DIR KrellInstitute/SymbolTable/LinkedObject.hpp
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES include
+add_executable(testXDR
+	testXDR.cpp
     )
-
-find_package_handle_standard_args(
-    Krell-Symtab DEFAULT_MSG
-    KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR
+target_link_libraries(testXDR
+    ${LTDL_LIBRARY_SHARED}
+    ${Boost_LIBRARIES}
+    ${CBTF_LIBRARIES}
+    cbtf-messages-base
+    cbtf-messages-converters-base
+    ${MRNet_LIBRARIES}
+    ${CMAKE_DL_LIBS}
     )
-
-set(KRELL_SYMTAB_LIBRARIES ${KRELL_SYMTAB_LIBRARY})
-set(KRELL_SYMTAB_INCLUDE_DIRS ${KRELL_SYMTAB_INCLUDE_DIR})
-
-mark_as_advanced(KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR)
+install(TARGETS testXDR
+    RUNTIME DESTINATION .
+    )

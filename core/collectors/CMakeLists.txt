@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,24 +16,26 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-include(FindPackageHandleStandardArgs)
+add_subdirectory(pcsamp)
 
-find_library(KRELL_SYMTAB_LIBRARY NAMES libkrell-symtab.so
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES lib lib64
-    )
+if (LIBUNWIND_FOUND)
+add_subdirectory(usertime)
+add_subdirectory(io)
+add_subdirectory(mem)
+add_subdirectory(pthreads)
+endif()
 
-find_path(KRELL_SYMTAB_INCLUDE_DIR KrellInstitute/SymbolTable/LinkedObject.hpp
-    HINTS $ENV{CBTF_KRELL_DIR} ${CBTF_KRELL_DIR}
-    PATH_SUFFIXES include
-    )
+if (PAPI_FOUND)
+add_subdirectory(hwc)
+add_subdirectory(hwcsamp)
+if (LIBUNWIND_FOUND)
+add_subdirectory(hwctime)
+endif()
+endif()
 
-find_package_handle_standard_args(
-    Krell-Symtab DEFAULT_MSG
-    KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR
-    )
+if(HAVE_MPI)
+if (LIBUNWIND_FOUND)
+add_subdirectory(mpi)
+endif()
+endif()
 
-set(KRELL_SYMTAB_LIBRARIES ${KRELL_SYMTAB_LIBRARY})
-set(KRELL_SYMTAB_INCLUDE_DIRS ${KRELL_SYMTAB_INCLUDE_DIR})
-
-mark_as_advanced(KRELL_SYMTAB_LIBRARY KRELL_SYMTAB_INCLUDE_DIR)

@@ -318,19 +318,17 @@ endif()
 set(INCLUDE_INSTALL_DIR include )
 set(LIBRARY_INSTALL_DIR lib${SUFFIX} )
 
-#message(STATUS "PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
-#
-#include(CMakePackageConfigHelpers)
-#configure_package_config_file(CBTF-KrellConfig.cmake.in
-#    ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfig.cmake
-#    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/CBTF-Krell/cmake
-#    PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR)
-#write_basic_package_version_file(
-#    ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfigVersion.cmake
-#    VERSION ${CBTF_KRELL_VERSION}
-#    COMPATIBILITY SameMajorVersion )
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfig.cmake
-#              ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfigVersion.cmake
-#    DESTINATION share/CBTF-Krell/cmake )
+include(CMakePackageConfigHelpers)
+configure_package_config_file(CBTF-KrellConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfig.cmake
+    INSTALL_DESTINATION ${LIB_INSTALL_DIR}/CBTF-Krell/cmake
+    PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfigVersion.cmake
+    VERSION ${CBTF_KRELL_VERSION}
+    COMPATIBILITY SameMajorVersion )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfigVersion.cmake
+    DESTINATION share/CBTF-Krell/cmake )
 
 

@@ -31,6 +31,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/Collector.c
     COMMAND rpcgen -h -o ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
     COMMAND rpcgen -c -o ${CMAKE_CURRENT_BINARY_DIR}/Collector.c ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
 )
 
@@ -143,12 +144,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Collector.h
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
-# copy this header file so that the core/collectors/* builds can find it in the KrellInstitute/Messages form that it needs
-# messages used to be installed prior to the services build but with cmake that is not the case
-add_custom_target(copy_messages_collectorheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Collector.h)
-add_custom_command(TARGET copy_messages_collectorheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h)
-
-
-# Without this copy the rpcgen creates the .h file in source_dir instead of binary_dir and the c file can find it
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Collector.x DESTINATION .)

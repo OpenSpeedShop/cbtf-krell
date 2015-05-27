@@ -22,14 +22,16 @@ add_subdirectory(src)
 # So, taking it out
 #add_subdirectory(test)
 
-install( FILES CBTF-MessagesConfig.cmake
-         DESTINATION share/CBTF-Messages/cmake)
+#install( FILES CBTF-MessagesConfig.cmake
+#         DESTINATION share/CBTF-Messages/cmake)
 
-install(DIRECTORY include/KrellInstitute
-        DESTINATION include
-        FILES_MATCHING
-        PATTERN "*.h"
-        PATTERN "*.hpp"
-        PATTERN "Makefile.*" EXCLUDE
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+#install(DIRECTORY include/KrellInstitute
+#        DESTINATION include
+#        FILES_MATCHING
+#        PATTERN "*.h"
+#        PATTERN "*.hpp"
+#        PATTERN "Makefile.*" EXCLUDE
+#        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
+#install (FILES ${PROJECT_SOURCE_DIR}/messages/collector/KrellInstitute/Messages/*
+#        DESTINATION include/KrellInstitute/Messages)

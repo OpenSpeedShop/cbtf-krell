@@ -27,7 +27,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
     ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
     ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-    ${PROJECT_SOURCE_DIR}/messages/include
     ${PROJECT_SOURCE_DIR}/core/include
     ${MRNet_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -35,7 +34,6 @@ include_directories(
     ${LibDwarf_INCLUDE_DIRS}
     ${XercesC_INCLUDE_DIRS}
     ${CBTF_INCLUDE_DIRS}
-    ${LTDL_INCLUDE_DIR}
 )
 
 add_executable(collectionTool
@@ -43,16 +41,13 @@ add_executable(collectionTool
 )
 
 target_link_libraries(collectionTool
-    ${LTDL_LIBRARY_SHARED}
     cbtf-core
     cbtf-core-symtabapi
-    cbtf-core-bfd
     cbtf-core-mrnet
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Bfd_LIBRARY_SHARED}
     ${CBTF_LIBRARIES}
     ${Dyninst_LIBRARIES}
     ${LibElf_LIBRARIES}

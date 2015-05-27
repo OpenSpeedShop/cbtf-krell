@@ -38,6 +38,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Symbol.c
         ${CMAKE_CURRENT_BINARY_DIR}/Symbol.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Symbol.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Symbol.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Symbol.x
 )
@@ -167,13 +168,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Symbol.h
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
 
-# copy this header file so that the core/src build can find it in the KrellInstitute/Messages form that it needs
-# messages used to be installed prior to the services build but with cmake that is not the case
-add_custom_target(copy_messages_symbolheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Symbol.h)
-add_custom_command(TARGET copy_messages_symbolheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Symbol.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Symbol.h)
-
-
-# copy these files into the build area.  add_custom_command seems to need this
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Symbol.x DESTINATION .)
 

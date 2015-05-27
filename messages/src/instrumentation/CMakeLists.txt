@@ -48,6 +48,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
         ${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Instrument.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
 )
@@ -62,6 +63,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
         ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/MpiJob.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
 )
@@ -76,6 +78,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Job.c
         ${CMAKE_CURRENT_BINARY_DIR}/Job.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Job.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Job.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Job.x
 )
@@ -214,8 +217,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
         DESTINATION include/KrellInstitute/Messages
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-# copy these files into the build area.  add_custom_command seems to need this
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Instrument.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/MpiJob.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Job.x DESTINATION .)
-

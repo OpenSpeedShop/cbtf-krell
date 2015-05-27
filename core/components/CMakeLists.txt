@@ -55,40 +55,6 @@ install(TARGETS MRNetConvertorsPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
 
-# Create and install static version
-
-add_library(MRNetConvertorsPlugin-static STATIC
-	${MRNetConvertorPlugin_SOURCES}
-)
-
-target_include_directories(MRNetConvertorsPlugin-static PUBLIC
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${MRNet_INCLUDE_DIRS}
-	${CBTF_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_link_libraries(MRNetConvertorsPlugin-static
-	cbtf-core
-	${CBTF_LIBRARIES}
-	${MRNet_LIBRARIES}
-	pthread
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(MRNetConvertorsPlugin-static PROPERTIES PREFIX "")
-set_target_properties(MRNetConvertorsPlugin-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
-
-install(TARGETS MRNetConvertorsPlugin-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
-
 set(AggregationPlugin_SOURCES
 	AddressAggregatorComponent.cpp
 	AddressBufferComponent.cpp
@@ -138,53 +104,6 @@ install(TARGETS AggregationPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
 
-# Create and install static version
-
-add_library(AggregationPlugin-static STATIC
-	${AggregationPlugin_SOURCES}
-)
-
-target_include_directories(AggregationPlugin-static PUBLIC
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${CBTF_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_link_libraries(AggregationPlugin-static
-	cbtf-core
-	cbtf-messages-base
-	cbtf-messages-converters-base
-	cbtf-messages-collector
-	cbtf-messages-converters-collector
-	cbtf-messages-events
-	cbtf-messages-converters-events
-	cbtf-messages-perfdata
-	cbtf-messages-converters-perfdata
-	${CBTF_LIBRARIES}
-	${MRNet_LIBRARIES}
-	pthread
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(AggregationPlugin-static PROPERTIES PREFIX "")
-set_target_properties(AggregationPlugin-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
-
-install(TARGETS AggregationPlugin-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
-
-
 set(SymbolPlugin_SOURCES
 	SymbolComponent.cpp
 )
@@ -233,53 +152,6 @@ install(TARGETS SymbolPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
 
-# Create and install static version
-
-add_library(SymbolPlugin-static STATIC
-	${SymbolPlugin_SOURCES}
-)
-
-target_include_directories(SymbolPlugin-static PUBLIC
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${CBTF_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_link_libraries(SymbolPlugin-static
-	cbtf-core
-	cbtf-core-symtabapi
-	cbtf-messages-base
-	cbtf-messages-converters-base
-	cbtf-messages-events
-	cbtf-messages-converters-events
-	cbtf-messages-symtab
-	cbtf-messages-converters-symtab
-	${CBTF_LIBRARIES}
-	${MRNet_LIBRARIES}
-	pthread
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(SymbolPlugin-static PROPERTIES PREFIX "")
-set_target_properties(SymbolPlugin-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
-
-install(TARGETS SymbolPlugin-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
-
-
 set(ThreadPlugin_SOURCES
 	ThreadEventComponent.cpp
 )
@@ -327,52 +199,6 @@ install(TARGETS ThreadPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
 
-# Create and install static version
-
-add_library(ThreadPlugin-static STATIC
-	${ThreadPlugin_SOURCES}
-)
-
-target_include_directories(ThreadPlugin-static PUBLIC
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/thread
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${CBTF_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_link_libraries(ThreadPlugin-static
-	cbtf-core
-	cbtf-messages-base
-	cbtf-messages-converters-base
-	cbtf-messages-events
-	cbtf-messages-converters-events
-	cbtf-messages-thread
-	cbtf-messages-converters-thread
-	${CBTF_LIBRARIES}
-	${MRNet_LIBRARIES}
-	pthread
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(ThreadPlugin-static PROPERTIES PREFIX "")
-set_target_properties(ThreadPlugin-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
-
-install(TARGETS ThreadPlugin-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
-
-
 set(LinkedObjectPlugin_SOURCES
 	LinkedObjectComponent.cpp
 )
@@ -417,47 +243,3 @@ set_target_properties(LinkedObjectPlugin PROPERTIES
 install(TARGETS LinkedObjectPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
-
-# Create and install static version
-
-add_library(LinkedObjectPlugin-static STATIC
-	${LinkedObjectPlugin_SOURCES}
-)
-
-target_include_directories(LinkedObjectPlugin-static PUBLIC
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/thread
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${CBTF_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-)
-
-target_link_libraries(LinkedObjectPlugin-static
-	cbtf-core
-	cbtf-messages-base
-	cbtf-messages-converters-base
-	cbtf-messages-events
-	cbtf-messages-converters-events
-	${CBTF_LIBRARIES}
-	${MRNet_LIBRARIES}
-	pthread
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(LinkedObjectPlugin-static PROPERTIES PREFIX "")
-set_target_properties(LinkedObjectPlugin-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
-
-install(TARGETS LinkedObjectPlugin-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
-

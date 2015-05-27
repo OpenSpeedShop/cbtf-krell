@@ -134,6 +134,8 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.c
         ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h
+                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/DataHeader.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
     )
@@ -148,6 +150,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.c
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.x
     )
@@ -162,6 +165,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.x
     )
@@ -176,6 +180,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc.x
     )
@@ -190,6 +195,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.x
     )
@@ -204,6 +210,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.x
     )
@@ -218,6 +225,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.x
     )
@@ -232,6 +240,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.x
     )
@@ -246,6 +255,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.x
     )
@@ -260,6 +270,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/IO.c
         ${CMAKE_CURRENT_BINARY_DIR}/IO.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/IO.x
     )
@@ -274,6 +285,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/IO_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/IO_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/IO_data.x
     )
@@ -288,6 +300,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Mem.c
         ${CMAKE_CURRENT_BINARY_DIR}/Mem.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Mem.x
     )
@@ -302,6 +315,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.x
     )
@@ -316,6 +330,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi.c
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi.x
     )
@@ -330,6 +345,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.x
     )
@@ -344,6 +360,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.c
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.x
     )
@@ -358,6 +375,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.x
     )
@@ -372,6 +390,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime.c
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime.x
     )
@@ -386,6 +405,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.c
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime_data.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.x
     )
@@ -400,6 +420,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Stats.c
         ${CMAKE_CURRENT_BINARY_DIR}/Stats.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Stats.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Stats.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Stats.x
     )
@@ -549,110 +570,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h
         DESTINATION include/KrellInstitute/Messages
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-# copy this header file so that the services/src/data and core/collectors/* builds 
-# can find it in the KrellInstitute/Messages form that it needs
-# messages used to be installed prior to the services build but with cmake that is not the case
-add_custom_target(copy_messages_dataheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h)
-add_custom_command(TARGET copy_messages_dataheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/DataHeader.h)
-
-add_custom_target(copy_messages_stats ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Stats.h)
-add_custom_command(TARGET copy_messages_stats POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Stats.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Stats.h)
-
-add_custom_target(copy_messages_pcsamp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h)
-add_custom_command(TARGET copy_messages_pcsamp POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp.h)
-
-add_custom_target(copy_messages_pcsampd ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h)
-add_custom_command(TARGET copy_messages_pcsampd POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp_data.h)
-
-add_custom_target(copy_messages_usertime ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h)
-add_custom_command(TARGET copy_messages_usertime POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime.h)
-
-add_custom_target(copy_messages_usertimed ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h)
-add_custom_command(TARGET copy_messages_usertimed POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime_data.h)
-
-add_custom_target(copy_messages_hwc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwc.h)
-add_custom_command(TARGET copy_messages_hwc POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc.h)
-
-add_custom_target(copy_messages_hwcd ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h)
-add_custom_command(TARGET copy_messages_hwcd POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc_data.h)
-
-add_custom_target(copy_messages_hwcsamp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h)
-add_custom_command(TARGET copy_messages_hwcsamp POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp.h)
-
-add_custom_target(copy_messages_hwcsampd ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h)
-add_custom_command(TARGET copy_messages_hwcsampd POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp_data.h)
-
-add_custom_target(copy_messages_hwctime ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h)
-add_custom_command(TARGET copy_messages_hwctime POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime.h)
-
-add_custom_target(copy_messages_hwctimed ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h)
-add_custom_command(TARGET copy_messages_hwctimed POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime_data.h)
-
-add_custom_target(copy_messages_io ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/IO.h)
-add_custom_command(TARGET copy_messages_io POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO.h)
-
-add_custom_target(copy_messages_iod ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/IO_data.h)
-add_custom_command(TARGET copy_messages_iod POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO_data.h)
-
-add_custom_target(copy_messages_mpi ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Mpi.h)
-add_custom_command(TARGET copy_messages_mpi POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi.h)
-
-add_custom_target(copy_messages_mpid ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h)
-add_custom_command(TARGET copy_messages_mpid POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi_data.h)
-
-add_custom_target(copy_messages_mem ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Mem.h)
-add_custom_command(TARGET copy_messages_mem POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem.h)
-
-add_custom_target(copy_messages_memd ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h)
-add_custom_command(TARGET copy_messages_memd POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem_data.h)
-
-add_custom_target(copy_messages_pthreads ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h)
-add_custom_command(TARGET copy_messages_pthreads POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads.h)
-
-add_custom_target(copy_messages_pthreadsd ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h)
-add_custom_command(TARGET copy_messages_pthreadsd POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h 
-                                         ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads_data.h)
-
-# copy these files into the build area.  add_custom_command seems to need this
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DataHeader.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/PCSamp.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/PCSamp_data.x DESTINATION .)

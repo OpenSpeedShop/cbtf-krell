@@ -31,6 +31,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
     COMMAND rpcgen -h -o ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
     COMMAND rpcgen -c -o ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/ThreadControl.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
 )
 
@@ -148,5 +149,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
-# Without this copy the rpcgen creates the .h file in source_dir instead of binary_dir and the c file can find it
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ThreadControl.x DESTINATION .)

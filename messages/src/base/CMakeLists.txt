@@ -54,6 +54,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Address.c
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Address.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
     )
@@ -68,6 +69,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.c
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Blob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Blob.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.x
     )
@@ -82,6 +84,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Error.c
         ${CMAKE_CURRENT_BINARY_DIR}/Error.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Error.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Error.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Error.x
     )
@@ -96,6 +99,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/File.c
         ${CMAKE_CURRENT_BINARY_DIR}/File.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/File.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/File.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/File.x
     )
@@ -110,6 +114,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.c
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/StdIO.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.x
     )
@@ -124,6 +129,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Time.c
         ${CMAKE_CURRENT_BINARY_DIR}/Time.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Time.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Time.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Time.x
     )
@@ -138,6 +144,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.c
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Thread.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Thread.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.x
     )
@@ -255,22 +262,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Address.h
         DESTINATION include/KrellInstitute/Messages
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-# copy this header file so that the services/src/mrnet build can find it in the KrellInstitute/Messages form that it needs
-# messages used to be installed prior to the services build but with cmake that is not the case
-add_custom_target(copy_messages_blobheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Blob.h)
-add_custom_command(TARGET copy_messages_blobheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Blob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Blob.h)
-add_custom_target(copy_messages_fileheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/File.h)
-add_custom_command(TARGET copy_messages_fileheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/File.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/File.h)
-add_custom_target(copy_messages_threadheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Thread.h)
-add_custom_command(TARGET copy_messages_threadheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Thread.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Thread.h)
-add_custom_target(copy_messages_addressheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Address.h)
-add_custom_command(TARGET copy_messages_addressheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Address.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h)
-
-# copy these files into the build area.  add_custom_command seems to need this
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Address.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Blob.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Error.x DESTINATION .)

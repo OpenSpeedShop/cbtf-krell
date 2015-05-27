@@ -24,18 +24,10 @@ add_definitions(
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-    ${PROJECT_SOURCE_DIR}/messages/include
     ${PROJECT_SOURCE_DIR}/core/include
     ${MRNet_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${Dyninst_INCLUDE_DIRS}
-    ${LibDwarf_INCLUDE_DIRS}
-    ${XercesC_INCLUDE_DIRS}
     ${CBTF_INCLUDE_DIRS}
-    ${LTDL_INCLUDE_DIR}
 )
 
 add_executable(daemonTool
@@ -43,17 +35,11 @@ add_executable(daemonTool
 )
 
 target_link_libraries(daemonTool
-    ${LTDL_LIBRARY_SHARED}
     cbtf-core
-    cbtf-core-symtabapi
-    cbtf-core-bfd
     cbtf-core-mrnet
     ${Boost_LIBRARIES}
     ${Bfd_LIBRARY_SHARED}
     ${CBTF_LIBRARIES}
-    ${Dyninst_LIBRARIES}
-    ${LibElf_LIBRARIES}
-    ${LibDwarf_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
     ${CMAKE_DL_LIBS}

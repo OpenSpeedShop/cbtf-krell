@@ -144,10 +144,10 @@ bool is_trace_symbol_events_enabled =
 /** Flag indicating if timing for Symbol events is enabled. */
 bool is_time_symbol_events_enabled =
     (getenv("CBTF_TIME_SYMBOL_EVENTS") != NULL);
+#endif
 /** Flag indicating if displaying of metric events is enabled. */
 bool is_show_metric_events_enabled =
     (getenv("CBTF_SHOW_METRIC_EVENTS") != NULL);
-#endif
 
 
 /** count indicating number of leaf CP's in mrnet tree. */
@@ -364,10 +364,10 @@ private:
 	    }
 
 #ifndef NDEBUG
+#endif
 	    if (is_show_metric_events_enabled) {
 		std::cerr << demo_output.str();
 	    }
-#endif
 
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
@@ -455,10 +455,10 @@ private:
 	    }
 
 #ifndef NDEBUG
+#endif
 	    if (is_show_metric_events_enabled) {
 		std::cerr << demo_output.str();
 	    }
-#endif
 
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
@@ -549,10 +549,10 @@ private:
 	    }
 
 #ifndef NDEBUG
+#endif
 	    if (is_show_metric_events_enabled) {
 		std::cerr << demo_output.str();
 	    }
-#endif
 
 #ifndef NDEBUG
 	    if (is_time_symbol_events_enabled) {
@@ -755,10 +755,14 @@ private:
 		}
 	    }
 
-	    if(!foundit) {
-		output << "ResolveSymbols::symtabAPISymbolHandler: CANNOT RESOLVE symbols for address "
+#ifndef NDEBUG
+      	    if (is_debug_symbol_events_enabled) {
+		if(!foundit) {
+		    output << "ResolveSymbols::symtabAPISymbolHandler: CANNOT RESOLVE symbols for address "
 			<< aci->first  << std::endl;
+		}
 	    }
+#endif
 	}
 
 	// Now cycle through these symboltables and find functions and statements.

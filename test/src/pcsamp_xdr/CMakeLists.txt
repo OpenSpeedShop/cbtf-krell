@@ -35,7 +35,6 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${XercesC_INCLUDE_DIRS}
     ${CBTF_INCLUDE_DIRS}
-    ${LTDL_INCLUDE_DIR}
 )
 
 add_executable(testXDR
@@ -43,10 +42,7 @@ add_executable(testXDR
 )
 
 target_link_libraries(testXDR
-    ${LTDL_LIBRARY_SHARED}
     cbtf-core
-    cbtf-core-symtabapi
-    cbtf-core-bfd
     cbtf-core-mrnet
     cbtf-messages-base
     cbtf-messages-converters-base

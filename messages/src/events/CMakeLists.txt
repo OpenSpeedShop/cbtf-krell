@@ -53,6 +53,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.c
         ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/EventHeader.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.x
     )
@@ -67,6 +68,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.c
         ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/OfflineEvents.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x
     )
@@ -81,6 +83,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.c
         ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/LinkedObjectEvents.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.x
     )
@@ -95,6 +98,7 @@ add_custom_command(
     COMMAND rpcgen -c -o
         ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.c
         ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/ThreadEvents.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.x
     )
@@ -226,22 +230,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h
         DESTINATION include/KrellInstitute/Messages
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
 
-# copy this header file so that the services/src/data and services/src/? builds can find it in the KrellInstitute/Messages form that it needs
-# messages used to be installed prior to the services build but with cmake that is not the case
-add_custom_target(copy_messages_eventheader ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h)
-add_custom_command(TARGET copy_messages_eventheader POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/EventHeader.h)
-add_custom_target(copy_messages_offlineevents ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h)
-add_custom_command(TARGET copy_messages_offlineevents POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/OfflineEvents.h)
-add_custom_target(copy_messages_linkedobjectevents ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.h)
-add_custom_command(TARGET copy_messages_linkedobjectevents POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/LinkedObjectEvents.h)
-add_custom_target(copy_messages_threadevents ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.h)
-add_custom_command(TARGET copy_messages_threadevents POST_BUILD
-                   COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/ThreadEvents.h)
-
-# copy these files into the build area.  add_custom_command seems to need this
+# rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/EventHeader.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/OfflineEvents.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/LinkedObjectEvents.x DESTINATION .)

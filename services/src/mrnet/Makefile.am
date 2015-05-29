@@ -22,6 +22,7 @@ libcbtf_services_mrnet_la_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/data \
 	@MESSAGES_CPPFLAGS@ \
+	@CBTF_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 

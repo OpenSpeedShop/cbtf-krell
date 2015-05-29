@@ -88,7 +88,8 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
 		-e 's,@boostinstalldir@,$(boost_dir),' \
 		-e 's,@krootinstalldir@,$(xercesc_dir),' \
-		-e 's,@cbtfinstalldir@,$(prefix),' \
+		-e 's,@cbtfinstalldir@,$(CBTF_DIR),' \
+		-e 's,@cbtfkdir@,$(prefix),' \
 			$(srcdir)/cbtf_mrnet_commnode.in > cbtf_mrnet_commnode
 	@chmod 755 cbtf_mrnet_commnode
 
@@ -97,7 +98,7 @@ cbtf_libcbtf_mrnet_backend: cbtf_libcbtf_mrnet_backend.in
 	@sed \
 		-e 's,@machine_dependent_libdir@,$(abi_libdir_name),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
-		-e 's,@cbtfinstalldir@,$(prefix),' \
+		-e 's,@cbtfinstalldir@,$(CBTF_DIR),' \
 			$(srcdir)/cbtf_libcbtf_mrnet_backend.in > cbtf_libcbtf_mrnet_backend
 	@chmod 755 cbtf_libcbtf_mrnet_backend
 

@@ -21,7 +21,7 @@ xmldir = $(datadir)/KrellInstitute/xml
 bin_PROGRAMS = collectionTool
 
 collectionTool_CXXFLAGS = \
-	-DLIBDIR="\"$(libdir)\"" \
+	-DLIBDIR="\"$(CBTF_LIBDIR)\"" \
 	-DXMLDIR="\"$(xmldir)\"" \
 	-I$(top_srcdir)/include \
 	@BOOST_CPPFLAGS@ \

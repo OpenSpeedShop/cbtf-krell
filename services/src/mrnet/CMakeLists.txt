@@ -53,7 +53,7 @@ target_link_libraries(cbtf-services-mrnet
 
 set_target_properties(cbtf-services-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-mrnet PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS cbtf-services-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -89,7 +89,7 @@ target_link_libraries(cbtf-services-mrnet-static
 
 set_target_properties(cbtf-services-mrnet-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-mrnet-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS cbtf-services-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

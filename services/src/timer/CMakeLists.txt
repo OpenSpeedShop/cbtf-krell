@@ -39,6 +39,8 @@ target_link_libraries(cbtf-services-timer
 )
 
 set_target_properties(cbtf-services-timer PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-timer PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+
 
 install(TARGETS cbtf-services-timer
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -56,10 +58,10 @@ target_link_libraries(cbtf-services-timer-static
 )
 
 set_target_properties(cbtf-services-timer-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-timer-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-timer-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-
 

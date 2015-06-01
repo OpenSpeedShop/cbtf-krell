@@ -43,6 +43,8 @@ target_link_libraries(cbtf-services-monitor
 )
 
 set_target_properties(cbtf-services-monitor PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-monitor PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+
 
 install(TARGETS cbtf-services-monitor
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -69,6 +71,7 @@ target_link_libraries(cbtf-services-monitor-static
 )
 
 set_target_properties(cbtf-services-monitor-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-monitor-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-monitor-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

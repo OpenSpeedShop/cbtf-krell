@@ -39,6 +39,8 @@ target_link_libraries(cbtf-services-fpe
 )
 
 set_target_properties(cbtf-services-fpe PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-fpe PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+
 
 install(TARGETS cbtf-services-fpe
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -56,6 +58,7 @@ target_link_libraries(cbtf-services-fpe-static
 )
 
 set_target_properties(cbtf-services-fpe-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-fpe-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-fpe-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

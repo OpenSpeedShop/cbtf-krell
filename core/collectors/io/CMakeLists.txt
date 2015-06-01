@@ -63,7 +63,7 @@ target_link_libraries(io-collector-monitor-fileio
 
 set_target_properties(io-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(io-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
 
 install(TARGETS io-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -104,7 +104,7 @@ target_link_libraries(io-monitor-fileio
 )
 
 set_target_properties(io-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;__USE_GNU")
 
 install(TARGETS io-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -146,7 +146,7 @@ target_link_libraries(iot-collector-monitor-fileio
 
 set_target_properties(iot-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(iot-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;__USE_GNU")
 
 install(TARGETS iot-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -187,7 +187,7 @@ target_link_libraries(iot-monitor-fileio
 )
 
 set_target_properties(iot-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU")
 
 install(TARGETS iot-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -229,7 +229,7 @@ target_link_libraries(iop-collector-monitor-fileio
 
 set_target_properties(iop-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(iop-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;__USE_GNU")
 
 install(TARGETS iop-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -270,7 +270,7 @@ target_link_libraries(iop-monitor-fileio
 )
 
 set_target_properties(iop-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU")
 
 install(TARGETS iop-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -316,7 +316,7 @@ target_link_libraries(io-collector-monitor-mrnet
 
 set_target_properties(io-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(io-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS io-collector-monitor-mrnet
     LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -361,7 +361,7 @@ target_link_libraries(io-monitor-mrnet
 
 set_target_properties(io-monitor-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(io-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS io-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -406,7 +406,7 @@ target_link_libraries(io-collector-monitor-mrnet-mpi
 
 set_target_properties(io-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(io-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS io-collector-monitor-mrnet-mpi
     LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -451,7 +451,7 @@ target_link_libraries(io-monitor-mrnet-mpi
 
 set_target_properties(io-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(io-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS io-monitor-mrnet-mpi
     ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -497,7 +497,7 @@ target_link_libraries(iop-collector-monitor-mrnet
 
 set_target_properties(iop-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(iop-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;PROFILE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;PROFILE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iop-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -542,7 +542,7 @@ target_link_libraries(iop-monitor-mrnet
 
 set_target_properties(iop-monitor-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(iop-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iop-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -587,7 +587,7 @@ target_link_libraries(iop-collector-monitor-mrnet-mpi
 
 set_target_properties(iop-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(iop-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iop-collector-monitor-mrnet-mpi
     LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -632,7 +632,7 @@ target_link_libraries(iop-monitor-mrnet-mpi
 
 set_target_properties(iop-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(iop-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;PROFILE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iop-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -677,7 +677,7 @@ target_link_libraries(iot-collector-monitor-mrnet
 
 set_target_properties(iot-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(iot-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iot-collector-monitor-mrnet
     LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -722,7 +722,7 @@ target_link_libraries(iot-monitor-mrnet
 
 set_target_properties(iot-monitor-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(iot-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iot-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -767,7 +767,7 @@ target_link_libraries(iot-collector-monitor-mrnet-mpi
 
 set_target_properties(iot-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(iot-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iot-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -812,7 +812,7 @@ target_link_libraries(iot-monitor-mrnet-mpi
 
 set_target_properties(iot-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(iot-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;EXTENDEDTRACE;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS iot-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

@@ -27,12 +27,6 @@ set(CBTF_KRELL_VERSION_PATCH 0)
 set(CBTF_KRELL_VERSION_TWEAK 0)
 add_definitions(-DVERSION="${CBTF_KRELL_VERSION}")
 
-# Select flags.
-#SET(CMAKE_CXX_FLAGS "-O2 -g")
-#SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
-#SET(CMAKE_CXX_FLAGS_RELEASE "-O2 -g ")
-#SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 include(CheckIncludeFile)
@@ -87,14 +81,17 @@ set(TLS_MODEL "implicit" CACHE STRING "cbtf-krell tls model: [implicit,explicit]
 #--------------------------------------------------------------------------------
 #
 if (TLS_MODEL MATCHES "explicit")
-    add_definitions(-DUSE_EXPLICIT_TLS)
-    message(STATUS "Build runtimes using explicit tls model.")
+    # Builder requsted explicit tls to be used in the runtimes and collectors
+    set(TLS_DEFINES "USE_EXPLICIT_TLS" )
+    message(STATUS "Build runtimes using explicit TLS model.")
 elseif (TLS_MODEL MATCHES "implicit")
-    add_definitions(-DUSE_IMPLICIT_TLS)
-    message(STATUS "Build runtimes using implicit tls model.")
+    # Builder requsted implicit tls to be used in the runtimes and collectors
+    set(TLS_DEFINES "USE_IMPLICIT_TLS" )
+    message(STATUS "Build runtimes using implicit TLS model.")
 else()
-    add_definitions(-DUSE_EXPLICIT_TLS)
-    message(STATUS "Build runtimes using explicit tls model.")
+    # Default to implicit tls in the runtimes and collectors
+    set(TLS_DEFINES "USE_IMPLICIT_TLS" )
+    message(STATUS "Build runtimes using implicit TLS model.")
 endif()
 
 set(TARGET_OS "" CACHE STRING "cbtf-krell target os: none or [bgq,bgp]")

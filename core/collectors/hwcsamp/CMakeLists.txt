@@ -61,7 +61,7 @@ set_target_properties(hwcsamp-collector-monitor-fileio PROPERTIES PREFIX "")
 # If present, will activate OpenMP runtime performance information gathering. 
 #
 set_target_properties(hwcsamp-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -100,7 +100,7 @@ target_link_libraries(hwcsamp-collector-monitor-fileio-static
 
 set_target_properties(hwcsamp-collector-monitor-fileio-static PROPERTIES PREFIX "")
 set_target_properties(hwcsamp-collector-monitor-fileio-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
 
 
 install(TARGETS hwcsamp-collector-monitor-fileio-static
@@ -139,7 +139,7 @@ target_link_libraries(hwcsamp-monitor-fileio
 )
 
 set_target_properties(hwcsamp-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -180,7 +180,7 @@ target_link_libraries(hwcsamp-collector-monitor-mrnet
 
 set_target_properties(hwcsamp-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(hwcsamp-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -221,7 +221,7 @@ target_link_libraries(hwcsamp-collector-monitor-mrnet-static
 
 set_target_properties(hwcsamp-collector-monitor-mrnet-static PROPERTIES PREFIX "")
 set_target_properties(hwcsamp-collector-monitor-mrnet-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-collector-monitor-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -261,7 +261,7 @@ target_link_libraries(hwcsamp-monitor-mrnet
 )
 
 set_target_properties(hwcsamp-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -301,7 +301,7 @@ target_link_libraries(hwcsamp-collector-monitor-mrnet-mpi
 
 set_target_properties(hwcsamp-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(hwcsamp-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -343,7 +343,7 @@ target_link_libraries(hwcsamp-collector-monitor-mrnet-mpi-static
 
 set_target_properties(hwcsamp-collector-monitor-mrnet-mpi-static PROPERTIES PREFIX "")
 set_target_properties(hwcsamp-collector-monitor-mrnet-mpi-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-collector-monitor-mrnet-mpi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -385,7 +385,7 @@ target_link_libraries(hwcsamp-monitor-mrnet-mpi
 
 set_target_properties(hwcsamp-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(hwcsamp-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwcsamp-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

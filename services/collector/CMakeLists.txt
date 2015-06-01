@@ -53,7 +53,7 @@ target_link_libraries(cbtf-services-collector-monitor-fileio
 
 set_target_properties(cbtf-services-collector-monitor-fileio PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-collector-monitor-fileio PROPERTIES
-	COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO") 
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO") 
 
 install(TARGETS cbtf-services-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -86,6 +86,8 @@ target_link_libraries(cbtf-services-collector-monitor-fileio-static
 )
 
 set_target_properties(cbtf-services-collector-monitor-fileio-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-collector-monitor-fileio-static PROPERTIES
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO") 
 
 install(TARGETS cbtf-services-collector-monitor-fileio-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -122,7 +124,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet
 
 set_target_properties(cbtf-services-collector-monitor-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-collector-monitor-mrnet PROPERTIES
-	COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES}") 
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES}") 
 
 install(TARGETS cbtf-services-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -159,7 +161,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet-static
 
 set_target_properties(cbtf-services-collector-monitor-mrnet-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-collector-monitor-mrnet-static PROPERTIES
-	COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES}") 
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES}") 
 
 install(TARGETS cbtf-services-collector-monitor-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -194,7 +196,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet-mpi
 
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi PROPERTIES
-	COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES}") 
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES}") 
 
 install(TARGETS cbtf-services-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -231,7 +233,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet-mpi-static
 
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi-static PROPERTIES
-	COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES}") 
+	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES}") 
 
 install(TARGETS cbtf-services-collector-monitor-mrnet-mpi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

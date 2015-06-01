@@ -66,7 +66,7 @@ set_target_properties(pthreads-collector-monitor-fileio PROPERTIES PREFIX "")
 # These defines apply only for this target module.  
 #
 set_target_properties(pthreads-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
 
 install(TARGETS pthreads-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -108,7 +108,7 @@ target_link_libraries(pthreads-collector-monitor-fileio-static
 
 set_target_properties(pthreads-collector-monitor-fileio-static PROPERTIES PREFIX "")
 set_target_properties(pthreads-collector-monitor-fileio-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;__USE_GNU")
 
 install(TARGETS pthreads-collector-monitor-fileio-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -149,7 +149,7 @@ target_link_libraries(pthreads-monitor-fileio
 )
 
 set_target_properties(pthreads-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;__USE_GNU")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_SERVICE_BUILD_STATIC;__USE_GNU")
 
 install(TARGETS pthreads-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -196,7 +196,7 @@ target_link_libraries(pthreads-collector-monitor-mrnet
 
 set_target_properties(pthreads-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(pthreads-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-collector-monitor-mrnet
     LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -241,7 +241,7 @@ target_link_libraries(pthreads-collector-monitor-mrnet-static
 
 set_target_properties(pthreads-collector-monitor-mrnet-static PROPERTIES PREFIX "")
 set_target_properties(pthreads-collector-monitor-mrnet-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-collector-monitor-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -286,7 +286,7 @@ target_link_libraries(pthreads-monitor-mrnet
 
 set_target_properties(pthreads-monitor-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(pthreads-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-monitor-mrnet
     ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -333,7 +333,7 @@ target_link_libraries(pthreads-collector-monitor-mrnet-mpi
 
 set_target_properties(pthreads-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(pthreads-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -378,7 +378,7 @@ target_link_libraries(pthreads-collector-monitor-mrnet-mpi-static
 
 set_target_properties(pthreads-collector-monitor-mrnet-mpi-static PROPERTIES PREFIX "")
 set_target_properties(pthreads-collector-monitor-mrnet-mpi-static PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-collector-monitor-mrnet-mpi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -423,7 +423,7 @@ target_link_libraries(pthreads-monitor-mrnet-mpi
 
 set_target_properties(pthreads-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(pthreads-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_SERVICE_BUILD_STATIC;__USE_GNU;${MRNet_DEFINES}")
 
 install(TARGETS pthreads-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

@@ -44,6 +44,9 @@ target_link_libraries(cbtf-services-fileio
     )
 
 set_target_properties(cbtf-services-fileio PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-fileio PROPERTIES
+        COMPILE_DEFINITIONS "${TLS_DEFINES}")
+
 
 install(TARGETS cbtf-services-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -61,6 +64,8 @@ target_link_libraries(cbtf-services-fileio-static
     )
 
 set_target_properties(cbtf-services-fileio-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-fileio-static PROPERTIES
+        COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-fileio-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

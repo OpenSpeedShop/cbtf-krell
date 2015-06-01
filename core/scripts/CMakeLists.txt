@@ -18,7 +18,6 @@
 
 include(CheckIncludeFile)
 
-set(cbtfinstalldir ${CMAKE_INSTALL_PREFIX})
 set(cbtfdir ${CBTF_DIR})
 set(cbtfkdir ${CMAKE_INSTALL_PREFIX})
 set(cbtflibdir ${CBTF_LIB_DIR})
@@ -58,7 +57,12 @@ set(target_os ${TARGET_OS})
 set(libiompdir ${LibIomp_DIR})
 set(libiomplibdir ${LibIomp_LIB_DIR})
 
+# For separate install directories, cbtfrun needs CBTF_KRELL_DIR
+# which is CMAKE_INSTALL_PREFIX at this point
+set(cbtfinstalldir ${CMAKE_INSTALL_PREFIX})
 configure_file(cbtfrun.in cbtfrun @ONLY)
+
+set(cbtfinstalldir ${CBTF_DIR})
 configure_file(cbtflink.in cbtflink @ONLY)
 configure_file(cbtf_mrnet_commnode.in cbtf_mrnet_commnode @ONLY)
 configure_file(cbtf_libcbtf_mrnet_backend.in cbtf_libcbtf_mrnet_backend @ONLY)

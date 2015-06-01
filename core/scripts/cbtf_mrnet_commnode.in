@@ -28,7 +28,7 @@ mrnetcommnode=@libmrnetdir@/bin/mrnet_commnode
 
 #set up the LD_LIBRARYPATH
 #
-export LD_LIBRARY_PATH=${mrnetlibdir}:${cbtflibdir}:${cbtfklibdir}${boostlibdir}:${krootlibdir}
+export LD_LIBRARY_PATH=${mrnetlibdir}:${cbtflibdir}:${cbtfklibdir}:${boostlibdir}:${krootlibdir}
 
 # now call the real mrnet_commnode
 #

@@ -57,7 +57,8 @@ target_link_libraries(testXDR
 set_target_properties(testXDR PROPERTIES 
     COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS testXDR
-    RUNTIME DESTINATION bin
-)
+# At this time, do not install testXDR
+#install(TARGETS testXDR
+#    RUNTIME DESTINATION bin
+#)
 

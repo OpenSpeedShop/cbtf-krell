@@ -110,6 +110,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CMAKE_INSTALL_PREFIX}/include
 	${Binutils_INCLUDE_DIRS}
+    ${Binutils_Iberty_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base

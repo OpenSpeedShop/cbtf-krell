@@ -195,6 +195,7 @@ target_link_libraries(cbtf-core-symtabapi
 	${DyninstAPI_symLite_LIBRARY}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
+    cbtf-core
 )
 
 set_target_properties(cbtf-core-symtabapi PROPERTIES VERSION 1.1.0)

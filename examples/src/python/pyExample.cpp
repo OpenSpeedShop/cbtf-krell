@@ -266,10 +266,13 @@ private:
 
 	dlopen_python_hack();
 
+// Disabling this code due to installation issues with boost python and
+// python on various fedora systems. This is intended to demonstrate
+// running boost python bindings with in a component plugin.
+#if 0
 	try {
 
 	    Py_Initialize();
-
 	    // using boost::python objects. Generate random number from random module.
 	    boost::python::object  main_module = boost::python::import("__main__");
 	    boost::python::object  random_module = boost::python::import("random");
@@ -280,35 +283,38 @@ private:
 	    python_output << "Testing boost python bindings..." << std::endl;
 	    python_output << "value from python random func: " << tval << std::endl;
 	    rvecout.push_back(python_output.str());
-
-	    // Run a script via PyRun_SimpleFile.
-	    FILE* fp = fopen(in.c_str(), "r");
-	    PyRun_SimpleFile(fp, in.c_str());
 	    Py_Finalize();
 
-	    // Run passed python script via python cmd via popen.
-	    char buffer[4096];
-	    memset(&buffer,0,sizeof(buffer));
-	    std::string cmd = "/usr/bin/python " + in;
-	    std::string outline = "";
-	    rvecout.push_back("executing python script: " + cmd);
-	    FILE* p = popen(cmd.c_str(), "r");
-	    if(p != NULL) {
-		while(fgets(buffer, sizeof(buffer), p) != NULL)
-                {
-		    outline.assign(buffer);
-		    rvecout.push_back(outline);
-                }
-                pclose(p);
-            }
-
-
+	    // Run a script via PyRun_SimpleFile.
+	    python_output << "Test running passed python script " << in << std::endl;
 	} catch(boost::python::error_already_set const &) {
 	    std::string perror_str = parse_python_exception();
 	    std::cerr << "Error in Python: " << perror_str << std::endl;
 	}
+#endif
 
-	// PYTHON (boost) code here to run script and return output as needed.
+	Py_Initialize();
+
+	FILE* fp = fopen(in.c_str(), "r");
+	PyRun_SimpleFile(fp, in.c_str());
+	Py_Finalize();
+
+	// Run passed python script via python cmd via popen.
+	char buffer[4096];
+	memset(&buffer,0,sizeof(buffer));
+	std::string cmd = "/usr/bin/python " + in;
+	std::string outline = "";
+	rvecout.push_back("executing python script: " + cmd);
+	FILE* p = popen(cmd.c_str(), "r");
+	if(p != NULL) {
+	    while(fgets(buffer, sizeof(buffer), p) != NULL)
+            {
+		outline.assign(buffer);
+		rvecout.push_back(outline);
+            }
+            pclose(p);
+        }
+
         if(rvecout.size() == 0) {
 	    // no output... be_terminate.
 	    std::cerr << "PyExampleBE::PyScriptNameHandler outputsize is 0, be_terminate = true" <<  std::endl;

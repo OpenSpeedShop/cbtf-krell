@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,5 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-#add_subdirectory(pcsamp)
-add_subdirectory(python)
-#add_subdirectory(daemonToolDemo)
+add_subdirectory(src)
+

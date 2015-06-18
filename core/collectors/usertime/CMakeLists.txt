@@ -43,14 +43,14 @@ target_include_directories(usertime-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-fileio
+	${LibMonitor_SHARED_LIBRARIES}
+	${LibUnwind_SHARED_LIBRARIES}
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
 	cbtf-services-timer
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-fileio
-	${LibMonitor_SHARED_LIBRARIES}
-	${LibUnwind_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -90,14 +90,14 @@ target_include_directories(usertime-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-fileio-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-fileio-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -132,14 +132,14 @@ target_include_directories(usertime-monitor-fileio PUBLIC
 )
 
 target_link_libraries(usertime-monitor-fileio
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-fileio-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -173,15 +173,15 @@ target_include_directories(usertime-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet
+	${LibMonitor_SHARED_LIBRARIES}
+	${LibUnwind_SHARED_LIBRARIES}
+	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
 	cbtf-services-timer
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-mrnet
-	${LibMonitor_SHARED_LIBRARIES}
-	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -216,15 +216,15 @@ target_include_directories(usertime-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -259,15 +259,15 @@ target_include_directories(usertime-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(usertime-monitor-mrnet
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -299,6 +299,9 @@ target_include_directories(usertime-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-mpi
+	${LibMonitor_SHARED_LIBRARIES}
+	${LibUnwind_SHARED_LIBRARIES}
+	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -306,9 +309,6 @@ target_link_libraries(usertime-collector-monitor-mrnet-mpi
 	cbtf-services-data
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-mrnet-mpi
-	${LibMonitor_SHARED_LIBRARIES}
-	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -343,6 +343,9 @@ target_include_directories(usertime-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-mpi-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -350,9 +353,6 @@ target_link_libraries(usertime-collector-monitor-mrnet-mpi-static
 	cbtf-services-data-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -387,6 +387,9 @@ target_include_directories(usertime-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(usertime-monitor-mrnet-mpi
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -394,9 +397,6 @@ target_link_libraries(usertime-monitor-mrnet-mpi
 	cbtf-services-data-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}

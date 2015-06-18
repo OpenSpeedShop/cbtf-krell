@@ -303,6 +303,7 @@ if(CBTF_FOUND)
   add_subdirectory(messages)
   add_subdirectory(services)
   add_subdirectory(core)
+  add_subdirectory(examples)
   add_subdirectory(test)
 endif()
 

@@ -24,6 +24,7 @@ libcbtf_services_mrnet_la_CFLAGS = \
 	@MESSAGES_CPPFLAGS@ \
 	@CBTF_CPPFLAGS@ \
 	@MRNET_CPPFLAGS@ \
+	@CBTF_MRNET_CPPFLAGS@ \
 	@LTDLINCL@ 
 
 libcbtf_services_mrnet_la_LDFLAGS = \

@@ -20,11 +20,19 @@ include(CheckIncludeFile)
 
 add_definitions(${LibUnwind_DEFINES})
 
+# The unwind-tables entries where initially intended for arm and aarch64.
+# Likely no harm for x86_64.
+# The -DCMAKE_BUILD is a hack to inform the CBTF_GetStackTrace unwinder
+# which is specific to the x86_64 platform how many signal handler frames
+# to skip. For reasons unknown to me the autotools built CBTF_GetStackTrace
+# has one less frame of overhead (4) than the cmake built version (5).
+# See comments in GetStackTraceFromContext.c.
+# TODO: restrict these as needed possibly using CMAKE_SYSTEM_PROCESSOR.
 add_definitions(
-        -fasynchronous-unwind-tables
-        -funwind-tables
+	-DCMAKE_BUILD
+	-fasynchronous-unwind-tables
+	-funwind-tables
 )
-
 
 set(SERVICES_UNWIND_SOURCES
 	GetStackTraceFromContext.c
@@ -73,5 +81,3 @@ install(TARGETS cbtf-services-unwind-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-
-

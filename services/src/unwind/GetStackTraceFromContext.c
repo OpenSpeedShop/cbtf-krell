@@ -244,7 +244,14 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 
 }
 
+// 4 frames of overhead when built with autotools. Why?
+// 5 frames needed when built with cmake.  cmake builds will define.
 #if defined(__linux) && defined(__x86_64)
+#if defined(CMAKE_BUILD)
+#define UNWIND_SKIP_FRAMES 5
+#else
+#define UNWIND_SKIP_FRAMES 4
+#endif
 // use only for dynamic collection on x86_64
 void CBTF_GetStackTrace( bool_t skip_signal_frames,
 			   unsigned skip_frames,
@@ -255,7 +262,7 @@ void CBTF_GetStackTrace( bool_t skip_signal_frames,
     uint64_t framebuf[max_frames];
     *stacktrace_size = unw_backtrace((void**)framebuf,max_frames);
     if (skip_frames == 0 && skip_signal_frames)
-	skip_frames = 4; // CBTF has 4 frames of overhead
+	skip_frames = UNWIND_SKIP_FRAMES;
 
     int i;
     for (i = skip_frames; i < *stacktrace_size; i++) {

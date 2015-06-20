@@ -3203,7 +3203,7 @@ target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
 	${CMAKE_DL_LIBS}
 )
 
-set_target_properties(mpi-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
+set_target_properties(mpi-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mpt-collector-monitor-mrnet-mpi PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${Mpt_DEFINES};${MRNet_DEFINES}")
 

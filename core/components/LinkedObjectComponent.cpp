@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -64,20 +64,115 @@ using namespace KrellInstitute::Core;
 
 namespace { 
 
-/** count indicating number of threads attached. */
+    std::ostringstream debug_prefix;
+    void flushOutput(std::stringstream &output) {
+	if ( !output.str().empty() ) {
+	    std::cerr << output.str();
+	    output.str(std::string());
+	    output.clear();
+	}
+    }
+
+/** count indicating number of linked object group messages handled. */
     int handled_threads = 0;
 
 #ifndef NDEBUG
 /** Flag indicating if debuging for LinkedObjects is enabled. */
-bool is_debug_linkedobject_events_enabled =
-    (getenv("CBTF_DEBUG_LINKEDOBJECT_EVENTS") != NULL);
-bool is_trace_linkedobject_events_enabled =
-    (getenv("CBTF_TRACE_LINKEDOBJECT_EVENTS") != NULL);
+    bool is_debug_linkedobject_events_enabled =
+	(getenv("CBTF_DEBUG_LINKEDOBJECT_EVENTS") != NULL);
+    bool is_trace_linkedobject_events_enabled =
+	(getenv("CBTF_TRACE_LINKEDOBJECT_EVENTS") != NULL);
 #endif
 
-bool is_defer_emit = (getenv("CBTF_DEFER_LINKEDOBJECT_EMIT") != NULL);
-bool isFE = false;
-std::ostringstream debug_prefix;
+    bool is_defer_emit = (getenv("CBTF_DEFER_LINKEDOBJECT_EMIT") != NULL);
+    long numTerminated = 0;
+    long numThreads = 0;
+
+    int _MaxLeafDistance = 0;
+    int _NumChildren = 0;
+
+    bool isFrontend() {
+	return Impl::TheTopologyInfo.IsFrontend;
+    }
+    bool isLeafCP() {
+	return (!Impl::TheTopologyInfo.IsFrontend && _MaxLeafDistance == 1);
+    }
+    bool isNonLeafCP() {
+	return (!Impl::TheTopologyInfo.IsFrontend && _MaxLeafDistance > 1);
+    }
+    int getNumChildren() {
+	 return _NumChildren;
+    }
+    int getMaxLeafDistance() {
+	 return _MaxLeafDistance;
+    }
+
+    bool initialized_topology_info = false;
+
+    void init_TopologyInfo() {
+
+	if (initialized_topology_info) return;
+
+	bool initMaxLeafDistance = false;
+	bool initNumChildren = false;
+	if (_MaxLeafDistance == 0 && Impl::TheTopologyInfo.MaxLeafDistance > 0) {
+	    _MaxLeafDistance = Impl::TheTopologyInfo.MaxLeafDistance;
+	    initMaxLeafDistance = true;
+	}
+	if (_NumChildren == 0 && Impl::TheTopologyInfo.NumChildren > 0) {
+	    _NumChildren = Impl::TheTopologyInfo.NumChildren;
+	    initNumChildren = true;
+	}
+	initialized_topology_info = (initMaxLeafDistance && initNumChildren);
+    }
+
+    /**
+     * Convert std::string for mrnet use.
+     *
+     * @note    The caller assumes responsibility for releasing all allocated
+     *          memory when it is no longer needed.
+     *
+     * @param in      std::string to be converted.
+     * @retval out    Structure to hold the results.
+     */
+    void convert(const std::string& in, char*& out)
+    {
+        out = reinterpret_cast<char*>(malloc((in.size() + 1) * sizeof(char)));
+        strcpy(out, in.c_str());
+    }
+
+    /**
+     * Convert threadname for mrnet use.
+     *
+     * @note    The caller assumes responsibility for releasing all allocated
+     *          memory when it is no longer needed.
+     *
+     * @param in      ThreadName to be converted.
+     * @retval out    Structure to hold the results.
+     */
+    void convert(const ThreadName& in, CBTF_Protocol_ThreadName& out)
+    {
+	out.experiment = 1;
+	convert(in.getHost(), out.host);
+	out.pid = in.getPid();
+	std::pair<bool, pthread_t> posix_tid = in.getPosixThreadId();
+	out.has_posix_tid = posix_tid.first;
+	if(posix_tid.first)
+	    out.posix_tid = posix_tid.second;
+	out.rank = in.getMPIRank();
+	out.omp_tid = in.getOmpTid();
+    }
+
+    void convert(const LinkedObject& in, CBTF_Protocol_LinkedObject& out)
+    {
+	convert(in.getPath(), out.linked_object.path);
+	out.is_executable = in.is_executable;
+	out.is_executable = in.isExecutable();
+	out.time_begin = in.getTimeInterval().getBegin().getValue();
+	out.time_end = in.getTimeInterval().getEnd().getValue();
+	out.range.begin = in.getAddressRange().getBegin().getValue();
+	out.range.end = in.getAddressRange().getEnd().getValue();
+    }
 
 }
 
@@ -104,6 +199,9 @@ private:
     LinkedObjectComponent() :
         Component(Type(typeid(LinkedObjectComponent)), Version(0, 0, 1))
     {
+        declareInput<int>(
+            "numBE", boost::bind(&LinkedObjectComponent::numBEHandler, this, _1)
+            );
         declareInput<ThreadNameVec>(
             "threadnames", boost::bind(&LinkedObjectComponent::threadnamesHandler, this, _1)
             );
@@ -119,6 +217,9 @@ private:
         declareInput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >(
             "group", boost::bind(&LinkedObjectComponent::groupHandler, this, _1)
             );
+	declareInput<long>(
+	    "numTerminatedIn", boost::bind(&LinkedObjectComponent::numTerminatedHandler, this, _1)
+	);
 
 	declareOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out");
 	declareOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out");
@@ -126,235 +227,333 @@ private:
 	declareOutput<LinkedObjectEntryVec>("linkedobjectvec_out");
 	declareOutput<AddressSpace>("linkedobject_threadmap_out");
 
+	init_TopologyInfo();
     }
 
     /** Handlers for the inputs.*/
 
-    /** Handler for the "abuffer" input.*/
-    void AddressBufferHandler(const AddressBuffer& in)
+    void numBEHandler(const int& in)
     {
+        init_TopologyInfo();
+#ifndef NDEBUG
+        std::stringstream output;
+        DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+#endif
+
+#ifndef NDEBUG
+        if (is_trace_linkedobject_events_enabled) {
+            output << debug_prefix.str()
+            << "ENTERED LinkedObjectComponent::numBEHandler number backends " << in
+            << " numChildren:" << getNumChildren()
+            << std::endl;
+            flushOutput(output);
+        }
+#endif
+
+#ifndef NDEBUG
+        //flushOutput(output);
+#endif
+
+    }
+
+
+    // Is this running just at the leafCP?
+    // What does it do at the FE and intermediate CP levels?
+    void numTerminatedHandler(const long& in)
+    {
+	init_TopologyInfo();
+
+	numTerminated += in;
+
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
+#endif
+
+#ifndef NDEBUG
+	if (is_trace_linkedobject_events_enabled) {
+            output << debug_prefix.str()
+                << "ENTERED LinkedObjectComponent::numTerminatedHandler"
+		<< " numTerminated:" << numTerminated
+		<< " numThreads:" << numThreads
+		<< " addressspace size:" << addressspace.size()
+		<< " numChildren:" << getNumChildren()
+		<< std::endl;
+	    flushOutput(output);
+	}
+#endif
+
+        if (numTerminated == numThreads && addressspace.size() == numThreads) {
+
+
+	    AddressCounts ac = abuffer.addresscounts;
+	    // ICP and FE levels do not have counts. Possibly due to no buffer yet?
+	    bool havecounts = (ac.size() > 0) ? true : false ;
+	    AddressSpace found;
+
+	    AddressSpace::iterator i;
+	    for (AddressSpace::iterator i = addressspace.begin(); i != addressspace.end(); ++i) {
+
+		LinkedObjectVec tmp;
+		for (LinkedObjectVec::iterator k = (*i).second.begin();
+			     k != (*i).second.end(); ++k) {
+
+		    bool has_sample = false;
+		    AddressRange addr_range((*k).getAddressRange());
+		    AddressCounts::const_iterator aci;
+		    for (aci=ac.equal_range(addr_range.getBegin()).first;
+			 aci!=ac.equal_range(addr_range.getEnd()).second;aci++) {
+			has_sample = true;
+			break;
+		    }
+
+		    if(has_sample || !havecounts) {
+#ifndef NDEBUG
+			if (is_trace_linkedobject_events_enabled) {
+    			    output << debug_prefix.str()
+				<< "\t HAS SAMPLE name:" << (*k).getPath()
+				<< " range:" << (*k).getAddressRange()
+				<< std::endl;
+			}
+#endif
+			tmp.push_back(*k);
+		    }
+		}
+
+#ifndef NDEBUG
+		if (is_trace_linkedobject_events_enabled) {
+		    output << debug_prefix.str()
+		    << "LinkedObjectComponent::numTerminatedHandler CONVERT"
+		    << " addressspace thread:" << (*i).first << std::endl;
+		}
+#endif
+
+		if(tmp.size() > 0) {
+		    found.insert( std::make_pair((*i).first,tmp) );
+		}
+	    }
+
+	    for (AddressSpace::iterator i = found.begin(); i != found.end(); ++i) {
+
+		boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> logroup(
+		    new CBTF_Protocol_LinkedObjectGroup()
+		    );
+
+		CBTF_Protocol_ThreadName* ptr = &logroup->thread;
+		convert((*i).first, *ptr);
+
+		logroup->linkedobjects.linkedobjects_len = (*i).second.size();
+		logroup->linkedobjects.linkedobjects_val =
+		    reinterpret_cast<CBTF_Protocol_LinkedObject*>(
+		    malloc((*i).second.size() * sizeof(CBTF_Protocol_LinkedObject))
+		    );
+
+		int j = 0;
+		for (LinkedObjectVec::iterator k = (*i).second.begin();
+			     k != (*i).second.end(); ++k) {
+		    CBTF_Protocol_LinkedObject* destination =
+			&logroup->linkedobjects.linkedobjects_val[j];
+			convert((*k), *destination);
+		    ++j;
+		}
+
+#ifndef NDEBUG
+		if (is_trace_linkedobject_events_enabled) {
+		    output << debug_prefix.str()
+		    << "LinkedObjectComponent::numTerminatedHandler"
+		    << " EMIT CBTF_Protocol_LinkedObjectGroup size:"
+		    << logroup->linkedobjects.linkedobjects_len << std::endl;
+		    flushOutput(output);
+		}
+#endif
+		emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", logroup);
+	    }
+
+#ifndef NDEBUG
+	    if (is_trace_linkedobject_events_enabled) {
+	    	output << debug_prefix.str()
+	        << "LinkedObjectComponent::numTerminatedHandler EMIT AddressSpace size:" << found.size() << std::endl;
+		flushOutput(output);
+	    }
+#endif
+	    emitOutput<AddressSpace>("linkedobject_threadmap_out",found);
+	}
+	
+#ifndef NDEBUG
+	//flushOutput(output);
+#endif
+    }
+
+    // Handler for the "abuffer" input. The input buffer is used
+    // to reduce the addressspace to only those linked objects that
+    // contain a buffer address in the addressrange the object was
+    // loaded into at runtime.
+    void AddressBufferHandler(const AddressBuffer& in)
+    {
+	init_TopologyInfo();
+#ifndef NDEBUG
+	std::stringstream output;
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
         if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
-	    << "ENTERED LinkedObject::AddressBufferHandler"
+	    << "ENTERED LinkedObjectComponent::AddressBufferHandler"
 	    << " with " << in.addresscounts.size() << " addresses"
+	    << " numChildren:" << getNumChildren()
 	    << std::endl;
+	    flushOutput(output);
 	}
 #endif
 	abuffer = in;
-	isFE = Impl::TheTopologyInfo.IsFrontend;
 
 #ifndef NDEBUG
-	if ( !output.str().empty() ) {
-            std::cerr << output.str();
-	}
+	//flushOutput(output);
 #endif
     }
 
+    // This message can only arrive on a local component network
+    // as it currently has no mrnet converter to pass it on to other nodes.
+    // Arrives on the "threadnames" input and exists here to inform
+    // this component of existing threads.
     void threadnamesHandler(const ThreadNameVec& in)
     {
+	init_TopologyInfo();
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
 	if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
-	     << "ENTERED LinkedObjectComponent::threadnamesHandler with threads:"
-		<< in.size() << std::endl;
+	    << "ENTERED LinkedObjectComponent::threadnamesHandler with threads:"
+	    << in.size()
+	    << " numChildren:" << getNumChildren()
+	    << std::endl;
+	    flushOutput(output);
 	}
 #endif
 	threadnames = in;
-	isFE = Impl::TheTopologyInfo.IsFrontend;
-
-#ifndef NDEBUG
-	if ( !output.str().empty() ) {
-            std::cerr << output.str();
-	}
-#endif
+	numThreads = threadnames.size();
     }
 
 
+    // This message contains a threadname and a list of linkedobjects.
+    // At the LeafCP level it is reduced to only the linkedobjects for
+    // which a matching address in the addressbuffer is found. The LeafCP
+    // does not emit the reduced groups here.
+    //
+    // At the FE and Intermediate CP level we just place the passed group
+    // into an AddressSpace object and once all expected groups have
+    // arrived (addressspace.size == threads.size == numTerminated) this
+    // handler will emit all the groups one at a time. Can this be done
+    // in one larger CBTF_Protocol_AddressSpace message?
     void groupHandler(const boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup>& in)
     {
+	init_TopologyInfo();
+
         CBTF_Protocol_LinkedObjectGroup *message = in.get();
 	ThreadName tname(message->thread);
 	handled_threads++;
 
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
 	if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
 	    << "ENTERED LinkedObjectComponent::groupHandler linked objects num:"
 	    << message->linkedobjects.linkedobjects_len
 	    << " handled_threads:" << handled_threads
 	    << " of:" << threadnames.size()
+	    << " numChildren:" << getNumChildren()
 	    << std::endl;
 	    output << debug_prefix.str()
 	    << "LinkedObjectComponent::groupHandler message thread:" << tname
 	    << std::endl;
+	    flushOutput(output);
 	}
 #endif
 
 
-	AddressCounts ac = abuffer.addresscounts;
-	bool havecounts = (ac.size() > 0) ? true : false ;
-	bool havethreads = (threadnames.size() > 0) ? true : false ;
-	LinkedObjectEntryVec linkedobjects;
         LinkedObjectVec linkedobjectvec;
 	
-	// indicies in group of linkedobjects with samples.
-	std::vector<int> found;
-
 	for(int i = 0; i < message->linkedobjects.linkedobjects_len; ++i) {
-	    const CBTF_Protocol_LinkedObject& msg_lo =
+	        const CBTF_Protocol_LinkedObject& msg_lo =
 				message->linkedobjects.linkedobjects_val[i];
-
-	    // Limit linked objects to those with sample addresses.
-	    bool has_sample = false;
-	    AddressRange addr_range(msg_lo.range.begin,msg_lo.range.end);
-	    AddressCounts::const_iterator aci;
-	    for (aci=ac.equal_range(addr_range.getBegin()).first;
-                aci!=ac.equal_range(addr_range.getEnd()).second;aci++) {
-		has_sample = true;
-		break;
-	    }
-
-	    if (has_sample ||  !havecounts) {
-		LinkedObjectEntry entry;
-		entry.tname = tname;
-		entry.path = msg_lo.linked_object.path;
-		entry.addr_begin = msg_lo.range.begin;
-		entry.addr_end = msg_lo.range.end;
-		entry.is_executable = msg_lo.is_executable;
-		entry.time_loaded = msg_lo.time_begin;
-		entry.time_unloaded = msg_lo.time_end;
-	        linkedobjectentryvec.push_back(entry);
-		// save this index.
-		found.push_back(i);
-
 		LinkedObject e;
 		e.path = msg_lo.linked_object.path;
 		e.is_executable = msg_lo.is_executable;
 		e.time = TimeInterval(msg_lo.time_begin,msg_lo.time_end);
 		e.range = AddressRange(msg_lo.range.begin,msg_lo.range.end);
 	        linkedobjectvec.push_back(e);
-	    }
 	}
-	addresspace.insert(std::make_pair(tname,linkedobjectvec));
+	addressspace.insert(std::make_pair(tname,linkedobjectvec));
 
 #ifndef NDEBUG
-	if (is_debug_linkedobject_events_enabled) {
+	if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
-	        << "LinkedObjectComponent::groupHandler tname:" << tname
-	        << " objects:" << linkedobjectentryvec.size()
+	        << "LinkedObjectComponent::groupHandler"
+	        << " addressspace size:" << addressspace.size()
+	        << " threads:" << threadnames.size()
+	        << " numTerminated:" << numTerminated
 		<< std::endl;
+	    flushOutput(output);
 	}
 #endif
-	// emits to local component network and not over mrnet.
-	if ( (havethreads && handled_threads == threadnames.size()) ||
-	      !havethreads ) {
-	    if (!is_defer_emit) {
-#ifndef NDEBUG
-		if (is_debug_linkedobject_events_enabled) {
-	    	output << debug_prefix.str()
-	        << "LinkedObjectComponent::groupHandler EMIT LinkedObjectEntryVec size:" << linkedobjectentryvec.size() << std::endl;
-		}
-#endif
-	        emitOutput<LinkedObjectEntryVec>("linkedobjectvec_out",linkedobjectentryvec);
-	    }
-#ifndef NDEBUG
-	    if (is_debug_linkedobject_events_enabled) {
-	    	output << debug_prefix.str()
-	        << "LinkedObjectComponent::groupHandler EMIT AddressSpace size:" << addresspace.size() << std::endl;
-	    }
-#endif
-	    emitOutput<AddressSpace>("linkedobject_threadmap_out",addresspace);
-	}
 
+	if ( !isLeafCP() &&
+	     (addressspace.size() == threadnames.size()) &&
+	     (numTerminated == threadnames.size()) ) {
+	    for (AddressSpace::iterator i = addressspace.begin(); i != addressspace.end(); ++i) {
 
-	if (havecounts) {
-	    boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> logroup(
-		new CBTF_Protocol_LinkedObjectGroup()
-            );
-	    CBTF_Protocol_LinkedObject dest[found.size()];
-	    memcpy(&logroup->thread, &message->thread, sizeof(CBTF_Protocol_ThreadName));
-	    logroup->thread.host = strdup(message->thread.host);
-	    logroup->linkedobjects.linkedobjects_len = found.size();
-	    logroup->linkedobjects.linkedobjects_val =
-		reinterpret_cast<CBTF_Protocol_LinkedObject*>(
-		malloc(found.size() * sizeof(CBTF_Protocol_LinkedObject))
-		);
+		boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> logroup(
+		    new CBTF_Protocol_LinkedObjectGroup()
+		    );
 
-	    int k = 0;
-	    for (std::vector<int>::iterator ii = found.begin(); ii < found.end(); ++ii) {
-		const CBTF_Protocol_LinkedObject* source =
-			&message->linkedobjects.linkedobjects_val[*ii];
-		CBTF_Protocol_LinkedObject* destination =
-			&logroup->linkedobjects.linkedobjects_val[k];
-		memcpy(destination, source, sizeof(CBTF_Protocol_LinkedObject));
-		destination->linked_object.path = strdup(source->linked_object.path);
-		++k;
-	    }
-#ifndef NDEBUG
-	    if (is_debug_linkedobject_events_enabled) {
-#if 0
-		if ( (havethreads && handled_threads == threadnames.size()) ||
-		      !havethreads ) {
-		    AddressSpace::iterator i;
-		    for (i = addresspace.begin(); i != addresspace.end(); ++i) {
-	    		output << debug_prefix.str() << "addresspace  thread:" << (*i).first << std::endl;
-			for (LinkedObjectVec::iterator k = (*i).second.begin();
+		CBTF_Protocol_ThreadName* ptr = &logroup->thread;
+		convert((*i).first, *ptr);
+
+		logroup->linkedobjects.linkedobjects_len = (*i).second.size();
+		logroup->linkedobjects.linkedobjects_val =
+		    reinterpret_cast<CBTF_Protocol_LinkedObject*>(
+		    malloc((*i).second.size() * sizeof(CBTF_Protocol_LinkedObject))
+		    );
+
+		int j = 0;
+		for (LinkedObjectVec::iterator k = (*i).second.begin();
 			     k != (*i).second.end(); ++k) {
-	    		    output << debug_prefix.str() << "\t name:" << (*k).getPath() << std::endl;
-			}
-		    }
+		    CBTF_Protocol_LinkedObject* destination =
+			&logroup->linkedobjects.linkedobjects_val[j];
+			convert((*k), *destination);
+		    ++j;
 		}
-#endif
-	    }
-#endif
-	    if (!is_defer_emit) {
+
 #ifndef NDEBUG
 		if (is_trace_linkedobject_events_enabled) {
-	        output << debug_prefix.str()
-	        << "LinkedObjectComponent::groupHandler EMIT reduced CBTF_Protocol_LinkedObjectGroup size:" << found.size() << std::endl;
+		    output << debug_prefix.str()
+		    << "LinkedObjectComponent::groupHandler"
+		    << " EMIT CBTF_Protocol_LinkedObjectGroup size:"
+		    << logroup->linkedobjects.linkedobjects_len << std::endl;
+		    flushOutput(output);
 		}
 #endif
-	        emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", logroup);
-	    }
-
-	} else {
-
-	    if (!is_defer_emit) {
-#ifndef NDEBUG
-		if (is_debug_linkedobject_events_enabled) {
-	        output << debug_prefix.str()
-	        << "LinkedObjectComponent::groupHandler EMIT passed CBTF_Protocol_LinkedObjectGroup" << std::endl;
-		}
-#endif
-	        emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", in);
+		emitOutput<boost::shared_ptr<CBTF_Protocol_LinkedObjectGroup> >("group_xdr_out", logroup);
 	    }
 	}
 
 #ifndef NDEBUG
-	if ( !output.str().empty() ) {
-            std::cerr << output.str();
-	}
+        //flushOutput(output);
 #endif
-
     }
 
     // Handler for dlopen events.
     void loadedHandler(const boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject>& in)
     {
+	init_TopologyInfo();
         CBTF_Protocol_LoadedLinkedObject *message = in.get();
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
 	if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
 	     << "ENTERED LinkedObjectComponent::loadedHandler" << std::endl;
+            flushOutput(output);
 	}
 #endif
 	LinkedObjectEntry entry;
@@ -393,28 +592,27 @@ private:
 	if (is_debug_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
 	     << "LinkedObjectComponent::loadedHandler EMIT CBTF_Protocol_LoadedLinkedObject" << std::endl;
+	    flushOutput(output);
 	}
 #endif
-
 	emitOutput<boost::shared_ptr<CBTF_Protocol_LoadedLinkedObject> >("loaded_xdr_out", in);
 
 #ifndef NDEBUG
-	if ( !output.str().empty() ) {
-            std::cerr << output.str();
-	}
+        //flushOutput(output);
 #endif
-
     }
 
     // Handler for dlclose events.
     void unloadedHandler(const boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject>& in)
     {
+	init_TopologyInfo();
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,getMaxLeafDistance());
 	if (is_trace_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
 	     << "ENTERED LinkedObjectComponent::unloadedHandler" << std::endl;
+	    flushOutput(output);
 	}
 #endif
 
@@ -422,26 +620,28 @@ private:
 	if (is_debug_linkedobject_events_enabled) {
 	    output << debug_prefix.str()
 	     << "LinkedObjectComponent::unloadedHandler EMIT CBTF_Protocol_UnloadedLinkedObject" << std::endl;
+	    flushOutput(output);
 	}
 #endif
 	emitOutput<boost::shared_ptr<CBTF_Protocol_UnloadedLinkedObject> >("unloaded_xdr_out", in);
 
 #ifndef NDEBUG
-	if ( !output.str().empty() ) {
-            std::cerr << output.str();
-	}
+        //flushOutput(output);
 #endif
     }
 
+    // address buffer used to reduce incoming linkedobject groups
+    // from the ltwt BEs.
     AddressBuffer abuffer;
 
-    // vector of linkedobjects with thread info. output when we handle the
-    // number of pending threads.
+    // vector of linkedobjectentry with thread info.
     LinkedObjectEntryVec linkedobjectentryvec;
+    // vector of linkedobject info.
     LinkedObjectVec linkedobjectvec;
-    AddressSpace addresspace;
+    // map of threadname to linkedobjectvec.
+    AddressSpace addressspace;
 
-    // vector of incoming threadnames. For each thread we expect
+    // vector of incoming threadnames.
     ThreadNameVec threadnames;
 
 }; // class LinkedObjectComponent

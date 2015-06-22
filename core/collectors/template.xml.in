@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
+Copyright (c) 2011-2014 Krell Institute. All Rights Reserved.
     
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the Free
@@ -35,13 +35,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
   <Stream>
     <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
     <Tag>1101</Tag>
-  </Stream>
-<!--
-  Stream representing a process created event.
--->
-  <Stream>
-    <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
-    <Tag>1104</Tag>
   </Stream>
 <!--
   Stream representing a linked object (dso) has been loaded
@@ -84,33 +77,29 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     <Tag>1124</Tag>
   </Stream>
 
+  <Stream>
+    <Name>ThreadsFinished</Name>
+    <Tag>1130</Tag>
+  </Stream>
+
   <Input>
     <Name>numBE</Name>
     <To><Input>numBackends</Input></To>
   </Input>
 
 <!--
-   Declare output of this distributed component. Used to communicate
+   Declare outputs of this distributed component. Used to communicate
    data back to a tool client that registers this xml component and
    has inputs to handle the datum from any of these outputs. 
 -->
 
 <!--
-  FIXME. This output needs a descriptive name.  It currently
+  This output needs a descriptive name.  It currently
   sends the notification that all threads are finished.
 -->
   <Output>
       <Name>threads_finished</Name>
       <From><Output>threads_finished_output_from_frontend</Output></From>
-  </Output>
-
-<!--
-  Send process creation message to a client tool that has resistered
-  this xml component and handles this message.
--->
-  <Output>
-      <Name>created_process_xdr_output</Name>
-      <From><Output>created_process_xdr_output_from_frontend</Output></From>
   </Output>
 
 <!--
@@ -120,15 +109,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
   <Output>
       <Name>attached_to_threads_xdr_output</Name>
       <From><Output>attached_threads_xdr_output_from_frontend</Output></From>
-  </Output>
-
-<!--
-  Send threads  state changed message to a client tool that has resistered
-  this xml component and handles this message.
--->
-  <Output>
-      <Name>threads_state_changed_xdr_output</Name>
-      <From><Output>threads_state_changed_xdr_output_from_frontend</Output></From>
   </Output>
 
 <!--
@@ -188,15 +168,29 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 <!--
   Send symboltable message to a client tool that has resistered
   this xml component and handles this message.
+-->
   <Output>
       <Name>symboltable_xdr_output</Name>
       <From><Output>symboltable_xdr_output_from_frontend</Output></From>
   </Output>
--->
+
+  <Output>
+      <Name>maxfunctionvalues_xdr_out</Name>
+      <From><Output>maxfunctionvalues_xdr_out_from_frontend</Output></From>
+  </Output>
+  <Output>
+      <Name>minfunctionvalues_xdr_out</Name>
+      <From><Output>minfunctionvalues_xdr_out_from_frontend</Output></From>
+  </Output>
+  <Output>
+      <Name>avgfunctionvalues_xdr_out</Name>
+      <From><Output>avgfunctionvalues_xdr_out_from_frontend</Output></From>
+  </Output>
  
   <Frontend>
 
 <!--
+     FRONTEND NETWORK
      The operations done in this network are intended to run only on the Frontend.
 -->
 
@@ -258,12 +252,38 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
           <Input>numBE</Input>
         </To>
       </Input>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
 
 <!--
-      <Component>
-        <Name>ResolveSymbols</Name>
-        <Type>ResolveSymbols</Type>
-      </Component>
 -->
 
 <!--
@@ -326,19 +346,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
             <Input>abufferin</Input>
         </To>
       </Connection>
-<!--
-    Input to handle incoming thread state changed events.  These are
-    passed on untouched by this FrontEnd network to a client tool.
-    In addition, this input handler watches for terminated state and keeps
-    a count of terminated threads.
--->
-      <Input>
-        <Name>IncomingThreadsStateChanged</Name>
-        <To>
-          <Name>ThreadEventComponent</Name>
-          <Input>threadstate</Input>
-        </To>
-      </Input>
 
 <!--
     Input to handle incoming attached to thread events.  These are
@@ -358,31 +365,13 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
     TODO: this input is not needed for OSS collection.
 -->
       <Input>
-        <Name>IncomingCreatedProcess</Name>
+        <Name>IncomingThreadsFinished</Name>
         <To>
           <Name>ThreadEventComponent</Name>
-          <Input>createdprocess</Input>
+          <Input>finished</Input>
         </To>
       </Input>
 
-      <Input>
-        <Name>IncomingLeafCP</Name>
-        <To>
-          <Name>ThreadEventComponent</Name>
-          <Input>leafCPnumBE</Input>
-        </To>
-      </Input>
-
-      <Connection>
-        <From>
-            <Name>ThreadEventComponent</Name>
-            <Output>LeafCP_numBE</Output>
-        </From>
-        <To>
-            <Name>ResolveSymbols</Name>
-            <Input>leafCPnumBE</Input>
-        </To>
-      </Connection>
 
       <Input>
         <Name>IncomingMaxFunctionValues</Name>
@@ -447,45 +436,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
       </Connection>
 
 <!--
-the following symbol related code is not in use in the Frontend.
-it is here as an example of resolving symbols in the Frontend.
--->
-<!--
-      <Connection>
-        <From>
-            <Name>LinkedObject</Name>
-            <Output>linkedobjectvec_out</Output>
-        </From>
-        <To>
-            <Name>ResolveSymbols</Name>
-            <Input>linkedobjectvecin</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-            <Name>Aggregator</Name>
-            <Output>Aggregatorout</Output>
-        </From>
-        <To>
-            <Name>ResolveSymbols</Name>
-            <Input>abufferin</Input>
-        </To>
-      </Connection>
-
-      <Connection>
-        <From>
-            <Name>ThreadEventComponent</Name>
-            <Output>Threads_finished</Output>
-        </From>
-        <To>
-            <Name>ResolveSymbols</Name>
-            <Input>finished</Input>
-        </To>
-      </Connection>
--->
-
-<!--
      Connection to send list of attached threads to the linkedobject component.
      This is a sync connection used by the linkedobject component to wait for
      all attached threads to send a group of initially loaded linkedobjects.
@@ -502,10 +452,10 @@ it is here as an example of resolving symbols in the Frontend.
       </Connection>
 
 <!--
+     DPM 42315 disabled
      Notification that all attached threads known at this component level
      have terminated and the ThreadEventComponent can finish any remaining
      work.
--->
       <Connection>
         <From>
             <Name>ThreadEventComponent</Name>
@@ -516,6 +466,54 @@ it is here as an example of resolving symbols in the Frontend.
             <Input>finished</Input>
         </To>
       </Connection>
+-->
+
+<!--
+     DPM 42615 added
+-->
+
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+<!--
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>ThreadEventComponent</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+-->
 
 <!--
       <Connection>
@@ -544,19 +542,6 @@ it is here as an example of resolving symbols in the Frontend.
       </Output>
 
 <!--
-     Output created process message to client tool that has registered
-     this distributed xml component and handles this meesage.
-     TODO: this is not in use by OSS at this time (4-29-2014)
--->
-      <Output>
-         <Name>created_process_xdr_output_from_frontend</Name>
-         <From>
-            <Name>ThreadEventComponent</Name>
-            <Output>CreatedProcess_xdr_out</Output>
-         </From>
-      </Output>
-
-<!--
      Output attached to threads message to client tool that has registered
      this distributed xml component and handles this meesage.
 -->
@@ -565,18 +550,6 @@ it is here as an example of resolving symbols in the Frontend.
          <From>
             <Name>ThreadEventComponent</Name>
             <Output>AttachedToThreads_xdr_out</Output>
-         </From>
-      </Output>
-
-<!--
-     Output threads state changed message to client tool that has registered
-     this distributed xml component and handles this meesage.
--->
-      <Output>
-         <Name>threads_state_changed_xdr_output_from_frontend</Name>
-         <From>
-            <Name>ThreadEventComponent</Name>
-            <Output>ThreadsStateChanged_xdr_out</Output>
          </From>
       </Output>
 
@@ -652,6 +625,7 @@ it is here as an example of resolving symbols in the Frontend.
       </Output>
 
 <!--
+-->
       <Output>
         <Name>symboltable_xdr_output_from_frontend</Name>
         <From>
@@ -659,14 +633,42 @@ it is here as an example of resolving symbols in the Frontend.
           <Output>symboltable_xdr_out</Output>
         </From>
       </Output>
+
+      <Output>
+        <Name>maxfunctionvalues_xdr_out_from_frontend</Name>
+        <From>
+          <Name>ResolveSymbols</Name>
+          <Output>maxfunctionvalues_xdr_out</Output>
+        </From>
+      </Output>
+
+      <Output>
+        <Name>minfunctionvalues_xdr_out_from_frontend</Name>
+        <From>
+          <Name>ResolveSymbols</Name>
+          <Output>minfunctionvalues_xdr_out</Output>
+        </From>
+      </Output>
+
+      <Output>
+        <Name>avgfunctionvalues_xdr_out_from_frontend</Name>
+        <From>
+          <Name>ResolveSymbols</Name>
+          <Output>avgfunctionvalues_xdr_out</Output>
+        </From>
+      </Output>
+
+<!--
 -->
+      <Output>
+        <Name>OutgoingNumBE</Name>
+        <From>
+          <Name>ThreadEventComponent</Name>
+          <Output>numBE</Output>
+        </From>
+      </Output>
 
     </Network>
-
-    <IncomingUpstream>
-      <Name>LeafCP</Name>
-      <To><Input>IncomingLeafCP</Input></To>
-    </IncomingUpstream>
 
 <!--
     Incoming addressbuffers.
@@ -689,13 +691,7 @@ it is here as an example of resolving symbols in the Frontend.
       <Name>CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP</Name>
       <To><Input>IncomingLinkedObjectGroup</Input></To>
     </IncomingUpstream>
-<!--
-    Incoming threads state changed events.
--->
-    <IncomingUpstream>
-      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
-      <To><Input>IncomingThreadsStateChanged</Input></To>
-    </IncomingUpstream>
+
 <!--
     Incoming attached to threads events.
 -->
@@ -703,12 +699,13 @@ it is here as an example of resolving symbols in the Frontend.
       <Name>CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS</Name>
       <To><Input>IncomingAttachedToThreads</Input></To>
     </IncomingUpstream>
+
 <!--
-    Incoming created process events.
+    Incoming signal that threads have terminated.
 -->
     <IncomingUpstream>
-      <Name>CBTF_PROTOCOL_TAG_CREATED_PROCESS</Name>
-      <To><Input>IncomingCreatedProcess</Input></To>
+      <Name>ThreadsFinished</Name>
+      <To><Input>IncomingThreadsFinished</Input></To>
     </IncomingUpstream>
 
 <!--
@@ -741,6 +738,13 @@ it is here as an example of resolving symbols in the Frontend.
       <To><Input>IncomingSymbolTable</Input></To>
     </IncomingUpstream>
 
+<!--
+-->
+    <OutgoingDownstream>
+      <Name>DownstreamNumBE</Name>
+      <From><Output>OutgoingNumBE</Output></From>
+    </OutgoingDownstream>
+
   </Frontend>
 
 <!--
@@ -755,11 +759,14 @@ it is here as an example of resolving symbols in the Frontend.
   <Filter>
  
 <!--
+    LEAF CP NETWORK
     Run this filter only on CP's that are connected to a lightweight mrnet BE.
+    cp:bottom
+    try cp for the moment...
 -->
     <Depth>
 	<Expression>
-	    cp:bottom
+	    cp
 	</Expression>
     </Depth>
 
@@ -808,6 +815,44 @@ it is here as an example of resolving symbols in the Frontend.
         <Type>ResolveSymbols</Type>
       </Component>
 
+      <Input>
+        <Name>IncomingNumBE</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>numBE</Input>
+        </To>
+      </Input>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numBE</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>numBE</Input>
+        </To>
+      </Connection>
+
 <!--
     Input to handle incoming attached to thread events.  These are
     passed on untouched by this FrontEnd network to a client tool.
@@ -825,6 +870,14 @@ it is here as an example of resolving symbols in the Frontend.
         <To>
           <Name>ThreadEventComponent</Name>
           <Input>threadstate</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingThreadsFinished</Name>
+        <To>
+          <Name>ThreadEventComponent</Name>
+          <Input>finished</Input>
         </To>
       </Input>
 
@@ -852,6 +905,50 @@ it is here as an example of resolving symbols in the Frontend.
         </To>
       </Input>
 
+<!--
+    Input to handle incoming aggregated addressbuffers.  These are
+    aggregated by this FrontEnd network and a final buffer is sent
+    to a client tool.
+-->
+      <Input>
+        <Name>IncomingBuffers</Name>
+        <To>
+          <Name>Aggregator</Name>
+          <Input>addressBuffer</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingMaxFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>maxfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingMinFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>minfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingAvgFunctionValues</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>avgfunctionvalues</Input>
+        </To>
+      </Input>
+
+      <Input>
+        <Name>IncomingSymbolTable</Name>
+        <To>
+          <Name>ResolveSymbols</Name>
+          <Input>symboltable_xdr_in</Input>
+        </To>
+      </Input>
 
 <!--
      Connection to send list of attached threads to the aggregator.
@@ -870,8 +967,9 @@ it is here as an example of resolving symbols in the Frontend.
       </Connection>
 
 <!--
-     Notify Aggregator that all threads are terminated.
+     DPM ADDED BACK IN 42915
 -->
+     Notify Aggregator that all threads are terminated.
       <Connection>
         <From>
             <Name>ThreadEventComponent</Name>
@@ -958,6 +1056,8 @@ it is here as an example of resolving symbols in the Frontend.
         </To>
       </Connection>
 
+<!--
+-->
       <Connection>
         <From>
             <Name>ThreadEventComponent</Name>
@@ -970,7 +1070,6 @@ it is here as an example of resolving symbols in the Frontend.
       </Connection>
 
 <!--
--->
       <Connection>
         <From>
             <Name>ThreadEventComponent</Name>
@@ -981,6 +1080,49 @@ it is here as an example of resolving symbols in the Frontend.
             <Input>finished</Input>
         </To>
       </Connection>
+-->
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>Aggregator</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>LinkedObject</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>ResolveSymbols</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+<!--
+      <Connection>
+        <From>
+            <Name>ThreadEventComponent</Name>
+            <Output>numTerminatedOut</Output>
+        </From>
+        <To>
+            <Name>ThreadEventComponent</Name>
+            <Input>numTerminatedIn</Input>
+        </To>
+      </Connection>
+-->
 
 
 <!--
@@ -1022,10 +1164,10 @@ it is here as an example of resolving symbols in the Frontend.
       </Output>
 
       <Output>
-         <Name>OutgoingThreadsState</Name>
+         <Name>OutgoingThreadsFinished</Name>
          <From>
             <Name>ThreadEventComponent</Name>
-            <Output>ThreadsStateChanged_xdr_out</Output>
+            <Output>Threads_finished</Output>
          </From>
       </Output>
 
@@ -1035,14 +1177,6 @@ it is here as an example of resolving symbols in the Frontend.
             <Name>LinkedObject</Name>
             <Output>group_xdr_out</Output>
          </From>
-      </Output>
-
-      <Output>
-        <Name>OutgoingLeafCP</Name>
-        <From>
-          <Name>ThreadEventComponent</Name>
-          <Output>LeafCP_numBE</Output>
-        </From>
       </Output>
 
       <Output>
@@ -1077,6 +1211,16 @@ it is here as an example of resolving symbols in the Frontend.
          </From>
       </Output>
  
+<!--
+-->
+      <Output>
+        <Name>OutgoingNumBE</Name>
+        <From>
+          <Name>ThreadEventComponent</Name>
+          <Output>numBE</Output>
+        </From>
+      </Output>
+
     </Network>    
 
 <!--
@@ -1106,6 +1250,14 @@ it is here as an example of resolving symbols in the Frontend.
     </IncomingUpstream>
 
 <!--
+    Incoming signal that threads have terminated.
+-->
+    <IncomingUpstream>
+      <Name>ThreadsFinished</Name>
+      <To><Input>IncomingThreadsFinished</Input></To>
+    </IncomingUpstream>
+
+<!--
     Incoming loaded linked object group events.
 -->
     <IncomingUpstream>
@@ -1114,17 +1266,45 @@ it is here as an example of resolving symbols in the Frontend.
     </IncomingUpstream>
 
 <!--
+    Incoming events intended for no leaf CPs.
+-->
+    <IncomingUpstream>
+      <Name>Buffers</Name>
+      <To><Input>IncomingBuffers</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>MaxFunctionValues</Name>
+      <To><Input>IncomingMaxFunctionValues</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>MinFunctionValues</Name>
+      <To><Input>IncomingMinFunctionValues</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>AvgFunctionValues</Name>
+      <To><Input>IncomingAvgFunctionValues</Input></To>
+    </IncomingUpstream>
+
+    <IncomingUpstream>
+      <Name>SymbolTable</Name>
+      <To><Input>IncomingSymbolTable</Input></To>
+    </IncomingUpstream>
+
+    <IncomingDownstream>
+      <Name>DownstreamNumBE</Name>
+      <To><Input>IncomingNumBE</Input></To>
+    </IncomingDownstream>
+
+<!--
     This is the stream for sending the aggregated pc addressbuffers
     upstream to the next level of the tree for further aggregation.
 -->
     <OutgoingUpstream>
       <Name>Buffers</Name>
       <From><Output>OutgoingBuffers</Output></From>
-    </OutgoingUpstream>
-
-    <OutgoingUpstream>
-      <Name>LeafCP</Name>
-      <From><Output>OutgoingLeafCP</Output></From>
     </OutgoingUpstream>
 
 <!--
@@ -1145,8 +1325,8 @@ it is here as an example of resolving symbols in the Frontend.
     </OutgoingUpstream>
 
     <OutgoingUpstream>
-      <Name>CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED</Name>
-      <From><Output>OutgoingThreadsState</Output></From>
+      <Name>ThreadsFinished</Name>
+      <From><Output>OutgoingThreadsFinished</Output></From>
     </OutgoingUpstream>
 
     <OutgoingUpstream>
@@ -1173,6 +1353,13 @@ it is here as an example of resolving symbols in the Frontend.
       <Name>SymbolTable</Name>
       <From><Output>OutgoingSymbolTable</Output></From>
     </OutgoingUpstream>
+
+<!--
+-->
+    <OutgoingDownstream>
+      <Name>DownstreamNumBE</Name>
+      <From><Output>OutgoingNumBE</Output></From>
+    </OutgoingDownstream>
 
   </Filter>
 

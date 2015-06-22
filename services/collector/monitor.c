@@ -232,9 +232,16 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #endif
 	        connect_to_mrnet();
 		tls->connected_to_mrnet = true;
-		// defer send_attached_to_threads_message()
-		// send_attached_to_threads_message();
-		// defer cbtf_record_dsos()
+		// The sending of attached threads was previously
+		// defered until mpi job was terminating. For large
+		// mpi jobs it is more efficient to send this message
+		// as soon as mpi init has provided a rank and there
+		// is not as much message traffic over mrnet.
+		// We do not send the dso list (addressspace) until
+		// the job has terminated since that list will be pruned
+		// of dsos for which no sample or callstack addresses
+		// are found.
+		send_attached_to_threads_message();
 		cbtf_send_info();
 		cbtf_offline_service_start_timer();
 	    }

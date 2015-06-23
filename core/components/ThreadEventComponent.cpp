@@ -713,7 +713,10 @@ private:
 #endif
 	    emitOutput<long>("numTerminatedOut",threadnamevec.size());
 
-	    if (isFrontend() || isNonLeafCP()) {
+	    // Only emit this at the non leaf CPs.
+	    // The FE network will emit the final finished to the client
+	    // from the finishedHandler. sigh.
+	    if (isNonLeafCP()) {
 #ifndef NDEBUG
 		if (is_trace_thread_events_enabled) {
 		    output << debug_prefix.str() << "ThreadEventComponent::threadsHandler"

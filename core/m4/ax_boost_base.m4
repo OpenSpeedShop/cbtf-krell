@@ -96,6 +96,7 @@ if test "x$want_boost" = "xyes"; then
 	BOOST_DETECTED_PATH="$ac_boost_path"
 	BOOST_DIR="$ac_boost_path"
         BOOST_LDFLAGS="-L$ac_boost_path/$libsubdir"
+        BOOST_LIBDIR="$ac_boost_path/$libsubdir"
         BOOST_CPPFLAGS="-I$ac_boost_path/include"
     elif test "$cross_compiling" != yes; then
         for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
@@ -103,6 +104,7 @@ if test "x$want_boost" = "xyes"; then
 		BOOST_DETECTED_PATH="$ac_boost_path_tmp"
 		BOOST_DIR="$ac_boost_path_tmp"
                 BOOST_LDFLAGS="-L$ac_boost_path_tmp/$libsubdir"
+                BOOST_LIBDIR="$ac_boost_path_tmp/$libsubdir"
                 BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
                 break;
             fi
@@ -113,6 +115,7 @@ if test "x$want_boost" = "xyes"; then
     dnl --with-boost-libdir parameter
     if test "$ac_boost_lib_path" != ""; then
        BOOST_LDFLAGS="-L$ac_boost_lib_path"
+       BOOST_LIBDIR="$ac_boost_lib_path"
     fi
 
     CPPFLAGS_SAVED="$CPPFLAGS"
@@ -179,6 +182,7 @@ if test "x$want_boost" = "xyes"; then
                 if test "$ac_boost_lib_path" = ""
                 then
                    BOOST_LDFLAGS="-L$best_path/$libsubdir"
+                   BOOST_LIBDIR="$best_path/$libsubdir"
 		   BOOST_DIR="$best_path"
                 fi
             fi
@@ -193,6 +197,7 @@ if test "x$want_boost" = "xyes"; then
                         AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
                         BOOST_CPPFLAGS="-I$BOOST_ROOT"
                         BOOST_LDFLAGS="-L$BOOST_ROOT/stage/$libsubdir"
+                        BOOST_LIBDIR="$BOOST_ROOT/stage/$libsubdir"
 		        BOOST_DIR="$BOOST_ROOT"
                     fi
                 fi
@@ -224,6 +229,7 @@ if test "x$want_boost" = "xyes"; then
 
     if test "x$BOOST_DETECTED_PATH" == "x/usr"; then
         BOOST_LDFLAGS=""
+        BOOST_LIBDIR=""
         BOOST_CPPFLAGS=""
     fi
 
@@ -238,6 +244,7 @@ if test "x$want_boost" = "xyes"; then
     else
         AC_SUBST(BOOST_CPPFLAGS)
         AC_SUBST(BOOST_LDFLAGS)
+        AC_SUBST(BOOST_LIBDIR)
         AC_SUBST(BOOST_DIR)
         AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
         # execute ACTION-IF-FOUND (if present):

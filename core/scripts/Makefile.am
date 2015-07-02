@@ -32,7 +32,9 @@ unwind_dir=$(LIBUNWIND_DIR)
 papi_dir=$(PAPI_DIR)
 mrnet_dir=$(MRNET_DIR)
 xercesc_dir=$(LIBXERCES_C_DIR)
+xercesc_libdir=$(LIBXERCES_C_LIBSDIR)
 boost_dir=$(BOOST_DIR)
+boost_libdir=$(BOOST_LIBDIR)
 
 if HAVE_OMPT
 libiomp_dir=$(LIBIOMP_DIR)
@@ -87,7 +89,9 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 		-e 's,@alt_machine_dependent_libdir@,$(alt_abi_libdir_name),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
 		-e 's,@boostinstalldir@,$(boost_dir),' \
-		-e 's,@krootinstalldir@,$(xercesc_dir),' \
+		-e 's,@boostlibdir@,$(boost_libdir),' \
+		-e 's,@xercescdir@,$(xercesc_dir),' \
+		-e 's,@xercesclibdir@,$(xercesc_libdir),' \
 		-e 's,@cbtfinstalldir@,$(CBTF_DIR),' \
 		-e 's,@cbtfkdir@,$(prefix),' \
 			$(srcdir)/cbtf_mrnet_commnode.in > cbtf_mrnet_commnode

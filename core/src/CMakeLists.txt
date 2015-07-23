@@ -167,8 +167,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CMAKE_INSTALL_PREFIX}/include
-	${LibDwarf_INCLUDE_DIRS}
-	${LibElf_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${SymtabAPI_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -184,8 +182,6 @@ add_library(cbtf-core-symtabapi SHARED
 )
 
 target_link_libraries(cbtf-core-symtabapi
-	${LibDwarf_LIBRARIES}
-	${LibElf_LIBRARIES}
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
 	${DyninstAPI_instructionAPI_LIBRARY}
@@ -211,8 +207,6 @@ add_library(cbtf-core-symtabapi-static STATIC
 )
 
 target_link_libraries(cbtf-core-symtabapi-static
-	${LibDwarf_LIBRARIES}
-	${LibElf_LIBRARIES}
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
 	${DyninstAPI_instructionAPI_LIBRARY}

@@ -8,15 +8,18 @@ alt_machlibdir=@alt_machine_dependent_libdir@
 
 monitor_prefix=@libmonitordir@
 monitor_exec_prefix="${monitor_prefix}"
-monitor_libdir="${monitor_prefix}/${machlibdir}"
+#monitor_libdir="${monitor_prefix}/${machlibdir}"
+monitor_libdir=@libmonitorlibdir@
 libmonitor="${monitor_libdir}/libmonitor.so"
 
 papi_prefix=@libpapidir@
-papi_libdir="${papi_prefix}/${machlibdir}"
+papi_libdir=@libpapilibdir@
+#papi_libdir="${papi_prefix}/${machlibdir}"
 libpapi="${papi_libdir}/libpapi.so"
 
 libunwind_prefix=@libunwinddir@
-libunwind_libdir="${libunwind_prefix}/${machlibdir}"
+libunwind_libdir=@libunwindlibdir@
+#libunwind_libdir="${libunwind_prefix}/${machlibdir}"
 libunwind="${libunwind_libdir}/libunwind.so"
 
 ## testing for libiomp alone is likely not enough.  We need
@@ -40,31 +43,33 @@ elif test -f ${libiomp_prefix}/${altmachlibdir}/libiomp5.so; then
 fi
 
 libmrnet_prefix=@libmrnetdir@
-libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
+libmrnet_libdir=@libmrnetlibdir@
+#libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
 libmrnet_r="${libmrnet_libdir}/libmrnet_lightweight_r.so"
 libxplat="${libmrnet_libdir}/libxplat_lightweight.so"
 libxplat_r="${libmrnet_libdir}/libxplat_lightweight_r.so"
 
 
-cbtf_prefix=@cbtfinstalldir@
-cbtf_libdir="${cbtf_prefix}/${machlibdir}"
-cbtf_bindir="${cbtf_prefix}/bin"
-cbtf_plugins="${cbtf_libdir}/KrellInstitute/Collectors"
+cbtfk_prefix=@cbtfkdir@
+cbtfk_libdir=@cbtfklibdir@
+#cbtfk_libdir="${cbtfk_prefix}/${machlibdir}"
+cbtfk_bindir="${cbtfk_prefix}/bin"
+cbtfk_plugins="${cbtfk_libdir}/KrellInstitute/Collectors"
 
-binutils_service="${cbtf_libdir}/libcbtf-services-binutils.so"
-common_service="${cbtf_libdir}/libcbtf-services-common.so"
-data_service="${cbtf_libdir}/libcbtf-services-data.so"
-events_service="${cbtf_libdir}/libcbtf-messages-events.so"
-fileio_service="${cbtf_libdir}/libcbtf-services-fileio.so"
-fpe_service="${cbtf_libdir}/libcbtf-services-fpe.so"
-monitor_service="${cbtf_libdir}/libcbtf-services-monitor.so"
-mrnet_service="${cbtf_libdir}/libcbtf-services-mrnet.so"
-offline_service="${cbtf_libdir}/libcbtf-services-offline.so"
-papi_service="${cbtf_libdir}/libcbtf-services-papi.so"
-send_service="${cbtf_libdir}/libcbtf-services-send.so"
-timer_service="${cbtf_libdir}/libcbtf-services-timer.so"
-unwind_service="${cbtf_libdir}/libcbtf-services-unwind.so"
+binutils_service="${cbtfk_libdir}/libcbtf-services-binutils.so"
+common_service="${cbtfk_libdir}/libcbtf-services-common.so"
+data_service="${cbtfk_libdir}/libcbtf-services-data.so"
+events_service="${cbtfk_libdir}/libcbtf-messages-events.so"
+fileio_service="${cbtfk_libdir}/libcbtf-services-fileio.so"
+fpe_service="${cbtfk_libdir}/libcbtf-services-fpe.so"
+monitor_service="${cbtfk_libdir}/libcbtf-services-monitor.so"
+mrnet_service="${cbtfk_libdir}/libcbtf-services-mrnet.so"
+offline_service="${cbtfk_libdir}/libcbtf-services-offline.so"
+papi_service="${cbtfk_libdir}/libcbtf-services-papi.so"
+send_service="${cbtfk_libdir}/libcbtf-services-send.so"
+timer_service="${cbtfk_libdir}/libcbtf-services-timer.so"
+unwind_service="${cbtfk_libdir}/libcbtf-services-unwind.so"
 
 lam_prefix=@lamdir@
 lampi_prefix=@lampidir@
@@ -143,7 +148,7 @@ Use this if the executable is linked with an openmp library
    -o, --output  <directory>
 Where directory is the location to write the
 raw performance data files. The utility tool
-${cbtf_bindir}/cbtfutil is then run with the
+${cbtfk_bindir}/cbtfutil is then run with the
 named directory as an argument to create a .openss
 database that can be view with openss. On large
 cluster systems this should be set to fast file
@@ -238,8 +243,8 @@ done
 ompt_service=
 if [ "$has_openmp" == "true" ] ; then
   if [ "$use_ompt" == "true" ] ; then
-    if test -f ${cbtf_libdir}/libcbtf-services-ompt.so ; then
-      ompt_service="${cbtf_libdir}/libcbtf-services-ompt.so"
+    if test -f ${cbtfk_libdir}/libcbtf-services-ompt.so ; then
+      ompt_service="${cbtfk_libdir}/libcbtf-services-ompt.so"
     fi
   fi
 fi
@@ -278,11 +283,11 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${extra_mpi_libs}:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${extra_mpi_libs}:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${extra_mpi_libs}:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${extra_mpi_libs}:${libmonitor}
     fi
     ;;
 
@@ -291,13 +296,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${ompt_service}:${timer_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -306,13 +311,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${timer_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -321,13 +326,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -336,13 +341,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -351,13 +356,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -366,13 +371,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${papi_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${papi_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${papi_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${papi_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -381,13 +386,13 @@ case "$collector" in
     then
         if [ $use_mpi == "true" ]
 	then
-	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet-mpi.so:${libmonitor}
 	else
-	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/$collector-collector-monitor-mrnet.so:${libmonitor}
 	fi 
     elif [ $use_fileio == "true" ]
     then
-      export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
+      export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${libmonitor}
     fi
     ;;
 
@@ -396,13 +401,13 @@ case "$collector" in
         then
             if [ $use_mpi == "true" ]
 	        then
-                export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/cuda-collector-monitor-mrnet-mpi.so:${libmonitor}
+                export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/cuda-collector-monitor-mrnet-mpi.so:${libmonitor}
 	        else
-                export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtf_plugins}/cuda-collector-monitor-mrnet.so:${libmonitor}
+                export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${events_service}:${data_service}:${common_service}:${cbtfk_plugins}/cuda-collector-monitor-mrnet.so:${libmonitor}
 	        fi 
         elif [ $use_fileio == "true" ]
         then
-            export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtf_plugins}/cuda-collector-monitor-fileio.so:${libmonitor}
+            export LD_PRELOAD=${monitor_service}:${papi_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${send_service}:${cbtfk_plugins}/cuda-collector-monitor-fileio.so:${libmonitor}
         fi
         ;;
     
@@ -410,7 +415,7 @@ case "$collector" in
     # gather the mpi rank information needed for the mpi_rank field
     # in the THREADS table of the openss database.
     * )
-    export LD_PRELOAD=${cbtf_plugins}/$collector-rt-offline.so:${libmonitor}
+    export LD_PRELOAD=${cbtfk_plugins}/$collector-rt-offline.so:${libmonitor}
     ;;
 esac
 

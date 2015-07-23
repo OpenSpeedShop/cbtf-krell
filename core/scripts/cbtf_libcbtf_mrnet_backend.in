@@ -13,12 +13,14 @@
 # paths set for cbtf and mrnet.
 # Base these on the configuration values.
 #
-mrnetlibdir=@libmrnetdir@/@machine_dependent_libdir@
-cbtflibdir=@cbtfinstalldir@/@machine_dependent_libdir@
+mrnetlibdir=@libmrnetlibdir@
+#mrnetlibdir=@libmrnetdir@/@machine_dependent_libdir@
+#cbtflibdir=@cbtfdir@/@machine_dependent_libdir@
+cbtflibdir=@cbtflibdir@
 
 # location of the real mrnet_commnode.
 #
-libcbtfmrnetbackend=@cbtfinstalldir@/bin/libcbtf-mrnet-backend
+libcbtfmrnetbackend=@cbtfdir@/bin/libcbtf-mrnet-backend
 
 #set up the LD_LIBRARYPATH
 #

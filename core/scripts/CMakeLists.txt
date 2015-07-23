@@ -19,21 +19,26 @@
 include(CheckIncludeFile)
 
 set(cbtfdir ${CBTF_DIR})
-set(cbtfkdir ${CMAKE_INSTALL_PREFIX})
 set(cbtflibdir ${CBTF_LIB_DIR})
+
+set(cbtfkdir ${CMAKE_INSTALL_PREFIX})
 set(cbtfklibdir ${CMAKE_LIBRARY_PATH})
+
 set(cbtfruncmd ${CMAKE_INSTALL_PREFIX}/bin/cbtfrun)
 set(cbtfdefaultmpi ${DEFAULT_MPI_IMPL})
 
 set(libmonitordir ${LibMonitor_DIR})
 set(libmonitorlibdir ${LibMonitor_LIB_DIR})
+
 set(libunwinddir ${LibUnwind_DIR})
 set(libunwindlibdir ${LibUnwind_LIB_DIR})
-set(papidir ${Papi_DIR})
+
 set(libpapidir ${Papi_DIR})
-set(papilibdir ${Papi_LIB_DIR})
+set(libpapilibdir ${Papi_LIB_DIR})
+
 set(libmrnetdir ${MRNet_DIR})
 set(libmrnetlibdir ${MRNet_LIB_DIR})
+
 #set(krootinstalldir ${XercesC_DIR})
 if(${XercesC_DIR} MATCHES "/usr")
    set(xercescdir "")

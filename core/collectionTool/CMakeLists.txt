@@ -52,6 +52,7 @@ target_link_libraries(collectionTool
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
     ${CMAKE_DL_LIBS}
+    rt
 )
 
 # Work around problem defined by:

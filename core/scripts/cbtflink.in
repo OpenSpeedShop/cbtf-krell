@@ -29,28 +29,29 @@ fi
 
 
 # TODO: handle the target prefix
-cbtf_prefix=@cbtfinstalldir@
-cbtf_libdir="${cbtf_prefix}/${machlibdir}"
-cbtf_bindir="${cbtf_prefix}/bin"
-cbtf_plugins="${cbtf_libdir}/KrellInstitute/Collectors"
+cbtfk_prefix=@cbtfkdir@
+cbtfk_libdir=@cbtfklibdir@
+#cbtf_libdir="${cbtfk_prefix}/${machlibdir}"
+cbtfk_bindir="${cbtfk_prefix}/bin"
+cbtfk_plugins="${cbtfk_libdir}/KrellInstitute/Collectors"
 
 libmonitor_prefix=@libmonitordir@
-libmonitor_libdir="${libmonitor_prefix}/${machlibdir}"
+libmonitor_libdir=@libmonitorlibdir@
+#libmonitor_libdir="${libmonitor_prefix}/${machlibdir}"
 libmonitor="${libmonitor_libdir}/libmonitor_wrap.a"
-libunwind_prefix=@libunwinddir@
-libunwind_libdir="${libunwind_prefix}/${machlibdir}"
-libunwind="${libunwind_libdir}/libunwind.a"
-libpapi_prefix=@papidir@
-if test -d ${libpapi_prefix}/${machlibdir} ; then
-  libpapi_libdir="${libpapi_prefix}/${machlibdir}"
-elif test -d ${libpapi_prefix}/${altmachlibdir} ; then
-  libpapi_libdir="${libpapi_prefix}/${altmachlibdir}"
-fi
 
+libunwind_prefix=@libunwinddir@
+libunwind_libdir=@libunwindlibdir@
+#libunwind_libdir="${libunwind_prefix}/${machlibdir}"
+libunwind="${libunwind_libdir}/libunwind.a"
+
+libpapi_prefix=@libpapidir@
+libpapi_libdir=@libpapilibdir@
 libpapi="${libpapi_libdir}/libpapi.a"
 
 libmrnet_prefix=@libmrnetdir@
-libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
+libmrnet_libdir=@libmrnetlibdir@
+#libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 
 # monitor always has these
 
@@ -223,7 +224,7 @@ do
             esac
             test -d "$dir" || die "unable to find: $dir"
             export CBTF_PLUGIN_PATH="${dir}"
-	    cbtf_plugins="${dir}"
+	    cbtfk_plugins="${dir}"
             shift ; shift
             ;;
 
@@ -261,16 +262,16 @@ do
 done
 
 # services to link with
-data_service=${cbtf_libdir}/libcbtf-services-data.a
-common_service=${cbtf_libdir}/libcbtf-services-common.a
-monitor_service=${cbtf_libdir}/libcbtf-services-offline.a
-mrnet_service=${cbtf_libdir}/libcbtf-services-mrnet.a
-offline_service=${cbtf_libdir}/libcbtf-services-offline.a
-papi_service=${cbtf_libdir}/libcbtf-services-papi.a
-timer_service=${cbtf_libdir}/libcbtf-services-timer.a
-unwind_service=${cbtf_libdir}/libcbtf-services-unwind.a
+data_service=${cbtfk_libdir}/libcbtf-services-data.a
+common_service=${cbtfk_libdir}/libcbtf-services-common.a
+monitor_service=${cbtfk_libdir}/libcbtf-services-offline.a
+mrnet_service=${cbtfk_libdir}/libcbtf-services-mrnet.a
+offline_service=${cbtfk_libdir}/libcbtf-services-offline.a
+papi_service=${cbtfk_libdir}/libcbtf-services-papi.a
+timer_service=${cbtfk_libdir}/libcbtf-services-timer.a
+unwind_service=${cbtfk_libdir}/libcbtf-services-unwind.a
 
-monitor_callbacks=${cbtf_plugins}/cbtf_monitor.o
+monitor_callbacks=${cbtfk_plugins}/cbtf_monitor.o
 
 #
 # Must have a compiler command and at least one argument.
@@ -501,13 +502,13 @@ fi
 
 case "$collector" in
     mpi|mpit|mpip|mpiotf )
-#    static_collector=${cbtf_plugins}/lib${collector}-${mpitouse}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-${mpitouse}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
 
     if [ -n "$monitor_has_mpi" ]
     then
@@ -519,13 +520,13 @@ case "$collector" in
     ;;
 
     mpi-*|mpit-*|mpip-*|mpiotf-*)
-#    static_collector=${cbtf_plugins}/lib${collector}-${mpitouse}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-${mpitouse}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-${mpitouse}-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
 
     if [ -n "$monitor_has_mpi" ]
     then
@@ -542,54 +543,54 @@ case "$collector" in
     # in the THREADS table of the cbtf database.
 
     pcsamp)
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt $common_service $offline_service $mrnet_service $data_service $timer_service -L ${cbtf_libdir} -lcbtf-services-monitor -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-base -lcbtf-messages-perfdata -lcbtf-messages-collector -L ${libmrnet_libdir} -lmrnet_lightweight_r -lxplat_lightweight_r"
+    collector_libs="${collector_libs} -lrt $common_service $offline_service $mrnet_service $data_service $timer_service -L ${cbtfk_libdir} -lcbtf-services-monitor -lcbtf-messages-events -lcbtf-messages-instrumentation -lcbtf-messages-base -lcbtf-messages-perfdata -lcbtf-messages-collector -L ${libmrnet_libdir} -lmrnet_lightweight_r -lxplat_lightweight_r"
     ;;
 
     usertime)
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
     ;;
     hwc)
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
     ;;
     hwctime)
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-unwind -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-papi -lcbtf-services-unwind -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi -L ${libunwind_libdir} -lunwind"
     ;;
     hwcsamp)
-    static_collector=${cbtf_plugins}/lib${collector}-offline.a
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
+    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-papi -lcbtf-services-monitor -L ${libpapi_libdir} -lpapi"
     ;;
     io | iop | iot)
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-unwind -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind"
     for name in $monitor_wrap_io_names
     do
 	wrap_args="${wrap_args} -Wl,--wrap,${name}"
@@ -608,13 +609,13 @@ case "$collector" in
     fi
     ;;
     fpe )
-#    static_collector=${cbtf_plugins}/lib${collector}-offline.a
+#    static_collector=${cbtfk_plugins}/lib${collector}-offline.a
     case "$cbtflinkMode" in
-       fileio )      static_collector=${cbtf_plugins}/${collector}-collector-monitor-fileio.a ;;
-       mpi )         static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
-       sequential )  static_collector=${cbtf_plugins}/${collector}-collector-monitor-mrnet.a ;;
+       fileio )      static_collector=${cbtfk_plugins}/${collector}-collector-monitor-fileio.a ;;
+       mpi )         static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet-mpi.a ;;
+       sequential )  static_collector=${cbtfk_plugins}/${collector}-collector-monitor-mrnet.a ;;
     esac
-    collector_libs="${collector_libs} -lrt -L ${cbtf_libdir} -lcbtf-services-unwind -lcbtf-services-binutils -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind -lbfd -liberty -lopcodes -lz -lm"
+    collector_libs="${collector_libs} -lrt -L ${cbtfk_libdir} -lcbtf-services-unwind -lcbtf-services-binutils -lcbtf-services-monitor -L ${libunwind_libdir} -lunwind -lbfd -liberty -lopcodes -lz -lm"
     ;;
 esac
 

@@ -31,7 +31,6 @@ include_directories(
     ${MRNet_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${Dyninst_INCLUDE_DIRS}
-    ${LibDwarf_INCLUDE_DIRS}
     ${XercesC_INCLUDE_DIRS}
     ${CBTF_INCLUDE_DIRS}
 )
@@ -50,11 +49,10 @@ target_link_libraries(collectionTool
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${CBTF_LIBRARIES}
     ${Dyninst_LIBRARIES}
-    ${LibElf_LIBRARIES}
-    ${LibDwarf_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
     ${CMAKE_DL_LIBS}
+    rt
 )
 
 # Work around problem defined by:

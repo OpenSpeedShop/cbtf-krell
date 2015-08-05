@@ -28,11 +28,20 @@ endif
 CLEANFILES = $(BUILT_FILES)
 
 monitor_dir=$(LIBMONITOR_DIR)
+monitor_libdir=$(LIBMONITOR_LIBDIR)
+
 unwind_dir=$(LIBUNWIND_DIR)
+unwind_libdir=$(LIBUNWIND_LIBDIR)
+
 papi_dir=$(PAPI_DIR)
+papi_libdir=$(PAPI_LIBDIR)
+
 mrnet_dir=$(MRNET_DIR)
+mrnet_libdir=$(MRNET_LIBDIR)
+
 xercesc_dir=$(LIBXERCES_C_DIR)
 xercesc_libdir=$(LIBXERCES_C_LIBSDIR)
+
 boost_dir=$(BOOST_DIR)
 boost_libdir=$(BOOST_LIBDIR)
 
@@ -50,11 +59,16 @@ endif
 	@sed \
 		-e 's,@machine_dependent_libdir@,$(abi_libdir_name),' \
 		-e 's,@alt_machine_dependent_libdir@,$(alt_abi_libdir_name),' \
-		-e 's,@cbtfinstalldir@,$(prefix),' \
+		-e 's,@cbtfkdir@,$(prefix),' \
+		-e 's,@cbtfklibdir@,$(libdir),' \
 		-e 's,@libmonitordir@,$(monitor_dir),' \
+		-e 's,@libmonitorlibdir@,$(monitor_libdir),' \
 		-e 's,@libunwinddir@,$(unwind_dir),' \
+		-e 's,@libunwindlibdir@,$(unwind_libdir),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
+		-e 's,@libmrnetlibdir@,$(mrnet_libdir),' \
 		-e 's,@libpapidir@,$(papi_dir),' \
+		-e 's,@libpapilibdir@,$(papi_libdir),' \
 		-e 's,@libiompdir@,$(libiomp_dir),' \
 		-e 's,@lamdir@,$(LAM_DIR),' \
 		-e 's,@lampidir@,$(LAMPI_DIR),' \
@@ -73,12 +87,17 @@ cbtflink: cbtflink.in
 	@rm -f cbtflink
 	@sed \
 		-e 's,@default_mpi_impl@,$(DEFAULT_MPI_IMPL),' \
-		-e 's,@cbtfinstalldir@,$(prefix),' \
+		-e 's,@cbtfkdir@,$(prefix),' \
+		-e 's,@cbtfklibdir@,$(libdir),' \
 		-e 's,@libmonitordir@,$(monitor_dir),' \
+		-e 's,@libmonitorlibdir@,$(monitor_libdir),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
+		-e 's,@libmrnetlibdir@,$(mrnet_libdir),' \
 		-e 's,@libunwinddir@,$(unwind_dir),' \
+		-e 's,@libunwindlibdir@,$(unwind_libdir),' \
 		-e 's,@cbtftargetos@,$(TARGET_OS),' \
-		-e 's,@papidir@,$(papi_dir),' \
+		-e 's,@libpapidir@,$(papi_dir),' \
+		-e 's,@libpapilibdir@,$(papi_libdir),' \
 			$(srcdir)/cbtflink.in > cbtflink
 	@chmod 755 cbtflink
 
@@ -88,12 +107,15 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 		-e 's,@machine_dependent_libdir@,$(abi_libdir_name),' \
 		-e 's,@alt_machine_dependent_libdir@,$(alt_abi_libdir_name),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
+		-e 's,@libmrnetlibdir@,$(mrnet_libdir),' \
 		-e 's,@boostinstalldir@,$(boost_dir),' \
 		-e 's,@boostlibdir@,$(boost_libdir),' \
 		-e 's,@xercescdir@,$(xercesc_dir),' \
 		-e 's,@xercesclibdir@,$(xercesc_libdir),' \
-		-e 's,@cbtfinstalldir@,$(CBTF_DIR),' \
+		-e 's,@cbtfdir@,$(CBTF_DIR),' \
+		-e 's,@cbtflibdir@,$(CBTF_LIBDIR),' \
 		-e 's,@cbtfkdir@,$(prefix),' \
+		-e 's,@cbtfklibdir@,$(libdir),' \
 			$(srcdir)/cbtf_mrnet_commnode.in > cbtf_mrnet_commnode
 	@chmod 755 cbtf_mrnet_commnode
 
@@ -102,7 +124,9 @@ cbtf_libcbtf_mrnet_backend: cbtf_libcbtf_mrnet_backend.in
 	@sed \
 		-e 's,@machine_dependent_libdir@,$(abi_libdir_name),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
-		-e 's,@cbtfinstalldir@,$(CBTF_DIR),' \
+		-e 's,@libmrnetlibdir@,$(mrnet_libdir),' \
+		-e 's,@cbtfdir@,$(CBTF_DIR),' \
+		-e 's,@cbtflibdir@,$(CBTF_LIBDIR),' \
 			$(srcdir)/cbtf_libcbtf_mrnet_backend.in > cbtf_libcbtf_mrnet_backend
 	@chmod 755 cbtf_libcbtf_mrnet_backend
 

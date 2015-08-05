@@ -375,12 +375,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     local_header.omp_tid = monitor_get_thread_num();
     memcpy(&tls->dso_header, &local_header, sizeof(CBTF_EventHeader));
 
-#endif
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n");
-    }
-#endif
     if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
 	    fprintf(stderr,"cbtf_offline_start_sampling BEGINS for %s:%lld:%lld:%d:%d\n",
                 (long long)tls->dso_header.host,
@@ -389,6 +384,27 @@ void cbtf_offline_start_sampling(const char* in_arguments)
                 (long long)tls->dso_header.omp_tid,
                 (long long)tls->dso_header.rank);
     }
+#endif
+
+#elif defined(CBTF_SERVICE_USE_MRNET) && defined(CBTF_SERVICE_USE_MRNET_MPI)
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+	fprintf(stderr,"cbtf_offline_start_sampling BEGINS for mpi program. defer init of event header.\n");
+    }
+#endif
+#else
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+	fprintf(stderr,"cbtf_offline_start_sampling BEGINS non mrnet collection. defer init of event header.\n");
+    }
+#endif
+#endif
+
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+	fprintf(stderr,"cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n");
+    }
+#endif
     cbtf_timer_service_start_sampling(NULL);
     tls->started = true;
 }
@@ -441,8 +457,8 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
                 (long long)tls->dso_header.host,
                 (long long)tls->dso_header.pid,
                 (long long)tls->dso_header.posix_tid,
-                (long long)tls->dso_header.omp_tid,
-                (long long)tls->dso_header.rank);
+                (long long)tls->dso_header.rank,
+                (long long)tls->dso_header.omp_tid);
 	}
 #endif
     }

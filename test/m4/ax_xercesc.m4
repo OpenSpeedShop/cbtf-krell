@@ -32,6 +32,7 @@ AC_DEFUN([AX_XERCESC], [
     else
         LIBXERCES_C_CPPFLAGS=""
         LIBXERCES_C_LDFLAGS=""
+        LIBXERCES_C_LIBSDIR=""
     fi
     LIBXERCES_C="-lxerces-c"
     LTLIBXERCES_C="-lxerces-c"

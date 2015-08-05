@@ -49,8 +49,10 @@ AC_DEFUN([AX_DYNINST], [
     DYNINST_CPPFLAGS="-I$dyninst_dir/include -I$dyninst_dir/include/dyninst"
     if test "x$ac_dyninst_lib_path" == "x"; then
        DYNINST_LDFLAGS="-L$dyninst_dir/$abi_libdir"
+       DYNINST_LIBDIR="$dyninst_dir/$abi_libdir"
     else
        DYNINST_LDFLAGS="-L$ac_dyninst_lib_path"
+       DYNINST_LIBDIR="$ac_dyninst_lib_path"
     fi
 
     DYNINST_DIR="$dyninst_dir" 
@@ -124,6 +126,7 @@ AC_DEFUN([AX_DYNINST], [
             DYNINST_CPPFLAGS=""
             DYNINST_LDFLAGS=""
             DYNINST_LIBS=""
+            DYNINST_LIBDIR=""
             DYNINST_SYMTABAPI_LIBS=""
             DYNINST_DIR=""
             DYNINST_VERS=""
@@ -139,6 +142,7 @@ AC_DEFUN([AX_DYNINST], [
     AC_SUBST(DYNINST_CPPFLAGS)
     AC_SUBST(DYNINST_LDFLAGS)
     AC_SUBST(DYNINST_LIBS)
+    AC_SUBST(DYNINST_LIBDIR)
     AC_SUBST(DYNINST_SYMTABAPI_LIBS)
     AC_SUBST(DYNINST_DIR)
     AC_SUBST(DYNINST_VERS)

@@ -25,23 +25,48 @@ AC_DEFUN([AX_MRNET], [
                                [mrnet-version installation @<:@4.0.0@:>@]),
                 mrnet_vers=$withval, mrnet_vers="4.0.0")
 
-
     AC_ARG_WITH(mrnet,
                 AC_HELP_STRING([--with-mrnet=DIR],
                                [MRNet installation @<:@/usr@:>@]),
                 mrnet_dir=$withval, mrnet_dir="/usr")
 
-    MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
-    if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
-       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
-    elif test -f $mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && test -f $mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
-       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include -I$mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+
+    AC_ARG_WITH([mrnet-libdir],
+                AS_HELP_STRING([--with-mrnet-libdir=LIB_DIR],
+                [Force given directory for mrnet libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your mrnet libraries are located.]),
+                [
+                if test -d $withval
+                then
+                        ac_mrnet_lib_path="$withval"
+                else
+                        AC_MSG_ERROR(--with-mrnet-libdir expected directory name)
+                fi ],
+                [ac_mrnet_lib_path=""])
+
+    if test "x$ac_mrnet_lib_path" == "x"; then
+       MRNET_LDFLAGS="-L$mrnet_dir/$abi_libdir"
+       MRNET_LIBDIR="$mrnet_dir/$abi_libdir"
+    else
+       MRNET_LDFLAGS="-L$ac_mrnet_lib_path"
+       MRNET_LIBDIR="$ac_mrnet_lib_path"
+    fi
+
+    if test -f $mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && \
+       test -f $mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir/mrnet-$mrnet_vers/include \
+                       -I$mrnet_dir/$abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
+    elif test -f $mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include/mrnet_config.h && \
+         test -f $mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include/xplat_config.h ; then
+       MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir/mrnet-$mrnet_vers/include \
+                       -I$mrnet_dir/$alt_abi_libdir/xplat-$mrnet_vers/include  -Dos_linux"
        MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
+       MRNET_LIBDIR="$mrnet_dir/$alt_abi_libdir"
     elif test -f $mrnet_dir/$abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$abi_libdir -Dos_linux"
     elif test -f $mrnet_dir/$alt_abi_libdir/mrnet_config.h ; then
        MRNET_CPPFLAGS="-I$mrnet_dir/include -I$mrnet_dir/$alt_abi_libdir -Dos_linux"
        MRNET_LDFLAGS="-L$mrnet_dir/$alt_abi_libdir"
+       MRNET_LIBDIR="$mrnet_dir/$alt_abi_libdir"
     else
        MRNET_CPPFLAGS="-I$mrnet_dir/include -Dos_linux"
     fi
@@ -58,14 +83,14 @@ AC_DEFUN([AX_MRNET], [
 
     if [ test -z "$SYSROOT_DIR" ]; then
       # SYSROOT_DIR was not set
-      if [ test -d /usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
+      if [ test -d /usr/lib/alps ] && [ test -f $MRNET_LIBDIR/libmrnet.so -o -f $MRNET_LIBDIR/libmrnet.a ]; then
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib/alps"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
         MRNET_LIBS="$MRNET_LIBS -lxmlrpc-epi"
       fi
     else
-      if [ test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $mrnet_dir/$abi_libdir/libmrnet.so -o -f $mrnet_dir/$abi_libdir/libmrnet.a ]; then
+      if [ test -d $SYSROOT_DIR/usr/lib/alps ] && [ test -f $MRNET_LIBDIR/libmrnet.so -o -f $MRNET_LIBDIR/libmrnet.a ]; then
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib/alps"
         MRNET_LDFLAGS="$MRNET_LDFLAGS -L$SYSROOT_DIR/usr/lib64"
         MRNET_LIBS="$MRNET_LIBS -lalps -lalpslli -lalpsutil"
@@ -115,6 +140,7 @@ AC_DEFUN([AX_MRNET], [
     AC_SUBST(MRNET_LW_LIBS)
     AC_SUBST(MRNET_LWR_LIBS)
     AC_SUBST(MRNET_DIR)
+    AC_SUBST(MRNET_LIBDIR)
 
     if test $foundMRNET == 1; then
         AM_CONDITIONAL(HAVE_MRNET, true)

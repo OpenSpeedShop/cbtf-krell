@@ -27,14 +27,36 @@ AC_DEFUN([AX_LIBELF], [
                                [libelf installation @<:@/usr@:>@]),
                 libelf_dir=$withval, libelf_dir="/usr")
 
+    AC_ARG_WITH([libelf-libdir],
+                AS_HELP_STRING([--with-libelf-libdir=LIB_DIR],
+                [Force given directory for libelf libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your libelf libraries are located.]),
+                [
+                if test -d $withval
+                then
+                        ac_libelf_lib_path="$withval"
+                else
+                        AC_MSG_ERROR(--with-libelf-libdir expected directory name)
+                fi ],
+                [ac_libelf_lib_path=""])
+
+
+    if test "x$ac_libelf_lib_path" == "x"; then
+       LIBELF_LDFLAGS="-L$libelf_dir/$abi_libdir"
+       LIBELF_LIBDIR="$libelf_dir/$abi_libdir"
+    else
+       LIBELF_LDFLAGS="-L$ac_libelf_lib_path"
+       LIBELF_LIBDIR="$ac_libelf_lib_path"
+    fi
+
+
     found_libelf=0
 
     if test "x${libelf_dir}" == "x" || test "x${libelf_dir}" == "x/usr" ; then
       LIBELF_CPPFLAGS=""
       LIBELF_LDFLAGS=""
+      LIBELF_LIBDIR=""
     else
       LIBELF_CPPFLAGS="-I$libelf_dir/include"
-      LIBELF_LDFLAGS="-L$libelf_dir/$abi_libdir"
     fi
 
     LIBELF_LIBS="-lelf"
@@ -62,17 +84,19 @@ AC_DEFUN([AX_LIBELF], [
         AM_CONDITIONAL(HAVE_LIBELF, true)
         AC_DEFINE(HAVE_LIBELF, 1, [Define to 1 if you have LIBELF.])
     else
-# FIXME.  if we expect libraries in spme specific directory then
-# create an option to set it rather than override the not found above
-# due to lib lib64 inconsistencies.
-# Try again with the traditional library path (lib???) instead
+          # FIXME.  if we expect libraries in spme specific directory then
+          # create an option to set it rather than override the not found above
+          # due to lib lib64 inconsistencies.
+          # Try again with the traditional library path (lib???) instead
          found_libelf=0
          if test "x${libelf_dir}" == "x" || test "x${libelf_dir}" == "x/usr" ; then
            LIBELF_CPPFLAGS=""
            LIBELF_LDFLAGS=""
+           LIBELF_LIBDIR=""
          else
            LIBELF_CPPFLAGS="-I$libelf_dir/include"
            LIBELF_LDFLAGS="-L$libelf_dir/$alt_abi_libdir"
+           LIBELF_LIBDIR="$libelf_dir/$alt_abi_libdir"
          fi 
 
          CPPFLAGS="$CPPFLAGS $LIBELF_CPPFLAGS"
@@ -99,6 +123,7 @@ AC_DEFUN([AX_LIBELF], [
              LIBELF_CPPFLAGS=""
              LIBELF_LDFLAGS=""
              LIBELF_LIBS=""
+             LIBELF_LIBDIR=""
          fi
     fi
 
@@ -109,6 +134,7 @@ AC_DEFUN([AX_LIBELF], [
     AC_SUBST(LIBELF_CPPFLAGS)
     AC_SUBST(LIBELF_LDFLAGS)
     AC_SUBST(LIBELF_LIBS)
+    AC_SUBST(LIBELF_LIBDIR)
 
 ])
 

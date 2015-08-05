@@ -42,8 +42,10 @@ AC_DEFUN([AX_LIBDWARF], [
 
     if test "x$ac_libdwarf_lib_path" == "x"; then
        LIBDWARF_LDFLAGS="-L$libdwarf_dir/$abi_libdir"
+       LIBDWARF_LIBDIR="$libdwarf_dir/$abi_libdir"
     else
        LIBDWARF_LDFLAGS="-L$ac_libdwarf_lib_path"
+       LIBDWARF_LIBDIR="$ac_libdwarf_lib_path"
     fi
 
 
@@ -52,6 +54,7 @@ AC_DEFUN([AX_LIBDWARF], [
     if test "x$libdwarf_dir" == "x/usr"; then
 	LIBDWARF_CPPFLAGS=""
 	LIBDWARF_LDFLAGS=""
+        LIBDWARF_LIBDIR=""
     else
 	LIBDWARF_CPPFLAGS="-I$libdwarf_dir/include"
     fi
@@ -96,5 +99,6 @@ AC_DEFUN([AX_LIBDWARF], [
     AC_SUBST(LIBDWARF_CPPFLAGS)
     AC_SUBST(LIBDWARF_LDFLAGS)
     AC_SUBST(LIBDWARF_LIBS)
+    AC_SUBST(LIBDWARF_LIBDIR)
 
 ])

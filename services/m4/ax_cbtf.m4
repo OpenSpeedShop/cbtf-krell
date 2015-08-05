@@ -25,6 +25,8 @@ AC_DEFUN([AX_CBTF], [
 
     CBTF_CPPFLAGS="-I$cbtf_dir/include"
     CBTF_LDFLAGS="-L$cbtf_dir/$abi_libdir"
+    CBTF_LIBDIR="$cbtf_dir/$abi_libdir"
+    CBTF_DIR="$cbtf_dir"
     CBTF_LIBS="-lcbtf"
 
     AC_LANG_PUSH(C++)
@@ -61,6 +63,8 @@ AC_DEFUN([AX_CBTF], [
     AC_SUBST(CBTF_CPPFLAGS)
     AC_SUBST(CBTF_LDFLAGS)
     AC_SUBST(CBTF_LIBS)
+    AC_SUBST(CBTF_LIBDIR)
+    AC_SUBST(CBTF_DIR)
 
 ])
 

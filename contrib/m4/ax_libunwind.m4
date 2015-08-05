@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2006-2013 Krell Institute. All Rights Reserved.
+# Copyright (c) 2006-2015 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -27,8 +27,28 @@ AC_DEFUN([AX_LIBUNWIND], [
                                [libunwind installation @<:@/usr@:>@]),
                 libunwind_dir=$withval, libunwind_dir="/usr")
 
+    AC_ARG_WITH([libunwind-libdir],
+                AS_HELP_STRING([--with-libunwind-libdir=LIB_DIR],
+                [Force given directory for libunwind libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your libunwind libraries are located.]),
+                [
+                if test -d $withval
+                then
+                        ac_libunwind_lib_path="$withval"
+                else
+                        AC_MSG_ERROR(--with-libunwind-libdir expected directory name)
+                fi ],
+                [ac_libunwind_lib_path=""])
+
+
+    if test "x$ac_libunwind_lib_path" == "x"; then
+       LIBUNWIND_LDFLAGS="-L$libunwind_dir/$abi_libdir"
+       LIBUNWIND_LIBDIR="$libunwind_dir/$abi_libdir"
+    else
+       LIBUNWIND_LDFLAGS="-L$ac_libunwind_lib_path"
+       LIBUNWIND_LIBDIR="$ac_libunwind_lib_path"
+    fi
+
     LIBUNWIND_CPPFLAGS="-I$libunwind_dir/include -DUNW_LOCAL_ONLY"
-    LIBUNWIND_LDFLAGS="-L$libunwind_dir/$abi_libdir"
     LIBUNWIND_LIBS="-lunwind"
     LIBUNWIND_DIR="$libunwind_dir"
 
@@ -58,6 +78,7 @@ AC_DEFUN([AX_LIBUNWIND], [
             LIBUNWIND_LDFLAGS=""
             LIBUNWIND_LIBS=""
             LIBUNWIND_DIR=""
+            LIBUNWIND_LIBDIR=""
 
         ]
     )
@@ -70,6 +91,7 @@ AC_DEFUN([AX_LIBUNWIND], [
     AC_SUBST(LIBUNWIND_LDFLAGS)
     AC_SUBST(LIBUNWIND_LIBS)
     AC_SUBST(LIBUNWIND_DIR)
+    AC_SUBST(LIBUNWIND_LIBDIR)
 
 ])
 

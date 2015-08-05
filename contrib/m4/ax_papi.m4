@@ -36,6 +36,7 @@ AC_DEFUN([AX_PAPI], [
 
     PAPI_CPPFLAGS="-I$papi_dir/include"
     PAPI_LDFLAGS="-L$use_abi_libdir"
+    PAPI_LIBDIR="$use_abi_libdir"
     PAPI_DIR="$papi_dir"
 
     case "$host" in
@@ -88,6 +89,7 @@ AC_DEFUN([AX_PAPI], [
             PAPI_LDFLAGS=""
             PAPI_LIBS=""
             PAPI_DIR=""
+            PAPI_LIBDIR=""
 
         ]
     )
@@ -100,5 +102,6 @@ AC_DEFUN([AX_PAPI], [
     AC_SUBST(PAPI_LDFLAGS)
     AC_SUBST(PAPI_LIBS)
     AC_SUBST(PAPI_DIR)
+    AC_SUBST(PAPI_LIBDIR)
 
 ])

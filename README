@@ -24,9 +24,3 @@ sh ./bootstrap_all.sh
                --with-boost-root 
                --with-xercesc-root 
                --with-openmpi /opt/openmpi-1.6.5
-
-# If you build again, remove the libkrell-base/build and libkrell-symtab/build directories.
-# You can cd into each individual directory and rebuild them individually.  For the cmake 
-# directories (libkrell-base and libkrell-symtab) you must do an additional cd into the build directory.
-
-

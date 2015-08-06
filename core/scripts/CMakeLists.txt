@@ -39,6 +39,9 @@ set(libpapilibdir ${Papi_LIB_DIR})
 set(libmrnetdir ${MRNet_DIR})
 set(libmrnetlibdir ${MRNet_LIB_DIR})
 
+set(dyninstdir ${DyninstAPI_DIR})
+set(dyninstlibdir ${DyninstAPI_LIB_DIR})
+
 #set(krootinstalldir ${XercesC_DIR})
 if(${XercesC_DIR} MATCHES "/usr")
    set(xercescdir "")

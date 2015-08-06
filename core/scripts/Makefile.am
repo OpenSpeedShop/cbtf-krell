@@ -39,6 +39,9 @@ papi_libdir=$(PAPI_LIBDIR)
 mrnet_dir=$(MRNET_DIR)
 mrnet_libdir=$(MRNET_LIBDIR)
 
+dyninst_dir=$(DYNINST_DIR)
+dyninst_libdir=$(DYNINST_LIBDIR)
+
 xercesc_dir=$(LIBXERCES_C_DIR)
 xercesc_libdir=$(LIBXERCES_C_LIBSDIR)
 
@@ -108,6 +111,8 @@ cbtf_mrnet_commnode: cbtf_mrnet_commnode.in
 		-e 's,@alt_machine_dependent_libdir@,$(alt_abi_libdir_name),' \
 		-e 's,@libmrnetdir@,$(mrnet_dir),' \
 		-e 's,@libmrnetlibdir@,$(mrnet_libdir),' \
+		-e 's,@dyninstdir@,$(dyninst_dir),' \
+		-e 's,@dyninstlibdir@,$(dyninst_libdir),' \
 		-e 's,@boostinstalldir@,$(boost_dir),' \
 		-e 's,@boostlibdir@,$(boost_libdir),' \
 		-e 's,@xercescdir@,$(xercesc_dir),' \

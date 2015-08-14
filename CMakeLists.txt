@@ -60,7 +60,20 @@ check_include_file(link.h HAVE_LINK_H)
 check_include_file(malloc.h HAVE_MALLOC_H)
 check_include_file(malloc/malloc.h HAVE_MALLOC_MALLOC_H)
 check_function_exists(fork HAVE_FORK)
-check_library_exists(libdl __dlopen "" HAVE_DLOPEN)
+find_library(DL_LIBRARIES NAMES dl)
+if(DL_LIBRARIES)
+  #set(HAVE_DLOPEN)
+  add_definitions(-DHAVE_DLOPEN)
+  add_definitions(-DHAVE_TARGET_DLOPEN)
+else(DL_LIBRARIES)
+  check_function_exists(dlopen HAVE_TARGET_DLOPEN)
+  if (HAVE_TARGET_DLOPEN)
+    add_definitions(-DHAVE_DLOPEN)
+  endif()
+  # If dlopen can be found without linking in dl then dlopen is part
+  # of libc, so don't need to link extra libs.
+  set(DL_LIBRARIES "")
+endif(DL_LIBRARIES)
 
 #-----------------------------------------------------------------------------
 # This MACRO checks IF the symbol exists in the library and IF it

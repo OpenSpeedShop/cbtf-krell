@@ -22,6 +22,22 @@ set(SERVICES_MONITOR_SOURCES
 	Monitor.c
 )
 
+if (CMAKE_HAVE_PTHREAD_CREATE)
+   add_definitions(
+        -DHAVE_TARGET_POSIX_THREADS
+        )
+endif()
+if (HAVE_DLOPEN)
+   add_definitions(
+        -DHAVE_TARGET_DLOPEN
+        )
+endif()
+if (HAVE_FORK)
+   add_definitions(
+        -DHAVE_TARGET_FORK
+        )
+endif()
+
 add_library(cbtf-services-monitor SHARED
 	${SERVICES_MONITOR_SOURCES}
 )

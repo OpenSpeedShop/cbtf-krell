@@ -95,13 +95,13 @@ find_package_handle_standard_args(
     DyninstAPI DEFAULT_MSG DyninstAPI_LIBRARY DyninstAPI_INCLUDE_DIR
     )
 
+
 set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARY} 
                          ${DyninstAPI_dyninstAPI_RT_LIBRARY} 
                          ${DyninstAPI_common_LIBRARY} 
                          ${DyninstAPI_dyninstAPI_RT_LIBRARY} 
                          ${DyninstAPI_common_LIBRARY} 
                          ${DyninstAPI_dynElf_LIBRARY} 
-                         ${DyninstAPI_symLite_LIBRARY} 
                          ${DyninstAPI_instructionAPI_LIBRARY} 
                          ${DyninstAPI_symtabAPI_LIBRARY} 
                          ${DyninstAPI_parseAPI_LIBRARY} 
@@ -110,12 +110,21 @@ set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARY}
                          ${DyninstAPI_stackwalk_LIBRARY}
 )
 
+# Dyninst 9.0.0 removed the DyninstAPI_symLite library
+# So, only add it if it is found above in the find_library call
+if (DyninstAPI_symLite_LIBRARY)
+    set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARIES}
+                             ${DyninstAPI_symLite_LIBRARY}
+    )
+    mark_as_advanced(DyninstAPI_symLite_LIBRARY)
+endif()
+
 set(DyninstAPI_INCLUDE_DIRS ${DyninstAPI_INCLUDE_DIR}/dyninst)
 GET_FILENAME_COMPONENT(DyninstAPI_LIB_DIR ${DyninstAPI_LIBRARY} PATH )
 
 mark_as_advanced(DyninstAPI_LIBRARY DyninstAPI_INCLUDE_DIR DyninstAPI_LIB_DIR)
 mark_as_advanced(DyninstAPI_dyninstAPI_RT_LIBRARY DyninstAPI_common_LIBRARY DyninstAPI_dyninstAPI_RT_LIBRARY DyninstAPI_common_LIBRARY)
-mark_as_advanced(DyninstAPI_dynElf_LIBRARY DyninstAPI_symLite_LIBRARY DyninstAPI_instructionAPI_LIBRARY DyninstAPI_symtabAPI_LIBRARY)
+mark_as_advanced(DyninstAPI_dynElf_LIBRARY DyninstAPI_instructionAPI_LIBRARY DyninstAPI_symtabAPI_LIBRARY)
 mark_as_advanced(DyninstAPI_parseAPI_LIBRARY DyninstAPI_patchAPI_LIBRARY DyninstAPI_pcontrol_LIBRARY DyninstAPI_stackwalk_LIBRARY)
 
 

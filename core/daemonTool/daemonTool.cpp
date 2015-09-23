@@ -173,13 +173,13 @@ class DaemonTool
         // we must cast them to a Component::Instance as well.
         //
 
-        shared_ptr<ValueSource<filesystem::path> > topology_file =
+        boost::shared_ptr<ValueSource<filesystem::path> > topology_file =
             ValueSource<filesystem::path>::instantiate();
 
         Component::Instance topology_file_component = 
             reinterpret_pointer_cast<Component>(topology_file);
 
-	shared_ptr<ValueSource<string> > args =
+	boost::shared_ptr<ValueSource<string> > args =
             ValueSource<string>::instantiate();
 
 	Component::Instance args_component =

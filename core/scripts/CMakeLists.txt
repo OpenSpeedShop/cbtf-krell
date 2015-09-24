@@ -18,69 +18,76 @@
 
 include(CheckIncludeFile)
 
+# Set cbtfdir for usage in cbtf_libcbtf_mrnet_backend
 set(cbtfdir ${CBTF_DIR})
+
+# Set cbtflibdir for usage in cbtf_libcbtf_mrnet_backend and cbtf_mrnet_commnode
 set(cbtflibdir ${CBTF_LIB_DIR})
 
+# Set cbtfkdir for usage in cbtfrun and cbtflink
 set(cbtfkdir ${CMAKE_INSTALL_PREFIX})
+
+# Set cbtfklibdir for usage in cbtfrun, cbtflink, and cbtf_mrnet_commnode
 set(cbtfklibdir ${CMAKE_LIBRARY_PATH})
 
-set(cbtfruncmd ${CMAKE_INSTALL_PREFIX}/bin/cbtfrun)
+# Set cbtfdefaultmpi for usage in cbtfrun
 set(cbtfdefaultmpi ${DEFAULT_MPI_IMPL})
 
-set(libmonitordir ${LibMonitor_DIR})
+# Set libmonitorlibdir for usage in cbtfrun and cbtflink
 set(libmonitorlibdir ${LibMonitor_LIB_DIR})
 
-set(libunwinddir ${LibUnwind_DIR})
+# Set libunwindlibdir for usage in cbtfrun and cbtflink
 set(libunwindlibdir ${LibUnwind_LIB_DIR})
 
-set(libpapidir ${Papi_DIR})
+# Set libpapilibdir for usage in cbtfrun and cbtflink
 set(libpapilibdir ${Papi_LIB_DIR})
 
+# Set libmrnetdir for usage in cbtf_mrnet_commnode
 set(libmrnetdir ${MRNet_DIR})
+
+# Set libmrnetlibdir for usage in cbtfrun, cbtflink, cbtf_libcbtf_mrnet_backend, and cbtf_mrnet_commnode
 set(libmrnetlibdir ${MRNet_LIB_DIR})
 
-set(dyninstdir ${DyninstAPI_DIR})
+# Set dyninstlibdir for usage in cbtf_mrnet_commnode
 set(dyninstlibdir ${DyninstAPI_LIB_DIR})
 
-#set(krootinstalldir ${XercesC_DIR})
 if(${XercesC_DIR} MATCHES "/usr")
-   set(xercescdir "")
+   # Set xercesclibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
    set(xercesclibdir "")
 else()
-   set(xercescdir ${XercesC_DIR})
+   # Set xercesclibdir for usage in cbtf_mrnet_commnode
    set(xercesclibdir ${XercesC_LIB_DIR})
 endif()
 
 GET_FILENAME_COMPONENT(Boost_Directory_Path ${Boost_INCLUDE_DIR} PATH )
 if(Boost_Directory_Path MATCHES "/usr")
-   set(boostinstalldir "")
+   # Set boostlibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
    set(boostlibdir "")
 else()
-   set(boostinstalldir ${Boost_Directory_Path})
+   # Set boostlibdir for usage in cbtf_mrnet_commnode
    set(boostlibdir ${Boost_LIBRARY_DIR})
 endif()
 
+# Set these for usage in cbtfrun
 set(machine_dependent_libdir lib${SUFFIX})
-set(machinelibdir lib${SUFFIX})
 set(alt_machine_dependent_libdir lib)
+
+# Set these MPI directories for usage in cbtfrun
 set(mpichdir ${MPICH_DIR})
 set(mvapichdir ${MVAPICH_DIR})
 set(mpich2dir ${MPICH2_DIR})
 set(mvapich2dir ${MVAPICH2_DIR})
 set(mptdir ${MPT_DIR})
 set(openmpidir ${OPENMPI_DIR})
-set(openmpilibdir ${OpenMPI_LIB_DIR})
-set(target_os ${TARGET_OS})
 
+# Set cbtftargetos for usage in cbtflink
+set(cbtftargetos ${TARGET_OS})
+
+
+# Set libiompdir OpenMP directory for usage in cbtfrun
 set(libiompdir ${LibIomp_DIR})
-set(libiomplibdir ${LibIomp_LIB_DIR})
 
-# For separate install directories, cbtfrun needs CBTF_KRELL_DIR
-# which is CMAKE_INSTALL_PREFIX at this point
-set(cbtfinstalldir ${CMAKE_INSTALL_PREFIX})
 configure_file(cbtfrun.in cbtfrun @ONLY)
-
-set(cbtfinstalldir ${CBTF_DIR})
 configure_file(cbtflink.in cbtflink @ONLY)
 configure_file(cbtf_mrnet_commnode.in cbtf_mrnet_commnode @ONLY)
 configure_file(cbtf_libcbtf_mrnet_backend.in cbtf_libcbtf_mrnet_backend @ONLY)

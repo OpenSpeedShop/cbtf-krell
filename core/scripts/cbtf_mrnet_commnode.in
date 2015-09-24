@@ -3,15 +3,14 @@
 #
 # For clusters using rsh, MRNET_COMM_PATH should point to
 # this wrapper.  For this installation its location is:
-# (bash) export MRNET_COMM_PATH=@cbtfinstalldir@/sbin/cbtf_mrnet_commnode.
-# (csh)  setenv MRNET_COMM_PATH @cbtfinstalldir@/sbin/cbtf_mrnet_commnode.
+# (bash) export MRNET_COMM_PATH=@cbtfkdir@/sbin/cbtf_mrnet_commnode.
+# (csh)  setenv MRNET_COMM_PATH @cbtfkdir@/sbin/cbtf_mrnet_commnode.
 #
 # rsh starts with no env.  We need at a minumum the library
 # paths set for cbtf and mrnet.
 # Base these on the configuration values.
 #
 mrnetlibdir=@libmrnetlibdir@
-#mrnetlibdir=@libmrnetdir@/@machine_dependent_libdir@
 cbtflibdir=@cbtflibdir@
 cbtfklibdir=@cbtfklibdir@
 

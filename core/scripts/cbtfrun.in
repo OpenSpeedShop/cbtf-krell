@@ -6,20 +6,13 @@
 machlibdir=@machine_dependent_libdir@
 alt_machlibdir=@alt_machine_dependent_libdir@
 
-monitor_prefix=@libmonitordir@
-monitor_exec_prefix="${monitor_prefix}"
-#monitor_libdir="${monitor_prefix}/${machlibdir}"
 monitor_libdir=@libmonitorlibdir@
 libmonitor="${monitor_libdir}/libmonitor.so"
 
-papi_prefix=@libpapidir@
 papi_libdir=@libpapilibdir@
-#papi_libdir="${papi_prefix}/${machlibdir}"
 libpapi="${papi_libdir}/libpapi.so"
 
-libunwind_prefix=@libunwinddir@
 libunwind_libdir=@libunwindlibdir@
-#libunwind_libdir="${libunwind_prefix}/${machlibdir}"
 libunwind="${libunwind_libdir}/libunwind.so"
 
 ## testing for libiomp alone is likely not enough.  We need
@@ -42,9 +35,7 @@ elif test -f ${libiomp_prefix}/${altmachlibdir}/libiomp5.so; then
   libiomp="${libiomp_prefix}/${altmachlibdir}/libiomp5.so"
 fi
 
-libmrnet_prefix=@libmrnetdir@
 libmrnet_libdir=@libmrnetlibdir@
-#libmrnet_libdir="${libmrnet_prefix}/${machlibdir}"
 libmrnet="${libmrnet_libdir}/libmrnet_lightweight.so"
 libmrnet_r="${libmrnet_libdir}/libmrnet_lightweight_r.so"
 libxplat="${libmrnet_libdir}/libxplat_lightweight.so"
@@ -53,7 +44,6 @@ libxplat_r="${libmrnet_libdir}/libxplat_lightweight_r.so"
 
 cbtfk_prefix=@cbtfkdir@
 cbtfk_libdir=@cbtfklibdir@
-#cbtfk_libdir="${cbtfk_prefix}/${machlibdir}"
 cbtfk_bindir="${cbtfk_prefix}/bin"
 cbtfk_plugins="${cbtfk_libdir}/KrellInstitute/Collectors"
 

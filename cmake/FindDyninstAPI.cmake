@@ -42,12 +42,6 @@ find_library(DyninstAPI_dynElf_LIBRARY NAMES libdynElf.so
     PATH_SUFFIXES lib lib64
     )
 
-find_library(DyninstAPI_symLite_LIBRARY NAMES libsymLite.so
-    HINTS $ENV{DYNINST_DIR}
-    HINTS ${DYNINST_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
 find_library(DyninstAPI_instructionAPI_LIBRARY NAMES libinstructionAPI.so
     HINTS $ENV{DYNINST_DIR}
     HINTS ${DYNINST_DIR}
@@ -95,7 +89,6 @@ find_package_handle_standard_args(
     DyninstAPI DEFAULT_MSG DyninstAPI_LIBRARY DyninstAPI_INCLUDE_DIR
     )
 
-
 set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARY} 
                          ${DyninstAPI_dyninstAPI_RT_LIBRARY} 
                          ${DyninstAPI_common_LIBRARY} 
@@ -110,15 +103,6 @@ set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARY}
                          ${DyninstAPI_stackwalk_LIBRARY}
 )
 
-# Dyninst 9.0.0 removed the DyninstAPI_symLite library
-# So, only add it if it is found above in the find_library call
-if (DyninstAPI_symLite_LIBRARY)
-    set(DyninstAPI_LIBRARIES ${DyninstAPI_LIBRARIES}
-                             ${DyninstAPI_symLite_LIBRARY}
-    )
-    mark_as_advanced(DyninstAPI_symLite_LIBRARY)
-endif()
-
 set(DyninstAPI_INCLUDE_DIRS ${DyninstAPI_INCLUDE_DIR}/dyninst)
 GET_FILENAME_COMPONENT(DyninstAPI_LIB_DIR ${DyninstAPI_LIBRARY} PATH )
 
@@ -130,26 +114,45 @@ mark_as_advanced(DyninstAPI_parseAPI_LIBRARY DyninstAPI_patchAPI_LIBRARY Dyninst
 
 if(DYNINSTAPI_FOUND AND DEFINED DyninstAPI_INCLUDE_DIR)
 
-    file(READ ${DyninstAPI_INCLUDE_DIR}/dyninst/BPatch.h DyninstAPI_VERSION_FILE)
+    if (EXISTS "${DyninstAPI_INCLUDE_DIR}/dyninst/version.h")
 
-    string(REGEX REPLACE
-        ".*#[ ]*define DYNINST_MAJOR[ ]+([0-9]+)\n.*" "\\1"
-        DyninstAPI_VERSION_MAJOR ${DyninstAPI_VERSION_FILE}
+        file(READ ${DyninstAPI_INCLUDE_DIR}/dyninst/version.h DyninstAPI_VERSION_FILE)
+
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_MAJOR_VERSION[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_MAJOR ${DyninstAPI_VERSION_FILE}
         )
 
-    string(REGEX REPLACE
-        ".*#[ ]*define DYNINST_MINOR[ ]+([0-9]+)\n.*" "\\1"
-        DyninstAPI_VERSION_MINOR ${DyninstAPI_VERSION_FILE}
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_MINOR_VERSION[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_MINOR ${DyninstAPI_VERSION_FILE}
         )
 
-    string(REGEX REPLACE
-        ".*#[ ]*define DYNINST_SUBMINOR[ ]+([0-9]+)\n.*" "\\1"
-        DyninstAPI_VERSION_PATCH ${DyninstAPI_VERSION_FILE}
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_PATCH_VERSION[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_PATCH ${DyninstAPI_VERSION_FILE}
+        )
+else()
+
+        file(READ ${DyninstAPI_INCLUDE_DIR}/dyninst/BPatch.h DyninstAPI_VERSION_FILE)
+
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_MAJOR[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_MAJOR ${DyninstAPI_VERSION_FILE}
         )
 
-    set(DyninstAPI_VERSION_STRING 
-${DyninstAPI_VERSION_MAJOR}.${DyninstAPI_VERSION_MINOR}.${DyninstAPI_VERSION_PATCH}
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_MINOR[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_MINOR ${DyninstAPI_VERSION_FILE}
         )
+
+        string(REGEX REPLACE
+            ".*#[ ]*define DYNINST_SUBMINOR[ ]+([0-9]+)\n.*" "\\1"
+            DyninstAPI_VERSION_PATCH ${DyninstAPI_VERSION_FILE}
+        )
+endif()
+
+    set(DyninstAPI_VERSION_STRING ${DyninstAPI_VERSION_MAJOR}.${DyninstAPI_VERSION_MINOR}.${DyninstAPI_VERSION_PATCH})
   
     message(STATUS "DyninstAPI version: " ${DyninstAPI_VERSION_STRING})
 

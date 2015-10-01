@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012-2014 Krell Institute. All Rights Reserved.
+// Copyright (c) 2012-2015 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -360,6 +360,7 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
     char numString[BUFSIZE];
     unsigned int num1 = 0, num2, startPos, endPos, i, j;
     bool isRange = false;
+    bool leadingZero = false;
     std::string baseNodeName, nodes, list;
     std::string::size_type openBracketPos, closeBracketPos, commaPos, currentPos, finalPos;
 
@@ -432,6 +433,11 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 
                 if (isRange) {
                     isRange = false;
+                    /* Is a leading zero padding required on this platform based     */
+                    /* on the node name having a leading zero character in its name? */
+                    if (numString[0] == '0') {
+                       leadingZero = true;
+                    }
                     num2 = atoi(numString);
 		    int tLength = floor(log10(abs(num2)))+1;
                     for (j = num1; j <= num2; j++) {
@@ -440,15 +446,17 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 			} else {
 			    std::ostringstream ostr;
                             ostr << baseNodeName;
-			    // FIXME: Why is this defaulted to padding?
-			    // On chama system, this adds 0 characters to node
-			    // names when in fact they are not needed.
-#if 0
-			    for (int jl = 0 ; jl < minLength - tLength; jl++) {
-				// pad with leading 0's as needed
-				ostr << 0;
-			    }
-#endif
+
+			    // If we determined above that a leading zero character
+			    // was found in the character string representing the node name.
+			    // Then we need to pad the node names used in the topology file.
+                            if (leadingZero) {
+                               for (int jl = 0 ; jl < minLength - tLength; jl++) {
+                                   // pad with leading 0's as needed
+                                   ostr << 0;
+                               }
+                            }
+
 			    ostr << j;
                             dm_nodelist.push_back(ostr.str());
 			}

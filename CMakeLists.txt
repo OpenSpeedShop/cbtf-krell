@@ -199,7 +199,6 @@ set(RESOLVE_SYMBOLS "symtabapi" CACHE STRING "resolve symbols using: [bfd,symtab
 
 if (RESOLVE_SYMBOLS MATCHES "symtabapi")
     if(DYNINSTAPI_FOUND)
-      add_definitions(-DOPENSS_USE_SYMTABAPI=1)
       message(STATUS "Resolve symbols using SymtabAPI.")
     else()
       message(STATUS "Resolve symbols using bfd. No Dyninst package was found.")
@@ -209,7 +208,6 @@ elseif (RESOLVE_SYMBOLS MATCHES "bfd")
 else()
     # No user specified choice for resolving symbol tables.  By default choose symtabapi, if available
     if(DYNINSTAPI_FOUND)
-      add_definitions(-DOPENSS_USE_SYMTABAPI=1)
       message(STATUS "Resolve symbols using SymtabAPI.")
     else()
       message(STATUS "Resolve symbols using bfd.")

@@ -16,10 +16,17 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
+if (BUILD_TARGETED_FE MATCHES "true")
+add_definitions(
+    -DXMLDIR="${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml"
+    -DLIBDIR="${CBTF_CN_RUNTIME_LIBDIR}"
+)
+else()
 add_definitions(
     -DXMLDIR="${CMAKE_INSTALL_PREFIX}/share/KrellInstitute/xml"
     -DLIBDIR="${CBTF_LIB_DIR}"
 )
+endif()
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

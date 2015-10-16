@@ -46,7 +46,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
-#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE)
+#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE) || defined(TARGET_OS_CRAY) || defined(RUNTIME_TARGET_OS_CRAY)
+
 #include <alps/alps.h>
 #endif
 
@@ -195,7 +196,7 @@ int CBTFTopology::getCrayFENid( void )
 {
     int nid = -1;
 
-#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE)
+#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE) || defined(TARGET_OS_CRAY) || defined(RUNTIME_TARGET_OS_CRAY)
     // alps.h defines ALPS_XT_NID to be the file containing the nid.
     // it's /proc/cray_xt/nid for the machines we've seen so far
     std::ifstream ifs( ALPS_XT_NID );

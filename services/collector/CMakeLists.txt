@@ -115,8 +115,7 @@ target_include_directories(cbtf-services-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
         pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -152,8 +151,7 @@ target_include_directories(cbtf-services-collector-monitor-mrnet-static PUBLIC
 
 target_link_libraries(cbtf-services-collector-monitor-mrnet-static
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
         pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -187,8 +185,7 @@ target_include_directories(cbtf-services-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
         pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -224,8 +221,7 @@ target_include_directories(cbtf-services-collector-monitor-mrnet-mpi-static PUBL
 
 target_link_libraries(cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
         pthread
 	rt
 	${CMAKE_DL_LIBS}

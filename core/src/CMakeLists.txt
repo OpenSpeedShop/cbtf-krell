@@ -246,47 +246,50 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 )
 
-add_library(cbtf-core-mrnet SHARED
-	${CORE_MRNET_SOURCES}
-)
+if (NOT RUNTIME_ONLY)
 
-target_link_libraries(cbtf-core-mrnet
+    add_library(cbtf-core-mrnet SHARED
+	${CORE_MRNET_SOURCES}
+    )
+
+    target_link_libraries(cbtf-core-mrnet
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-core-mrnet PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-core-mrnet PROPERTIES 
+    set_target_properties(cbtf-core-mrnet PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-mrnet PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
 
-install(TARGETS cbtf-core-mrnet
+    install(TARGETS cbtf-core-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
-# Create and install static version
+    # Create and install static version
 
-add_library(cbtf-core-mrnet-static STATIC
+    add_library(cbtf-core-mrnet-static STATIC
 	${CORE_MRNET_SOURCES}
-)
+    )
 
-target_link_libraries(cbtf-core-mrnet-static
+    target_link_libraries(cbtf-core-mrnet-static
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-core-mrnet-static PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-core-mrnet-static PROPERTIES 
+    set_target_properties(cbtf-core-mrnet-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-mrnet-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-core-mrnet-static
+    install(TARGETS cbtf-core-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
+endif()
 
 install (FILES ${PROJECT_SOURCE_DIR}/services/collector/KrellInstitute/Services/Collector.h
         DESTINATION include/KrellInstitute/Services

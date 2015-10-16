@@ -19,6 +19,8 @@
 
 include(CheckIncludeFile)
 
+if (NOT BUILD_TARGETED_FE)
+
 if (LIBMONITOR_FOUND)
 
 set(WRAPPER_SOURCES
@@ -340,7 +342,7 @@ target_link_libraries(mpi-openmpi-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -389,7 +391,7 @@ target_link_libraries(mpi-openmpi-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -438,7 +440,7 @@ target_link_libraries(mpip-openmpi-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -486,7 +488,7 @@ target_link_libraries(mpip-openmpi-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -535,7 +537,7 @@ target_link_libraries(mpit-openmpi-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -583,7 +585,7 @@ target_link_libraries(mpit-openmpi-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -908,7 +910,7 @@ target_link_libraries(mpi-mpich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -956,7 +958,7 @@ target_link_libraries(mpi-mpich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -1005,7 +1007,7 @@ target_link_libraries(mpip-mpich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -1053,7 +1055,7 @@ target_link_libraries(mpip-mpich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -1102,7 +1104,7 @@ target_link_libraries(mpit-mpich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -1150,7 +1152,7 @@ target_link_libraries(mpit-mpich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -1480,7 +1482,7 @@ target_link_libraries(mpi-mpich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -1528,7 +1530,7 @@ target_link_libraries(mpi-mpich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -1577,7 +1579,7 @@ target_link_libraries(mpip-mpich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -1625,7 +1627,7 @@ target_link_libraries(mpip-mpich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -1674,7 +1676,7 @@ target_link_libraries(mpit-mpich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -1722,7 +1724,7 @@ target_link_libraries(mpit-mpich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2052,7 +2054,7 @@ target_link_libraries(mpi-mvapich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2100,7 +2102,7 @@ target_link_libraries(mpi-mvapich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2149,7 +2151,7 @@ target_link_libraries(mpip-mvapich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2197,7 +2199,7 @@ target_link_libraries(mpip-mvapich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2246,7 +2248,7 @@ target_link_libraries(mpit-mvapich-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2294,7 +2296,7 @@ target_link_libraries(mpit-mvapich-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2624,7 +2626,7 @@ target_link_libraries(mpi-mvapich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2672,7 +2674,7 @@ target_link_libraries(mpi-mvapich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2721,7 +2723,7 @@ target_link_libraries(mpip-mvapich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2769,7 +2771,7 @@ target_link_libraries(mpip-mvapich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -2818,7 +2820,7 @@ target_link_libraries(mpit-mvapich2-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -2866,7 +2868,7 @@ target_link_libraries(mpit-mvapich2-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -3196,7 +3198,7 @@ target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -3244,7 +3246,7 @@ target_link_libraries(mpi-mpt-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -3293,7 +3295,7 @@ target_link_libraries(mpip-mpt-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -3341,7 +3343,7 @@ target_link_libraries(mpip-mpt-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -3390,7 +3392,7 @@ target_link_libraries(mpit-mpt-collector-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -3438,7 +3440,7 @@ target_link_libraries(mpit-mpt-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -3459,21 +3461,64 @@ endif() # if (HAVE_MPT)
 
 endif() # if (LIBMONITOR_FOUND)
 
-set(component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
-set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
 
-set(collector_name "mpit")
-configure_file(../template.xml.in mpit.xml @ONLY)
+if (NOT RUNTIME_ONLY)
+    # If we are building the targeted runtimes/collectors, then don't build the xml
+    # We will do that as part of the targeted build of the FE (BUILD_TARGETED_FE) 
+    # See the else clause below: (This is the BUILD_TARGETED_FE section) where we build the
+    # xml for the experiment.
+    #
+    # Immediately below is the normal cluster - non-targeted build of the xml file.
+    #
+    set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
 
-set(collector_name "mpip")
-configure_file(../template.xml.in mpip.xml @ONLY)
-
-set(collector_name "mpi")
-configure_file(../template.xml.in mpi.xml @ONLY)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpit.xml
+    # Create and install xml for the experiment
+    set(collector_name "mpi")
+    configure_file(../template.xml.in mpi.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpi.xml
         DESTINATION share/KrellInstitute/xml)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpip.xml
+
+    # Create and install xml for the experiment
+    set(collector_name "mpit")
+    configure_file(../template.xml.in mpit.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpit.xml
         DESTINATION share/KrellInstitute/xml)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpi.xml
+
+    # Create and install xml for the experiment
+    set(collector_name "mpip")
+    configure_file(../template.xml.in mpip.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpip.xml
         DESTINATION share/KrellInstitute/xml)
+endif()
+
+else ()
+    # This is the BUILD_TARGETED_FE section where we create the xml that includes both the traditional
+    # frontend build based components for the FE node and the targeted compute node components for
+    # the targeted commnode.
+
+    set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cn_component_location ${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+
+    set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+
+    # Create and install xml for the experiment into the target cbtf-krell based location
+    set(collector_name "mpi")
+    configure_file(../template.xml.in mpi.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpi.xml
+        DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
+
+    # Create and install xml for the experiment into the target cbtf-krell based location
+    set(collector_name "mpit")
+    configure_file(../template.xml.in mpit.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpit.xml
+        DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
+
+    # Create and install xml for the experiment into the target cbtf-krell based location
+    set(collector_name "mpip")
+    configure_file(../template.xml.in mpip.xml @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mpip.xml
+        DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
+
+endif()

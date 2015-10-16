@@ -16,12 +16,22 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-add_subdirectory(src)
-add_subdirectory(collectors)
-add_subdirectory(components)
-add_subdirectory(collectionTool)
-add_subdirectory(daemonTool)
-add_subdirectory(scripts)
+#
+# Skip building the clients like collectionTool and daemonTool when building
+# for the targetted, compute node runtime only version of the core libraries and components.
+#
+if (RUNTIME_ONLY MATCHES "true")
+    add_subdirectory(src)
+    add_subdirectory(collectors)
+    add_subdirectory(components)
+else()
+    add_subdirectory(src)
+    add_subdirectory(collectors)
+    add_subdirectory(components)
+    add_subdirectory(scripts)
+    add_subdirectory(collectionTool)
+    add_subdirectory(daemonTool)
+endif()
 
 install( FILES CBTF-CoreConfig.cmake
          DESTINATION share/CBTF-Core/cmake)

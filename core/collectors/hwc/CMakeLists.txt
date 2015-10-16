@@ -19,6 +19,8 @@
 
 include(CheckIncludeFile)
 
+if (NOT BUILD_TARGETED_FE)
+
 if (LIBMONITOR_FOUND)
 
 set(COLLECTOR_SOURCES
@@ -172,7 +174,7 @@ target_link_libraries(hwc-collector-monitor-mrnet
 	cbtf-services-timer
 	cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -213,7 +215,7 @@ target_link_libraries(hwc-collector-monitor-mrnet-static
 	cbtf-services-timer-static
 	cbtf-services-collector-monitor-mrnet-static
 	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -254,7 +256,7 @@ target_link_libraries(hwc-monitor-mrnet
 	cbtf-services-timer-static
 	cbtf-services-collector-monitor-mrnet-static
 	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -293,7 +295,7 @@ target_link_libraries(hwc-collector-monitor-mrnet-mpi
 	cbtf-services-data
 	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
-	${MRNet_MRNET_LWR_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -335,7 +337,7 @@ target_link_libraries(hwc-collector-monitor-mrnet-mpi-static
 	cbtf-services-data-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -377,7 +379,7 @@ target_link_libraries(hwc-monitor-mrnet-mpi
 	cbtf-services-data-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_MRNET_LWR_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -393,13 +395,40 @@ install(TARGETS hwc-monitor-mrnet-mpi
 
 endif()
 
+endif()
+
+if (NOT RUNTIME_ONLY)
+    # If we are building the targeted runtimes/collectors, then don't build the xml
+    # We will do that as part of the targeted build of the FE (BUILD_TARGETED_FE) 
+    # See the else clause below: (This is the BUILD_TARGETED_FE section) where we build the
+    # xml for the experiment.
+    #
+    # Immediately below is the normal cluster - non-targeted build of the xml file.
+    #
+    set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(collector_name "hwc")
+    configure_file(../template.xml.in hwc.xml @ONLY)
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwc.xml
+            DESTINATION share/KrellInstitute/xml)
+endif()
+
+else ()
+    # This is the BUILD_TARGETED_FE section where we create the xml that includes both the traditional
+    # frontend build based components for the FE node and the targeted compute node components for
+    # the targeted commnode.
+    set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+    set(cn_component_location ${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/KrellInstitute/Components)
+
+    # Create and install xml for the experiment into the target cbtf-krell based location
+    set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(collector_name "hwc")
+    configure_file(../template.xml.in hwc.xml @ONLY)
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwc.xml
+        DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
 
 endif()
 
-set(component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
-set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
-set(collector_name "hwc")
-configure_file(../template.xml.in hwc.xml @ONLY)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwc.xml
-        DESTINATION share/KrellInstitute/xml)

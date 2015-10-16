@@ -44,8 +44,7 @@ include_directories(
 target_link_libraries(cbtf-services-mrnet
 	cbtf-messages-events
 	cbtf-messages-base
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${LTDL_LIBRARY_SHARED}
 	pthread
 	${CMAKE_DL_LIBS}
@@ -80,8 +79,7 @@ include_directories(
 target_link_libraries(cbtf-services-mrnet-static
 	cbtf-messages-events
 	cbtf-messages-base
-	${MRNet_MRNET_LWR_SHARED_LIBRARY}
-	${MRNet_XPLAT_LWR_SHARED_LIBRARY}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	${LTDL_LIBRARY_SHARED}
 	pthread
 	${CMAKE_DL_LIBS}

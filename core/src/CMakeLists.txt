@@ -231,7 +231,7 @@ install(TARGETS cbtf-core-symtabapi-static
 #libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
 #endif
 
-if (CrayAlps_FOUND)
+if (HAVE_CRAYALPS MATCHES "true")
 include_directories(
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include

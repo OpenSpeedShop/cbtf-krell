@@ -486,6 +486,10 @@ find_package(MRNet 4.0.0)
 find_package(XercesC 3.0)
 find_package(CrayAlps)
 
+if (CRAYALPS_FOUND)
+  set(HAVE_CRAYALPS "true")
+endif()
+
 find_package(LibIomp)
 
 message(STATUS "LIBIOMP_FOUND=${LIBIOMP_FOUND}")

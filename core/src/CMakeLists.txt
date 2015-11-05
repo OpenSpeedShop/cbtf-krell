@@ -110,7 +110,7 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CMAKE_INSTALL_PREFIX}/include
 	${Binutils_INCLUDE_DIRS}
-    ${Binutils_Iberty_INCLUDE_DIRS}
+	${Binutils_Iberty_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
@@ -231,6 +231,23 @@ install(TARGETS cbtf-core-symtabapi-static
 #libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
 #endif
 
+if (CrayAlps_FOUND)
+include_directories(
+	${PROJECT_SOURCE_DIR}/core/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/messages/include
+	${CMAKE_INSTALL_PREFIX}/include
+	${Boost_INCLUDE_DIRS}
+	${MRNet_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	${CrayAlps_INCLUDE_DIRS}
+	${LTDL_INCLUDE_DIR}
+)
+else()
 include_directories(
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
@@ -245,6 +262,7 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${LTDL_INCLUDE_DIR}
 )
+endif()
 
 if (NOT RUNTIME_ONLY)
 

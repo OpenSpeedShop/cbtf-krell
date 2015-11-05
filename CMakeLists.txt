@@ -484,6 +484,7 @@ find_package(Boost 1.39.0 REQUIRED
 find_package(CUDA)
 find_package(MRNet 4.0.0)
 find_package(XercesC 3.0)
+find_package(CrayAlps)
 
 find_package(LibIomp)
 

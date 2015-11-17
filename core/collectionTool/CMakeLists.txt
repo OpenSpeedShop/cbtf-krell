@@ -37,7 +37,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/core/include
     ${MRNet_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${Dyninst_INCLUDE_DIRS}
+    ${DyninstAPI_INCLUDE_DIRS}
     ${XercesC_INCLUDE_DIRS}
     ${CBTF_INCLUDE_DIRS}
 )
@@ -55,7 +55,7 @@ target_link_libraries(collectionTool
     ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${CBTF_LIBRARIES}
-    ${Dyninst_LIBRARIES}
+    ${DyninstAPI_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
     ${CMAKE_DL_LIBS}

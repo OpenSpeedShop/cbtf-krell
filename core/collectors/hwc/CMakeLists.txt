@@ -45,6 +45,7 @@ target_include_directories(hwc-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -89,6 +90,7 @@ target_include_directories(hwc-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-fileio-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -129,6 +131,7 @@ target_include_directories(hwc-monitor-fileio PUBLIC
 )
 
 target_link_libraries(hwc-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -168,6 +171,7 @@ target_include_directories(hwc-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -209,6 +213,7 @@ target_include_directories(hwc-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-mrnet-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -250,6 +255,7 @@ target_include_directories(hwc-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(hwc-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -288,6 +294,7 @@ target_include_directories(hwc-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -330,6 +337,7 @@ target_include_directories(hwc-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(hwc-collector-monitor-mrnet-mpi-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -372,6 +380,7 @@ target_include_directories(hwc-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(hwc-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static

@@ -71,6 +71,7 @@ add_library(cbtf-core SHARED
 )
 
 target_link_libraries(cbtf-core
+        -Wl,--no-as-needed
 	${Boost_LIBRARIES}
 	cbtf-messages-perfdata
 	cbtf-messages-base
@@ -91,6 +92,7 @@ add_library(cbtf-core-static STATIC
 )
 
 target_link_libraries(cbtf-core-static
+        -Wl,--no-as-needed
 	${Boost_LIBRARIES}
 	cbtf-messages-perfdata
 	cbtf-messages-base
@@ -124,6 +126,7 @@ add_library(cbtf-core-bfd SHARED
 )
 
 target_link_libraries(cbtf-core-bfd
+        -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	cbtf-messages-perfdata
 	${LTDL_LIBRARY_SHARED}
@@ -146,6 +149,7 @@ add_library(cbtf-core-bfd-static STATIC
 )
 
 target_link_libraries(cbtf-core-bfd-static
+        -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	cbtf-messages-perfdata
 	${LTDL_LIBRARY_SHARED}
@@ -182,6 +186,7 @@ add_library(cbtf-core-symtabapi SHARED
 )
 
 target_link_libraries(cbtf-core-symtabapi
+        -Wl,--no-as-needed
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
 	${DyninstAPI_instructionAPI_LIBRARY}
@@ -207,6 +212,7 @@ add_library(cbtf-core-symtabapi-static STATIC
 )
 
 target_link_libraries(cbtf-core-symtabapi-static
+        -Wl,--no-as-needed
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
 	${DyninstAPI_instructionAPI_LIBRARY}
@@ -271,6 +277,7 @@ if (NOT RUNTIME_ONLY)
     )
 
     target_link_libraries(cbtf-core-mrnet
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
@@ -293,6 +300,7 @@ if (NOT RUNTIME_ONLY)
     )
 
     target_link_libraries(cbtf-core-mrnet-static
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}

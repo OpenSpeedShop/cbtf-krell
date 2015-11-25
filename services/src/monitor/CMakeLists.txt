@@ -53,6 +53,7 @@ include_directories(
 )
 
 target_link_libraries(cbtf-services-monitor
+        -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
@@ -81,6 +82,7 @@ include_directories(
 )
 
 target_link_libraries(cbtf-services-monitor-static
+        -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}

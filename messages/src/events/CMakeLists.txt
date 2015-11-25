@@ -118,6 +118,7 @@ target_include_directories(cbtf-messages-converters-events PUBLIC
     )
 
 target_link_libraries(cbtf-messages-converters-events
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
@@ -150,6 +151,7 @@ target_include_directories(cbtf-messages-converters-events-static PUBLIC
     )
 
 target_link_libraries(cbtf-messages-converters-events-static
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
@@ -180,6 +182,7 @@ target_include_directories(cbtf-messages-events PUBLIC
 )
 
 target_link_libraries(cbtf-messages-events
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
@@ -210,6 +213,7 @@ target_include_directories(cbtf-messages-events-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-events-static
+       -Wl,--no-as-needed
         ${LTDL_LIBRARY_SHARED}
         ${CMAKE_DL_LIBS}
 )

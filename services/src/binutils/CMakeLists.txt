@@ -35,6 +35,7 @@ add_library(cbtf-services-binutils SHARED
 )
 
 target_link_libraries(cbtf-services-binutils
+        -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
@@ -56,6 +57,7 @@ add_library(cbtf-services-binutils-static STATIC
 )
 
 target_link_libraries(cbtf-services-binutils-static
+        -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}

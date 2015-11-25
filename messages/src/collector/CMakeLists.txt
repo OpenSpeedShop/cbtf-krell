@@ -49,6 +49,7 @@ target_include_directories(cbtf-messages-converters-collector PUBLIC
 )
 
 target_link_libraries(cbtf-messages-converters-collector
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${CMAKE_DL_LIBS}
@@ -80,6 +81,7 @@ target_include_directories(cbtf-messages-converters-collector-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-converters-collector-static
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${CMAKE_DL_LIBS}
@@ -105,6 +107,7 @@ target_include_directories(cbtf-messages-collector PUBLIC
 )
 
 target_link_libraries(cbtf-messages-collector
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
@@ -129,6 +132,7 @@ target_include_directories(cbtf-messages-collector-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-collector-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )

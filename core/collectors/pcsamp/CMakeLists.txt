@@ -43,6 +43,7 @@ target_include_directories(pcsamp-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(pcsamp-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -86,6 +87,7 @@ target_include_directories(pcsamp-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(pcsamp-collector-monitor-fileio-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -125,6 +127,7 @@ target_include_directories(pcsamp-monitor-fileio PUBLIC
 )
 
 target_link_libraries(pcsamp-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -163,6 +166,7 @@ target_include_directories(pcsamp-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(pcsamp-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -203,6 +207,7 @@ target_include_directories(pcsamp-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(pcsamp-collector-monitor-mrnet-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -243,6 +248,7 @@ target_include_directories(pcsamp-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(pcsamp-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -279,15 +285,14 @@ target_include_directories(pcsamp-collector-monitor-mrnet-mpi PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
 )
 
-	#${MRNet_XPLAT_LWR_SHARED_LIBRARY}
-	#${MRNet_MRNET_LWR_SHARED_LIBRARY}
 target_link_libraries(pcsamp-collector-monitor-mrnet-mpi
-	cbtf-services-common
+        -Wl,--no-as-needed
+	cbtf-services-collector-monitor-mrnet-mpi
 	cbtf-services-monitor
+	cbtf-services-common
 	cbtf-services-offline
 	cbtf-services-timer
 	cbtf-services-data
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	pthread
 	rt
@@ -322,6 +327,7 @@ target_include_directories(pcsamp-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(pcsamp-collector-monitor-mrnet-mpi-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -363,6 +369,7 @@ target_include_directories(pcsamp-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(pcsamp-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static

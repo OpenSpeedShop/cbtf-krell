@@ -38,6 +38,7 @@ add_library(cbtf-services-send SHARED
 )
 
 target_link_libraries(cbtf-services-send
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-perfdata
 	${CMAKE_DL_LIBS}
@@ -56,6 +57,7 @@ add_library(cbtf-services-send-static STATIC
 )
 
 target_link_libraries(cbtf-services-send-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-perfdata
 	${CMAKE_DL_LIBS}

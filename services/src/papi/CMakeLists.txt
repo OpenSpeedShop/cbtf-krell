@@ -36,6 +36,7 @@ add_library(cbtf-services-papi SHARED
 )
 
 target_link_libraries(cbtf-services-papi
+    -Wl,--no-as-needed
     ${Papi_SHARED_LIBRARIES}
     ${LTDL_LIBRARY_SHARED}
     ${CMAKE_DL_LIBS}
@@ -54,6 +55,7 @@ add_library(cbtf-services-papi-static STATIC
 )
 
 target_link_libraries(cbtf-services-papi-static
+    -Wl,--no-as-needed
     ${Papi_SHARED_LIBRARIES}
     ${LTDL_LIBRARY_SHARED}
     ${CMAKE_DL_LIBS}

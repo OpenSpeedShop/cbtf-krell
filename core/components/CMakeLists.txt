@@ -39,6 +39,7 @@ target_include_directories(MRNetConvertorsPlugin PUBLIC
 )
 
 target_link_libraries(MRNetConvertorsPlugin
+        -Wl,--no-as-needed
 	cbtf-core
 	${CBTF_LIBRARIES}
 	${MRNet_LIBRARIES}
@@ -80,6 +81,7 @@ target_include_directories(AggregationPlugin PUBLIC
 )
 
 target_link_libraries(AggregationPlugin
+        -Wl,--no-as-needed
 	cbtf-core
 	cbtf-messages-base
 	cbtf-messages-converters-base
@@ -104,15 +106,16 @@ install(TARGETS AggregationPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
 
-set(SymbolPlugin_SOURCES
-	SymbolComponent.cpp
-)
-
-add_library(SymbolPlugin MODULE
+if (DYNINSTAPI_FOUND)
+    set(SymbolPlugin_SOURCES
+    	SymbolComponent.cpp
+    )
+    
+    add_library(SymbolPlugin MODULE
 	${SymbolPlugin_SOURCES}
-)
+    )
 
-target_include_directories(SymbolPlugin PUBLIC
+    target_include_directories(SymbolPlugin PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${PROJECT_SOURCE_DIR}/services/include
@@ -126,9 +129,10 @@ target_include_directories(SymbolPlugin PUBLIC
 	${CBTF_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-)
+    )
 
-target_link_libraries(SymbolPlugin
+    target_link_libraries(SymbolPlugin
+        -Wl,--no-as-needed
 	cbtf-core
 	cbtf-core-symtabapi
 	cbtf-messages-base
@@ -141,16 +145,18 @@ target_link_libraries(SymbolPlugin
 	${MRNet_LIBRARIES}
 	pthread
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(SymbolPlugin PROPERTIES PREFIX "")
-set_target_properties(SymbolPlugin PROPERTIES 
+    set_target_properties(SymbolPlugin PROPERTIES PREFIX "")
+    set_target_properties(SymbolPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
 
-install(TARGETS SymbolPlugin
+    install(TARGETS SymbolPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
-)
+    )
+
+endif()
 
 set(ThreadPlugin_SOURCES
 	ThreadEventComponent.cpp
@@ -177,6 +183,7 @@ target_include_directories(ThreadPlugin PUBLIC
 )
 
 target_link_libraries(ThreadPlugin
+        -Wl,--no-as-needed
 	cbtf-core
 	cbtf-messages-base
 	cbtf-messages-converters-base
@@ -224,6 +231,7 @@ target_include_directories(LinkedObjectPlugin PUBLIC
 )
 
 target_link_libraries(LinkedObjectPlugin
+        -Wl,--no-as-needed
 	cbtf-core
 	cbtf-messages-base
 	cbtf-messages-converters-base

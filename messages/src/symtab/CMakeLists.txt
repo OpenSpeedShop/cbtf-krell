@@ -58,6 +58,7 @@ target_include_directories(cbtf-messages-converters-symtab PUBLIC
 )
 
 target_link_libraries(cbtf-messages-converters-symtab
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
@@ -88,6 +89,7 @@ target_include_directories(cbtf-messages-converters-symtab-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-converters-symtab-static
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
@@ -118,6 +120,7 @@ target_include_directories(cbtf-messages-symtab PUBLIC
 )
 
 target_link_libraries(cbtf-messages-symtab
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
@@ -149,6 +152,7 @@ target_include_directories(cbtf-messages-symtab-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-symtab-static
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}

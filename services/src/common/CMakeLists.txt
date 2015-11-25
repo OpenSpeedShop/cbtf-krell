@@ -42,6 +42,7 @@ add_library(cbtf-services-common SHARED
 )
 
 target_link_libraries(cbtf-services-common
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
@@ -59,6 +60,7 @@ add_library(cbtf-services-common-static STATIC
 )
 
 target_link_libraries(cbtf-services-common-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )

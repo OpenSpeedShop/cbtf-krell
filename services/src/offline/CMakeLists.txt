@@ -41,6 +41,7 @@ add_library(cbtf-services-offline SHARED
 )
 
 target_link_libraries(cbtf-services-offline
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-events
 	${CMAKE_DL_LIBS}
@@ -59,6 +60,7 @@ add_library(cbtf-services-offline-static STATIC
 )
 
 target_link_libraries(cbtf-services-offline-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-events
 	${CMAKE_DL_LIBS}

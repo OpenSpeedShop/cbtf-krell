@@ -34,6 +34,7 @@ add_library(cbtf-services-timer SHARED
 )
 
 target_link_libraries(cbtf-services-timer
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
@@ -53,6 +54,7 @@ add_library(cbtf-services-timer-static STATIC
 )
 
 target_link_libraries(cbtf-services-timer-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )

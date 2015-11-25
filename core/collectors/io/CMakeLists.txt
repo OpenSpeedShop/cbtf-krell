@@ -50,6 +50,7 @@ target_include_directories(io-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(io-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -92,6 +93,7 @@ target_include_directories(io-monitor-fileio PUBLIC
 )
 
 target_link_libraries(io-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -133,6 +135,7 @@ target_include_directories(iot-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(iot-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -175,6 +178,7 @@ target_include_directories(iot-monitor-fileio PUBLIC
 )
 
 target_link_libraries(iot-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -216,6 +220,7 @@ target_include_directories(iop-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(iop-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -258,6 +263,7 @@ target_include_directories(iop-monitor-fileio PUBLIC
 )
 
 target_link_libraries(iop-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -302,6 +308,7 @@ target_include_directories(io-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(io-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -346,6 +353,7 @@ target_include_directories(io-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(io-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -391,6 +399,7 @@ target_include_directories(io-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(io-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -436,6 +445,7 @@ target_include_directories(io-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(io-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -481,6 +491,7 @@ target_include_directories(iop-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(iop-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -526,6 +537,7 @@ target_include_directories(iop-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(iop-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -571,6 +583,7 @@ target_include_directories(iop-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(iop-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -616,6 +629,7 @@ target_include_directories(iop-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(iop-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -661,6 +675,7 @@ target_include_directories(iot-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(iot-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -706,6 +721,7 @@ target_include_directories(iot-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(iot-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -751,6 +767,7 @@ target_include_directories(iot-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(iot-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -796,6 +813,7 @@ target_include_directories(iot-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(iot-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static

@@ -42,6 +42,7 @@ include_directories(
 )
 
 target_link_libraries(cbtf-services-mrnet
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -77,6 +78,7 @@ include_directories(
 )
 
 target_link_libraries(cbtf-services-mrnet-static
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	${MRNet_LWR_SHARED_LIBRARIES}

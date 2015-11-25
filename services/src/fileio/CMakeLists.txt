@@ -39,6 +39,7 @@ add_library(cbtf-services-fileio SHARED
 )
 
 target_link_libraries(cbtf-services-fileio
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
@@ -59,6 +60,7 @@ add_library(cbtf-services-fileio-static STATIC
 )
 
 target_link_libraries(cbtf-services-fileio-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )

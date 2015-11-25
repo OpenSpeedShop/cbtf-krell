@@ -34,6 +34,7 @@ add_library(cbtf-services-fpe SHARED
 )
 
 target_link_libraries(cbtf-services-fpe
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
@@ -53,6 +54,7 @@ add_library(cbtf-services-fpe-static STATIC
 )
 
 target_link_libraries(cbtf-services-fpe-static
+        -Wl,--no-as-needed
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )

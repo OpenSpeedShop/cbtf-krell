@@ -62,7 +62,7 @@ else()
     # Set cbtfkdir for usage in cbtfrun and cbtflink
     set(cbtfkdir ${CMAKE_INSTALL_PREFIX})
     # Set cbtfklibdir for usage in cbtfrun, cbtflink, and cbtf_mrnet_commnode
-    set(cbtfklibdir ${CMAKE_LIBRARY_PATH})
+    set(cbtfklibdir ${CMAKE_INSTALL_LIBDIR})
     # Set libmonitorlibdir for usage in cbtfrun and cbtflink
     set(libmonitorlibdir ${LibMonitor_LIB_DIR})
     # Set libunwindlibdir for usage in cbtfrun and cbtflink

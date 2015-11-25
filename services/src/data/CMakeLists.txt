@@ -41,6 +41,7 @@ add_library(cbtf-services-data SHARED
 )
 
 target_link_libraries(cbtf-services-data
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-events
 	cbtf-messages-perfdata
@@ -61,6 +62,7 @@ add_library(cbtf-services-data-static STATIC
 )
 
 target_link_libraries(cbtf-services-data-static
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-events
 	cbtf-messages-perfdata

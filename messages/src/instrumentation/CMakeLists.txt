@@ -101,6 +101,7 @@ target_include_directories(cbtf-messages-converters-instrumentation PUBLIC
 )
 
 target_link_libraries(cbtf-messages-converters-instrumentation
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-collector
 	${MRNet_LIBRARIES}
@@ -135,6 +136,7 @@ target_include_directories(cbtf-messages-converters-instrumentation-static PUBLI
 )
 
 target_link_libraries(cbtf-messages-converters-instrumentation-static
+        -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-collector
 	${MRNet_LIBRARIES}
@@ -167,6 +169,7 @@ target_include_directories(cbtf-messages-instrumentation PUBLIC
 )
 
 target_link_libraries(cbtf-messages-instrumentation
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
@@ -197,6 +200,7 @@ target_include_directories(cbtf-messages-instrumentation-static PUBLIC
 )
 
 target_link_libraries(cbtf-messages-instrumentation-static
+        -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}

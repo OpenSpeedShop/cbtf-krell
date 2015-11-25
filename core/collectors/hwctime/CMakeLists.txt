@@ -46,6 +46,7 @@ target_include_directories(hwctime-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -93,6 +94,7 @@ target_include_directories(hwctime-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-fileio-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -135,6 +137,7 @@ target_include_directories(hwctime-monitor-fileio PUBLIC
 )
 
 target_link_libraries(hwctime-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -177,6 +180,7 @@ target_include_directories(hwctime-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -221,6 +225,7 @@ target_include_directories(hwctime-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-mrnet-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -265,6 +270,7 @@ target_include_directories(hwctime-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(hwctime-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -306,6 +312,7 @@ target_include_directories(hwctime-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -351,6 +358,7 @@ target_include_directories(hwctime-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(hwctime-collector-monitor-mrnet-mpi-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -396,6 +404,7 @@ target_include_directories(hwctime-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(hwctime-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static

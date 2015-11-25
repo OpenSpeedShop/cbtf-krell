@@ -68,6 +68,16 @@ uint64_t CBTF_GetAddressOfFunction(const void* pointer)
     
     /* Return the function pointer from the descriptor on Linux/IA64 */
     return *((uint64_t*)((uintptr_t)pointer));
+
+#elif defined(__linux) && (defined(__aarch64__))
+
+    /* Return the function pointer directly on Linux/arm and Linux/aarch64 */
+    return (uint64_t)((uintptr_t)pointer);
+
+#elif defined(__linux) && (defined(__arm__))
+
+    /* Return the function pointer directly on Linux/arm and Linux/aarch64 */
+    return (uint64_t)((uintptr_t)pointer);
     
 #else
 #error "Platform/OS Combination Unsupported!"

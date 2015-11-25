@@ -141,6 +141,26 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
     /* Get the current thread context */
     Assert(getcontext(&context) == 0);
     
+#elif defined(__linux) && defined( __aarch64__ )
+
+    if (signal_context != NULL) {
+        Assert(unw_getcontext(&context) == 0);
+        skip_frames = 5;
+        skip_signal_frames = FALSE;
+    } else {
+        Assert(unw_getcontext(&context) == 0);
+    }
+
+#elif defined(__linux) && defined( __arm__ )
+
+    if (signal_context != NULL) {
+        Assert(unw_getcontext(&context) == 0);
+        skip_frames = 5;
+        skip_signal_frames = FALSE;
+    } else {
+        Assert(unw_getcontext(&context) == 0);
+    }
+
 #else
 #error "Platform/OS Combination Unsupported!"
 #endif

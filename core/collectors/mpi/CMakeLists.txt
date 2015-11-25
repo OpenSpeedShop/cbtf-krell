@@ -55,6 +55,7 @@ target_include_directories(mpi-openmpi-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-openmpi-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -101,6 +102,7 @@ target_include_directories(mpi-openmpi-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-openmpi-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -146,6 +148,7 @@ target_include_directories(mpit-openmpi-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-openmpi-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -192,6 +195,7 @@ target_include_directories(mpit-openmpi-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-openmpi-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -237,6 +241,7 @@ target_include_directories(mpip-openmpi-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-openmpi-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -283,6 +288,7 @@ target_include_directories(mpip-openmpi-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-openmpi-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -331,6 +337,7 @@ target_include_directories(mpi-openmpi-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-openmpi-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -380,6 +387,7 @@ target_include_directories(mpi-openmpi-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-openmpi-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -429,6 +437,7 @@ target_include_directories(mpip-openmpi-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-openmpi-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -477,6 +486,7 @@ target_include_directories(mpip-openmpi-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-openmpi-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -526,6 +536,7 @@ target_include_directories(mpit-openmpi-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-openmpi-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -574,6 +585,7 @@ target_include_directories(mpit-openmpi-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-openmpi-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -628,6 +640,7 @@ target_include_directories(mpi-mpich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -672,6 +685,7 @@ target_include_directories(mpi-mpich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -718,6 +732,7 @@ target_include_directories(mpit-mpich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -762,6 +777,7 @@ target_include_directories(mpit-mpich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -807,6 +823,7 @@ target_include_directories(mpip-mpich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -851,6 +868,7 @@ target_include_directories(mpip-mpich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -899,6 +917,7 @@ target_include_directories(mpi-mpich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -947,6 +966,7 @@ target_include_directories(mpi-mpich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -996,6 +1016,7 @@ target_include_directories(mpip-mpich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1044,6 +1065,7 @@ target_include_directories(mpip-mpich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1093,6 +1115,7 @@ target_include_directories(mpit-mpich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1141,6 +1164,7 @@ target_include_directories(mpit-mpich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1200,6 +1224,7 @@ target_include_directories(mpi-mpich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1244,6 +1269,7 @@ target_include_directories(mpi-mpich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1290,6 +1316,7 @@ target_include_directories(mpit-mpich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1334,6 +1361,7 @@ target_include_directories(mpit-mpich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1379,6 +1407,7 @@ target_include_directories(mpip-mpich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1423,6 +1452,7 @@ target_include_directories(mpip-mpich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1471,6 +1501,7 @@ target_include_directories(mpi-mpich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1519,6 +1550,7 @@ target_include_directories(mpi-mpich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1568,6 +1600,7 @@ target_include_directories(mpip-mpich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1616,6 +1649,7 @@ target_include_directories(mpip-mpich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1665,6 +1699,7 @@ target_include_directories(mpit-mpich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1713,6 +1748,7 @@ target_include_directories(mpit-mpich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1772,6 +1808,7 @@ target_include_directories(mpi-mvapich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mvapich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1816,6 +1853,7 @@ target_include_directories(mpi-mvapich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mvapich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1862,6 +1900,7 @@ target_include_directories(mpit-mvapich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mvapich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1906,6 +1945,7 @@ target_include_directories(mpit-mvapich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mvapich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -1951,6 +1991,7 @@ target_include_directories(mpip-mvapich-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mvapich-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -1995,6 +2036,7 @@ target_include_directories(mpip-mvapich-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mvapich-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2043,6 +2085,7 @@ target_include_directories(mpi-mvapich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mvapich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2091,6 +2134,7 @@ target_include_directories(mpi-mvapich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mvapich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2140,6 +2184,7 @@ target_include_directories(mpip-mvapich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mvapich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2188,6 +2233,7 @@ target_include_directories(mpip-mvapich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mvapich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2237,6 +2283,7 @@ target_include_directories(mpit-mvapich-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mvapich-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2285,6 +2332,7 @@ target_include_directories(mpit-mvapich-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mvapich-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2344,6 +2392,7 @@ target_include_directories(mpi-mvapich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mvapich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2388,6 +2437,7 @@ target_include_directories(mpi-mvapich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mvapich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2434,6 +2484,7 @@ target_include_directories(mpit-mvapich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mvapich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2478,6 +2529,7 @@ target_include_directories(mpit-mvapich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mvapich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2523,6 +2575,7 @@ target_include_directories(mpip-mvapich2-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mvapich2-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2567,6 +2620,7 @@ target_include_directories(mpip-mvapich2-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mvapich2-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2615,6 +2669,7 @@ target_include_directories(mpi-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mvapich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2663,6 +2718,7 @@ target_include_directories(mpi-mvapich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mvapich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2712,6 +2768,7 @@ target_include_directories(mpip-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mvapich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2760,6 +2817,7 @@ target_include_directories(mpip-mvapich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mvapich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2809,6 +2867,7 @@ target_include_directories(mpit-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mvapich2-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2857,6 +2916,7 @@ target_include_directories(mpit-mvapich2-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mvapich2-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -2916,6 +2976,7 @@ target_include_directories(mpi-mpt-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpt-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -2960,6 +3021,7 @@ target_include_directories(mpi-mpt-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpi-mpt-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -3006,6 +3068,7 @@ target_include_directories(mpit-mpt-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpt-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -3050,6 +3113,7 @@ target_include_directories(mpit-mpt-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpit-mpt-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -3095,6 +3159,7 @@ target_include_directories(mpip-mpt-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpt-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -3139,6 +3204,7 @@ target_include_directories(mpip-mpt-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mpip-mpt-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -3187,6 +3253,7 @@ target_include_directories(mpi-mpt-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -3235,6 +3302,7 @@ target_include_directories(mpi-mpt-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpi-mpt-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -3284,6 +3352,7 @@ target_include_directories(mpip-mpt-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpt-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -3332,6 +3401,7 @@ target_include_directories(mpip-mpt-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-mpt-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static
 	cbtf-messages-base-static
 	cbtf-services-common-static
@@ -3381,6 +3451,7 @@ target_include_directories(mpit-mpt-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpt-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events
 	cbtf-messages-base
 	cbtf-services-common
@@ -3429,6 +3500,7 @@ target_include_directories(mpit-mpt-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpit-mpt-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-messages-events-static-static
 	cbtf-messages-base-static-static
 	cbtf-services-common-static-static

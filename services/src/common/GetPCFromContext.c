@@ -72,6 +72,16 @@ inline uint64_t CBTF_GetPCFromContext(const ucontext_t* context)
     /* Return PC value from Linux/IA64 thread context */
     return (uint64_t)(context->uc_mcontext.sc_ip);
     
+#elif defined(__linux) && defined(__aarch64__)
+
+    /* Return PC value from Linux/arm thread context */
+    return (uint64_t)(context->uc_mcontext.pc);
+
+#elif defined(__linux) && defined(__arm__)
+
+    /* Return PC value from Linux/arm thread context */
+    return (uint64_t)(context->uc_mcontext.arm_pc);
+
 #else
 #error "Platform/OS Combination Unsupported!"
 #endif

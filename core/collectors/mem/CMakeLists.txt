@@ -50,6 +50,7 @@ target_include_directories(mem-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -95,6 +96,7 @@ target_include_directories(mem-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-fileio-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -137,6 +139,7 @@ target_include_directories(mem-monitor-fileio PUBLIC
 )
 
 target_link_libraries(mem-monitor-fileio
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -181,6 +184,7 @@ target_include_directories(mem-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -226,6 +230,7 @@ target_include_directories(mem-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-mrnet-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -271,6 +276,7 @@ target_include_directories(mem-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(mem-monitor-mrnet
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -317,6 +323,7 @@ target_include_directories(mem-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
@@ -362,6 +369,7 @@ target_include_directories(mem-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(mem-collector-monitor-mrnet-mpi-static
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -407,6 +415,7 @@ target_include_directories(mem-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mem-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static

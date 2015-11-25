@@ -45,6 +45,7 @@ target_include_directories(usertime-collector-monitor-fileio PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-fileio
+        -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	cbtf-services-common
@@ -92,6 +93,7 @@ target_include_directories(usertime-collector-monitor-fileio-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-fileio-static
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	cbtf-services-common-static
@@ -134,6 +136,7 @@ target_include_directories(usertime-monitor-fileio PUBLIC
 )
 
 target_link_libraries(usertime-monitor-fileio
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	cbtf-services-common-static
@@ -175,6 +178,7 @@ target_include_directories(usertime-collector-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet
+        -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -218,6 +222,7 @@ target_include_directories(usertime-collector-monitor-mrnet-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-static
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -261,6 +266,7 @@ target_include_directories(usertime-monitor-mrnet PUBLIC
 )
 
 target_link_libraries(usertime-monitor-mrnet
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -301,6 +307,7 @@ target_include_directories(usertime-collector-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -345,6 +352,7 @@ target_include_directories(usertime-collector-monitor-mrnet-mpi-static PUBLIC
 )
 
 target_link_libraries(usertime-collector-monitor-mrnet-mpi-static
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -389,6 +397,7 @@ target_include_directories(usertime-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(usertime-monitor-mrnet-mpi
+        -Wl,--no-as-needed
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}

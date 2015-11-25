@@ -75,6 +75,15 @@ void CBTF_SetPCInContext(uint64_t value, ucontext_t* context)
     
     /* Return PC value from Linux/IA64 thread context */
     context->uc_mcontext.sc_ip = value;
+
+#elif defined(__linux) && defined(__aarch64__)
+
+    context->uc_mcontext.pc = value;
+
+#elif defined(__linux) && defined(__arm__)
+
+    context->uc_mcontext.arm_pc = value;
+
     
 #else
 #error "Platform/OS Combination Unsupported!"

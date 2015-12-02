@@ -20,7 +20,7 @@ include(FindPackageHandleStandardArgs)
 INCLUDE (CheckSymbolExists)
 INCLUDE (CheckFunctionExists)
 
-SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+SET(CMAKE_FIND_LIBRARY_PREFIXES "lib" "lib64")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 
 
@@ -53,9 +53,6 @@ set(LibIomp_DEFINES "")
 
 GET_FILENAME_COMPONENT(LibIomp_LIB_DIR ${LibIomp_LIBRARY_SHARED} PATH )
 GET_FILENAME_COMPONENT(LibIomp_DIR ${LibIomp_INCLUDE_DIR} PATH )
-#message(STATUS "LibIomp LibIomp_SHARED_LIBRARIES: " ${LibIomp_SHARED_LIBRARIES})
-#message(STATUS "LibIomp LibIomp_INCLUDE_DIR: " ${LibIomp_INCLUDE_DIR})
-#message(STATUS "LibIomp LibIomp_LIB_DIR: " ${LibIomp_LIB_DIR})
 message(STATUS "LIBIOMP_FOUND: " ${LIBIOMP_FOUND})
 message(STATUS "LibIomp location: " ${LibIomp_LIB_DIR})
 

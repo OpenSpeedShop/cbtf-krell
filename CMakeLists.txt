@@ -502,14 +502,16 @@ find_package(LibIomp)
 
 message(STATUS "LIBIOMP_FOUND=${LIBIOMP_FOUND}")
 if (LIBIOMP_FOUND)
-  CHECK_LIBRARY_EXISTS(${LibIomp_LIBRARY_SHARED} ompt_init "" HAVE_OMPT) 
-  message(STATUS "HAVE_OMPT=${HAVE_OMPT}")
-  if (HAVE_OMPT)
+  # This does not work for c++ libs. libiomp is compiled under the covers with c++.
+  #CHECK_LIBRARY_EXISTS(${LibIomp_LIBRARY_SHARED} "ompt_init" "" HAVE_OMPT) 
+  #message(STATUS "HAVE_OMPT=${HAVE_OMPT}")
+  if (EXISTS "${LibIomp_INCLUDE_DIR}/ompt.h")
     set(OMPT_DEFINES "HAVE_OMPT=1")
     set(OMPT_FOUND "true")
   else()
     set(OMPT_FOUND "false")
   endif()
+  message(STATUS "OMPT_FOUND=${OMPT_FOUND}")
 endif()
 #
 #--------------------------------------------------------------------------------

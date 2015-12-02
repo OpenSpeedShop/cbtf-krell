@@ -4,7 +4,7 @@
 # The machine dependent abi libdir name has been computed 
 # so use the information from one central location. 
 machlibdir=@machine_dependent_libdir@
-alt_machlibdir=@alt_machine_dependent_libdir@
+altmachlibdir=@alt_machine_dependent_libdir@
 
 monitor_libdir=@libmonitorlibdir@
 libmonitor="${monitor_libdir}/libmonitor.so"
@@ -230,11 +230,15 @@ done
 ## Only allow ompt_service IFF we have libiomp, the ompt service exists
 ## and we were passed the --openmp flag signifying the executalbe is an
 ## openmp program.
+## We also will add libiomp before the service to ld_preload.  That way
+## our libiomp with ompt support will be used rather then say libgomp.
+## TODO: verify that that we can avoid ld_preload of libiomp on power8
+## if the ompt api is available by default on that system.
 ompt_service=
 if [ "$has_openmp" == "true" ] ; then
   if [ "$use_ompt" == "true" ] ; then
     if test -f ${cbtfk_libdir}/libcbtf-services-ompt.so ; then
-      ompt_service="${cbtfk_libdir}/libcbtf-services-ompt.so"
+      ompt_service="${cbtfk_libdir}/libcbtf-services-ompt.so:${libiomp}"
     fi
   fi
 fi

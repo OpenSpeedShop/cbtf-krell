@@ -74,7 +74,7 @@ target_link_libraries(mpi-openmpi-collector-monitor-fileio
 
 set_target_properties(mpi-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-openmpi-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OpenMPI_DEFINES}")
 
 install(TARGETS mpi-openmpi-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -120,7 +120,7 @@ target_link_libraries(mpi-openmpi-monitor-fileio
 )
 
 set_target_properties(mpi-openmpi-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${OpenMPI_DEFINES}")
 
 install(TARGETS mpi-openmpi-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -167,7 +167,7 @@ target_link_libraries(mpit-openmpi-collector-monitor-fileio
 
 set_target_properties(mpit-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-openmpi-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${OpenMPI_DEFINES}")
 
 install(TARGETS mpit-openmpi-collector-monitor-fileio
 LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -213,7 +213,7 @@ target_link_libraries(mpit-openmpi-monitor-fileio
 )
 
 set_target_properties(mpit-openmpi-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${OpenMPI_DEFINES}")
 
 install(TARGETS mpit-openmpi-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -260,7 +260,7 @@ target_link_libraries(mpip-openmpi-collector-monitor-fileio
 
 set_target_properties(mpip-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-openmpi-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${OpenMPI_DEFINES}")
 
 install(TARGETS mpip-openmpi-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -306,7 +306,7 @@ target_link_libraries(mpip-openmpi-monitor-fileio
 )
 
 set_target_properties(mpip-openmpi-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${OpenMPI_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${OpenMPI_DEFINES}")
 
 install(TARGETS mpip-openmpi-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -358,7 +358,7 @@ target_link_libraries(mpi-openmpi-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-openmpi-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpi-openmpi-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -408,7 +408,7 @@ target_link_libraries(mpi-openmpi-monitor-mrnet-mpi
 
 set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpi-openmpi-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -458,7 +458,7 @@ target_link_libraries(mpip-openmpi-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-openmpi-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpip-openmpi-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -507,7 +507,7 @@ target_link_libraries(mpip-openmpi-monitor-mrnet-mpi
 
 set_target_properties(mpip-openmpi-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-openmpi-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpip-openmpi-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -557,7 +557,7 @@ target_link_libraries(mpit-openmpi-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-openmpi-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpit-openmpi-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -606,7 +606,7 @@ target_link_libraries(mpit-openmpi-monitor-mrnet-mpi
 
 set_target_properties(mpit-openmpi-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-openmpi-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${OpenMPI_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpit-openmpi-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -659,7 +659,7 @@ target_link_libraries(mpi-mpich-collector-monitor-fileio
 
 set_target_properties(mpi-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-mpich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpich_DEFINES}")
 
 install(TARGETS mpi-mpich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -703,7 +703,7 @@ target_link_libraries(mpi-mpich-monitor-fileio
 )
 
 set_target_properties(mpi-mpich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpich_DEFINES}")
 
 install(TARGETS mpi-mpich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -751,7 +751,7 @@ target_link_libraries(mpit-mpich-collector-monitor-fileio
 
 set_target_properties(mpit-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-mpich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpich_DEFINES}")
 
 install(TARGETS mpit-mpich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -795,7 +795,7 @@ target_link_libraries(mpit-mpich-monitor-fileio
 )
 
 set_target_properties(mpit-mpich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpich_DEFINES}")
 
 install(TARGETS mpit-mpich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -842,7 +842,7 @@ target_link_libraries(mpip-mpich-collector-monitor-fileio
 
 set_target_properties(mpip-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-mpich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpich_DEFINES}")
 
 install(TARGETS mpip-mpich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -886,7 +886,7 @@ target_link_libraries(mpip-mpich-monitor-fileio
 )
 
 set_target_properties(mpip-mpich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpich_DEFINES}")
 
 install(TARGETS mpip-mpich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -938,7 +938,7 @@ target_link_libraries(mpi-mpich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mpich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpi-mpich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -987,7 +987,7 @@ target_link_libraries(mpi-mpich-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-mpich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpi-mpich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1037,7 +1037,7 @@ target_link_libraries(mpip-mpich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-mpich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpip-mpich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1086,7 +1086,7 @@ target_link_libraries(mpip-mpich-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-mpich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpip-mpich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1136,7 +1136,7 @@ target_link_libraries(mpit-mpich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-mpich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpit-mpich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1185,7 +1185,7 @@ target_link_libraries(mpit-mpich-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-mpich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich_DEFINES}")
 
 install(TARGETS mpit-mpich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1243,7 +1243,7 @@ target_link_libraries(mpi-mpich2-collector-monitor-fileio
 
 set_target_properties(mpi-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-mpich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpich2_DEFINES}")
 
 install(TARGETS mpi-mpich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1287,7 +1287,7 @@ target_link_libraries(mpi-mpich2-monitor-fileio
 )
 
 set_target_properties(mpi-mpich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpich2_DEFINES}")
 
 install(TARGETS mpi-mpich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1335,7 +1335,7 @@ target_link_libraries(mpit-mpich2-collector-monitor-fileio
 
 set_target_properties(mpit-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-mpich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpich2_DEFINES}")
 
 install(TARGETS mpit-mpich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1379,7 +1379,7 @@ target_link_libraries(mpit-mpich2-monitor-fileio
 )
 
 set_target_properties(mpit-mpich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpich2_DEFINES}")
 
 install(TARGETS mpit-mpich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1426,7 +1426,7 @@ target_link_libraries(mpip-mpich2-collector-monitor-fileio
 
 set_target_properties(mpip-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-mpich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpich2_DEFINES}")
 
 install(TARGETS mpip-mpich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1470,7 +1470,7 @@ target_link_libraries(mpip-mpich2-monitor-fileio
 )
 
 set_target_properties(mpip-mpich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpich2_DEFINES}")
 
 install(TARGETS mpip-mpich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1522,7 +1522,7 @@ target_link_libraries(mpi-mpich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mpich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpi-mpich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1571,7 +1571,7 @@ target_link_libraries(mpi-mpich2-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-mpich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpi-mpich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1621,7 +1621,7 @@ target_link_libraries(mpip-mpich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-mpich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpip-mpich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1670,7 +1670,7 @@ target_link_libraries(mpip-mpich2-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-mpich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpip-mpich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1720,7 +1720,7 @@ target_link_libraries(mpit-mpich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-mpich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpit-mpich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1769,7 +1769,7 @@ target_link_libraries(mpit-mpich2-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-mpich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mpich2_DEFINES}")
 
 install(TARGETS mpit-mpich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1827,7 +1827,7 @@ target_link_libraries(mpi-mvapich-collector-monitor-fileio
 
 set_target_properties(mpi-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-mvapich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mvapich_DEFINES}")
 
 install(TARGETS mpi-mvapich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1871,7 +1871,7 @@ target_link_libraries(mpi-mvapich-monitor-fileio
 )
 
 set_target_properties(mpi-mvapich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mvapich_DEFINES}")
 
 install(TARGETS mpi-mvapich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -1919,7 +1919,7 @@ target_link_libraries(mpit-mvapich-collector-monitor-fileio
 
 set_target_properties(mpit-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-mvapich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mvapich_DEFINES}")
 
 install(TARGETS mpit-mvapich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -1963,7 +1963,7 @@ target_link_libraries(mpit-mvapich-monitor-fileio
 )
 
 set_target_properties(mpit-mvapich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mvapich_DEFINES}")
 
 install(TARGETS mpit-mvapich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2010,7 +2010,7 @@ target_link_libraries(mpip-mvapich-collector-monitor-fileio
 
 set_target_properties(mpip-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-mvapich-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mvapich_DEFINES}")
 
 install(TARGETS mpip-mvapich-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2054,7 +2054,7 @@ target_link_libraries(mpip-mvapich-monitor-fileio
 )
 
 set_target_properties(mpip-mvapich-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mvapich_DEFINES}")
 
 install(TARGETS mpip-mvapich-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2106,7 +2106,7 @@ target_link_libraries(mpi-mvapich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mvapich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpi-mvapich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2155,7 +2155,7 @@ target_link_libraries(mpi-mvapich-monitor-mrnet-mpi
 
 set_target_properties(mpi-mvapich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-mvapich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpi-mvapich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2205,7 +2205,7 @@ target_link_libraries(mpip-mvapich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-mvapich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpip-mvapich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2254,7 +2254,7 @@ target_link_libraries(mpip-mvapich-monitor-mrnet-mpi
 
 set_target_properties(mpip-mvapich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-mvapich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpip-mvapich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2304,7 +2304,7 @@ target_link_libraries(mpit-mvapich-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-mvapich-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpit-mvapich-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2353,7 +2353,7 @@ target_link_libraries(mpit-mvapich-monitor-mrnet-mpi
 
 set_target_properties(mpit-mvapich-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-mvapich-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich_DEFINES}")
 
 install(TARGETS mpit-mvapich-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2411,7 +2411,7 @@ target_link_libraries(mpi-mvapich2-collector-monitor-fileio
 
 set_target_properties(mpi-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-mvapich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mvapich2_DEFINES}")
 
 install(TARGETS mpi-mvapich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2455,7 +2455,7 @@ target_link_libraries(mpi-mvapich2-monitor-fileio
 )
 
 set_target_properties(mpi-mvapich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mvapich2_DEFINES}")
 
 install(TARGETS mpi-mvapich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2503,7 +2503,7 @@ target_link_libraries(mpit-mvapich2-collector-monitor-fileio
 
 set_target_properties(mpit-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-mvapich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mvapich2_DEFINES}")
 
 install(TARGETS mpit-mvapich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2547,7 +2547,7 @@ target_link_libraries(mpit-mvapich2-monitor-fileio
 )
 
 set_target_properties(mpit-mvapich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mvapich2_DEFINES}")
 
 install(TARGETS mpit-mvapich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2594,7 +2594,7 @@ target_link_libraries(mpip-mvapich2-collector-monitor-fileio
 
 set_target_properties(mpip-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-mvapich2-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mvapich2_DEFINES}")
 
 install(TARGETS mpip-mvapich2-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2638,7 +2638,7 @@ target_link_libraries(mpip-mvapich2-monitor-fileio
 )
 
 set_target_properties(mpip-mvapich2-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mvapich2_DEFINES}")
 
 install(TARGETS mpip-mvapich2-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2690,7 +2690,7 @@ target_link_libraries(mpi-mvapich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mvapich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpi-mvapich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2739,7 +2739,7 @@ target_link_libraries(mpi-mvapich2-monitor-mrnet-mpi
 
 set_target_properties(mpi-mvapich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-mvapich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpi-mvapich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2789,7 +2789,7 @@ target_link_libraries(mpip-mvapich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-mvapich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpip-mvapich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2838,7 +2838,7 @@ target_link_libraries(mpip-mvapich2-monitor-mrnet-mpi
 
 set_target_properties(mpip-mvapich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-mvapich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpip-mvapich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2888,7 +2888,7 @@ target_link_libraries(mpit-mvapich2-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-mvapich2-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpit-mvapich2-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -2937,7 +2937,7 @@ target_link_libraries(mpit-mvapich2-monitor-mrnet-mpi
 
 set_target_properties(mpit-mvapich2-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-mvapich2-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${MRNet_DEFINES};${Mvapich2_DEFINES}")
 
 install(TARGETS mpit-mvapich2-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -2995,7 +2995,7 @@ target_link_libraries(mpi-mpt-collector-monitor-fileio
 
 set_target_properties(mpi-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpi-mpt-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${Mpt_DEFINES}")
 
 install(TARGETS mpi-mpt-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3039,7 +3039,7 @@ target_link_libraries(mpi-mpt-monitor-fileio
 )
 
 set_target_properties(mpi-mpt-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;${Mpt_DEFINES}")
 
 install(TARGETS mpi-mpt-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -3087,7 +3087,7 @@ target_link_libraries(mpit-mpt-collector-monitor-fileio
 
 set_target_properties(mpit-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpit-mpt-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;EXTENDEDTRACE;${Mpt_DEFINES}")
 
 install(TARGETS mpit-mpt-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3131,7 +3131,7 @@ target_link_libraries(mpit-mpt-monitor-fileio
 )
 
 set_target_properties(mpit-mpt-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;EXTENDEDTRACE;${Mpt_DEFINES}")
 
 install(TARGETS mpit-mpt-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -3178,7 +3178,7 @@ target_link_libraries(mpip-mpt-collector-monitor-fileio
 
 set_target_properties(mpip-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
 set_target_properties(mpip-mpt-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;PROFILE;${Mpt_DEFINES}")
 
 install(TARGETS mpip-mpt-collector-monitor-fileio
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3222,7 +3222,7 @@ target_link_libraries(mpip-mpt-monitor-fileio
 )
 
 set_target_properties(mpip-mpt-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpt_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;CBTF_STATIC;PROFILE;${Mpt_DEFINES}")
 
 install(TARGETS mpip-mpt-monitor-fileio
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -3274,7 +3274,7 @@ target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpi-mpt-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpi-mpt-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3323,7 +3323,7 @@ target_link_libraries(mpi-mpt-monitor-mrnet-mpi
 
 set_target_properties(mpi-mpt-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-mpt-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpi-mpt-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -3373,7 +3373,7 @@ target_link_libraries(mpip-mpt-collector-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpip-mpt-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;PROFILE;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpip-mpt-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3422,7 +3422,7 @@ target_link_libraries(mpip-mpt-monitor-mrnet-mpi
 
 set_target_properties(mpip-mpt-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpip-mpt-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;PROFILE;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpip-mpt-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -3472,7 +3472,7 @@ target_link_libraries(mpit-mpt-collector-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(mpit-mpt-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;EXTENDEDTRACE;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpit-mpt-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -3521,7 +3521,7 @@ target_link_libraries(mpit-mpt-monitor-mrnet-mpi
 
 set_target_properties(mpit-mpt-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpit-mpt-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${Mpt_DEFINES};${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;EXTENDEDTRACE;${Mpt_DEFINES};${MRNet_DEFINES}")
 
 install(TARGETS mpit-mpt-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

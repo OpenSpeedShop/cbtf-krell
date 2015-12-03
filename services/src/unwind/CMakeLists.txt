@@ -18,8 +18,6 @@
 
 include(CheckIncludeFile)
 
-add_definitions(${LibUnwind_DEFINES})
-
 # The -DCMAKE_BUILD is a hack to inform the CBTF_GetStackTrace unwinder
 # which is specific to the x86_64 platform how many signal handler frames
 # to skip. For reasons unknown to me the autotools built CBTF_GetStackTrace
@@ -64,6 +62,7 @@ target_link_libraries(cbtf-services-unwind
 )
 
 set_target_properties(cbtf-services-unwind PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-unwind PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES}")
 
 install(TARGETS cbtf-services-unwind
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -83,6 +82,7 @@ target_link_libraries(cbtf-services-unwind-static
 )
 
 set_target_properties(cbtf-services-unwind-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-unwind-static PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES}")
 
 install(TARGETS cbtf-services-unwind-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

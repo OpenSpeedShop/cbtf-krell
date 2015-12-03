@@ -66,7 +66,7 @@ set_target_properties(usertime-collector-monitor-fileio PROPERTIES PREFIX "")
 # If present, will activate OpenMP runtime performance information gathering. 
 #
 set_target_properties(usertime-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
 
 
 install(TARGETS usertime-collector-monitor-fileio
@@ -109,7 +109,7 @@ target_link_libraries(usertime-collector-monitor-fileio-static
 
 set_target_properties(usertime-collector-monitor-fileio-static PROPERTIES PREFIX "")
 set_target_properties(usertime-collector-monitor-fileio-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
 
 
 install(TARGETS usertime-collector-monitor-fileio-static
@@ -151,7 +151,7 @@ target_link_libraries(usertime-monitor-fileio
 )
 
 set_target_properties(usertime-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -195,7 +195,7 @@ target_link_libraries(usertime-collector-monitor-mrnet
 
 set_target_properties(usertime-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(usertime-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -239,7 +239,7 @@ target_link_libraries(usertime-collector-monitor-mrnet-static
 
 set_target_properties(usertime-collector-monitor-mrnet-static PROPERTIES PREFIX "")
 set_target_properties(usertime-collector-monitor-mrnet-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-collector-monitor-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -282,7 +282,7 @@ target_link_libraries(usertime-monitor-mrnet
 )
 
 set_target_properties(usertime-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -325,7 +325,7 @@ target_link_libraries(usertime-collector-monitor-mrnet-mpi
 
 set_target_properties(usertime-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(usertime-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -370,7 +370,7 @@ target_link_libraries(usertime-collector-monitor-mrnet-mpi-static
 
 set_target_properties(usertime-collector-monitor-mrnet-mpi-static PROPERTIES PREFIX "")
 set_target_properties(usertime-collector-monitor-mrnet-mpi-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-collector-monitor-mrnet-mpi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -415,7 +415,7 @@ target_link_libraries(usertime-monitor-mrnet-mpi
 
 set_target_properties(usertime-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(usertime-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES};USE_FASTTRACE")
 
 install(TARGETS usertime-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

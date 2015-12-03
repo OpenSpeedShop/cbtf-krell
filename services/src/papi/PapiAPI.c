@@ -336,6 +336,7 @@ static oss_boolean CBTF_event_exists (int event)
 	    return false;
 	}
 
+#if 0
 	if (info.count > 0) {
 	    fprintf (stderr, "%s (%s) is available on this hardware.\n",
 		info.symbol ? info.symbol : "",
@@ -346,6 +347,7 @@ static oss_boolean CBTF_event_exists (int event)
 	    fprintf (stderr,"%s is a derived event on this hardware.\n",
 		info.symbol ? info.symbol : "");
 	}
+#endif
 }
 
 void CBTF_Create_Eventset(int *EventSet)
@@ -391,10 +393,20 @@ void CBTF_Overflow(int EventSet, int event, int threshold , void *hwcPAPIHandler
 
 void CBTF_Start(int EventSet)
 {
-    int rval = PAPI_start(EventSet);
+    int status = 0;
+    int rval = 0;
 
+    rval = PAPI_state(EventSet, &status);
     if (rval != PAPI_OK) {
 	CBTF_PAPIerror(rval,"CBTF_Start");
+    }
+
+    // Do not start PAPI if already running
+    if (!(status & PAPI_RUNNING)) {
+      rval = PAPI_start(EventSet);
+      if (rval != PAPI_OK) {
+	CBTF_PAPIerror(rval,"CBTF_Start");
+      }
     }
 }
 
@@ -405,15 +417,26 @@ void CBTF_Stop(int EventSet, long_long* evalues)
         return;
     }
 
-    int rval = PAPI_stop(EventSet,evalues);
+    int status = 0;
+    int rval = 0;
 
-    if (rval == PAPI_ENOTRUN) {
-	CBTF_PAPIerror(rval,"CBTF_Stop");
-	return;
-    }
-
+    rval = PAPI_state(EventSet, &status);
     if (rval != PAPI_OK) {
 	CBTF_PAPIerror(rval,"CBTF_Stop");
+    }
+
+    // Do not stop PAPI if already stopped
+    if (! (status & PAPI_STOPPED) ) {
+      rval = PAPI_stop(EventSet,evalues);
+
+      if (rval == PAPI_ENOTRUN) {
+	CBTF_PAPIerror(rval,"CBTF_Stop");
+	return;
+      }
+
+      if (rval != PAPI_OK) {
+	CBTF_PAPIerror(rval,"CBTF_Stop");
+      }
     }
 }
 

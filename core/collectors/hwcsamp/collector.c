@@ -310,7 +310,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 
     /* First set defaults */
     int hwcsamp_rate = 100;
-    char* hwcsamp_papi_event = "PAPI_TOT_CYC,PAPI_FP_OPS";
+    char* hwcsamp_papi_event = "PAPI_TOT_CYC,PAPI_TOT_INS";
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     char* hwcsamp_event_param = getenv("CBTF_HWCSAMP_EVENTS");
@@ -418,7 +418,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     } else {
 	PAPI_event_name_to_code("PAPI_TOT_CYC",&eventcode);
 	rval = PAPI_add_event(tls->EventSet,eventcode);
-	PAPI_event_name_to_code("PAPI_FP_OPS",&eventcode);
+	PAPI_event_name_to_code("PAPI_TOT_INS",&eventcode);
 	rval = PAPI_add_event(tls->EventSet,eventcode);
     }
 

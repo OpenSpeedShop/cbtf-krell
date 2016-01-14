@@ -605,7 +605,6 @@ set(ALL_MPI_IMPL_NAMES ${all_mpi_names})
 # host processor not on the native compute node processor then do not look for CBTF
 #
 find_package(CBTF)
-find_package(LWMRNet 4.0.0)
 
 #--------------------------------------------------------------------------------
 # Build the major components for cbtf-krell if CBTF is found

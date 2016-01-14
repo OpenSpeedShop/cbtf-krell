@@ -606,7 +606,6 @@ set(ALL_MPI_IMPL_NAMES ${all_mpi_names})
 #
 find_package(CBTF)
 find_package(LWMRNet 4.0.0)
-find_package(CBTFMRNet)
 
 #--------------------------------------------------------------------------------
 # Build the major components for cbtf-krell if CBTF is found

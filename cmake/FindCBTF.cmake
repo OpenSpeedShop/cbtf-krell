@@ -34,7 +34,7 @@ find_library(CBTF_MRNET_LIBRARY NAMES libcbtf-mrnet.so
     PATH_SUFFIXES lib lib64
     )
 
-find_path(CBTF_INCLUDE_DIR KrellInstitute/CBTF/Component.hpp
+find_path(CBTF_INCLUDE_DIR KrellInstitute/CBTF/Impl/MessageTags.h
     HINTS ${CBTF_DIR} $ENV{CBTF_DIR}
     PATH_SUFFIXES include
     )

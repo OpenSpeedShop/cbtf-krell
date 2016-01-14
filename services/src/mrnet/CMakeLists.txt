@@ -33,7 +33,7 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CBTF_MRNET_INCLUDE_DIR}
+	${CBTF_INCLUDE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
@@ -69,7 +69,7 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CBTF_MRNET_INCLUDE_DIR}
+	${CBTF_INCLUDE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base

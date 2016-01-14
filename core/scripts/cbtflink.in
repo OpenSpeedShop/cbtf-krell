@@ -17,8 +17,8 @@ mach_type=`uname -m`
 cbtf_target=@cbtftargetos@
 
 # TODO: handle the target prefix
-cbtfk_prefix=@cbtfkdir@
-cbtfk_libdir=@cbtfklibdir@
+cbtfk_prefix=@cbtfkCNdir@
+cbtfk_libdir=@cbtfkCNlibdir@
 cbtfk_bindir="${cbtfk_prefix}/bin"
 cbtfk_plugins="${cbtfk_libdir}/KrellInstitute/Collectors"
 
@@ -31,7 +31,7 @@ libunwind="${libunwind_libdir}/libunwind.a"
 libpapi_libdir=@libpapilibdir@
 libpapi="${libpapi_libdir}/libpapi.a"
 
-libmrnet_libdir=@libmrnetlibdir@
+libmrnet_libdir=@libmrnetCNlibdir@
 
 # monitor always has these
 

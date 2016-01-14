@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2013-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2013-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -50,4 +50,6 @@ message(STATUS "LTDL include dir: " ${LTDL_INCLUDE_DIR})
 mark_as_advanced(
             LTDL_INCLUDE_DIR
 	    LTDL_LIBRARY_SHARED
+	    LTDL_LIB_DIR
+	    LTDL_DIR
             )

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -43,12 +43,15 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}/Symbol.x
 )
 
-
-add_library(cbtf-messages-converters-symtab SHARED
+# Do not build the converters if we are targeting the compute node build for Intel MIC
+# which is a platform that runs the CBTF filters on a host processor not the
+# compute node processors.
+if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
+    add_library(cbtf-messages-converters-symtab SHARED
         ${CBTF_MESSAGES_CONVERTERS_SYMTAB_SOURCES}
-)
+    )
  
-target_include_directories(cbtf-messages-converters-symtab PUBLIC
+    target_include_directories(cbtf-messages-converters-symtab PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}../base
@@ -57,53 +60,53 @@ target_include_directories(cbtf-messages-converters-symtab PUBLIC
 	${CBTF_INCLUDE_DIRS}
 )
 
-target_link_libraries(cbtf-messages-converters-symtab
+    target_link_libraries(cbtf-messages-converters-symtab
         -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-symtab PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-symtab PROPERTIES 
+    set_target_properties(cbtf-messages-converters-symtab PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-symtab PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-symtab
+    install(TARGETS cbtf-messages-converters-symtab
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
 # Install static version
 
-add_library(cbtf-messages-converters-symtab-static STATIC
+    add_library(cbtf-messages-converters-symtab-static STATIC
         ${CBTF_MESSAGES_CONVERTERS_SYMTAB_SOURCES}
-)
+    )
  
-target_include_directories(cbtf-messages-converters-symtab-static PUBLIC
+    target_include_directories(cbtf-messages-converters-symtab-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}../base
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-symtab-static
+    target_link_libraries(cbtf-messages-converters-symtab-static
         -Wl,--no-as-needed
 	cbtf-messages-base
 	${MRNet_LIBRARIES}
 	pthread
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES 
+    set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-symtab-static
+    install(TARGETS cbtf-messages-converters-symtab-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
-)
-
+    )
+endif()
 
 add_library(cbtf-messages-symtab SHARED
 	${CBTF_MESSAGES_SYMTAB_SOURCES}
@@ -113,15 +116,11 @@ target_include_directories(cbtf-messages-symtab PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-symtab
         -Wl,--no-as-needed
-	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
@@ -145,15 +144,11 @@ target_include_directories(cbtf-messages-symtab-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-symtab-static
         -Wl,--no-as-needed
-	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009-2014 The Krell Institute. All Rights Reserved.
+// Copyright (c) 2009-2016 The Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -74,11 +74,23 @@ SymtabAPISymbols::getSymbols(const AddressBuffer& abuffer,
     }
 #endif
 
-
-
     Symtab *symtab;
-    bool err = Symtab::openFile(symtab, objname);
+    bool symtab_opened = Symtab::openFile(symtab, objname);
 
+    //std::cerr << "SymtabAPISymbols::getSymbols: symtab_opened=" << symtab_opened << " symtab=" << symtab << std::endl;
+
+    if (!symtab_opened || symtab == NULL) { 
+// DEBUG
+#ifndef NDEBUG
+        if(is_debug_symtabapi_symbols_enabled) {
+            std::cerr
+            << "SymtabAPISymbols::getSymbols: linked object " << objname
+            << " could not be opened by symtabAPI."
+            << std::endl;
+        }
+#endif
+        return;
+    } 
 
     KrellInstitute::Core::Address image_offset(symtab->imageOffset());
     KrellInstitute::Core::Address image_length(symtab->imageLength());

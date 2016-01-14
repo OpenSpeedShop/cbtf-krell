@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -33,12 +33,12 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CBTF_INCLUDE_DIR}
+	${CBTF_MRNET_INCLUDE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
 	${CMAKE_INSTALL_PREFIX}/include
-	${MRNet_INCLUDE_DIRS}
+	${MRNet_LW_INCLUDE_DIRS}
 )
 
 target_link_libraries(cbtf-services-mrnet
@@ -69,12 +69,12 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CBTF_INCLUDE_DIR}
+	${CBTF_MRNET_INCLUDE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
 	${CMAKE_INSTALL_PREFIX}/include
-	${MRNet_INCLUDE_DIRS}
+	${MRNet_LW_INCLUDE_DIRS}
 )
 
 target_link_libraries(cbtf-services-mrnet-static

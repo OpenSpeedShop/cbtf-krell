@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -35,11 +35,15 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
 )
 
-add_library(cbtf-messages-converters-thread SHARED
+# Do not build the converters if we are targeting the compute node build for Intel MIC
+# which is a platform that runs the CBTF filters on a host processor not the
+# compute node processors.
+if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
+    add_library(cbtf-messages-converters-thread SHARED
         ${CBTF_MESSAGES_CONVERTERS_THREAD_SOURCES}
-)
+    )
   
-target_include_directories(cbtf-messages-converters-thread PUBLIC
+    target_include_directories(cbtf-messages-converters-thread PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
@@ -47,31 +51,31 @@ target_include_directories(cbtf-messages-converters-thread PUBLIC
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-thread
+    target_link_libraries(cbtf-messages-converters-thread
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-thread PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-thread PROPERTIES 
+    set_target_properties(cbtf-messages-converters-thread PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-thread PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-thread
+    install(TARGETS cbtf-messages-converters-thread
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
 # Install static version
 
-add_library(cbtf-messages-converters-thread-static STATIC
+    add_library(cbtf-messages-converters-thread-static STATIC
         ${CBTF_MESSAGES_CONVERTERS_THREAD_SOURCES}
     )
 
-target_include_directories(cbtf-messages-converters-thread-static PUBLIC
+    target_include_directories(cbtf-messages-converters-thread-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
@@ -79,23 +83,24 @@ target_include_directories(cbtf-messages-converters-thread-static PUBLIC
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-thread-static
+    target_link_libraries(cbtf-messages-converters-thread-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-thread-static PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-thread-static PROPERTIES 
+    set_target_properties(cbtf-messages-converters-thread-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-thread-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-thread-static
+    install(TARGETS cbtf-messages-converters-thread-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
-)
+    )
+endif()
 
 
 add_library(cbtf-messages-thread SHARED

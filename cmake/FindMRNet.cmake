@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2011-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2011-2016 Krell Institute. All Rights Reserved.
 # Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -26,54 +26,6 @@ find_library(MRNet_MRNET_LIBRARY NAMES libmrnet.so
     )
 
 find_library(MRNet_XPLAT_LIBRARY NAMES libxplat.so 
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_MRNET_LW_SHARED_LIBRARY NAMES libmrnet_lightweight.so
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_XPLAT_LW_SHARED_LIBRARY NAMES libxplat_lightweight.so
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_MRNET_LW_STATIC_LIBRARY NAMES libmrnet_lightweight.a
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_XPLAT_LW_STATIC_LIBRARY NAMES libxplat_lightweight.a
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_MRNET_LWR_SHARED_LIBRARY NAMES libmrnet_lightweight_r.so
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_XPLAT_LWR_SHARED_LIBRARY NAMES libxplat_lightweight_r.so
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_MRNET_LWR_STATIC_LIBRARY NAMES libmrnet_lightweight_r.a
-    HINTS $ENV{MRNET_DIR}
-    HINTS ${MRNET_DIR}
-    PATH_SUFFIXES lib lib64
-    )
-
-find_library(MRNet_XPLAT_LWR_STATIC_LIBRARY NAMES libxplat_lightweight_r.a
     HINTS $ENV{MRNET_DIR}
     HINTS ${MRNET_DIR}
     PATH_SUFFIXES lib lib64
@@ -114,9 +66,6 @@ endif()
 find_package_handle_standard_args(
     MRNet DEFAULT_MSG
     MRNet_MRNET_LIBRARY MRNet_XPLAT_LIBRARY
-    MRNet_MRNET_LW_SHARED_LIBRARY MRNet_XPLAT_LW_SHARED_LIBRARY
-    MRNet_MRNET_LW_STATIC_LIBRARY MRNet_XPLAT_LW_STATIC_LIBRARY
-    MRNet_MRNET_LWR_SHARED_LIBRARY MRNet_XPLAT_LWR_SHARED_LIBRARY
     MRNet_INCLUDE_DIR
     )
 
@@ -131,15 +80,6 @@ else ()
  set(MRNet_LIBRARIES ${MRNet_MRNET_LIBRARY} ${MRNet_XPLAT_LIBRARY})
 endif()
 
-set(MRNet_LW_SHARED_LIBRARIES ${MRNet_MRNET_LW_SHARED_LIBRARY} ${MRNet_XPLAT_LW_SHARED_LIBRARY})
-
-set(MRNet_LW_STATIC_LIBRARIES ${MRNet_MRNET_LW_STATIC_LIBRARY} ${MRNet_XPLAT_LW_STATIC_LIBRARY})
-
-set(MRNet_LWR_SHARED_LIBRARIES ${MRNet_MRNET_LWR_SHARED_LIBRARY} ${MRNet_XPLAT_LWR_SHARED_LIBRARY})
-
-set(MRNet_LWR_STATIC_LIBRARIES ${MRNet_MRNET_LWR_STATIC_LIBRARY} ${MRNet_XPLAT_LWR_STATIC_LIBRARY})
-
-#set(MRNet_DEFINES "-Dos_linux")
 set(MRNet_DEFINES "os_linux")
 
 if(MRNET_FOUND AND DEFINED MRNet_INCLUDE_DIR)
@@ -193,11 +133,6 @@ if(MRNET_FOUND AND DEFINED MRNet_INCLUDE_DIR)
 
         mark_as_advanced(
             MRNet_MRNET_LIBRARY MRNet_XPLAT_LIBRARY
-            MRNet_MRNET_LW_SHARED_LIBRARY MRNet_XPLAT_LW_SHARED_LIBRARY
-            MRNet_MRNET_LW_STATIC_LIBRARY MRNet_XPLAT_LW_STATIC_LIBRARY
-            MRNet_MRNET_LWR_STATIC_LIBRARY MRNet_XPLAT_LWR_STATIC_LIBRARY
-            MRNet_LWR_SHARED_LIBRARIES MRNet_LWR_STATIC_LIBRARIES 
-            MRNet_LW_SHARED_LIBRARIES MRNet_LW_STATIC_LIBRARIES 
             MRNet_INCLUDE_DIR
             )
 
@@ -256,18 +191,6 @@ if(MRNET_FOUND AND DEFINED MRNet_INCLUDE_DIR)
         mark_as_advanced(
             MRNet_MRNET_LIBRARY
             MRNet_XPLAT_LIBRARY
-            MRNet_MRNET_LW_SHARED_LIBRARY
-            MRNet_XPLAT_LW_SHARED_LIBRARY
-            MRNet_MRNET_LW_STATIC_LIBRARY
-            MRNet_XPLAT_LW_STATIC_LIBRARY
-            MRNet_MRNET_LWR_SHARED_LIBRARY
-            MRNet_XPLAT_LWR_SHARED_LIBRARY
-            MRNet_MRNET_LWR_STATIC_LIBRARY
-            MRNet_XPLAT_LWR_STATIC_LIBRARY
-            MRNet_LWR_SHARED_LIBRARIES
-            MRNet_LWR_STATIC_LIBRARIES
-            MRNet_LW_SHARED_LIBRARIES
-            MRNet_LW_STATIC_LIBRARIES
             MRNet_INCLUDE_DIR
             MRNet_MRNET_CONFIG_INCLUDE_DIR
             MRNet_XPLAT_CONFIG_INCLUDE_DIR
@@ -279,5 +202,4 @@ if(MRNET_FOUND AND DEFINED MRNet_INCLUDE_DIR)
     endif()
       
 endif()
-
 

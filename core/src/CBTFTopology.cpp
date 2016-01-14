@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2012-2015 Krell Institute. All Rights Reserved.
+// Copyright (c) 2012-2016 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -46,7 +46,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
-#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE) || defined(TARGET_OS_CRAY) || defined(RUNTIME_TARGET_OS_CRAY)
+#if defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY)
 
 #include <alps/alps.h>
 #endif
@@ -196,7 +196,7 @@ int CBTFTopology::getCrayFENid( void )
 {
     int nid = -1;
 
-#if defined(TARGET_OS_CRAYXK) || defined(TARGET_OS_CRAYXE) || defined(TARGET_OS_CRAY) || defined(RUNTIME_TARGET_OS_CRAY)
+#if defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY)
     // alps.h defines ALPS_XT_NID to be the file containing the nid.
     // it's /proc/cray_xt/nid for the machines we've seen so far
     std::ifstream ifs( ALPS_XT_NID );

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -465,12 +465,15 @@ add_custom_command(
         ${CMAKE_CURRENT_SOURCE_DIR}/Stats.x
     )
 
-
-add_library(cbtf-messages-converters-perfdata SHARED
+# Do not build the converters if we are targeting the compute node build for Intel MIC
+# which is a platform that runs the CBTF filters on a host processor not the
+# compute node processors.
+if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
+    add_library(cbtf-messages-converters-perfdata SHARED
         ${CBTF_MESSAGES_CONVERTERS_PERFDATA_SOURCES}
-)
+    )
   
-target_include_directories(cbtf-messages-converters-perfdata PUBLIC
+    target_include_directories(cbtf-messages-converters-perfdata PUBLIC
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -481,7 +484,7 @@ target_include_directories(cbtf-messages-converters-perfdata PUBLIC
 	${LTDL_INCLUDE_DIR}
     )
 
-target_link_libraries(cbtf-messages-converters-perfdata
+    target_link_libraries(cbtf-messages-converters-perfdata
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
@@ -489,21 +492,21 @@ target_link_libraries(cbtf-messages-converters-perfdata
 	${CMAKE_DL_LIBS}
     )
 
-set_target_properties(cbtf-messages-converters-perfdata PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-perfdata PROPERTIES 
+    set_target_properties(cbtf-messages-converters-perfdata PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-perfdata PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-perfdata
+    install(TARGETS cbtf-messages-converters-perfdata
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
     )
 
 # Install static versions
 
-add_library(cbtf-messages-converters-perfdata-static STATIC
+    add_library(cbtf-messages-converters-perfdata-static STATIC
         ${CBTF_MESSAGES_CONVERTERS_PERFDATA_SOURCES}
     )
   
-target_include_directories(cbtf-messages-converters-perfdata-static PUBLIC
+    target_include_directories(cbtf-messages-converters-perfdata-static PUBLIC
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -512,9 +515,9 @@ target_include_directories(cbtf-messages-converters-perfdata-static PUBLIC
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-perfdata-static
+    target_link_libraries(cbtf-messages-converters-perfdata-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
@@ -522,13 +525,14 @@ target_link_libraries(cbtf-messages-converters-perfdata-static
 	${CMAKE_DL_LIBS}
     )
 
-set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES 
+    set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-perfdata-static
+    install(TARGETS cbtf-messages-converters-perfdata-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
     )
+endif()
 
 add_library(cbtf-messages-perfdata SHARED
 	${CBTF_MESSAGES_PERFDATA_SOURCES}
@@ -538,9 +542,6 @@ target_include_directories(cbtf-messages-perfdata PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
@@ -569,9 +570,6 @@ target_include_directories(cbtf-messages-perfdata-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
@@ -589,7 +587,6 @@ set_target_properties(cbtf-messages-perfdata-static PROPERTIES
 install(TARGETS cbtf-messages-perfdata-static 
         ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h 
               ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h 

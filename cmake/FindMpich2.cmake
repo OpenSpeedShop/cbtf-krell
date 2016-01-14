@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -34,7 +34,7 @@ find_path(Mpich2_INCLUDE_DIR
     NO_DEFAULT_PATH
     )
 
-find_library(Mpich2_LIBRARY_SHARED NAMES mpich
+find_library(Mpich2_LIBRARY_SHARED NAMES mpich mpi
     HINTS $ENV{MPICH2_DIR}
     HINTS ${MPICH2_DIR}
     PATHS /usr /usr/local /usr/lib64/mpich /usr/lib/mpich

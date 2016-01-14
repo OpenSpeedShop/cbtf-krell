@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -85,11 +85,16 @@ add_custom_command(
 
 #add_definitions(${MRNet_DEFINES})
 
-add_library(cbtf-messages-converters-instrumentation SHARED
+# Do not build the converters if we are targeting the compute node build for Intel MIC
+# which is a platform that runs the CBTF filters on a host processor not the
+# compute node processors.
+if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
+
+    add_library(cbtf-messages-converters-instrumentation SHARED
         ${CBTF_MESSAGES_CONVERTERS_INSTRUMENTATION_SOURCES}
-)
+    )
  
-target_include_directories(cbtf-messages-converters-instrumentation PUBLIC
+    target_include_directories(cbtf-messages-converters-instrumentation PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}../base
@@ -98,9 +103,9 @@ target_include_directories(cbtf-messages-converters-instrumentation PUBLIC
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-instrumentation
+    target_link_libraries(cbtf-messages-converters-instrumentation
         -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-collector
@@ -108,23 +113,23 @@ target_link_libraries(cbtf-messages-converters-instrumentation
 	pthread
 	${CMAKE_DL_LIBS}
 	${LTDL_LIBRARY_SHARED}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES 
+    set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES 
 	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-instrumentation
+    install(TARGETS cbtf-messages-converters-instrumentation
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
 # Install static version
 
-add_library(cbtf-messages-converters-instrumentation-static STATIC
+    add_library(cbtf-messages-converters-instrumentation-static STATIC
         ${CBTF_MESSAGES_CONVERTERS_INSTRUMENTATION_SOURCES}
-)
+    )
  
-target_include_directories(cbtf-messages-converters-instrumentation-static PUBLIC
+    target_include_directories(cbtf-messages-converters-instrumentation-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}../base
@@ -133,9 +138,9 @@ target_include_directories(cbtf-messages-converters-instrumentation-static PUBLI
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-target_link_libraries(cbtf-messages-converters-instrumentation-static
+    target_link_libraries(cbtf-messages-converters-instrumentation-static
         -Wl,--no-as-needed
 	cbtf-messages-base
 	cbtf-messages-collector
@@ -143,15 +148,16 @@ target_link_libraries(cbtf-messages-converters-instrumentation-static
 	pthread
 	${CMAKE_DL_LIBS}
 	${LTDL_LIBRARY_SHARED}
-)
+    )
 
-set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES 
+    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES 
 	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
-install(TARGETS cbtf-messages-converters-instrumentation-static
+    install(TARGETS cbtf-messages-converters-instrumentation-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
-)
+    )
+endif()
 
 add_library(cbtf-messages-instrumentation SHARED
 	${CBTF_MESSAGES_INSTRUMENTATION_SOURCES}
@@ -162,15 +168,11 @@ target_include_directories(cbtf-messages-instrumentation PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-instrumentation
         -Wl,--no-as-needed
-	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
@@ -193,15 +195,11 @@ target_include_directories(cbtf-messages-instrumentation-static PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CBTF_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
 	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-instrumentation-static
         -Wl,--no-as-needed
-	${MRNet_LIBRARIES}
 	pthread
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}

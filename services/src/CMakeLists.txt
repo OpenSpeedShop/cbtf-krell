@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,7 +18,9 @@
 
 
 add_subdirectory(common)
-add_subdirectory(binutils)
+if (CBTF_FILTERS_RUN_ON MATCHES "native")
+    add_subdirectory(binutils)
+endif()
 add_subdirectory(data)
 add_subdirectory(fileio)
 add_subdirectory(fpe)

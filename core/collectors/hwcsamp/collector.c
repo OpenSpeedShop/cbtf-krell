@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2016 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -381,7 +381,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
 
     if (getenv("CBTF_HWCSAMP_MULTIPLEX") != NULL) {
-#if !defined(TARGET_OS_BGP) 
+#if !defined(RUNTIME_PLATFORM_BGP) 
 	rval = PAPI_set_multiplex( tls->EventSet );
 	if ( rval == PAPI_ENOSUPP) {
 	    fprintf(stderr,"CBTF_Create_Eventset: Multiplex not supported\n");

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -51,7 +51,11 @@ set(CORE_SOURCES
 	ThreadName.cpp
 )
 
-include_directories(
+add_library(cbtf-core SHARED
+	${CORE_SOURCES}
+)
+
+target_include_directories(cbtf-core PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -64,10 +68,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
 	${LTDL_INCLUDE_DIR}
-)
-
-add_library(cbtf-core SHARED
-	${CORE_SOURCES}
 )
 
 target_link_libraries(cbtf-core
@@ -91,6 +91,21 @@ add_library(cbtf-core-static STATIC
 	${CORE_SOURCES}
 )
 
+target_include_directories(cbtf-core-static PUBLIC
+	${PROJECT_SOURCE_DIR}/core/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/messages/include
+	${CMAKE_INSTALL_PREFIX}/include
+	${Boost_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
+	${LTDL_INCLUDE_DIR}
+)
+
 target_link_libraries(cbtf-core-static
         -Wl,--no-as-needed
 	${Boost_LIBRARIES}
@@ -106,7 +121,12 @@ install(TARGETS cbtf-core-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 
-include_directories(
+
+add_library(cbtf-core-bfd SHARED
+	${CORE_BFD_SOURCES}
+)
+
+target_include_directories(cbtf-core-bfd PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -119,10 +139,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${LTDL_INCLUDE_DIR}
-)
-
-add_library(cbtf-core-bfd SHARED
-	${CORE_BFD_SOURCES}
 )
 
 target_link_libraries(cbtf-core-bfd
@@ -148,6 +164,21 @@ add_library(cbtf-core-bfd-static STATIC
 	${CORE_BFD_SOURCES}
 )
 
+target_include_directories(cbtf-core-bfd-static PUBLIC
+	${PROJECT_SOURCE_DIR}/core/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/messages/include
+	${CMAKE_INSTALL_PREFIX}/include
+	${Binutils_INCLUDE_DIRS}
+	${Binutils_Iberty_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	${LTDL_INCLUDE_DIR}
+)
+
 target_link_libraries(cbtf-core-bfd-static
         -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
@@ -165,8 +196,14 @@ install(TARGETS cbtf-core-bfd-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 
+#if (CBTF_FILTERS_RUN_ON MATCHES "native")
+if (NOT RUNTIME_PLATFORM EQUAL "mic")
 
-include_directories(
+    add_library(cbtf-core-symtabapi SHARED
+	${CORE_SYMTABAPI_SOURCES}
+    )
+
+    target_include_directories(cbtf-core-symtabapi PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -179,13 +216,9 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${LTDL_INCLUDE_DIR}
-)
+    )
 
-add_library(cbtf-core-symtabapi SHARED
-	${CORE_SYMTABAPI_SOURCES}
-)
-
-target_link_libraries(cbtf-core-symtabapi
+    target_link_libraries(cbtf-core-symtabapi
         -Wl,--no-as-needed
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
@@ -196,22 +229,37 @@ target_link_libraries(cbtf-core-symtabapi
 	${DyninstAPI_symLite_LIBRARY}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-    cbtf-core
-)
+        cbtf-core
+    )
 
-set_target_properties(cbtf-core-symtabapi PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-symtabapi PROPERTIES VERSION 1.1.0)
 
-install(TARGETS cbtf-core-symtabapi
+    install(TARGETS cbtf-core-symtabapi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
 # Create and install static version
 
-add_library(cbtf-core-symtabapi-static STATIC
+    add_library(cbtf-core-symtabapi-static STATIC
 	${CORE_SYMTABAPI_SOURCES}
-)
+    )
 
-target_link_libraries(cbtf-core-symtabapi-static
+    target_include_directories(cbtf-core-symtabapi-static PUBLIC
+	${PROJECT_SOURCE_DIR}/core/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/messages/include
+	${CMAKE_INSTALL_PREFIX}/include
+	${Boost_INCLUDE_DIRS}
+	${SymtabAPI_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	${LTDL_INCLUDE_DIR}
+    )
+
+    target_link_libraries(cbtf-core-symtabapi-static
         -Wl,--no-as-needed
 	${DyninstAPI_common_LIBRARY}
 	${DyninstAPI_symtabAPI_LIBRARY}
@@ -222,13 +270,13 @@ target_link_libraries(cbtf-core-symtabapi-static
 	${DyninstAPI_symLite_LIBRARY}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
-)
+    )
 
-set_target_properties(cbtf-core-symtabapi-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-symtabapi-static PROPERTIES VERSION 1.1.0)
 
-install(TARGETS cbtf-core-symtabapi-static
+    install(TARGETS cbtf-core-symtabapi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
-)
+    )
 
 # Have to handle this when working on cray port to cmake
 #if HAVE_ALPS
@@ -237,37 +285,6 @@ install(TARGETS cbtf-core-symtabapi-static
 #libcbtf_core_mrnet_la_LIBADD += @ALPS_LIBS@
 #endif
 
-if (HAVE_CRAYALPS MATCHES "true")
-include_directories(
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
-	${Boost_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${CrayAlps_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
-)
-else()
-include_directories(
-	${PROJECT_SOURCE_DIR}/core/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
-	${Boost_INCLUDE_DIRS}
-	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${LTDL_INCLUDE_DIR}
-)
 endif()
 
 if (NOT RUNTIME_ONLY)
@@ -275,6 +292,39 @@ if (NOT RUNTIME_ONLY)
     add_library(cbtf-core-mrnet SHARED
 	${CORE_MRNET_SOURCES}
     )
+
+    if (HAVE_CRAYALPS MATCHES "true")
+        target_include_directories(cbtf-core-mrnet PUBLIC
+    	    ${PROJECT_SOURCE_DIR}/core/include
+	    ${PROJECT_SOURCE_DIR}/services/include
+	    ${PROJECT_SOURCE_DIR}/messages/include
+	    ${CMAKE_INSTALL_PREFIX}/include
+	    ${Boost_INCLUDE_DIRS}
+	    ${MRNet_INCLUDE_DIRS}
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	    ${CrayAlps_INCLUDE_DIRS}
+	    ${LTDL_INCLUDE_DIR}
+        )
+    else()
+        target_include_directories(cbtf-core-mrnet PUBLIC
+	    ${PROJECT_SOURCE_DIR}/core/include
+	    ${PROJECT_SOURCE_DIR}/services/include
+	    ${PROJECT_SOURCE_DIR}/messages/include
+	    ${CMAKE_INSTALL_PREFIX}/include
+	    ${Boost_INCLUDE_DIRS}
+	    ${MRNet_INCLUDE_DIRS}
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	    ${LTDL_INCLUDE_DIR}
+        )
+    endif()
 
     target_link_libraries(cbtf-core-mrnet
         -Wl,--no-as-needed
@@ -299,6 +349,38 @@ if (NOT RUNTIME_ONLY)
 	${CORE_MRNET_SOURCES}
     )
 
+    if (HAVE_CRAYALPS MATCHES "true")
+        target_include_directories(cbtf-core-mrnet-static PUBLIC
+    	    ${PROJECT_SOURCE_DIR}/core/include
+	    ${PROJECT_SOURCE_DIR}/services/include
+	    ${PROJECT_SOURCE_DIR}/messages/include
+	    ${CMAKE_INSTALL_PREFIX}/include
+	    ${Boost_INCLUDE_DIRS}
+	    ${MRNet_INCLUDE_DIRS}
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	    ${CrayAlps_INCLUDE_DIRS}
+	    ${LTDL_INCLUDE_DIR}
+        )
+    else()
+        target_include_directories(cbtf-core-mrnet-static PUBLIC
+	    ${PROJECT_SOURCE_DIR}/core/include
+	    ${PROJECT_SOURCE_DIR}/services/include
+	    ${PROJECT_SOURCE_DIR}/messages/include
+	    ${CMAKE_INSTALL_PREFIX}/include
+	    ${Boost_INCLUDE_DIRS}
+	    ${MRNet_INCLUDE_DIRS}
+	    ${CMAKE_CURRENT_SOURCE_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
+	    ${LTDL_INCLUDE_DIR}
+        )
+    endif()
     target_link_libraries(cbtf-core-mrnet-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -60,6 +60,7 @@ check_include_file(link.h HAVE_LINK_H)
 check_include_file(malloc.h HAVE_MALLOC_H)
 check_include_file(malloc/malloc.h HAVE_MALLOC_MALLOC_H)
 check_function_exists(fork HAVE_FORK)
+
 find_library(DL_LIBRARIES NAMES dl)
 if(DL_LIBRARIES)
   #set(HAVE_DLOPEN)
@@ -107,39 +108,44 @@ else()
     message(STATUS "Build runtimes using implicit TLS model.")
 endif()
 
-set(TARGET_OS "" CACHE STRING "cbtf-krell target os: none or [bgq,bgp]")
-set(RUNTIME_TARGET_OS "" CACHE STRING "cbtf-krell target os: none or [bgq,bgp]")
+set(CBTF_FILTERS_RUN_ON "" CACHE STRING "cbtf-krell filters run on native compute node or on host processor on compute node: [native or host]")
+set(RUNTIME_PLATFORM "" CACHE STRING "cbtf-krell runtime platform: none or [bgq,bgp,arm,mic]")
+set(CN_RUNTIME_PLATFORM "" CACHE STRING "cbtf-krell runtime platform: none or [bgq,bgp,arm,mic]")
 #
 #--------------------------------------------------------------------------------
 # Handle the target specific build options for building the runtimes for specific
 # platform compute nodes
 #--------------------------------------------------------------------------------
 #
-if (TARGET_OS MATCHES "bgq")
-    add_definitions(-DTARGET_OS=bgq)
+if (RUNTIME_PLATFORM MATCHES "bgq")
+    add_definitions(-DRUNTIME_PLATFORM=bgq)
     message(STATUS "Build runtimes for target bgq platform.")
-elseif (TARGET_OS MATCHES "bgp")
-    add_definitions(-DTARGET_OS=bgp)
+elseif (RUNTIME_PLATFORM MATCHES "bgp")
+    add_definitions(-DRUNTIME_PLATFORM=bgp)
     message(STATUS "Build runtimes for target bgp platform.")
-elseif (TARGET_OS MATCHES "mic")
-    add_definitions(-DTARGET_OS=mic)
+elseif (RUNTIME_PLATFORM MATCHES "mic")
+    add_definitions(-DRUNTIME_PLATFORM=mic)
+    set(RUNTIME_PLATFORM_MIC 1)
+    set(CBTF_FILTERS_RUN_ON "host")
     message(STATUS "Build runtimes for target mic platform.")
-elseif (TARGET_OS MATCHES "cray")
-    set(TARGET_OS_CRAY 1)
-    message(STATUS "Set TARGET_OS_CRAY for use internal to OpenSpeedShop.")
+elseif (RUNTIME_PLATFORM MATCHES "cray")
+    set(RUNTIME_PLATFORM_CRAY 1)
+    set(CBTF_FILTERS_RUN_ON "native")
     message(STATUS "Build runtimes for target cray platform.")
-elseif (TARGET_OS MATCHES "cray-xk")
-    set(TARGET_OS_CRAYXK 1)
-    message(STATUS "Set TARGET_OS_CRAYXK for use internal to OpenSpeedShop.")
+elseif (RUNTIME_PLATFORM MATCHES "cray-xk")
+    set(RUNTIME_PLATFORM_CRAYXK 1)
+    set(CBTF_FILTERS_RUN_ON "native")
     message(STATUS "Build runtimes for target cray-xk platform.")
-elseif (TARGET_OS MATCHES "cray-xe")
-    set(TARGET_OS_CRAYXE 1)
-    message(STATUS "Set TARGET_OS_CRAYXE for use internal to OpenSpeedShop.")
+elseif (RUNTIME_PLATFORM MATCHES "cray-xe")
+    set(RUNTIME_PLATFORM_CRAYXE 1)
+    set(CBTF_FILTERS_RUN_ON "native")
     message(STATUS "Build runtimes for target cray-xe platform.")
-elseif (TARGET_OS MATCHES "arm")
+elseif (RUNTIME_PLATFORM MATCHES "arm")
     message(STATUS "Build for the ARM platform (32 bit or 64 bit).")
+    set(CBTF_FILTERS_RUN_ON "native")
 else()
     message(STATUS "Build runtimes for localhost.")
+    set(CBTF_FILTERS_RUN_ON "native")
 endif()
 #
 #--------------------------------------------------------------------------------
@@ -149,28 +155,22 @@ endif()
 # considerations to account for.  One of these is the ALPS_XT_NID value.
 #--------------------------------------------------------------------------------
 #
-if (RUNTIME_TARGET_OS MATCHES "bgq")
-    add_definitions(-DRUNTIME_TARGET_OS=bgq)
-    message(STATUS "Indicate that runtimes are for target bgq platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "bgp")
-    add_definitions(-DRUNTIME_TARGET_OS=bgp)
-    message(STATUS "Indicate that runtimes are for target bgp platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "mic")
-    add_definitions(-DRUNTIME_TARGET_OS=mic)
-    message(STATUS "Indicate that runtimes are for target mic platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "cray")
-    add_definitions(-DRUNTIME_TARGET_OS_CRAY=1)
-    message(STATUS "Indicate that runtimes are for target cray platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "cray-xk")
-    add_definitions(-DRUNTIME_TARGET_OS_CRAY=1)
-    message(STATUS "Indicate that runtimes are for target cray (-xk) platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "cray-xe")
-    add_definitions(-DRUNTIME_TARGET_OS_CRAY=1)
-    message(STATUS "Indicate that runtimes are for target cray (-xe) platform.")
-elseif (RUNTIME_TARGET_OS MATCHES "arm")
-    message(STATUS "Indicate that runtimes are for target ARM platform (32 bit or 64 bit).")
-else()
-    message(STATUS "Indicate that runtimes are for localhost.")
+if (CN_RUNTIME_PLATFORM MATCHES "mic")
+    add_definitions(-DCN_RUNTIME_PLATFORM=mic)
+    message(STATUS "Indicate that runtimes are for the compute node mic platform.")
+    set(CBTF_FILTERS_RUN_ON "host")
+elseif (CN_RUNTIME_PLATFORM MATCHES "cray")
+    add_definitions(-DCN_RUNTIME_PLATFORM_CRAY=1)
+    message(STATUS "Indicate that runtimes are for the compute node cray platform.")
+    set(CBTF_FILTERS_RUN_ON "native")
+elseif (CN_RUNTIME_PLATFORM MATCHES "cray-xk")
+    add_definitions(-DCN_RUNTIME_PLATFORM_CRAY=1)
+    message(STATUS "Indicate that runtimes are for the compute node cray (-xk) platform.")
+    set(CBTF_FILTERS_RUN_ON "native")
+elseif (CN_RUNTIME_PLATFORM MATCHES "cray-xe")
+    add_definitions(-DCN_RUNTIME_PLATFORM_CRAY=1)
+    message(STATUS "Indicate that runtimes are for the compute node cray (-xe) platform.")
+    set(CBTF_FILTERS_RUN_ON "native")
 endif()
 #
 # Are we only building the runtime portions of CBTF-KRELL, that is not building the client
@@ -178,10 +178,11 @@ endif()
 # of cbtf-krell.
 #
 if (RUNTIME_ONLY MATCHES "true")
-    message(STATUS "Build runtime libraries and components only for targetted platform.")
+    message(STATUS "Build runtime libraries and components only for compute node platform.")
 else()
     message(STATUS "Build full cbtf-krell libraries, components, and clients.")
 endif()
+
 #
 #--------------------------------------------------------------------------------
 # Try to determine where the libraries created by this build should be stored.
@@ -198,7 +199,6 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc*")
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64*")
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-    #message(STATUS "aarch64, CMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}")
 elseif(EXISTS /usr/lib64)
     set(LIB_SUFFIX 64)
     set(SUFFIX 64)
@@ -216,38 +216,39 @@ endif()
 # core/scripts when building cbtfrun, cbtflink, cbtf_libcbtf_mrnet_commnode, and
 # cbtf_mrnet_commnode.
 #
-set(BUILD_TARGETED_FE "false" CACHE STRING "Is this a special front-end build where the targeted components are passed to the build in addition to the FE related components." )
+
+set(BUILD_FE_USING_CN_RUNTIMES "false" CACHE STRING "Special front-end build where the compute node components are passed to the build in addition to the FE related components.")
 #
 #--------------------------------------------------------------------------------
 # If CBTF_KRELL_CN_RUNTIME_DIR exists, then we have built a separate version of the portion of
 # CBTF-KRELL that runs with the application: runtime libraries and data collectors.
 # This is done/needed when the processor type of the compute node (where the application
 # executes) is different from the front-end node (where the CBTF-KRELL client 
-# components run).  We call that building targeted runtimes, and this is accomplished
+# components run).  We call that building compute node runtimes, and this is accomplished
 # by using the "-DRUNTIME_ONLY" cmake argument in a separate build.
 #--------------------------------------------------------------------------------
-message(STATUS "BEGIN TARGETED COMPONENT CHECKS, BUILD_TARGETED_FE=${BUILD_TARGETED_FE}.")
 
 if (NOT "${CBTF_KRELL_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}" AND IS_DIRECTORY "${CBTF_KRELL_CN_RUNTIME_DIR}")
-        # This setting of BUILD_TARGETED_FE will persist if all the compute node versions of the component are found
-        # One component failure will set the BUILD_TARGETED_FE flag false and the build will fail.
-        set (BUILD_TARGETED_FE "true")
-        if( EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND IS_DIRECTORY "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libcbtf-core.so" )
+        # This setting of BUILD_FE_USING_CN_RUNTIMES will persist if all the compute node versions of the component are found
+        # One component failure will set the BUILD_FE_USING_CN_RUNTIMES flag false and the build will fail.
+        set (BUILD_FE_USING_CN_RUNTIMES "true")
+        if( EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND IS_DIRECTORY "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" 
+            AND EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/pcsamp-collector-monitor-mrnet.so" )
             set (CBTF_KRELL_CN_RUNTIME_LIBDIR  ${CBTF_KRELL_CN_RUNTIME_DIR}/lib${LIB_SUFFIX})
-        elseif ( EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib" AND IS_DIRECTORY "${CBTF_KRELL_CN_RUNTIME_DIR}/lib" AND EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib/libcbtf-core.so" )
+        elseif ( EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib" AND IS_DIRECTORY "${CBTF_KRELL_CN_RUNTIME_DIR}/lib" 
+                 AND EXISTS "${CBTF_KRELL_CN_RUNTIME_DIR}/lib/KrellInstitute/Collectors/pcsamp-collector-monitor-mrnet.so" )
             set (CBTF_KRELL_CN_RUNTIME_LIBDIR  ${CBTF_KRELL_CN_RUNTIME_DIR}/lib)
         else()
             # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-            set (BUILD_TARGETED_FE "false")
+            set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
-
 
 #
 # Check to see if we have a frontend build that references a targeted cbtf-krell build
@@ -258,26 +259,26 @@ endif()
 #
 # Look for cbtf target libraries
 #
+if (BUILD_FE_USING_CN_RUNTIMES AND CBTF_FILTERS_RUN_ON MATCHES "native")
 if (NOT "${CBTF_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS ${CBTF_CN_RUNTIME_DIR} AND IS_DIRECTORY "${CBTF_CN_RUNTIME_DIR}")
         if( EXISTS ${CBTF_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${CBTF_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${CBTF_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libcbtf.so")
            # CBTF_CN_RUNTIME_DIR/lib64 was recognized.")
            set (CBTF_CN_RUNTIME_LIBDIR ${CBTF_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node cbtf libraries.")
-           message(STATUS "CBTF_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${CBTF_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${CBTF_CN_RUNTIME_DIR}/lib" AND EXISTS "${CBTF_CN_RUNTIME_DIR}/lib/libcbtf.so")
            # CBTF_CN_RUNTIME_DIR/lib was recognized.")
            set (CBTF_CN_RUNTIME_LIBDIR ${CBTF_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node cbtf libraries.")
-           message(STATUS "CBTF_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
+endif() # CBTF_FILTERS_RUN_ON matches native
 
 #
 # Look for libmonitor libraries
@@ -287,20 +288,18 @@ if (NOT "${LIBMONITOR_CN_RUNTIME_DIR}" STREQUAL "")
         if( EXISTS ${LIBMONITOR_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${LIBMONITOR_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${LIBMONITOR_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libmonitor.so")
            # LIBMONITOR_CN_RUNTIME_DIR/lib64 was recognized.
            set (LIBMONITOR_CN_RUNTIME_LIBDIR ${LIBMONITOR_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node libmonitor libraries.")
-           message(STATUS "LIBMONITOR_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${LIBMONITOR_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${LIBMONITOR_CN_RUNTIME_DIR}/lib" AND EXISTS "${LIBMONITOR_CN_RUNTIME_DIR}/lib/libmonitor.so")
            # LIBMONITOR_CN_RUNTIME_DIR/lib was recognized.
            set (LIBMONITOR_CN_RUNTIME_LIBDIR ${LIBMONITOR_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node libmonitor libraries.")
-           message(STATUS "LIBMONITOR_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
 
 #
@@ -311,20 +310,18 @@ if (NOT "${LIBUNWIND_CN_RUNTIME_DIR}" STREQUAL "")
         if( EXISTS ${LIBUNWIND_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${LIBUNWIND_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${LIBUNWIND_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libunwind.so")
            # LIBUNWIND_CN_RUNTIME_DIR/lib64 was recognized
            set (LIBUNWIND_CN_RUNTIME_LIBDIR ${LIBUNWIND_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node libunwind libraries.")
-           message(STATUS "LIBUNWIND_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${LIBUNWIND_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${LIBUNWIND_CN_RUNTIME_DIR}/lib" AND EXISTS "${LIBUNWIND_CN_RUNTIME_DIR}/lib/libunwind.so")
            # LIBUNWIND_CN_RUNTIME_DIR/lib was recognized
            set (LIBUNWIND_CN_RUNTIME_LIBDIR ${LIBUNWIND_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node libunwind libraries.")
-           message(STATUS "LIBUNWIND_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
 
 #
@@ -335,20 +332,18 @@ if (NOT "${PAPI_CN_RUNTIME_DIR}" STREQUAL "")
         if( EXISTS ${PAPI_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${PAPI_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${PAPI_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libpapi.so")
            # PAPI_CN_RUNTIME_DIR/lib64 was recognized
            set (PAPI_CN_RUNTIME_LIBDIR ${PAPI_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node papi libraries.")
-           message(STATUS "PAPI_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${PAPI_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${PAPI_CN_RUNTIME_DIR}/lib" AND EXISTS "${PAPI_CN_RUNTIME_DIR}/lib/libpapi.so")
            # PAPI_CN_RUNTIME_DIR/lib was recognized
            set (PAPI_CN_RUNTIME_LIBDIR ${PAPI_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node papi libraries.")
-           message(STATUS "PAPI_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
 
 #
@@ -356,99 +351,100 @@ endif()
 #
 if (NOT "${MRNET_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS ${MRNET_CN_RUNTIME_DIR} AND IS_DIRECTORY "${MRNET_CN_RUNTIME_DIR}")
-        if( EXISTS ${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libmrnet.so")
+        if( EXISTS ${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND 
+            IS_DIRECTORY "${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND 
+            EXISTS "${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libmrnet_lightweight_r.so")
            # MRNET_CN_RUNTIME_DIR/lib64 was recognized
            set (MRNET_CN_RUNTIME_LIBDIR ${MRNET_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node mrnet libraries.")
-           message(STATUS "MRNET_CN_RUNTIME_DIR/lib64 was recognized.")
-        elseif ( EXISTS ${MRNET_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${MRNET_CN_RUNTIME_DIR}/lib" AND EXISTS "${MRNET_CN_RUNTIME_DIR}/lib/libmrnet.so")
+        elseif ( EXISTS ${MRNET_CN_RUNTIME_DIR}/lib AND 
+                 IS_DIRECTORY "${MRNET_CN_RUNTIME_DIR}/lib" AND 
+                 EXISTS "${MRNET_CN_RUNTIME_DIR}/lib/libmrnet_lightweight_r.so")
            # MRNET_CN_RUNTIME_DIR/lib was recognized
            set (MRNET_CN_RUNTIME_LIBDIR ${MRNET_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node mrnet libraries.")
-           message(STATUS "MRNET_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
 
 #
 # Look for boost target libraries
 #
+if (BUILD_FE_USING_CN_RUNTIMES AND CBTF_FILTERS_RUN_ON MATCHES "native")
 if (NOT "${BOOST_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS ${BOOST_CN_RUNTIME_DIR} AND IS_DIRECTORY "${BOOST_CN_RUNTIME_DIR}")
         if( EXISTS ${BOOST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${BOOST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${BOOST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libboost_system.so")
            # BOOST_CN_RUNTIME_DIR/lib64 was recognized
            set (BOOST_CN_RUNTIME_LIBDIR ${BOOST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node boost libraries.")
-           message(STATUS "BOOST_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif( EXISTS ${BOOST_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${BOOST_CN_RUNTIME_DIR}/lib" AND EXISTS "${BOOST_CN_RUNTIME_DIR}/lib/libboost_system.so")
            # BOOST_CN_RUNTIME_DIR/lib was recognized
            set (BOOST_CN_RUNTIME_LIBDIR ${BOOST_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node boost libraries.")
-           message(STATUS "BOOST_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
+endif() # CBTF_FILTERS_RUN_ON matches native
 
-message(STATUS "BUILD_TARGETED_FE is TRUE, look for XERCESC compute node components.")
 #
 # Look for xercesc target libraries
 #
+if (BUILD_FE_USING_CN_RUNTIMES AND CBTF_FILTERS_RUN_ON MATCHES "native")
 if (NOT "${XERCESC_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS ${XERCESC_CN_RUNTIME_DIR} AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}")
         if( EXISTS ${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libxerces-c.so")
            # XERCESC_CN_RUNTIME_DIR/lib64 was recognized
            set (XERCESC_CN_RUNTIME_LIBDIR ${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node xercesc libraries.")
-           message(STATUS "XERCESC_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${XERCESC_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}/lib" AND EXISTS "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libxerces-c.so")
            # XERCESC_CN_RUNTIME_DIR/lib was recognized
            set (XERCESC_CN_RUNTIME_LIBDIR ${XERCESC_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node xercesc libraries.")
-           message(STATUS "XERCESC_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
+endif() # CBTF_FILTERS_RUN_ON matches native
 
 #
 # Look for dyninst target libraries
 #
+if (BUILD_FE_USING_CN_RUNTIMES AND CBTF_FILTERS_RUN_ON MATCHES "native")
 if (NOT "${DYNINST_CN_RUNTIME_DIR}" STREQUAL "")
     if(EXISTS ${DYNINST_CN_RUNTIME_DIR} AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}")
         if( EXISTS ${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libdyninstAPI.so")
            # DYNINST_CN_RUNTIME_DIR/lib64 was recognized
            set (DYNINST_CN_RUNTIME_LIBDIR ${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node boost libraries.")
-           message(STATUS "DYNINST_CN_RUNTIME_DIR/lib64 was recognized.")
         elseif ( EXISTS ${DYNINST_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}/lib" AND EXISTS "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libdyninstAPI.so")
            # DYNINST_CN_RUNTIME_DIR/lib was recognized
            set (DYNINST_CN_RUNTIME_LIBDIR ${DYNINST_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node boost libraries.")
-           message(STATUS "DYNINST_CN_RUNTIME_DIR/lib was recognized.")
         else()
            # Override the settings we had up until now.  We need to find all the targeted libraries to succeed.
-           set (BUILD_TARGETED_FE "false")
+           set (BUILD_FE_USING_CN_RUNTIMES "false")
         endif()
     else()
-        set (BUILD_TARGETED_FE "false")
+        set (BUILD_FE_USING_CN_RUNTIMES "false")
     endif()
 else()
-    set (BUILD_TARGETED_FE "false")
+    set (BUILD_FE_USING_CN_RUNTIMES "false")
 endif()
+endif() # CBTF_FILTERS_RUN_ON matches native
 
-message(STATUS "*** END of TARGETED COMPONENT CHECKS, BUILD_TARGETED_FE=${BUILD_TARGETED_FE}.")
+message(STATUS "BUILD_FE_USING_CN_RUNTIMES=${BUILD_FE_USING_CN_RUNTIMES}.")
 
 #
 #--------------------------------------------------------------------------------
@@ -500,18 +496,15 @@ endif()
 
 find_package(LibIomp)
 
-message(STATUS "LIBIOMP_FOUND=${LIBIOMP_FOUND}")
 if (LIBIOMP_FOUND)
   # This does not work for c++ libs. libiomp is compiled under the covers with c++.
   #CHECK_LIBRARY_EXISTS(${LibIomp_LIBRARY_SHARED} "ompt_init" "" HAVE_OMPT) 
-  #message(STATUS "HAVE_OMPT=${HAVE_OMPT}")
   if (EXISTS "${LibIomp_INCLUDE_DIR}/ompt.h")
     set(OMPT_DEFINES "HAVE_OMPT=1")
     set(OMPT_FOUND "true")
   else()
     set(OMPT_FOUND "false")
   endif()
-  message(STATUS "OMPT_FOUND=${OMPT_FOUND}")
 endif()
 #
 #--------------------------------------------------------------------------------
@@ -608,29 +601,31 @@ set(ALL_MPI_IMPL_NAMES ${all_mpi_names})
 # successful.
 #--------------------------------------------------------------------------------
 #
-
-find_package(CBTF)
-
+# If building the FE for the Intel MIC compute node runtimes (MRNet filters run on compute node 
+# host processor not on the native compute node processor then do not look for CBTF
 #
+find_package(CBTF)
+find_package(LWMRNet 4.0.0)
+find_package(CBTFMRNet)
+
 #--------------------------------------------------------------------------------
 # Build the major components for cbtf-krell if CBTF is found
 # Required external packages are checked for in the sub-directories' cmake files
 #--------------------------------------------------------------------------------
 #
-
-if(CBTF_FOUND)
+if(CBTF_FOUND OR (CBTF_FILTERS_RUN_ON MATCHES "host" AND RUNTIME_ONLY MATCHES "true" ))
     if (RUNTIME_ONLY MATCHES "true")
         add_subdirectory(messages)
         add_subdirectory(services)
         add_subdirectory(core)
-    else ()
+    else()
         add_subdirectory(messages)
-        if (BUILD_TARGETED_FE MATCHES "false")
+        if (BUILD_FE_USING_CN_RUNTIMES MATCHES "false")
             add_subdirectory(services)
         endif()
         add_subdirectory(core)
         add_subdirectory(test)
-    endif ()
+    endif()
 endif()
 
 #

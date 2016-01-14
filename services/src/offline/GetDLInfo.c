@@ -1,5 +1,5 @@
 /*******************************************************************************
- * ** Copyright (c) 2006-2012 The Krell Institue. All Rights Reserved.
+ * ** Copyright (c) 2006-201a The Krell Institue. All Rights Reserved.
  * **
  * ** This library is free software; you can redistribute it and/or modify it under
  * ** the terms of the GNU Lesser General Public License as published by the Free
@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#if defined(TARGET_OS_BGP) || defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGP) || defined(RUNTIME_PLATFORM_BGQ)
 #define BLUEGENE 1
 #endif
 
@@ -51,11 +51,11 @@ extern void cbtf_offline_record_dlopen(const char* dsoname, uint64_t begin, uint
 
 extern const char* CBTF_GetExecutablePath();
 
-#if defined(TARGET_OS_BGP)
+#if defined(RUNTIME_PLATFORM_BGP)
 #include <link.h>
 extern etext;
 extern edata;
-#elif defined(TARGET_OS_BGQ)
+#elif defined(RUNTIME_PLATFORM_BGQ)
 #include <link.h>
 extern etext;
 extern edata;
@@ -261,7 +261,7 @@ static void lc(ElfW(Addr) base_address, const char *name, mem_region *regions,
 
 int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 {
-#if defined(TARGET_OS_BGP) || defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGP) || defined(RUNTIME_PLATFORM_BGQ)
     if (checked_for_static == 0) {
 	is_static = exe_is_static();
 	checked_for_static = 1;

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -21,9 +21,11 @@
 # for the targetted, compute node runtime only version of the core libraries and components.
 #
 if (RUNTIME_ONLY MATCHES "true")
-    add_subdirectory(src)
     add_subdirectory(collectors)
-    add_subdirectory(components)
+    if (CBTF_FILTERS_RUN_ON MATCHES "native")
+        add_subdirectory(src)
+        add_subdirectory(components)
+    endif()
 else()
     add_subdirectory(src)
     add_subdirectory(collectors)

@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-** Copyright (c) 2008 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2006-2016 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -211,7 +211,7 @@ ssize_t ioread(int fd, void *buf, size_t count)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -309,7 +309,7 @@ ssize_t iowrite(int fd, void *buf, size_t count)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -407,7 +407,7 @@ off_t iolseek(int fd, off_t offset, int whence)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -503,7 +503,7 @@ off_t iolseek64(int fd, off_t offset, int whence)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -580,7 +580,7 @@ int ioopen(const char *pathname, int flags, mode_t mode)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -658,7 +658,7 @@ int ioopen64(const char *pathname, int flags, mode_t mode)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -754,7 +754,7 @@ int ioclose(int fd)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -848,7 +848,7 @@ int iodup(int oldfd)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -942,7 +942,7 @@ int iodup2(int oldfd, int newfd)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1018,7 +1018,7 @@ int iocreat(char *pathname, mode_t mode)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1093,7 +1093,7 @@ int iocreat64(char *pathname, mode_t mode)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1167,7 +1167,7 @@ int iopipe(int filedes[2])
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1251,7 +1251,7 @@ ssize_t iopread(int fd, void *buf, size_t count, off_t offset)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1354,7 +1354,7 @@ ssize_t iopread64(int fd, void *buf, size_t count, off_t offset)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1457,7 +1457,7 @@ ssize_t iopwrite(int fd, void *buf, size_t count, off_t offset)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1562,7 +1562,7 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1657,7 +1657,7 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 #endif
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else
@@ -1754,7 +1754,7 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
 
 
     /* Record event and it's stacktrace*/
-#if defined(TARGET_OS_BGQ)
+#if defined(RUNTIME_PLATFORM_BGQ)
 #if defined(HAVE_TARGET_SHARED) && ! defined (CBTF_SERVICE_BUILD_STATIC) 
         io_record_event(&event, CBTF_GetAddressOfFunction((*realfunc)));
 #else

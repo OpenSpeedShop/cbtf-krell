@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,16 +16,16 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-if (BUILD_TARGETED_FE MATCHES "true")
-add_definitions(
-    -DXMLDIR="${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml"
-    -DLIBDIR="${CBTF_CN_RUNTIME_LIBDIR}"
-)
+if (BUILD_FE_USING_CN_RUNTIMES MATCHES "true")
+    add_definitions(
+        -DXMLDIR="${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml"
+        -DLIBDIR="${CBTF_CN_RUNTIME_LIBDIR}"
+    )
 else()
-add_definitions(
-    -DXMLDIR="${CMAKE_INSTALL_PREFIX}/share/KrellInstitute/xml"
-    -DLIBDIR="${CBTF_LIB_DIR}"
-)
+    add_definitions(
+        -DXMLDIR="${CMAKE_INSTALL_PREFIX}/share/KrellInstitute/xml"
+        -DLIBDIR="${CBTF_LIB_DIR}"
+    )
 endif()
 
 include_directories(

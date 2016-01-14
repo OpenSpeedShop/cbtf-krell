@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,7 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-if (TARGET_OS MATCHES "arm")
+if (RUNTIME_PLATFORM MATCHES "arm")
     # The unwind-tables entries where initially intended for arm and aarch64.
     # Only add these definitions when building for arm or aarch64
     # They help libunwind to unwind through callstacks more accurately
@@ -30,7 +30,7 @@ add_subdirectory(pcsamp)
 
 if (LIBUNWIND_FOUND)
 add_subdirectory(usertime)
-#add_subdirectory(io)
+add_subdirectory(io)
 add_subdirectory(mem)
 add_subdirectory(pthreads)
 endif()

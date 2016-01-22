@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2015 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2016 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -49,9 +49,6 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 
-/** String uniquely identifying this collector. */
-const char* const cbtf_collector_unique_id = "hwctime";
-
 #if UNW_TARGET_X86 || UNW_TARGET_X86_64
 # define STACK_SIZE     (128*1024)      /* On x86, SIGSTKSZ is too small */
 #else
@@ -71,6 +68,12 @@ const char* const cbtf_collector_unique_id = "hwctime";
 /** Man number of frames for callstack collection */
 #define CBTF_USERTIME_MAXFRAMES 100
 
+
+
+
+/** String uniquely identifying this collector. */
+const char* const cbtf_collector_unique_id = "hwctime";
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
@@ -85,8 +88,17 @@ typedef struct {
     /**< exist in buffer stacktraces. */
     CBTF_StackTraceData buffer;
 
-    bool_t defer_sampling;
+#if defined (HAVE_OMPT)
+    /* these are ompt specific. */
+    bool thread_idle, thread_wait_barrier;
+    bool debug_collector_ompt;
+#endif
+
+    bool debug_collector;
+
+    bool defer_sampling;
     int EventSet;
+
 } TLS;
 
 static int hwctime_papi_init_done = 0;
@@ -106,6 +118,58 @@ static __thread TLS the_tls;
 
 #endif
 
+
+#if defined (HAVE_OMPT)
+/* these are ompt specific functions to shift sample to an
+ * OMPT defined blame.  These are only useful in a sampling
+ * context such as pcsamp,hwcsamp,hwc,hwctime,usertime.
+ */
+void cbtf_thread_idle(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_idle=flag;
+}
+
+void cbtf_thread_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+#if 0
+    // this is not in use for now. we are not interested in barrier.
+    // just the wait_barriers...
+    tls->thread_barrier=flag;
+#endif
+}
+
+void cbtf_thread_wait_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_wait_barrier=flag;
+}
+
+/** these names are aliases to the internal cbtf krell callacks.
+ * We would like the users to see a more meaningful name in the views.
+**/
+void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
+void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+#endif // if defined HAVE_OMPT
 
 /**
  * Initialize the performance data header and blob contained within the given
@@ -182,7 +246,10 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
 }
 
 
-/* This function can be called from within the sigprof handler and therefore
+/**
+ * Send samples.
+ *
+ * This function can be called from within the sigprof handler and therefore
  * must be signal safe.  no strdup and friends.
  */
 static void send_samples (TLS* tls)
@@ -237,9 +304,10 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
 #endif
     Assert(tls != NULL);
 
-    if(tls->defer_sampling == TRUE) {
+    if(tls->defer_sampling == true) {
         return;
     }
+ 
 
     int framecount = 0;
     int stackindex = 0;
@@ -269,6 +337,28 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
     CBTF_GetStackTraceFromContext (context, TRUE, 0,
                         CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
 #endif
+
+
+#if defined (HAVE_OMPT)
+    /* these are ompt specific.*/
+    if (tls->thread_idle) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as an idle.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the idle state.
+	 */
+	framebuf[0] = CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
+    }
+
+    if (tls->thread_wait_barrier) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as a wait_barrier.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the wait_barrier state.
+	 */
+	framebuf[0] = CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
+    }
+#endif // if defined (HAVE_OMPT)
 
     bool_t stack_already_exists = FALSE;
 
@@ -366,7 +456,21 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
+
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	tls->debug_collector = true;
+    } else {
+	tls->debug_collector = false;
+    }
+
+#if defined (HAVE_OMPT)
+    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
+	tls->debug_collector_ompt = true;
+    } else {
+	tls->debug_collector_ompt = false;
+    }
+#endif
 
     /* Decode the passed function arguments */
     CBTF_hwctime_start_sampling_args args;
@@ -441,7 +545,7 @@ void cbtf_collector_pause()
     if (hwctime_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+    tls->defer_sampling=true;
 }
 
 
@@ -460,7 +564,7 @@ void cbtf_collector_resume()
     if (hwctime_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
 }
 
 

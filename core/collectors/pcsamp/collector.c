@@ -49,11 +49,10 @@
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
-
-#if defined (HAVE_OMPT)
-void cbtf_thread_idle(bool flag);
-void cbtf_thread_wait_barrier(bool flag);
+#if defined(CBTF_SERVICE_USE_FILEIO)
+const char* const data_suffix = "cbtf-data";
 #endif
+
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -68,7 +67,6 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier;
-    uint64_t thread_idle_count, thread_wait_barrier_count;
     bool debug_collector_ompt;
 #endif
 
@@ -92,6 +90,59 @@ static __thread TLS the_tls;
 
 #endif
 
+#if defined (HAVE_OMPT)
+/* these are ompt specific functions to shift sample to an
+ * OMPT defined blame.  These are only useful in a sampling
+ * context such as pcsamp,hwcsamp,hwc,hwctime,usertime.
+ */
+void cbtf_thread_idle(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_idle=flag;
+}
+
+
+
+void cbtf_thread_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+#if 0
+    // this is not in use for now. we are not interested in barrier.
+    // just the wait_barriers...
+    tls->thread_barrier=flag;
+#endif
+}
+
+void cbtf_thread_wait_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_wait_barrier=flag;
+}
+
+/** these names are aliases to the internal cbtf krell callacks.
+ * We would like the users to see a more meaningful name in the views.
+**/
+void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
+void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+#endif // if defined HAVE_OMPT
 
 /**
  * Initialize the performance data header and blob contained within the given
@@ -243,8 +294,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 	 * PC address may be also be in any calls made by __kmp_wait_sleep
 	 * while the ompt interface is in the idle state.
 	 */
-	++tls->thread_idle_count;
-	pc = CBTF_GetAddressOfFunction(cbtf_thread_idle);
+	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
     }
 
     if (tls->thread_wait_barrier) {
@@ -253,8 +303,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 	 * PC address may be also be in any calls made by __kmp_wait_sleep
 	 * while the ompt interface is in the wait_barrier state.
 	 */
-	++tls->thread_wait_barrier_count;
-	pc = CBTF_GetAddressOfFunction(cbtf_thread_wait_barrier);
+	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
     }
 #endif // if defined (HAVE_OMPT)
 
@@ -317,6 +366,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     } else {
 	tls->debug_collector = false;
     }
+
 #if defined (HAVE_OMPT)
     if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
 	tls->debug_collector_ompt = true;
@@ -334,10 +384,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     CBTF_DecodeParameters(arguments,
 			    (xdrproc_t)xdr_CBTF_pcsamp_start_sampling_args,
 			    &args);
-#endif
-
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
 #endif
 
     /* Initialize the actual data blob */
@@ -362,7 +408,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* these are ompt specific.*/
     /* initialize the flags and counts for idle,wait_barrier.  */
     tls->thread_idle =  tls->thread_wait_barrier = false;
-    tls->thread_idle_count = tls->thread_wait_barrier_count = 0;
 #endif
 
     /* Begin sampling */
@@ -472,47 +517,5 @@ void cbtf_offline_service_stop_timer()
     CBTF_Timer(0, NULL);
 }
 
-#if defined (HAVE_OMPT)
-/* these are ompt specific.*/
-void cbtf_thread_idle(bool flag) {
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-    tls->thread_idle=flag;
-}
-
-void cbtf_thread_barrier(bool flag) {
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-#if 0
-    // this is not in use for now. we are not interested in barrier.
-    // just the wait_barriers...
-    tls->thread_barrier=flag;
-#endif
-}
-
-void cbtf_thread_wait_barrier(bool flag) {
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-    tls->thread_wait_barrier=flag;
-}
-#endif // if defined HAVE_OMPT
 
 #endif // if defined CBTF_SERVICE_USE_OFFLINE

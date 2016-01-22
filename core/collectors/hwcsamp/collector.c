@@ -56,12 +56,21 @@ const char* const cbtf_collector_unique_id = "hwcsamp";
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_hwcsamp_data data;        /**< Actual data blob. */
+    CBTF_hwcsamp_data data;  /**< Actual data blob. */
 
-    CBTF_HWCPCData buffer;      /**< PC sampling data buffer. */
+    CBTF_HWCPCData buffer;   /**< PC sampling data buffer. */
 
-    bool_t defer_sampling;
+#if defined (HAVE_OMPT)
+    /* these are ompt specific. */
+    bool thread_idle, thread_wait_barrier;
+    bool debug_collector_ompt;
+#endif
+
+    bool debug_collector;
+
+    bool defer_sampling;
     int EventSet;
+
 } TLS;
 
 static int hwcsamp_papi_init_done = 0;
@@ -82,6 +91,58 @@ static __thread TLS the_tls;
 
 #endif
 
+
+#if defined (HAVE_OMPT)
+/* these are ompt specific functions to shift sample to an
+ * OMPT defined blame.  These are only useful in a sampling
+ * context such as pcsamp,hwcsamp,hwc,hwctime,usertime.
+ */
+void cbtf_thread_idle(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_idle=flag;
+}
+
+void cbtf_thread_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+#if 0
+    // this is not in use for now. we are not interested in barrier.
+    // just the wait_barriers...
+    tls->thread_barrier=flag;
+#endif
+}
+
+void cbtf_thread_wait_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_wait_barrier=flag;
+}
+
+/** these names are aliases to the internal cbtf krell callacks.
+ * We would like the users to see a more meaningful name in the views.
+**/
+void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
+void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+#endif // if defined HAVE_OMPT
 
 /**
  * Initialize the performance data header and blob contained within the given
@@ -244,12 +305,34 @@ static void hwcsampTimerHandler(const ucontext_t* context)
 #endif
     Assert(tls != NULL);
 
-    if(tls->defer_sampling == TRUE) {
+    if(tls->defer_sampling == true) {
         return;
     }
  
     /* Obtain the program counter (PC) address from the thread context */
     uint64_t pc = CBTF_GetPCFromContext(context);
+
+
+#if defined (HAVE_OMPT)
+    /* these are ompt specific.*/
+    if (tls->thread_idle) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as an idle.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the idle state.
+	 */
+	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
+    }
+
+    if (tls->thread_wait_barrier) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as a wait_barrier.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the wait_barrier state.
+	 */
+	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
+    }
+#endif // if defined (HAVE_OMPT)
 
     /* This is supposed to reset counters */
     CBTF_HWCAccum(tls->EventSet, evalues);
@@ -300,7 +383,21 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
+
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	tls->debug_collector = true;
+    } else {
+	tls->debug_collector = false;
+    }
+
+#if defined (HAVE_OMPT)
+    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
+	tls->debug_collector_ompt = true;
+    } else {
+	tls->debug_collector_ompt = false;
+    }
+#endif
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...
@@ -422,6 +519,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 	rval = PAPI_add_event(tls->EventSet,eventcode);
     }
 
+#if defined (HAVE_OMPT)
+    /* these are ompt specific.*/
+    /* initialize the flags and counts for idle,wait_barrier.  */
+    tls->thread_idle =  tls->thread_wait_barrier = false;
+#endif
+
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
     CBTF_Start(tls->EventSet);
@@ -444,7 +547,7 @@ void cbtf_collector_pause()
     if (hwcsamp_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+    tls->defer_sampling=true;
     CBTF_Stop(tls->EventSet, evalues);
 }
 
@@ -464,7 +567,7 @@ void cbtf_collector_resume()
     if (hwcsamp_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
     CBTF_Start(tls->EventSet);
 }
 

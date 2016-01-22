@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2012 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2016 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -48,25 +48,35 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
+
+
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwc";
-
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
-    CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_hwc_data data;        /**< Actual data blob. */
+    CBTF_DataHeader header;	/**< Header for following data blob. */
+    CBTF_hwc_data data;		/**< Actual data blob. */
 
-    CBTF_PCData buffer;      /**< PC sampling data buffer. */
+    CBTF_PCData buffer;		/**< PC sampling data buffer. */
 
-    bool_t defer_sampling;
+#if defined (HAVE_OMPT)
+    /* these are ompt specific. */
+    bool thread_idle, thread_wait_barrier;
+    bool debug_collector_ompt;
+#endif
+
+    bool debug_collector;
+
+    bool defer_sampling;
     int EventSet;
+
 } TLS;
 
 static int hwc_papi_init_done = 0;
 
-#ifdef USE_EXPLICIT_TLS
+#if defined(USE_EXPLICIT_TLS)
 
 /**
  * Key used to look up our thread-local storage. This key <em>must</em> be
@@ -81,6 +91,58 @@ static __thread TLS the_tls;
 
 #endif
 
+
+#if defined (HAVE_OMPT)
+/* these are ompt specific functions to shift sample to an
+ * OMPT defined blame.  These are only useful in a sampling
+ * context such as pcsamp,hwcsamp,hwc,hwctime,usertime.
+ */
+void cbtf_thread_idle(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_idle=flag;
+}
+
+void cbtf_thread_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+#if 0
+    // this is not in use for now. we are not interested in barrier.
+    // just the wait_barriers...
+    tls->thread_barrier=flag;
+#endif
+}
+
+void cbtf_thread_wait_barrier(bool flag) {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+    tls->thread_wait_barrier=flag;
+}
+
+/** these names are aliases to the internal cbtf krell callacks.
+ * We would like the users to see a more meaningful name in the views.
+**/
+void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
+void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+#endif // if defined HAVE_OMPT
 
 /**
  * Initialize the performance data header and blob contained within the given
@@ -171,11 +233,12 @@ static void send_samples (TLS* tls)
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
+    /* rank is not filled until mpi_init finished. safe to set here*/
+    tls->header.rank = monitor_mpi_comm_rank();
+
     tls->data.pc.pc_len = tls->buffer.length;
     tls->data.count.count_len = tls->buffer.length;
 
-    /* rank is not filled until mpi_init finished. safe to set here*/
-    tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
@@ -216,10 +279,32 @@ hwcPAPIHandler(int EventSet, void* pc, long_long overflow_vector, void* context)
 #endif
     Assert(tls != NULL);
 
-    if(tls->defer_sampling == TRUE) {
+    if(tls->defer_sampling == true) {
         return;
     }
-    
+ 
+
+#if defined (HAVE_OMPT)
+    /* these are ompt specific.*/
+    if (tls->thread_idle) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as an idle.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the idle state.
+	 */
+	pc = (void *) CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
+    }
+
+    if (tls->thread_wait_barrier) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as a wait_barrier.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the wait_barrier state.
+	 */
+	pc = (void *) CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
+    }
+#endif // if defined (HAVE_OMPT)
+
     /* Update the sampling buffer and check if it has been filled */
     if(CBTF_UpdatePCData((uint64_t)pc, &tls->buffer)) {
 
@@ -253,7 +338,21 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
+
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	tls->debug_collector = true;
+    } else {
+	tls->debug_collector = false;
+    }
+
+#if defined (HAVE_OMPT)
+    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
+	tls->debug_collector_ompt = true;
+    } else {
+	tls->debug_collector_ompt = false;
+    }
+#endif
 
     /* Decode the passed function arguments */
     CBTF_hwc_start_sampling_args args;
@@ -328,7 +427,7 @@ void cbtf_collector_pause()
     if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+    tls->defer_sampling=true;
 }
 
 
@@ -347,7 +446,7 @@ void cbtf_collector_resume()
     if (hwc_papi_init_done == 0 || tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
 }
 
 
@@ -389,13 +488,6 @@ void cbtf_collector_stop()
 
     /* Are there any unsent samples? */
     if(tls->buffer.length > 0) {
-
-#ifndef NDEBUG
-        if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-            fprintf(stderr, "hwcsamp collector stop calls send_samples.\n");
-        }
-#endif
-
 	/* Send these samples */
 	send_samples(tls);
     }

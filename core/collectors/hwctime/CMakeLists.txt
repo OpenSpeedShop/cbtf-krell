@@ -103,7 +103,7 @@ set_target_properties(hwctime-collector-monitor-fileio PROPERTIES PREFIX "")
 # If present, will activate OpenMP runtime performance information gathering. 
 #
 set_target_properties(hwctime-collector-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE;${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-fileio
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -146,7 +146,7 @@ target_link_libraries(hwctime-collector-monitor-fileio-static
 
 set_target_properties(hwctime-collector-monitor-fileio-static PROPERTIES PREFIX "")
 set_target_properties(hwctime-collector-monitor-fileio-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE;${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-fileio-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -188,7 +188,7 @@ target_link_libraries(hwctime-monitor-fileio
 )
 
 set_target_properties(hwctime-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE;${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -233,7 +233,7 @@ target_link_libraries(hwctime-collector-monitor-mrnet
 
 set_target_properties(hwctime-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(hwctime-collector-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -278,7 +278,7 @@ target_link_libraries(hwctime-collector-monitor-mrnet-static
 
 set_target_properties(hwctime-collector-monitor-mrnet-static PROPERTIES PREFIX "")
 set_target_properties(hwctime-collector-monitor-mrnet-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -322,7 +322,7 @@ target_link_libraries(hwctime-monitor-mrnet
 )
 
 set_target_properties(hwctime-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -366,7 +366,7 @@ target_link_libraries(hwctime-collector-monitor-mrnet-mpi
 
 set_target_properties(hwctime-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(hwctime-collector-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -412,7 +412,7 @@ target_link_libraries(hwctime-collector-monitor-mrnet-mpi-static
 
 set_target_properties(hwctime-collector-monitor-mrnet-mpi-static PROPERTIES PREFIX "")
 set_target_properties(hwctime-collector-monitor-mrnet-mpi-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-collector-monitor-mrnet-mpi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -458,7 +458,7 @@ target_link_libraries(hwctime-monitor-mrnet-mpi
 
 set_target_properties(hwctime-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(hwctime-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

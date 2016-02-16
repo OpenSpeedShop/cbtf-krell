@@ -726,6 +726,12 @@ void CBTFTopology::parsePBSEnv()
 void CBTFTopology::parseSlurmEnv()
 {
 
+#ifndef NDEBUG
+    if(CBTFTopology::is_debug_topology_enabled) {
+	std::cerr << "CBTFTopology::parseSlurmEnv ENTERED" << std::endl;
+    }
+#endif
+
     char *ptr, *envval;
     long t;
     bool has_slurm = true;
@@ -817,6 +823,19 @@ void CBTFTopology::parseSlurmEnv()
     }
 
     is_slurm_valid = has_slurm;
+
+#ifndef NDEBUG
+    if(CBTFTopology::is_debug_topology_enabled) {
+	std::cerr << "CBTFTopology::parseSlurmEnv PARSED VALUES"
+	<< " dm_slurm_jobid:" << dm_slurm_jobid
+	<< " dm_slurm_num_nodes:" << dm_slurm_num_nodes
+	<< " dm_procs_per_node:" << dm_procs_per_node
+	<< " dm_slurm_job_tasks:" << dm_slurm_job_tasks
+	<< " is_slurm_valid:" << is_slurm_valid
+	<< std::endl;
+    }
+#endif
+
  
 // PROCESS Slurm env...
 //
@@ -836,6 +855,9 @@ void CBTFTopology::parseSlurmEnv()
 	if (numcpnodesX > 0 )
 	     numcpnodes++;
 
+	int desiredDepth,fanout;
+	// desiredMaxFanout should ultimately be configurable.
+	int desiredMaxFanout = 32;
 	int num_nodes_for_app;
 	if (isAttachBEMode()) {
 	    if (getNumBE() > dm_procs_per_node) {
@@ -847,12 +869,10 @@ void CBTFTopology::parseSlurmEnv()
 	    }
 	} else {
 	    // initialize to all nodes in allocation for daemonTools.
-	    num_nodes_for_app = dm_pbs_num_nodes;
+	    num_nodes_for_app = dm_slurm_num_nodes;
+	    desiredMaxFanout = getFanout();
 	}
 
-	int desiredDepth,fanout;
-	// desiredMaxFanout should ultimately be configurable.
-	int desiredMaxFanout = 32;
 	int procsNeeded = 0;
 	int new_fanout = 0;
 	int tmp_num_app_nodes = dm_num_app_nodes - numcpnodes;
@@ -891,8 +911,17 @@ void CBTFTopology::parseSlurmEnv()
 	}
 
 	dm_num_app_nodes = num_nodes_for_app;
-	setFanout(new_fanout);
-	setDepth(desiredDepth);
+	if (isAttachBEMode()) {
+	    setFanout(new_fanout);
+	    setDepth(desiredDepth);
+	} else {
+	    if(new_fanout > getFanout()) {
+		setFanout(new_fanout);
+	    }
+	    if(desiredDepth > getDepth()) {
+		setDepth(desiredDepth);
+	    }
+	}
 
 	std::list<std::string>::iterator NodeListIter;
 	int counter = 0;
@@ -931,23 +960,51 @@ void CBTFTopology::parseSlurmEnv()
     }
 }
 
-void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& numBE)
+// The mode parameter can be accommodate launching to attaching of backends. This
+// has implications on the topology file created.  For attach modes, the leafs
+// of the tree will be mrnet communication processes that backends with attach to.
+// For the start modes, mrnet launches all processes and the leafs of the generated
+// topology will represent mrnet backend processes.
+// In general, the number of mrnet backends can be inferred from the environment
+// but the user can specify them directly. The depth parameter specifies the
+// depth of the mrnet tree. It must be at least 2 to represent 1 FE level and 1 BE level
+// for a tool that launches backends and at least 1 for a tool that attaches to backends.
+// For depths greater than noted above (2 for the start mode case, 1 for attach mode),
+// the topology will create levels to host mrnet_commnode processes).
+//
+void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& numBE,
+				      const unsigned int& fanout, const unsigned int& depth)
 {
     // need to handle cray and bluegene separately...
     if (mode == BE_ATTACH) {
 	setAttachBEMode(true);
-    } else if (mode == BE_START) {
-	setAttachBEMode(false);
-    } else if (mode == BE_CRAY_START) {
-	setAttachBEMode(false);
-	setIsCray(true);
     } else if (mode == BE_CRAY_ATTACH) {
 	setAttachBEMode(true);
 	setIsCray(true);
 	setColocateMRNetProcs(false);
 	setFanout(0);
+    } else if (mode == BE_START) {
+	setAttachBEMode(false);
+	setFanout(fanout);
+	setDepth(depth);
+    } else if (mode == BE_CRAY_START) {
+	setAttachBEMode(false);
+	setFanout(fanout);
+	setDepth(depth);
+	setIsCray(true);
     }
     setNumBE(numBE);
+
+#ifndef NDEBUG
+    if(CBTFTopology::is_debug_topology_enabled) {
+	std::cerr << "CBTFTopology::autoCreateTopology ENTERED"
+	<< " mode:" << mode
+	<< " numBE:" << numBE
+	<< " fanout:" << fanout
+	<< " depth:" << depth
+	<< std::endl;
+    }
+#endif
 
     std::string fehostname;
     if (getIsCray()) {
@@ -982,9 +1039,14 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 		setDepth(1);
 	    }
 	} else {
-	    setDepth(3);
+	    if (getDepth() == 0) {
+		setDepth(3);
+	    }
 	}
-	std::cerr << "Creating topology file for slurm frontend node " << fehostname << std::endl;
+	std::cerr
+	<< "Creating topology file for slurm frontend node " << fehostname
+	<< " for SLURM_JOB_ID " << job_envval
+	<< std::endl;
 
     } else if (isPBSValid()) {
 	std::cerr << "Creating topology file for pbs frontend node " << fehostname << std::endl;
@@ -1047,11 +1109,22 @@ void CBTFTopology::createTopology()
     int desiredMaxFanout = getFanout();
     int procsNeeded = 0;
 
+#ifndef NDEBUG
+    if(CBTFTopology::is_debug_topology_enabled) {
+	std::cerr << "CBTFTopology::createTopology topologyspec:" << topologyspec
+	<< " getDepth():" << getDepth()
+	<< " getFanout:" << getFanout()
+	<< std::endl;
+    }
+#endif
+
     // FE will launch BE's. i.e. daemon type tools.
     if (!isAttachBEMode()) {
 	// always at least 3 for a daemonTool.  needs to ba able
 	// to increase if need be...
-	desiredDepth = 3;
+	if (desiredDepth < 3) {
+	    desiredDepth = 3;
+	}
 	dm_num_app_nodes = dm_cp_nodelist.size();
 	if (desiredMaxFanout == 0) {
 	    desiredMaxFanout = 32;
@@ -1077,13 +1150,13 @@ void CBTFTopology::createTopology()
 
 #ifndef NDEBUG
 	if(CBTFTopology::is_debug_topology_enabled) {
-	    std::cerr << "CBTFTopology::createTopology: computed desiredDepth  " << desiredDepth
-		<< " dm_top_depth  " << getDepth()
-		<< " dm_num_app_nodes  " << dm_num_app_nodes
-		<< " dm_cp_nodelist.size  " << dm_cp_nodelist.size()
-		<< " computed fanout  " << fanout
-		<< " desiredMaxfanout  " << desiredMaxFanout
-		<< " dm_top_fanout  " << getFanout() << std::endl;
+	    std::cerr << "CBTFTopology::createTopology: computed desiredDepth:" << desiredDepth
+		<< " dm_top_depth:" << getDepth()
+		<< " dm_num_app_nodes:" << dm_num_app_nodes
+		<< " dm_cp_nodelist.size:" << dm_cp_nodelist.size()
+		<< " computed fanout:" << fanout
+		<< " desiredMaxfanout:" << desiredMaxFanout
+		<< " dm_top_fanout:" << getFanout() << std::endl;
 	}
 #endif
 
@@ -1110,21 +1183,27 @@ void CBTFTopology::createTopology()
 	  int numnodes = dm_num_app_nodes;
           for (i = desiredDepth; i > 0; --i) {
             if (i == 1) {
-		//std::cerr << "level:" << i << " " << ostr.str() << std::endl;
 		int val = numnodes/fanout;
 		if (numnodes%fanout > 0 ) ++val;
+                procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
+		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
 		nodecount.push_back(val);
+		//nodecount.push_back(getNumBE());
 	    } else if ( i == desiredDepth) {
-		nodecount.push_back(numnodes);
-		//std::cerr << "level:" << i << " " << ostr.str() << std::endl;
+		//nodecount.push_back(numnodes);
+		nodecount.push_back(getNumBE());
+                procsNeeded += getNumBE();
+                //procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
+		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << numnodes << std::endl;
             } else {
 		int val = numnodes/fanout;
 		if (numnodes%fanout > 0 ) ++val;
 		numnodes = val;
-		//std::cerr << "level:" << i << " " << ostr.str() << std::endl;
+                procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
+		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
 		nodecount.push_back(val);
             }
-            procsNeeded += (int)ceil(pow((float)fanout, (float)i));
+	    //std::cerr << "procesNeeded:" << procsNeeded << std::endl;
           }
 	  for (std::vector<int>::reverse_iterator k = nodecount.rbegin(); k != nodecount.rend() ; ++k) {
 	     //std::cerr << " level: " << *k << std::endl;
@@ -1139,7 +1218,7 @@ void CBTFTopology::createTopology()
 
 #ifndef NDEBUG
 	if(CBTFTopology::is_debug_topology_enabled) {
-	    std::cerr << "CBTFTopology::createTopology topologyspec " << ostr.str() << std::endl;
+	    std::cerr << "CBTFTopology::createTopology topologyspec:" << ostr.str() << std::endl;
 	    std::cerr << "num cp nodes:" << dm_cp_nodelist.size()
 		<< " cp procs available:" << dm_cp_nodelist.size() * dm_procs_per_node
 		<< " cp procsNeeded:" << procsNeeded << std::endl;

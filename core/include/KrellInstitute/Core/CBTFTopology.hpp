@@ -119,10 +119,17 @@ class CBTFTopology {
 
 
 	    void autoCreateTopology(const MRNetStartMode& mode) {
-		autoCreateTopology(mode,0);	
+		autoCreateTopology(mode,0,0,0);	
 	    };
 
-	    void autoCreateTopology(const MRNetStartMode&, const int&);
+	    void autoCreateTopology(const MRNetStartMode& mode, const int& numBE) {
+		autoCreateTopology(mode,numBE,0,0);	
+	    };
+
+	    void autoCreateTopology(const MRNetStartMode&, const int&,
+				    const unsigned int&, const unsigned int&);
+
+	    void createTopologyFromSpec(const MRNetStartMode&, const std::string&);
 
 	    void createTopology();
 

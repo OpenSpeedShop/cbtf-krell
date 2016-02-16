@@ -341,6 +341,13 @@ int main(int argc, char** argv)
     std::string topology, arch, connections, collector, program, mpiexecutable,
 		cbtfrunpath, seqexecutable;
 
+#if defined(CBTF_CN_RUNTIME_DIR)
+    cbtfrunpath = CBTF_CN_RUNTIME_DIR + "/bin/cbtfrun";
+#else
+    // assumes that cbtfrun is in PATH.
+    // could use CMAKE_INSTALL_PREFIX/bin/cbtfrun if only building via cmake.
+    cbtfrunpath = "cbtfrun";
+#endif
 
     // create a default for topology file.
     char const* curr_dir = getenv("PWD");

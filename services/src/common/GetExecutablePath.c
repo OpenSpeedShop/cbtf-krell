@@ -147,5 +147,6 @@ const char* CBTF_GetExecutablePath()
             executable_path[length - 1] = 0;
 	if(strlen(executable_path) == 0)
             sprintf(executable_path, "UnknownExecutable");
+	return executable_path;
     }
 }

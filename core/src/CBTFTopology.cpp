@@ -80,6 +80,18 @@ CBTFTopology::~CBTFTopology()
 {
 }
 
+/* 
+Return true if the string (str) starts with the substring (pre),
+else return false.
+Credit to T.J. Crowder: https://stackoverflow.com/questions/4770985/how-to-check-if-a-string-starts-with-another-string-in-c
+*/
+static bool startsWith(const char *pre, const char *str)
+{
+    size_t lenpre = strlen(pre),
+           lenstr = strlen(str);
+    return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
+}
+
 std::string extract_ranges(std::string nodeListNames) {
   boost::char_separator<char> sep(",");
   boost::tokenizer<boost::char_separator<char> > btokens(nodeListNames, sep);
@@ -203,6 +215,12 @@ int CBTFTopology::getCrayFENid( void )
     if( ifs.is_open() ) {
         ifs >> nid;
         ifs.close();
+    } else {
+        // ALPS_XT_NID is not set but we need to check for the nid value in /proc/cray_xt/nid
+        // on Cray's that don't set ALPS_XT_NID but still need to read up the nid value.
+        //std::cerr << " LOOKING AT /proc/cray_xt/nid" << std::endl;
+        std::fstream myfile("/proc/cray_xt/nid", std::ios_base::in);
+        myfile >> nid;
     }
 #else
     // just for testing on a non-cray...
@@ -513,10 +531,24 @@ void CBTFTopology::parsePBSEnv()
 	}
     }
 
+    // $PBS_NUM_NODES or $BC_NODE_ALLOC is a variable that holds the number of nodes
+    // allocated. 
     envval = getenv("PBS_NUM_NODES");
     if (envval == NULL) {
-	has_pbs = false;
-	has_pbs_numnodes = false;
+        envval = getenv("BC_NODE_ALLOC");
+        if (envval == NULL) {
+   	    has_pbs = false;
+    	    has_pbs_numnodes = false;
+        } else {
+	    t = strtol(envval, &ptr, 10);
+	    if (ptr == envval || t < 0) {
+	        // problem
+	        has_pbs = false;
+    	    } else {
+	        dm_pbs_num_nodes = t;
+	        dm_num_app_nodes = t;
+	    }
+        }
     } else {
 	t = strtol(envval, &ptr, 10);
 	if (ptr == envval || t < 0) {
@@ -528,10 +560,26 @@ void CBTFTopology::parsePBSEnv()
 	}
     }
 
+    // $PBS_NUM_PPN is a variable that holds the number of cores per node.
+    // eg. If the node has 32 cores each, $PBS_NUM_PPN or $BC_CORES_PER_NODE will be 32.
     envval = getenv("PBS_NUM_PPN");
     if (envval == NULL) {
-	has_pbs = false;
-	has_pbs_numppn = false;
+        envval = getenv("BC_CORES_PER_NODE");
+        if (envval == NULL) {
+	    has_pbs = false;
+	    has_pbs_numppn = false;
+        } else {
+	    std::string strval = envval;
+	    int loc = strval.find_first_of("(,");
+	    std::string val = strval.substr(0,loc);
+	    t = strtol(val.c_str(), &ptr, 10);
+	    if (ptr == val || t < 0) {
+	        // problem
+	        has_pbs = false;
+	    } else {
+	        dm_procs_per_node = t;
+	    }
+	}
     } else {
 	std::string strval = envval;
 	int loc = strval.find_first_of("(,");
@@ -546,11 +594,23 @@ void CBTFTopology::parsePBSEnv()
     }
 
     // $PBS_NP is simply a variable that holds the number of cores requested.
-    // eg. If requested 2 nodes and 6 cores each, $PBS_NP will be 12.
+    // eg. If requested 2 nodes and 6 cores each, $PBS_NP or $BC_MPI_TASKS_ALLOC 
+    // will be 12.
     envval = getenv("PBS_NP");
     if (envval == NULL) {
-	has_pbs = false;
-	has_pbs_np = false;
+        envval = getenv("BC_MPI_TASKS_ALLOC");
+        if (envval == NULL) {
+    	    has_pbs = false;
+	    has_pbs_np = false;
+        } else {
+	    t = strtol(envval, &ptr, 10);
+	    if (ptr == envval || t < 0) {
+	        // problem
+	        has_pbs = false;
+	    } else {
+	        dm_pbs_job_tasks = t;
+	    }
+	}
     } else {
 	t = strtol(envval, &ptr, 10);
 	if (ptr == envval || t < 0) {
@@ -609,8 +669,16 @@ void CBTFTopology::parsePBSEnv()
 	         nodesiter != nodenames.end(); nodesiter++) {
                 long t;
                 char *ptr;
-                t = strtol(nodesiter->c_str(), &ptr, 10); 
-                dm_nodelist.push_back(formatCrayNid("nid", t));
+                // If the nodes already have the nid prefix in the node name (DOD Cray platforms)
+                // then skip the formatCrayNid call because it is not required.
+                if (startsWith("nid", nodesiter->c_str())) {
+                    dm_nodelist.push_back(nodesiter->c_str());
+                } else {
+                    // If the nodes do NOT already have the nid prefix in the node name (non-DOD Cray platforms)
+                    // then call the formatCrayNid call to add the nid prefix.
+                    t = strtol(nodesiter->c_str(), &ptr, 10); 
+                    dm_nodelist.push_back(formatCrayNid("nid", t));
+                } 
 	    }
 	} else {
             // VERFIY

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -101,10 +101,15 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 # cp  libcbtf_services_monitor_la-Monitor.o ${pkglibdir}/cbtf_monitor.o
 
 add_custom_command(
-    OUTPUT ${CMAKE_INSTALL_PREFIX}/KrellInstitute/Collectors/cbtf_monitor.o
+    POST_BUILD
+    OUTPUT ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors
     COMMAND ar -x libcbtf-services-monitor-static.a
-    COMMAND cp Monitor.c.o ${CMAKE_INSTALL_PREFIX}/KrellInstitute/Collectors/cbtf_monitor.o
-    DEPENDS libcbtf-services-monitor-static.a
+    COMMAND cp Monitor.c.o ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcbtf-services-monitor-static.a
+    COMMENT "Copying cbtf_monitor.o to the install directory for static linking via cbtflink..."
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+add_custom_target(runcbtfmonitor ALL DEPENDS ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o)
 

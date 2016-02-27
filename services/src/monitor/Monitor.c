@@ -882,7 +882,7 @@ void monitor_mpi_pcontrol(int level)
    	    tls->sampling_status == CBTF_Monitor_Resumed) && !tls->in_mpi_pre_init) {
 
 	   tls->sampling_status = CBTF_Monitor_Paused;
-	   offline_pause_sampling();
+	   cbtf_offline_pause_sampling();
 
            if (tls->debug) {
 	       fprintf(stderr,"monitor_mpi_pcontrol PAUSE SAMPLING %d,%lu\n", tls->pid,tls->tid);
@@ -896,12 +896,12 @@ void monitor_mpi_pcontrol(int level)
            }
            tls->CBTF_monitor_type = CBTF_Monitor_Proc;
            tls->sampling_status = CBTF_Monitor_Started;
-           offline_start_sampling(NULL);
+           cbtf_offline_start_sampling(NULL);
 
        } else if (tls->sampling_status == CBTF_Monitor_Paused && !tls->in_mpi_pre_init) {
 
 	   tls->sampling_status = CBTF_Monitor_Resumed;
-	   offline_resume_sampling();
+	   cbtf_offline_resume_sampling();
 
            if (tls->debug) {
 	       fprintf(stderr,"monitor_mpi_pcontrol RESUME SAMPLING %d,%lu\n", tls->pid,tls->tid);

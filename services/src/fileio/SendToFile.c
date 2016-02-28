@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) 2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2009-2011 The Krell Institute. All Rights Reserved.
+** Copyright (c) 2009-2015 The Krell Institute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -28,18 +28,20 @@
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Services/Path.h"
 
+#include <errno.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
 
 
+// record the executable path once here.
+static char* executable_path = NULL;
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -86,13 +88,11 @@ static __thread TLS the_tls;
 void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
 			  const char* unique_id, const char* suffix)
 {
-    const char* executable_path = NULL;
-    char* cbtf_rawdata_dir = NULL;
-    char dir_path[PATH_MAX];
-    int fd;
 
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
+    // FIXME. Use the real __libc_malloc here in case some other tool
+    // is wrapping malloc.
     TLS* tls = malloc(sizeof(TLS));
     Assert(tls != NULL);
     CBTF_SetTLS(TLSKey, tls);
@@ -100,13 +100,20 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    
+
     /* Check preconditions */
     Assert(unique_id != NULL);
     Assert(suffix != NULL);
 
+    char* cbtf_rawdata_dir = NULL;
+    char dir_path[PATH_MAX];
+    int fd;
+
     /* Get our executable path */
-    executable_path = CBTF_GetExecutablePath();
+    if (executable_path == NULL) {
+	executable_path = strdup(CBTF_GetExecutablePath());
+    }
+    
     
     /* Create the directory path containing the file and the file itself */
     /* We need to add the hostname to the directory path and not just the pid.
@@ -116,31 +123,17 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
      * Seen on hyperion with mvapich.
      */
 
-    if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
-	fprintf(stderr,"CBTF_SetSendToFile creating directory for raw data files, using host=%s, and %d\n", host, pid);
-    }
-
-    struct passwd *pw;
-    uid_t uid = geteuid();
-    pw = getpwuid(uid);
-
     cbtf_rawdata_dir = getenv("CBTF_RAWDATA_DIR");
-    if ((cbtf_rawdata_dir == NULL) && (pw && pw->pw_name) ) {
-        sprintf(dir_path, "%s%s%s/cbtf-rawdata-%s-%d",
-	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp/",
-	     pw->pw_name, "/offline-cbtf", host,pid);
-    } else {
-        sprintf(dir_path, "%s/cbtf-rawdata-%s-%d",
+    sprintf(dir_path, "%s/cbtf-rawdata-%s-%d",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp",
 	     host,pid);
-    }
 
+    char *exe_name = basename(executable_path);
     if(posix_tid == 0) {
-	sprintf(tls->path, "%s/%s-%lld", dir_path, basename(executable_path), pid);
+	sprintf(tls->path, "%s/%s-%lld", dir_path, exe_name, pid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     } else {
-	sprintf(tls->path, "%s/%s-%lld-%llu", dir_path, basename(executable_path),
-		pid,(uint64_t)posix_tid);
+	sprintf(tls->path, "%s/%s-%lld-%llu", dir_path, exe_name, (int64_t)pid,(uint64_t)posix_tid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     }
 
@@ -151,35 +144,51 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
 
     /* Insure the directory path to contain the file exists */
     struct stat st;
+
+#if 0
+    /* this was the old method */
     if(stat(dir_path,&st) != 0) {
-	char tmppath[PATH_MAX];
-	char *ppath = NULL;
-	strncpy(tmppath, dir_path, sizeof(tmppath));
-	size_t plen = strlen(tmppath);
-	if (tmppath[plen - 1] == '/') {
-	    tmppath[plen - 1] = '\0';
-	}
-
-	for (ppath = tmppath; *ppath ; ppath++) {
-	    if (*ppath == '/') {
-		*ppath = '\0';
-		if (access(tmppath,F_OK)) {
-		    mkdir(tmppath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-		}
-		*ppath = '/';
-	    }
-	}
-
-	if (access(tmppath,F_OK)) {
-	    mkdir(tmppath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	}
+	mkdir(dir_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
+#else
 
-    //fprintf(stderr,"CBTF_SetSendToFile assumes tls->path %s\n", tls->path);
+    if (stat(dir_path, &st) == 0 && S_ISDIR (st.st_mode)) {
+
+        /* No need to make the directory.  It already exists. */
+	if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
+            fprintf(stderr,"CBTF_SetSendToFile pathname %s exists and is a directory\n",
+		dir_path);
+        }
+       
+    } else {
+        /* The directory does not exist.
+	 * Try to make the directory in this section of code.
+	 * Use a while loop to test the status of mkdir in case
+	 * it fails for some reason. On a cluster running nvidia-nmi
+	 * under the watch command (run command by default every 2 secs)
+	 * the mkdir on an NFS directory was interupted.
+	 * TODO: if some threshold of trys is exceeded, abort.
+	 */
+        int status = -1;
+        int save_errno = 0;
+        int try_count = 0;
+        while (status != 0 ) {
+   	   status = mkdir(dir_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+           save_errno = errno;
+           try_count = try_count + 1;
+        }
+	if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
+            fprintf(stderr,"CBTF_SetSendToFile mkdir dir_path:%s status=%d errno:%d try_count:%d\n",
+		dir_path, status, save_errno, try_count);
+        }
+    } 
+        
+#endif
+
+
     /* Insure the file itself exists */
     fd = open(tls->path, O_CREAT | O_APPEND,
 	      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-    //fprintf(stderr,"CBTF_SetSendToFile get FD %d\n", fd);
     if(fd >= 0)
 	close(fd);
 }
@@ -188,10 +197,6 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
 void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
 			const char* suffix)
 {
-#if 0
-fprintf(stderr,"CBTF_EventSetSendToFile host %s, pid %d , posix_tid %#ld\n",
-	header->host, header->pid, header->posix_tid);
-#endif
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }
@@ -254,10 +259,14 @@ int CBTF_SendToFile(const unsigned size, const void* data)
     /* Write the data */
     Assert(write(fd, data, size) == size);
 
+/* fsync call taken out due to slow processing time reported at LLNL */
+/* via Matt Legendre for a LLNL user. */
+#if 0
     /* Flush the data to disk. We could also test for fsyncdata
      * and use that as our fsync vi a #define.
      */
     Assert(fsync(fd) == 0);
+#endif
     
     /* Close the file */
     Assert(close(fd) == 0);

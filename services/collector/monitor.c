@@ -517,7 +517,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    // threads share process wide mrnet connection.
-#if defined(CBTF_SERVICE_USE_MRNET_MPI) || defined(CBTF_SERVICE_USE_MRNET_MPI)
+#if defined(CBTF_SERVICE_USE_MRNET) || defined(CBTF_SERVICE_USE_MRNET_MPI)
 	    tls->connected_to_mrnet = true;
 #endif
 	    set_threaded_flag(true);

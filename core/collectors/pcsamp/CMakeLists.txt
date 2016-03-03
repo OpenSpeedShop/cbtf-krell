@@ -107,46 +107,6 @@ install(TARGETS pcsamp-collector-monitor-fileio
 
 # Create and install static versions
 
-add_library(pcsamp-collector-monitor-fileio-static STATIC
-	${COLLECTOR_SOURCES}
-)
-
-target_include_directories(pcsamp-collector-monitor-fileio-static PUBLIC
-	${LibMonitor_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
-)
-
-target_link_libraries(pcsamp-collector-monitor-fileio-static
-        -Wl,--no-as-needed
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-timer-static
-	cbtf-services-collector-monitor-fileio-static
-	${LibMonitor_STATIC_LIBRARIES}
-	pthread
-	rt
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(pcsamp-collector-monitor-fileio-static PROPERTIES PREFIX "")
-set_target_properties(pcsamp-collector-monitor-fileio-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
-
-
-install(TARGETS pcsamp-collector-monitor-fileio-static
-        ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
-)
-
-# Create and install static versions
-
 add_library(pcsamp-monitor-fileio STATIC
 	${COLLECTOR_SOURCES}
 )
@@ -226,47 +186,6 @@ install(TARGETS pcsamp-collector-monitor-mrnet
 
 # Create and install static versions
 
-add_library(pcsamp-collector-monitor-mrnet-static STATIC
-	${COLLECTOR_SOURCES}
-)
-
-target_include_directories(pcsamp-collector-monitor-mrnet-static PUBLIC
-	${LibMonitor_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
-)
-
-target_link_libraries(pcsamp-collector-monitor-mrnet-static
-        -Wl,--no-as-needed
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-timer-static
-	cbtf-services-collector-monitor-mrnet-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_LWR_STATIC_LIBRARIES}
-	pthread
-	rt
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(pcsamp-collector-monitor-mrnet-static PROPERTIES PREFIX "")
-set_target_properties(pcsamp-collector-monitor-mrnet-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
-
-install(TARGETS pcsamp-collector-monitor-mrnet-static
-	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
-)
-
-# Create and install static versions
-
 add_library(pcsamp-monitor-mrnet STATIC
 	${COLLECTOR_SOURCES}
 )
@@ -342,48 +261,6 @@ set_target_properties(pcsamp-collector-monitor-mrnet-mpi PROPERTIES
 
 install(TARGETS pcsamp-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
-)
-
-# Create and install static versions
-
-add_library(pcsamp-collector-monitor-mrnet-mpi-static STATIC
-	${COLLECTOR_SOURCES}
-)
-
-target_include_directories(pcsamp-collector-monitor-mrnet-mpi-static PUBLIC
-	${LibMonitor_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
-)
-
-target_link_libraries(pcsamp-collector-monitor-mrnet-mpi-static
-        -Wl,--no-as-needed
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-timer-static
-	cbtf-services-data-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
-	${LibMonitor_STATIC_LIBRARIES}
-	${MRNet_LWR_STATIC_LIBRARIES}
-	pthread
-	rt
-	${CMAKE_DL_LIBS}
-)
-
-set_target_properties(pcsamp-collector-monitor-mrnet-mpi-static PROPERTIES PREFIX "")
-set_target_properties(pcsamp-collector-monitor-mrnet-mpi-static PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
-
-install(TARGETS pcsamp-collector-monitor-mrnet-mpi-static
-	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
 )
 
 # Create and install static versions

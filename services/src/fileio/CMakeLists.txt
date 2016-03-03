@@ -66,6 +66,7 @@ target_link_libraries(cbtf-services-fileio-static
     )
 
 set_target_properties(cbtf-services-fileio-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-fileio-static PROPERTIES OUTPUT_NAME cbtf-services-fileio)
 set_target_properties(cbtf-services-fileio-static PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES}")
 

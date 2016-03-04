@@ -82,6 +82,7 @@ target_link_libraries(cbtf-services-unwind-static
 )
 
 set_target_properties(cbtf-services-unwind-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-unwind-static PROPERTIES OUTPUT_NAME cbtf-services-unwind)
 set_target_properties(cbtf-services-unwind-static PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES}")
 
 install(TARGETS cbtf-services-unwind-static

@@ -151,6 +151,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     )
 
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-instrumentation)
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES 
 	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
@@ -206,6 +207,7 @@ target_link_libraries(cbtf-messages-instrumentation-static
 )
 
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-instrumentation)
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES 
 	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 

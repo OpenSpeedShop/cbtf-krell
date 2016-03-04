@@ -64,6 +64,7 @@ target_link_libraries(cbtf-services-send-static
 )
 
 set_target_properties(cbtf-services-send-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-send-static PROPERTIES OUTPUT_NAME cbtf-services-send)
 
 install(TARGETS cbtf-services-send-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

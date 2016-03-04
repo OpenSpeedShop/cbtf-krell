@@ -60,6 +60,7 @@ target_link_libraries(cbtf-services-timer-static
 )
 
 set_target_properties(cbtf-services-timer-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-timer-static PROPERTIES OUTPUT_NAME cbtf-services-timer)
 set_target_properties(cbtf-services-timer-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-timer-static

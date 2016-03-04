@@ -89,6 +89,7 @@ target_link_libraries(cbtf-services-monitor-static
 )
 
 set_target_properties(cbtf-services-monitor-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-monitor-static PROPERTIES OUTPUT_NAME cbtf-services-monitor)
 set_target_properties(cbtf-services-monitor-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
 
 install(TARGETS cbtf-services-monitor-static
@@ -105,9 +106,9 @@ add_custom_command(
     OUTPUT ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors
-    COMMAND ar -x libcbtf-services-monitor-static.a
+    COMMAND ar -x libcbtf-services-monitor.a
     COMMAND cp Monitor.c.o ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcbtf-services-monitor-static.a
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcbtf-services-monitor.a
     COMMENT "Copying cbtf_monitor.o to the install directory for static linking via cbtflink..."
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

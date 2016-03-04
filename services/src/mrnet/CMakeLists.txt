@@ -88,6 +88,7 @@ target_link_libraries(cbtf-services-mrnet-static
 )
 
 set_target_properties(cbtf-services-mrnet-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-mrnet-static PROPERTIES OUTPUT_NAME cbtf-services-mrnet)
 set_target_properties(cbtf-services-mrnet-static PROPERTIES 
         COMPILE_DEFINITIONS "${TLS_DEFINES};${MRNet_DEFINES}")
 

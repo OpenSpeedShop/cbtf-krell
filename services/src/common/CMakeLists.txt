@@ -66,6 +66,7 @@ target_link_libraries(cbtf-services-common-static
 )
 
 set_target_properties(cbtf-services-common-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-common-static PROPERTIES OUTPUT_NAME cbtf-services-common)
 
 install(TARGETS cbtf-services-common-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

@@ -67,6 +67,7 @@ target_link_libraries(cbtf-services-offline-static
 )
 
 set_target_properties(cbtf-services-offline-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-offline-static PROPERTIES OUTPUT_NAME cbtf-services-offline)
 
 install(TARGETS cbtf-services-offline-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

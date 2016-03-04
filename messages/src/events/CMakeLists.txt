@@ -164,6 +164,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     )
 
     set_target_properties(cbtf-messages-converters-events-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-events-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-events)
     set_target_properties(cbtf-messages-converters-events-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
@@ -218,6 +219,7 @@ target_link_libraries(cbtf-messages-events-static
 )
 
 set_target_properties(cbtf-messages-events-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-events-static PROPERTIES OUTPUT_NAME cbtf-messages-events)
 set_target_properties(cbtf-messages-events-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 

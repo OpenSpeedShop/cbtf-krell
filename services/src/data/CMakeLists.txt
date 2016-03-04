@@ -71,6 +71,7 @@ target_link_libraries(cbtf-services-data-static
 )
 
 set_target_properties(cbtf-services-data-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-data-static PROPERTIES OUTPUT_NAME cbtf-services-data)
 
 install(TARGETS cbtf-services-data-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}

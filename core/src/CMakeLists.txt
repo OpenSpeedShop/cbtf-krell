@@ -116,6 +116,7 @@ target_link_libraries(cbtf-core-static
 )
 
 set_target_properties(cbtf-core-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-core-static PROPERTIES OUTPUT_NAME cbtf-core)
 
 install(TARGETS cbtf-core-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -188,6 +189,7 @@ target_link_libraries(cbtf-core-bfd-static
 )
 
 set_target_properties(cbtf-core-bfd-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-core-bfd-static PROPERTIES OUTPUT_NAME cbtf-core-bfd)
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-core-bfd-static PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")
@@ -273,6 +275,7 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
     )
 
     set_target_properties(cbtf-core-symtabapi-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-symtabapi-static PROPERTIES OUTPUT_NAME cbtf-core-symtabapi)
 
     install(TARGETS cbtf-core-symtabapi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -390,6 +393,7 @@ if (NOT RUNTIME_ONLY)
     )
 
     set_target_properties(cbtf-core-mrnet-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-mrnet-static PROPERTIES OUTPUT_NAME cbtf-core-mrnet)
     set_target_properties(cbtf-core-mrnet-static PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 

@@ -62,6 +62,7 @@ target_link_libraries(cbtf-services-papi-static
 )
 
 set_target_properties(cbtf-services-papi-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-papi-static PROPERTIES OUTPUT_NAME cbtf-services-papi)
 
 install(TARGETS cbtf-services-papi-static
     ARCHIVE DESTINATION lib${LIB_SUFFIX}

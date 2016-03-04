@@ -206,9 +206,9 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     )
 
     set_target_properties(cbtf-messages-converters-base-static PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-messages-converters-base-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-base)
     set_target_properties(cbtf-messages-converters-base-static PROPERTIES
 	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
 
     install(TARGETS cbtf-messages-converters-base-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -256,6 +256,7 @@ target_link_libraries(cbtf-messages-base-static
 )
 
 set_target_properties(cbtf-messages-base-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-base-static PROPERTIES OUTPUT_NAME cbtf-messages-base)
 
 install(TARGETS cbtf-messages-base-static 
         ARCHIVE DESTINATION lib${LIB_SUFFIX}

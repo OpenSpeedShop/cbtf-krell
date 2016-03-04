@@ -88,6 +88,7 @@ target_link_libraries(cbtf-services-collector-monitor-fileio-static
 )
 
 set_target_properties(cbtf-services-collector-monitor-fileio-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-collector-monitor-fileio-static PROPERTIES OUTPUT_NAME cbtf-services-collector-monitor-fileio)
 set_target_properties(cbtf-services-collector-monitor-fileio-static PROPERTIES
 	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO") 
 
@@ -162,6 +163,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet-static
 )
 
 set_target_properties(cbtf-services-collector-monitor-mrnet-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-collector-monitor-mrnet-static PROPERTIES OUTPUT_NAME cbtf-services-collector-monitor-mrnet)
 set_target_properties(cbtf-services-collector-monitor-mrnet-static PROPERTIES
 	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES}") 
 
@@ -234,6 +236,7 @@ target_link_libraries(cbtf-services-collector-monitor-mrnet-mpi-static
 )
 
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-collector-monitor-mrnet-mpi-static PROPERTIES OUTPUT_NAME cbtf-services-collector-monitor-mrnet-mpi)
 set_target_properties(cbtf-services-collector-monitor-mrnet-mpi-static PROPERTIES
 	COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES}") 
 

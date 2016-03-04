@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -64,6 +64,8 @@ target_link_libraries(cbtf-services-binutils-static
 )
 
 set_target_properties(cbtf-services-binutils-static PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-binutils-static PROPERTIES OUTPUT_NAME cbtf-services-binutils)
+
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-services-binutils-static PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")

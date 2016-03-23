@@ -56,6 +56,17 @@ GET_FILENAME_COMPONENT(LibIomp_DIR ${LibIomp_INCLUDE_DIR} PATH )
 message(STATUS "LIBIOMP_FOUND: " ${LIBIOMP_FOUND})
 message(STATUS "LibIomp location: " ${LibIomp_LIB_DIR})
 
+if(LIBIOMP_FOUND)
+    SET(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${LibIomp_INCLUDE_DIRS})
+    CHECK_SYMBOL_EXISTS(ompt_tool "ompt.h" HAVE_OMPT_TOOL)
+    if (${HAVE_OMPT_TOOL})
+	set(LibIomp_DEFINES "INIT_AS_OMPT_TOOL")
+	message(STATUS "LibIomp uses ompt_tool for initialization.")
+    else()
+	message(STATUS "LibIomp uses ompt_initialize for initialization.")
+    endif()
+endif()
+
 mark_as_advanced(
             LibIomp_LIBRARY_SHARED 
             LibIomp_INCLUDE_DIR

@@ -1,5 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) The Krell Institute. 2011-2013  All Rights Reserved.
+** Copyright (c) 2016 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -26,6 +27,8 @@
 #include "config.h"
 #endif
 
+#include <pthread.h>
+
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
@@ -44,6 +47,8 @@ Network_t* CBTF_MRNet_netPtr;
 static int stream_id = 0;
 static int mrnet_connected = 0;
 
+static pthread_mutex_t mrnet_connected_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t mrnet_connected_cond = PTHREAD_COND_INITIALIZER;
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
@@ -101,8 +106,11 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
 
 int CBTF_MRNet_LW_connect (const int con_rank)
 {
+    pthread_mutex_lock(&mrnet_connected_mutex);
+
     if (mrnet_connected) {
-        return mrnet_connected;
+        pthread_mutex_unlock(&mrnet_connected_mutex);
+        return 1;
     }
 
     const char* connfile = getenv("CBTF_MRNETBE_CONNECTIONS");
@@ -135,7 +143,6 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed to parse connections file %s\n",connfile);
 	fprintf(stderr, "CBTF_MRNet_LW_connect: Failed for myRank %s, mrank %d, con_rank %d\n",myRank,mRank,rank_to_use);
 	abort();
-	return -1;
     }
 
     while( gethostname(myHostname, 64) == -1 ) {}
@@ -237,16 +244,30 @@ int CBTF_MRNet_LW_connect (const int con_rank)
      }
 
     mrnet_connected = 1;
+    pthread_cond_broadcast(&mrnet_connected_cond);
+    pthread_mutex_unlock(&mrnet_connected_mutex);
 
     if (p != NULL) {
         free(p);
     } 
-    return mrnet_connected;
+    return 1;
 }
 
 static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
 {
     const char* fmt_str = "%auc";
+
+    /*
+     * No need to repeatedly check mrnet_connected within a while loop as is
+     * typical with a condition variable because it is only ever set once by
+     * CBTF_MRNet_LW_connect() above.
+     */
+    pthread_mutex_lock(&mrnet_connected_mutex);
+    if (!mrnet_connected)
+    {
+        pthread_cond_wait(&mrnet_connected_cond, &mrnet_connected_mutex);
+    }
+    pthread_mutex_unlock(&mrnet_connected_mutex);
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {

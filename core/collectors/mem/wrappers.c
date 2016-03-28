@@ -40,9 +40,12 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <stdlib.h>
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #if 0
+static bool is_initializing;
+
 static void* (*f_malloc)(size_t);
 static void* (*f_calloc)(size_t, size_t);
 static void* (*f_realloc)(void*, size_t);
@@ -50,7 +53,7 @@ static void* (*f_free)(void*);
 static int (*f_posix_memalign)(void **, size_t, size_t);
 static int (*f_memalign)(size_t, size_t);
 
-static void __attribute__ ((constructor)) initialize()
+static void mem_f_initialize()
 {
     f_malloc = dlsym(RTLD_NEXT, "malloc");
     f_calloc = dlsym(RTLD_NEXT, "calloc");
@@ -60,6 +63,13 @@ static void __attribute__ ((constructor)) initialize()
     f_memalign = dlsym(RTLD_NEXT, "memalign");
 }
 #endif
+#elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void* __real_malloc(size_t);
+void* __real_calloc(size_t, size_t);
+void* __real_realloc(void*, size_t);
+void* __real_free(void*);
+int __real_posix_memalign(void **, size_t, size_t);
+int __real_memalign(size_t, size_t);
 #endif
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
@@ -118,12 +128,15 @@ void* memmalloc(size_t size)
 }
 
 
-#if 0
+/* NOTE: The openmpi libraries call calloc before we are setup and
+ * calloc calls fail.  In addition, using dlsym can also cause a crash.
+ * The temporary solution for the dynamic case is to rely on __libc_calloc
+ * as the real dynamic libc calloc call.
+ */
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #ifdef calloc
 #undef calloc
 #endif
-
 void* calloc(size_t count, size_t size) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
 void* __wrap_calloc(size_t count, size_t size)
@@ -131,8 +144,6 @@ void* __wrap_calloc(size_t count, size_t size)
 void* memcalloc(size_t count, size_t size)
 #endif
 {
-#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
-#endif
     void* retval;
     CBTF_memt_event event;
 
@@ -148,10 +159,8 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
     retval = __real_calloc(count,size);
 #else
-    static void* (*f_calloc)(size_t,size_t) = NULL;
-    if (!f_calloc)
-	f_calloc = dlsym(RTLD_NEXT, "calloc");
-    retval = f_calloc(count,size);
+    extern void *__libc_calloc(size_t, size_t);
+    retval = __libc_calloc(count,size);
 #endif
 
 
@@ -166,14 +175,13 @@ void* memcalloc(size_t count, size_t size)
 #if defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
         mem_record_event(&event, (uint64_t) __real_calloc);
 #else
-        mem_record_event(&event, CBTF_GetAddressOfFunction(f_calloc));
+        mem_record_event(&event, CBTF_GetAddressOfFunction(__libc_calloc));
 #endif
     }
     
     /* Return the real MEM function's return value to the caller */
     return retval;
 }
-#endif
 
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
@@ -373,6 +381,12 @@ void memfree(void * ptr)
     CBTF_memt_event event;
 
     bool_t dotrace = mem_do_trace("free");
+
+    /* when ptr is NULL free is a no-op. We could record these if desired
+     * but the cost is high.  Only reason to record is to pinpoint the
+     * locations where code is calling free with a NULL ptr.
+     */
+    if (ptr == NULL) dotrace = FALSE;
 
     if (dotrace) {
         mem_start_event(&event);

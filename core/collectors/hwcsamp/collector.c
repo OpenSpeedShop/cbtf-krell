@@ -50,6 +50,9 @@
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwcsamp";
+#if defined(CBTF_SERVICE_USE_FILEIO)
+const char* const data_suffix = "cbtf-data";
+#endif
 
 
 /** Type defining the items stored in thread-local storage. */
@@ -625,8 +628,9 @@ void cbtf_collector_stop()
 
 
 
+// UNUSED at this time.
 #if defined (CBTF_SERVICE_USE_OFFLINE)
-void cbtf_offline_service_start_timer()
+void hwcsamp_collector_event_timer_start()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -640,7 +644,7 @@ void cbtf_offline_service_start_timer()
     CBTF_Timer(tls->data.interval, hwcsampTimerHandler);
 }
 
-void cbtf_offline_service_stop_timer()
+void hwcsamp_collector_event_timer_stop()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS

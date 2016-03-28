@@ -1486,7 +1486,7 @@ int mpi_PMPI_Waitall
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
 int MPI_Finalize()
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Finalize()
+int __JUNKwrap_MPI_Finalize()
 #else
 int mpi_PMPI_Finalize()
 #endif
@@ -2571,7 +2571,7 @@ int mpi_PMPI_Pack
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
 int MPI_Init
 #elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-int __wrap_MPI_Init
+int __JUNKwrap_MPI_Init
 #else
 int mpi_PMPI_Init
 #endif

@@ -68,6 +68,7 @@ typedef struct {
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier;
     bool debug_collector_ompt;
+    uint32_t ompTid;
 #endif
 
     /* debug flags */
@@ -496,9 +497,9 @@ void cbtf_collector_stop()
 }
 
 
-
+// UNUSED at this time.
 #if defined (CBTF_SERVICE_USE_OFFLINE)
-void cbtf_offline_service_start_timer()
+void pcsamp_collector_timer_start()
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -512,10 +513,8 @@ void cbtf_offline_service_start_timer()
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
 
-void cbtf_offline_service_stop_timer()
+void pcsamp_collector_timer_stop()
 {
     CBTF_Timer(0, NULL);
 }
-
-
 #endif // if defined CBTF_SERVICE_USE_OFFLINE

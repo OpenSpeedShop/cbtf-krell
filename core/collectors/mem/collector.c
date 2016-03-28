@@ -51,6 +51,9 @@
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "mem";
+#if defined(CBTF_SERVICE_USE_FILEIO)
+const char* const data_suffix = "cbtf-data";
+#endif
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -86,13 +89,11 @@ const unsigned OverheadFrameCount = 2;
 /** CBTF_memt_event is 64 bytes */
 // FIXME:  300 was too high given the current stack buffer size
 // and the size of a memt event.  Should find the best fit going forward.
-#define EventBufferSize (CBTF_BlobSizeFactor * 200)
+//#define EventBufferSize (CBTF_BlobSizeFactor * 200)
+#define EventBufferSize (CBTF_BlobSizeFactor * 100)
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
-
-    /** Nesting depth within the Mem function wrappers. */
-    unsigned nesting_depth;
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
     CBTF_mem_exttrace_data data;        /**< Actual data blob. */
@@ -106,9 +107,12 @@ typedef struct {
 #if defined (CBTF_SERVICE_USE_OFFLINE)
     char CBTF_mem_traced[PATH_MAX];
 #endif
-    int defer_sampling;
-    int do_trace;
-
+    
+    /** Nesting depth within the IO function wrappers. */
+    unsigned nesting_depth;
+    bool_t do_trace;
+    bool_t defer_sampling;
+    int event_count;
 } TLS;
 
 #if defined(USE_EXPLICIT_TLS)
@@ -235,7 +239,7 @@ static void send_samples(TLS *tls)
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "pthread send_samples:\n");
+	    fprintf(stderr, "mem send_samples:\n");
 	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
@@ -313,14 +317,11 @@ void mem_record_event(const CBTF_memt_event* event, uint64_t function)
 
     int saved_do_trace = tls->do_trace;
     tls->do_trace = 0;
+    tls->event_count++;
 
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
     unsigned entry = 0, start, i;
-
-#ifdef DEBUG
-fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_memt_event),sizeof(stacktrace),tls->nesting_depth);
-#endif
 
     /* Decrement the Mem function wrapper nesting depth */
     --tls->nesting_depth;
@@ -333,9 +334,6 @@ fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d,
      * implementation details of that library.
      */
     if(tls->nesting_depth > 0) {
-#ifdef DEBUG
-	fprintf(stderr,"mem_record_event RETURNS EARLY DUE TO NESTING\n");
-#endif
 	return;
     }
     
@@ -399,9 +397,6 @@ fprintf(stderr,"ENTERED mem_record_event, sizeof event=%d, sizeof stacktrace=%d,
 	/* Send events if there is insufficient room for this stack trace */
 	if((tls->data.stacktraces.stacktraces_len + stacktrace_size + 1) >=
 	   StackTraceBufferSize) {
-#ifdef DEBUG
-fprintf(stderr,"StackTraceBufferSize is full, call mem_send_events\n");
-#endif
 	    send_samples(tls);
 	}
 	
@@ -436,9 +431,6 @@ fprintf(stderr,"StackTraceBufferSize is full, call mem_send_events\n");
     
     /* Send events if the tracing buffer is now filled with events */
     if(tls->data.events.events_len == EventBufferSize) {
-#ifdef DEBUG
-fprintf(stderr,"Event Buffer is full, call send_samples\n");
-#endif
 	send_samples(tls);
     }
 
@@ -473,6 +465,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 
     tls->defer_sampling = 1;
     tls->do_trace = 0;
+    tls->event_count = 0;
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...
@@ -483,10 +476,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     CBTF_DecodeParameters(arguments,
 			  (xdrproc_t)xdr_CBTF_mem_start_sampling_args,
 			   &args);
-#endif
-
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("usertime", "cbtf-data");
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)
@@ -602,6 +591,12 @@ void cbtf_collector_stop()
 	send_samples(tls);
     }
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_MEM_COLLECTOR") != NULL) {
+	fprintf(stderr,"cbtf_collector_stop event count is %d\n", tls->event_count);
+    }
+#endif
+
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS
     free(tls);
@@ -632,8 +627,6 @@ bool_t mem_do_trace(const char* traced_func)
 	    --tls->nesting_depth;
 	return FALSE;
     }
-
-    //fprintf(stderr,"TRACING %s\n",traced_func);
 
     /* See if this function has been selected for tracing */
     char *tfptr, *saveptr, *tf_token;
@@ -677,36 +670,3 @@ bool_t mem_do_trace(const char* traced_func)
     return TRUE;
 #endif
 }
-
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-
-void cbtf_offline_service_resume_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling = 0;
-    tls->do_trace = 1;
-}
-
-void cbtf_offline_service_defer_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling = 1;
-    tls->do_trace = 0;
-}
-#endif

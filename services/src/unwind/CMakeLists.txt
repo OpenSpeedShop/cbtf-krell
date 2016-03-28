@@ -44,9 +44,7 @@ set(SERVICES_UNWIND_SOURCES
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibUnwind_INCLUDE_DIRS}
 )
 
@@ -57,7 +55,6 @@ add_library(cbtf-services-unwind SHARED
 target_link_libraries(cbtf-services-unwind
         -Wl,--no-as-needed
 	${LibUnwind_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -75,9 +72,7 @@ add_library(cbtf-services-unwind-static STATIC
 )
 
 target_link_libraries(cbtf-services-unwind-static
-        -Wl,--no-as-needed
 	${LibUnwind_STATIC_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 

@@ -447,6 +447,8 @@ target_link_libraries(mpi-openmpi-monitor-mrnet-mpi
 	${CMAKE_DL_LIBS}
 )
 
+set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES LINK_SEARCH_START_STATIC 1)
+set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES LINK_SEARCH_END_STATIC 1)
 set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(mpi-openmpi-monitor-mrnet-mpi PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;CBTF_STATIC;${OpenMPI_DEFINES};${MRNet_DEFINES}")
@@ -526,15 +528,14 @@ target_include_directories(mpip-openmpi-monitor-mrnet-mpi PUBLIC
 )
 
 target_link_libraries(mpip-openmpi-monitor-mrnet-mpi
-        -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	cbtf-messages-events
+	cbtf-messages-base
+	cbtf-services-common
+	cbtf-services-monitor
+	cbtf-services-offline
+	cbtf-services-data
+	cbtf-services-unwind
+	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -551,6 +552,7 @@ set_target_properties(mpip-openmpi-monitor-mrnet-mpi PROPERTIES
 install(TARGETS mpip-openmpi-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
 )
+
 #
 # mpit experiment libraries for openmpi
 #

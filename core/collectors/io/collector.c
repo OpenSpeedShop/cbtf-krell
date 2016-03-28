@@ -57,6 +57,9 @@ const char* const cbtf_collector_unique_id = "iot";
 const char* const cbtf_collector_unique_id = "io";
 #endif
 #endif
+#if defined(CBTF_SERVICE_USE_FILEIO)
+const char* const data_suffix = "cbtf-data";
+#endif
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
@@ -746,10 +749,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 			   &args);
 #endif
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile("usertime", "cbtf-data");
-#endif
-
 #if defined(CBTF_SERVICE_USE_OFFLINE)
 
     /* If CBTF_IO_TRACED is set to a valid list of io functions, trace only
@@ -939,34 +938,3 @@ bool_t io_do_trace(const char* traced_func)
     return TRUE;
 #endif
 }
-
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-
-void cbtf_offline_service_resume_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=FALSE;
-}
-
-void cbtf_offline_service_defer_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=TRUE;
-}
-#endif

@@ -35,6 +35,8 @@ include(CheckIncludeFile)
 # core/collectors/pcsamp/xml/CMakeLists.txt  
 #              This one just builds the xml from the template or uses it's own specific xml 
 #              rules or xml file. (mem is an example soon). 
+#
+# For static collector the  build must NOT define USE_FASTTRACE for the fast x86_86 unwinder.
 
 if (BUILD_FE_USING_CN_RUNTIMES)
     # This is the BUILD_FE_USING_CN_RUNTIMES section where we create the xml that includes both the traditional
@@ -145,7 +147,7 @@ target_link_libraries(hwctime-monitor-fileio
 )
 
 set_target_properties(hwctime-monitor-fileio PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;USE_FASTTRACE;${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -234,7 +236,7 @@ target_link_libraries(hwctime-monitor-mrnet
 )
 
 set_target_properties(hwctime-monitor-mrnet PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -324,7 +326,7 @@ target_link_libraries(hwctime-monitor-mrnet-mpi
 
 set_target_properties(hwctime-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(hwctime-monitor-mrnet-mpi PROPERTIES
-        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;USE_FASTTRACE;${MRNet_DEFINES};${OMPT_DEFINES}")
+        COMPILE_DEFINITIONS "${TLS_DEFINES};${LibUnwind_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
 
 install(TARGETS hwctime-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static

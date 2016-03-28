@@ -79,8 +79,6 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
  * is TRUE. 
  */
 
-    //fprintf(stderr, "Entering CBTF_GetStackTraceFromContext\n");
-
 #if defined(RUNTIME_PLATFORM_BGP) 
 
     if (signal_context != NULL) {
@@ -246,13 +244,11 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 	    }
 #else
 	    stacktrace[index++] = (uint64_t)pc;	    
-            //fprintf(stderr, "pc stored into stacktrace[index++] = %lx\n", (uint64_t) pc);
 #endif
 	}
 	
 	/* Unwind to the next frame, stopping after the last frame */
 	retval = unw_step(&cursor);
-        //fprintf(stderr, "After unw_step, retval=%d\n", retval);
 	if(retval <= 0)
 	    break;
 	

@@ -403,12 +403,14 @@ void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
     unsigned entry = 0, start, i;
     unsigned pathindex = 0;
 
-#ifdef DEBUG
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR_DETAILED") != NULL) {
 #if defined(EXTENDEDTRACE)
 fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpit_event),sizeof(stacktrace),tls->nesting_depth);
 #else
 fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpi_event),sizeof(stacktrace),tls->nesting_depth);
 #endif
+	}
 #endif
 
     /* Decrement the MPI function wrapper nesting depth */
@@ -422,8 +424,10 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
      * implementation details of that library.
      */
     if(tls->nesting_depth > 0) {
-#ifdef DEBUG
-	fprintf(stderr,"mpi_record_event RETURNS EARLY DUE TO NESTING\n");
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"mpi_record_event RETURNS EARLY DUE TO NESTING\n");
+	}
 #endif
 	return;
     }
@@ -439,6 +443,12 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
     CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
 				    MaxFramesPerStackTrace,
 				    &stacktrace_size, stacktrace);
+
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR_DETAILED") != NULL) {
+	    fprintf(stderr,"mpi_record_event gets stacktrace of size:%d\n",stacktrace_size);
+	}
+#endif
 
 #if defined(PROFILE)
 
@@ -492,6 +502,11 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
     int buflen = tls->data.stacktraces.stacktraces_len + stacktrace_size;
     if ( buflen > StackTraceBufferSize) {
 	/* send the current sample buffer. (will init a new buffer) */
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"StackTraceBufferSize SAMPLE BUFFER FULL. send samples\n");
+	}
+#endif
 	send_samples(tls);
     }
 
@@ -568,8 +583,10 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
 	/* Send events if there is insufficient room for this stack trace */
 	if((tls->data.stacktraces.stacktraces_len + stacktrace_size + 1) >=
 	   StackTraceBufferSize) {
-#ifdef DEBUG
-fprintf(stderr,"StackTraceBufferSize is full, call send_samples\n");
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"StackTraceBufferSize FULL. send samples\n");
+	}
 #endif
 	    send_samples(tls);
 	}
@@ -610,8 +627,10 @@ fprintf(stderr,"StackTraceBufferSize is full, call send_samples\n");
     
     /* Send events if the tracing buffer is now filled with events */
     if(tls->data.events.events_len == EventBufferSize) {
-#ifdef DEBUG
-fprintf(stderr,"Event Buffer is full, call send_samples\n");
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"EventBufferSize FULL. send samples\n");
+	}
 #endif
 	send_samples(tls);
     }
@@ -645,6 +664,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"ENTERED cbtf_collector_start for %d\n", getpid());
+    }
+#endif
 
     tls->defer_sampling=FALSE;
 
@@ -709,6 +734,11 @@ void cbtf_collector_pause()
     if (tls == NULL)
 	return;
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"ENTERED cbtf_collector_pause for %d\n", getpid());
+    }
+#endif
     tls->defer_sampling=TRUE;
     tls->do_trace = FALSE;
 }
@@ -729,6 +759,11 @@ void cbtf_collector_resume()
     if (tls == NULL)
 	return;
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"ENTERED cbtf_collector_resume for %d\n", getpid());
+    }
+#endif
     tls->defer_sampling=FALSE;
     tls->do_trace = TRUE;
 }
@@ -765,6 +800,12 @@ void cbtf_collector_stop()
 
     Assert(tls != NULL);
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"ENTERED cbtf_collector_stop for %d\n", getpid());
+    }
+#endif
+
     tls->header.time_end = CBTF_GetTime();
 
     /* Stop sampling */
@@ -772,6 +813,11 @@ void cbtf_collector_stop()
 
     /* Are there any unsent samples? */
 #if defined(PROFILE)
+#ifndef NDEBUG
+	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"cbtf_collector_stop count_len:%d stacktraces_len%d\n",tls->data.count.count_len, tls->data.stacktraces.stacktraces_len);
+	}
+#endif
     if(tls->data.count.count_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
@@ -806,8 +852,9 @@ bool_t mpi_do_trace(const char* traced_func)
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
     if (tls->do_trace == FALSE) {
-	if (tls->nesting_depth > 1)
+	if (tls->nesting_depth > 1) {
 	    --tls->nesting_depth;
+	}
 	return FALSE;
     }
 
@@ -831,8 +878,9 @@ bool_t mpi_do_trace(const char* traced_func)
      * potentially nested iop calls that are not being traced.
      */
 
-    if (tls->nesting_depth > 1)
+    if (tls->nesting_depth > 1) {
 	--tls->nesting_depth;
+    }
 
     return FALSE;
 #else
@@ -848,34 +896,3 @@ bool_t mpi_do_trace(const char* traced_func)
     return TRUE;
 #endif
 }
-
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-
-void cbtf_offline_service_resume_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=FALSE;
-}
-
-void cbtf_offline_service_defer_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=TRUE;
-}
-#endif

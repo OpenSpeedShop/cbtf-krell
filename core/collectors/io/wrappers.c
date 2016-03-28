@@ -228,7 +228,7 @@ ssize_t ioread(int fd, void *buf, size_t count)
     return retval;
 }
 
-#ifndef DEBUG
+//#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 ssize_t write(int fd, __const void *buf, size_t count) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
@@ -326,7 +326,7 @@ ssize_t iowrite(int fd, void *buf, size_t count)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
-#endif
+//#endif
 
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 off_t lseek(int fd, off_t offset, int whence) 
@@ -1580,13 +1580,13 @@ ssize_t iopwrite64(int fd, void *buf, size_t count, off_t offset)
 }
 #endif
 
-#if !defined(CBTF_SERVICE_USE_OFFLINE)
+//#if !defined(CBTF_SERVICE_USE_OFFLINE)
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
-ssize_t readv(int fd, const struct iovec *vector, size_t count) 
+ssize_t readv(int fd, const struct iovec *vector, int count) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-ssize_t __wrap_readv(int fd, const struct iovec *vector, size_t count) 
+ssize_t __wrap_readv(int fd, const struct iovec *vector, int count) 
 #else
-ssize_t ioreadv(int fd, const struct iovec *vector, size_t count) 
+ssize_t ioreadv(int fd, const struct iovec *vector, int count) 
 #endif
 {
     ssize_t retval;
@@ -1675,13 +1675,13 @@ ssize_t ioreadv(int fd, const struct iovec *vector, size_t count)
 }
 
 
-#ifndef DEBUG
+//#ifndef DEBUG
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
-ssize_t writev(int fd, const struct iovec *vector, size_t count) 
+ssize_t writev(int fd, const struct iovec *vector, int count) 
 #elif defined (CBTF_SERVICE_BUILD_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
-ssize_t __wrap_writev(int fd, const struct iovec *vector, size_t count) 
+ssize_t __wrap_writev(int fd, const struct iovec *vector, int count) 
 #else
-ssize_t iowritev(int fd, const struct iovec *vector, size_t count) 
+ssize_t iowritev(int fd, const struct iovec *vector, int count) 
 #endif
 {
     ssize_t retval;
@@ -1770,5 +1770,5 @@ ssize_t iowritev(int fd, const struct iovec *vector, size_t count)
     /* Return the real IO function's return value to the caller */
     return retval;
 }
-#endif
-#endif
+//#endif
+//#endif

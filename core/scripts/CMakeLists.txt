@@ -18,6 +18,12 @@
 
 include(CheckIncludeFile)
 
+if(Boost_LIBRARY_DIR)
+    set(REAL_BOOST_LIBRARY_DIR ${Boost_LIBRARY_DIR})
+elseif(Boost_LIBRARY_DIR_RELEASE)
+    set(REAL_BOOST_LIBRARY_DIR ${Boost_LIBRARY_DIR_RELEASE})
+endif()
+
 if (BUILD_FE_USING_CN_RUNTIMES)
     # This is the common code section for building the front end using 
     # compute node runtime directories previously built.
@@ -83,7 +89,7 @@ if (BUILD_FE_USING_CN_RUNTIMES)
            # Set xercesclibdir for usage in cbtf_mrnet_commnode
            set(xercesclibdir ${XERCESC_CN_RUNTIME_LIBDIR})
         endif()
-        if((${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib") OR (${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib64"))
+        if(${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib" OR ${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib64")
            # Set boostlibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
            set(boostlibdir "")
         else()
@@ -114,12 +120,12 @@ if (BUILD_FE_USING_CN_RUNTIMES)
            # Set xercesclibdir for usage in cbtf_mrnet_commnode
            set(xercesclibdir ${XercesC_LIB_DIR})
         endif()
-        if((${Boost_LIBRARY_DIR} MATCHES "/usr/lib") OR (${Boost_LIBRARY_DIR} MATCHES "/usr/lib64"))
+        if((${REAL_BOOST_LIBRARY_DIR} MATCHES "/usr/lib") OR (${REAL_BOOST_LIBRARY_DIR} MATCHES "/usr/lib64"))
            # Set boostlibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
            set(boostlibdir "")
         else()
            # Set boostlibdir for usage in cbtf_mrnet_commnode
-           set(boostlibdir ${Boost_LIBRARY_DIR})
+           set(boostlibdir ${REAL_BOOST_LIBRARY_DIR})
         endif()
     endif()
 else()
@@ -157,12 +163,13 @@ else()
        # Set xercesclibdir for usage in cbtf_mrnet_commnode
        set(xercesclibdir ${XercesC_LIB_DIR})
     endif()
-    if((${Boost_LIBRARY_DIR} MATCHES "/usr/lib") OR (${Boost_LIBRARY_DIR} MATCHES "/usr/lib64"))
+    if((${REAL_BOOST_LIBRARY_DIR} MATCHES "/usr/lib") OR (${REAL_BOOST_LIBRARY_DIR} MATCHES "/usr/lib64"))
+
        # Set boostlibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
        set(boostlibdir "")
     else()
        # Set boostlibdir for usage in cbtf_mrnet_commnode
-       set(boostlibdir ${Boost_LIBRARY_DIR})
+       set(boostlibdir ${REAL_BOOST_LIBRARY_DIR})
     endif()
     if(${LTDL_DIR} MATCHES "/usr")
        # Set xercesclibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path

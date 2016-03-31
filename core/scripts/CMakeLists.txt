@@ -89,7 +89,7 @@ if (BUILD_FE_USING_CN_RUNTIMES)
            # Set xercesclibdir for usage in cbtf_mrnet_commnode
            set(xercesclibdir ${XERCESC_CN_RUNTIME_LIBDIR})
         endif()
-        if(${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib" OR ${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib64")
+        if((${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib") OR (${BOOST_CN_RUNTIME_LIBDIR} MATCHES "/usr/lib64"))
            # Set boostlibdir for to empty string so we don't introduce /usr/lib or /usr/lib64 to the ld search path
            set(boostlibdir "")
         else()

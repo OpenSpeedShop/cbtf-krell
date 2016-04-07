@@ -18,7 +18,6 @@
 
 include(FindPackageHandleStandardArgs)
 INCLUDE (CheckSymbolExists)
-INCLUDE (CheckFunctionExists)
 
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib" "lib64")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
@@ -57,8 +56,11 @@ message(STATUS "LIBIOMP_FOUND: " ${LIBIOMP_FOUND})
 message(STATUS "LibIomp location: " ${LibIomp_LIB_DIR})
 
 if(LIBIOMP_FOUND)
+    SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${LibIomp_LIBRARY_SHARED})
     SET(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${LibIomp_INCLUDE_DIRS})
-    CHECK_SYMBOL_EXISTS(ompt_tool "ompt.h" HAVE_OMPT_TOOL)
+    CHECK_SYMBOL_EXISTS(ompt_tool "omp.h;ompt.h" HAVE_OMPT_TOOL)
+    message(STATUS "LibIomp HAVE_OMPT_TOOL : " ${HAVE_OMPT_TOOL})
+
     if (${HAVE_OMPT_TOOL})
 	set(LibIomp_DEFINES "INIT_AS_OMPT_TOOL")
 	message(STATUS "LibIomp uses ompt_tool for initialization.")

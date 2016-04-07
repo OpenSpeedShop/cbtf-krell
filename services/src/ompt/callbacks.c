@@ -625,11 +625,8 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id        /* ID of thread*/)
 // FIXME: Newer versions of libomp_oss have optver arg as int, latest has it unsigned int
 // Older versions of ompt use ompt_initialize to initiallize the tool callbacks
 // and newer versions use ompt_tool.
-#if defined(INIT_AS_OMPT_TOOL)
-int ompt_tool
-#else
+
 int ompt_initialize
-#endif
     (ompt_function_lookup_t lookup_func,
                     const char *rtver, unsigned int omptver)
 {
@@ -715,3 +712,10 @@ int ompt_initialize
 #endif
     return 1;
 }
+
+#if defined(INIT_AS_OMPT_TOOL)
+ompt_initialize_t ompt_tool ()
+{
+    return (void*) ompt_initialize;
+}
+#endif

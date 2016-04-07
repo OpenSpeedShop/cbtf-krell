@@ -44,7 +44,7 @@ target_link_libraries(cbtf-services-ompt
 )
 
 set_target_properties(cbtf-services-ompt PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-services-ompt PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-ompt PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES};${LibIomp_DEFINES}")
 
 
 install(TARGETS cbtf-services-ompt

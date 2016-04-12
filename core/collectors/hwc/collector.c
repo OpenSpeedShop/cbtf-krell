@@ -48,28 +48,28 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
-
-
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwc";
 #if defined(CBTF_SERVICE_USE_FILEIO)
 const char* const data_suffix = "cbtf-data";
 #endif
 
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     CBTF_DataHeader header;	/**< Header for following data blob. */
     CBTF_hwc_data data;		/**< Actual data blob. */
-
     CBTF_PCData buffer;		/**< PC sampling data buffer. */
 
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
-    bool thread_idle, thread_wait_barrier;
+    bool thread_idle, thread_wait_barrier, thread_barrier;
     bool debug_collector_ompt;
+    uint32_t ompTid;
 #endif
 
+    /* debug flags */
     bool debug_collector;
 
     bool defer_sampling;
@@ -93,7 +93,6 @@ static const uint32_t TLSKey = 0x00001EF5;
 static __thread TLS the_tls;
 
 #endif
-
 
 #if defined (HAVE_OMPT)
 /* these are ompt specific functions to shift sample to an
@@ -121,11 +120,7 @@ void cbtf_thread_barrier(bool flag) {
 #endif
     if (tls == NULL)
 	return;
-#if 0
-    // this is not in use for now. we are not interested in barrier.
-    // just the wait_barriers...
     tls->thread_barrier=flag;
-#endif
 }
 
 void cbtf_thread_wait_barrier(bool flag) {
@@ -145,6 +140,7 @@ void cbtf_thread_wait_barrier(bool flag) {
 **/
 void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
 void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+void OMPT_THREAD_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_barrier")));
 #endif // if defined HAVE_OMPT
 
 /**
@@ -225,7 +221,6 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
     }
 }
 
-
 /* This function can be called from within the sigprof handler and therefore
  * must be signal safe.  no strdup and friends.
  */
@@ -236,15 +231,15 @@ static void send_samples (TLS* tls)
     tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
+
     /* rank is not filled until mpi_init finished. safe to set here*/
     tls->header.rank = monitor_mpi_comm_rank();
 
     tls->data.pc.pc_len = tls->buffer.length;
     tls->data.count.count_len = tls->buffer.length;
 
-
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+    if (tls->debug_collector) {
         fprintf(stderr,"HWC send_samples DATA:\n");
         fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] pc_len(%d)\n",
             tls->header.time_end,tls->header.addr_begin,
@@ -298,7 +293,7 @@ hwcPAPIHandler(int EventSet, void* pc, long_long overflow_vector, void* context)
 	pc = (void *) CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
     }
 
-    if (tls->thread_wait_barrier) {
+    else if (tls->thread_wait_barrier) {
 	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
 	 * sample count here is attributed as a wait_barrier.  Note that the sample
 	 * PC address may be also be in any calls made by __kmp_wait_sleep
@@ -306,21 +301,50 @@ hwcPAPIHandler(int EventSet, void* pc, long_long overflow_vector, void* context)
 	 */
 	pc = (void *) CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
     }
+
+    else if (tls->thread_barrier) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as an idle.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the idle state.
+	 */
+	pc = (void *) CBTF_GetAddressOfFunction(OMPT_THREAD_BARRIER);
+    }
 #endif // if defined (HAVE_OMPT)
+
 
     /* Update the sampling buffer and check if it has been filled */
     if(CBTF_UpdatePCData((uint64_t)pc, &tls->buffer)) {
-
 	/* Send these samples */
 	send_samples(tls);
     }
+}
+
+void collector_record_addr(char* name, uint64_t addr)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+
+    tls->defer_sampling = true;
+    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
+    /* Update the sampling buffer and check if it has been filled */
+    if(CBTF_UpdatePCData(addr, &tls->buffer)) {
+	/* Send these samples */
+	send_samples(tls);
+    }
+    tls->defer_sampling = false;
 }
 
 
 /**
  * Called by the CBTF collector service in order to start data collection.
  */
-void cbtf_collector_start(const CBTF_DataHeader* const header)
+void cbtf_collector_start(const CBTF_DataHeader* header)
 {
 /**
  * Start sampling.
@@ -394,6 +418,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->header.omp_tid = monitor_get_thread_num();
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_begin = CBTF_GetTime();
+
+#if defined (HAVE_OMPT)
+    /* these are ompt specific.*/
+    /* initialize the flags and counts for idle,wait_barrier.  */
+    tls->thread_idle =  tls->thread_wait_barrier = tls->thread_barrier = false;
+#endif
 
     if(hwc_papi_init_done == 0) {
 	CBTF_init_papi();
@@ -500,7 +530,6 @@ void cbtf_collector_stop()
     destroy_explicit_tls();
 #endif
 }
-
 
 
 // UNUSED at this time.

@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2015 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2016 Krell Institute.  All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -58,15 +58,12 @@ const char* const data_suffix = "cbtf-data";
 typedef struct {
 
     CBTF_DataHeader header;  /**< Header for following data blob. */
-    CBTF_pcsamp_data data;        /**< Actual data blob. */
-
+    CBTF_pcsamp_data data;   /**< Actual data blob. */
     CBTF_PCData buffer;      /**< PC sampling data buffer. */
-
-    bool defer_sampling;
 
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
-    bool thread_idle, thread_wait_barrier;
+    bool thread_idle, thread_wait_barrier, thread_barrier;
     bool debug_collector_ompt;
     uint32_t ompTid;
 #endif
@@ -74,6 +71,7 @@ typedef struct {
     /* debug flags */
     bool debug_collector;
 
+    bool defer_sampling;
 } TLS;
 
 #if defined(USE_EXPLICIT_TLS)
@@ -108,8 +106,6 @@ void cbtf_thread_idle(bool flag) {
     tls->thread_idle=flag;
 }
 
-
-
 void cbtf_thread_barrier(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -119,11 +115,7 @@ void cbtf_thread_barrier(bool flag) {
 #endif
     if (tls == NULL)
 	return;
-#if 0
-    // this is not in use for now. we are not interested in barrier.
-    // just the wait_barriers...
     tls->thread_barrier=flag;
-#endif
 }
 
 void cbtf_thread_wait_barrier(bool flag) {
@@ -143,6 +135,7 @@ void cbtf_thread_wait_barrier(bool flag) {
 **/
 void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
 void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
+void OMPT_THREAD_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_barrier")));
 #endif // if defined HAVE_OMPT
 
 /**
@@ -279,7 +272,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 #endif
     Assert(tls != NULL);
 
-    if(tls->defer_sampling == TRUE) {
+    if(tls->defer_sampling == true) {
         return;
     }
  
@@ -298,13 +291,22 @@ static void serviceTimerHandler(const ucontext_t* context)
 	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_IDLE);
     }
 
-    if (tls->thread_wait_barrier) {
+    else if (tls->thread_wait_barrier) {
 	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
 	 * sample count here is attributed as a wait_barrier.  Note that the sample
 	 * PC address may be also be in any calls made by __kmp_wait_sleep
 	 * while the ompt interface is in the wait_barrier state.
 	 */
 	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_WAIT_BARRIER);
+    }
+
+    else if (tls->thread_barrier) {
+	/* ompt. thread is in __kmp_wait_sleep from intel libomp runtime.
+	 * sample count here is attributed as an idle.  Note that the sample
+	 * PC address may be also be in any calls made by __kmp_wait_sleep
+	 * while the ompt interface is in the idle state.
+	 */
+	pc = CBTF_GetAddressOfFunction(OMPT_THREAD_BARRIER);
     }
 #endif // if defined (HAVE_OMPT)
 
@@ -326,14 +328,14 @@ void collector_record_addr(char* name, uint64_t addr)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling = TRUE;
+    tls->defer_sampling = true;
     //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
     /* Update the sampling buffer and check if it has been filled */
     if(CBTF_UpdatePCData(addr, &tls->buffer)) {
 	/* Send these samples */
 	send_samples(tls);
     }
-    tls->defer_sampling = FALSE;
+    tls->defer_sampling = false;
 }
 
 
@@ -361,7 +363,8 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
+
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	tls->debug_collector = true;
     } else {
@@ -408,7 +411,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 #if defined (HAVE_OMPT)
     /* these are ompt specific.*/
     /* initialize the flags and counts for idle,wait_barrier.  */
-    tls->thread_idle =  tls->thread_wait_barrier = false;
+    tls->thread_idle =  tls->thread_wait_barrier = tls->thread_barrier = false;
 #endif
 
     /* Begin sampling */
@@ -431,7 +434,7 @@ void cbtf_collector_pause()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+    tls->defer_sampling=true;
 }
 
 
@@ -450,7 +453,7 @@ void cbtf_collector_resume()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=false;
 }
 
 

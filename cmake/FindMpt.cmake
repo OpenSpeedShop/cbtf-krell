@@ -28,17 +28,13 @@ find_path(Mpt_INCLUDE_DIR
     NAMES mpi.h
     HINTS $ENV{MPT_DIR}
     HINTS ${MPT_DIR}
-    PATHS /usr /usr/local
     PATH_SUFFIXES include 
-    NO_DEFAULT_PATH
     )
 
 find_library(Mpt_LIBRARY_SHARED NAMES mpi
     HINTS $ENV{MPT_DIR}
     HINTS ${MPT_DIR}
-    PATHS /usr /usr/local 
     PATH_SUFFIXES lib lib64
-    NO_DEFAULT_PATH
     )
 
 find_package_handle_standard_args(
@@ -50,6 +46,7 @@ find_package_handle_standard_args(
 set(Mpt_SHARED_LIBRARIES ${Mpt_LIBRARY_SHARED})
 set(Mpt_INCLUDE_DIRS ${Mpt_INCLUDE_DIR})
 set(Mpt_DEFINES "")
+set(SGIMPT_DEFINES "")
 
 GET_FILENAME_COMPONENT(Mpt_LIB_DIR ${Mpt_LIBRARY_SHARED} PATH )
 GET_FILENAME_COMPONENT(Mpt_DIR ${Mpt_INCLUDE_DIR} PATH )
@@ -59,7 +56,13 @@ GET_FILENAME_COMPONENT(Mpt_DIR ${Mpt_INCLUDE_DIR} PATH )
 message(STATUS "Mpt found: " ${MPT_FOUND})
 message(STATUS "Mpt location: " ${Mpt_LIB_DIR})
 
-set(Mpt_DEFINES "HAVE_MPT=${MPT_FOUND}")
+if (MPT_FOUND)
+    set(Mpt_DEFINES "HAVE_MPT=1")
+    set(SGIMPT_DEFINES "SGI_MPT")
+else()
+    set(Mpt_DEFINES "")
+    set(SGIMPT_DEFINES "")
+endif()
 
 if(MPT_FOUND)
   set(MPT_HEADER ${Mpt_INCLUDE_DIR}/mpi.h )

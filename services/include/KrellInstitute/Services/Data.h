@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 /** Number of entries in the sample buffer. */
-#define CBTF_PCBufferSize (1024 * CBTF_BlobSizeFactor)
+#define CBTF_PCBufferSize (256 * CBTF_BlobSizeFactor)
 /** Number of entries in the hardware counter sample buffer. */
 #define CBTF_HWCPCBufferSize (128 * CBTF_BlobSizeFactor)
 

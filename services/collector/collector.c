@@ -149,10 +149,12 @@ void send_attached_to_threads_message()
 	    );
         }
 #endif
+	cbtf_offline_service_stop_timer();
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
 			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
 			&tls->attached_to_threads_message);
 	tls->sent_attached_to_threads = true;
+	cbtf_offline_service_start_timer();
     }
 }
 

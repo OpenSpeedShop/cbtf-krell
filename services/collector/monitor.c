@@ -559,6 +559,8 @@ void cbtf_send_info()
 #endif
     Assert(tls != NULL);
 
+    cbtf_offline_service_stop_timer();
+
     /* Initialize the offline "info" blob's header */
     CBTF_EventHeader local_header;
     CBTF_InitializeEventHeader(&local_header);
@@ -596,6 +598,8 @@ void cbtf_send_info()
                             cbtf_collector_unique_id, "cbtf-info");
     CBTF_Send(&local_header, (xdrproc_t)xdr_CBTF_Protocol_Offline_Parameters, &info);
 #endif
+
+    cbtf_offline_service_start_timer();
 }
 
 void cbtf_record_dsos()

@@ -684,8 +684,28 @@ void CBTFTopology::parsePBSEnv()
             // VERFIY
             for (nodesiter = nodenames.begin();
 	         nodesiter != nodenames.end(); nodesiter++) {
-                  dm_nodelist.push_back(*nodesiter);
-	    }
+                  std::string mynodename = *nodesiter;
+                  std::string delim(".");
+                  size_t current;
+                  size_t next = -1;
+                  std::string nodename;
+                  /* Loop through node names and only use the hostname */
+                  /* On some platforms the PBS supplied node names are host.dns.domain */
+                  /* and the front-end node name is only a host name.  This causes problems */
+                  /* when using the two differing node name forms.  So, here we reduce */
+                  /* the PBS supplied names to match the host only form so we have a */
+                  /* successful topology creation.  */
+                  do
+                  {
+                    current = next + 1;
+                    next = mynodename.find_first_of( delim, current );
+                      nodename = mynodename.substr( current, next - current );
+                     // Only want first name from something like localhost.localdomain.
+                    if (!nodename.empty())
+                        break;
+                  } while (next != std::string::npos);
+                  dm_nodelist.push_back(nodename);
+            } 
 	}
     }
 

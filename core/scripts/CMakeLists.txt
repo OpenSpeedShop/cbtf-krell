@@ -24,6 +24,13 @@ elseif(Boost_LIBRARY_DIR_RELEASE)
     set(REAL_BOOST_LIBRARY_DIR ${Boost_LIBRARY_DIR_RELEASE})
 endif()
 
+# Set cbtftargetos for usage in cbtflink
+# This setting gets overridden when we target the cray or other 
+# compute node enabled platforms.  See CBTF_FILTERS_RUN_ON MATCHES "native")
+# section  below.
+#
+set(cbtftargetos ${RUNTIME_PLATFORM})
+
 if (BUILD_FE_USING_CN_RUNTIMES)
     # This is the common code section for building the front end using 
     # compute node runtime directories previously built.
@@ -66,6 +73,10 @@ if (BUILD_FE_USING_CN_RUNTIMES)
         # duplication in the settings of cbtfklibdir and cbtfkCNlibdir.  Also for
         # libmrnetlibdir and libmrnetCNlibdir.  This is to streamline the case for Intel MIC.
         #
+
+        # Reset cbtftargetos for usage in cbtflink the compute node runtime platform
+        set(cbtftargetos ${CN_RUNTIME_PLATFORM})
+
         # Set cbtfdir to the compute node runtime based CBTF for usage in cbtfrun and cbtflink
         set(cbtfdir ${CBTF_CN_RUNTIME_DIR})
         # Set cbtflibdir to the compute node runtime based CBTF library directory for usage in cbtfrun, cbtflink, and cbtf_mrnet_commnode
@@ -194,9 +205,6 @@ set(mpich2dir ${MPICH2_DIR})
 set(mvapich2dir ${MVAPICH2_DIR})
 set(mptdir ${MPT_DIR})
 set(openmpidir ${OPENMPI_DIR})
-
-# Set cbtftargetos for usage in cbtflink
-set(cbtftargetos ${RUNTIME_PLATFORM})
 
 
 # Set libiompdir OpenMP directory for usage in cbtfrun

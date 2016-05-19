@@ -68,9 +68,9 @@ extern void collector_record_addr(char*,uint64_t);
 // These callbacks are in the sampling and hwc collectors and
 // essentially record these ompt states as the sample point rather
 // than the openmp library address where sample was taken.
-extern void cbtf_thread_idle(bool);
-extern void cbtf_thread_barrier(bool);
-extern void cbtf_thread_wait_barrier(bool);
+extern void OMPT_THREAD_IDLE(bool);
+extern void OMPT_THREAD_BARRIER(bool);
+extern void OMPT_THREAD_WAIT_BARRIER(bool);
 
 // local thread variables to record various details. May need a
 // container for this later...
@@ -140,7 +140,7 @@ void CBTF_ompt_cb_parallel_region_begin (
     // in any way as a sample or event. We really just want the address so
     // we can later get a symbol. We may not need to pass this string as
     // an identifier. But we may wish to pass the parallel and task IDs.
-    collector_record_addr("CBTF_OMP_PARALLEL_REGION_BEGIN",(uint64_t)parallel_function);
+    //collector_record_addr("CBTF_OMP_PARALLEL_REGION_BEGIN",(uint64_t)parallel_function);
  
     // resume collection
     //cbtf_collector_resume();
@@ -184,7 +184,7 @@ void CBTF_ompt_cb_task_begin (
 	omp_get_thread_num() ,parent_taskID, new_taskID, task_function);
     }
 #endif
-    collector_record_addr("CBTF_OMP_TASK_BEGIN",(uint64_t)task_function);
+    //collector_record_addr("CBTF_OMP_TASK_BEGIN",(uint64_t)task_function);
     //cbtf_collector_resume();
 }
 
@@ -434,7 +434,7 @@ void CBTF_ompt_cb_barrier_begin (ompt_parallel_id_t parallelID,
 		       ompt_task_id_t taskID)
 {
     cbtf_collector_pause();
-    cbtf_thread_barrier(true);
+    OMPT_THREAD_BARRIER(true);
 
     // record barrier begin time.
     struct timespec now;
@@ -458,7 +458,7 @@ void CBTF_ompt_cb_barrier_end (ompt_parallel_id_t parallelID,
 		     ompt_task_id_t taskID)
 {
     cbtf_collector_pause();
-    cbtf_thread_barrier(false);
+    OMPT_THREAD_BARRIER(false);
 
     struct timespec now;
     Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
@@ -483,7 +483,7 @@ void CBTF_ompt_cb_wait_barrier_begin (ompt_parallel_id_t parallelID,
 		            ompt_task_id_t taskID)
 {
     cbtf_collector_pause();
-    cbtf_thread_wait_barrier(true);
+    OMPT_THREAD_WAIT_BARRIER(true);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_wait_barrier_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
@@ -499,7 +499,7 @@ void CBTF_ompt_cb_wait_barrier_end (ompt_parallel_id_t parallelID,
 			  ompt_task_id_t taskID)
 {
     cbtf_collector_pause();
-    cbtf_thread_wait_barrier(false);
+    OMPT_THREAD_WAIT_BARRIER(false);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_wait_barrier_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
@@ -864,7 +864,7 @@ void CBTF_ompt_cb_workshare_end (ompt_parallel_id_t parallelID, ompt_task_id_t t
 void CBTF_ompt_cb_idle_begin(ompt_thread_id_t thread_id /* ID of thread*/)
 {
     cbtf_collector_pause();
-    cbtf_thread_idle(true);
+    OMPT_THREAD_IDLE(true);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_begin %u\n" ,omp_get_thread_num(), thread_id);
@@ -879,7 +879,7 @@ void CBTF_ompt_cb_idle_begin(ompt_thread_id_t thread_id /* ID of thread*/)
 void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id        /* ID of thread*/)
 {
     cbtf_collector_pause();
-    cbtf_thread_idle(false);
+    OMPT_THREAD_IDLE(false);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_end %u\n" ,omp_get_thread_num(), thread_id);

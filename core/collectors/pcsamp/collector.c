@@ -94,7 +94,7 @@ static __thread TLS the_tls;
  * OMPT defined blame.  These are only useful in a sampling
  * context such as pcsamp,hwcsamp,hwc,hwctime,usertime.
  */
-void cbtf_thread_idle(bool flag) {
+void OMPT_THREAD_IDLE(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -106,7 +106,7 @@ void cbtf_thread_idle(bool flag) {
     tls->thread_idle=flag;
 }
 
-void cbtf_thread_barrier(bool flag) {
+void OMPT_THREAD_BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -118,7 +118,7 @@ void cbtf_thread_barrier(bool flag) {
     tls->thread_barrier=flag;
 }
 
-void cbtf_thread_wait_barrier(bool flag) {
+void OMPT_THREAD_WAIT_BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -130,12 +130,6 @@ void cbtf_thread_wait_barrier(bool flag) {
     tls->thread_wait_barrier=flag;
 }
 
-/** these names are aliases to the internal cbtf krell callacks.
- * We would like the users to see a more meaningful name in the views.
-**/
-void OMPT_THREAD_IDLE(bool) __attribute__ ((weak, alias ("cbtf_thread_idle")));
-void OMPT_THREAD_WAIT_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_wait_barrier")));
-void OMPT_THREAD_BARRIER(bool) __attribute__ ((weak, alias ("cbtf_thread_barrier")));
 #endif // if defined HAVE_OMPT
 
 /**

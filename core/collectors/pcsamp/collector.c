@@ -373,16 +373,13 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
 #endif
 
-    /* Decode the passed function arguments */
-    // Need to handle the arguments...
+    /* handle arguments */
     CBTF_pcsamp_start_sampling_args args;
     memset(&args, 0, sizeof(args));
-    args.sampling_rate = 100;
-#if 0
-    CBTF_DecodeParameters(arguments,
-			    (xdrproc_t)xdr_CBTF_pcsamp_start_sampling_args,
-			    &args);
-#endif
+
+    /* Access the environment-specified arguments */
+    const char* sampling_rate = getenv("CBTF_PCSAMP_RATE");
+    args.sampling_rate = (sampling_rate != NULL) ? atoi(sampling_rate) : 100;
 
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));

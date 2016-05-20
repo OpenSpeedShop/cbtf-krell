@@ -482,11 +482,14 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
 #endif
 
-    /* Decode the passed function arguments */
-    // Need to handle the arguments...
+
+    /* handle arguments */
     CBTF_usertime_start_sampling_args args;
     memset(&args, 0, sizeof(args));
-    args.sampling_rate = 35;
+
+    /* Access the environment-specified arguments */
+    const char* sampling_rate = getenv("CBTF_USERTIME_RATE");
+    args.sampling_rate = (sampling_rate != NULL) ? atoi(sampling_rate) : 35;
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");

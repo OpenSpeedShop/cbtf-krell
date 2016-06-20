@@ -58,6 +58,8 @@ add_custom_command(
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
     )
+add_custom_target(runaddressh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h)
+
 
 add_custom_command(
     OUTPUT

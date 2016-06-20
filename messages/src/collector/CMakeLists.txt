@@ -34,6 +34,8 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
 )
+add_custom_target(runcollectorh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h)
+
 
 # Do not build the converters if we are targeting the compute node build for Intel MIC
 # which is a platform that runs the CBTF filters on a host processor not the

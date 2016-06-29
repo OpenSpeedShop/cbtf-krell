@@ -41,10 +41,16 @@ add_executable(daemonTool
 	daemonTool.cpp
 )
 
+# Only link with specific Boost libraries needed rather than Boost_LIBRARIES
+# which links all Boost libraries asked for in the cmake config COMPONENTS
+# specification for Boost.
 target_link_libraries(daemonTool
     cbtf-core
     cbtf-core-mrnet
-    ${Boost_LIBRARIES}
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Bfd_LIBRARY_SHARED}
     ${CBTF_LIBRARIES}
     ${XercesC_LIBRARIES}

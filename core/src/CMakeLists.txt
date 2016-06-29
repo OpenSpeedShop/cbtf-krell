@@ -70,9 +70,14 @@ target_include_directories(cbtf-core PUBLIC
 	${LTDL_INCLUDE_DIR}
 )
 
+# Only link with specific Boost libraries needed rather than Boost_LIBRARIES
+# which links all Boost libraries asked for in the cmake config COMPONENTTS
+# specification for Boost.
 target_link_libraries(cbtf-core
         -Wl,--no-as-needed
-	${Boost_LIBRARIES}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
 	cbtf-messages-perfdata
 	cbtf-messages-base
 	${LTDL_LIBRARY_SHARED}
@@ -106,9 +111,14 @@ target_include_directories(cbtf-core-static PUBLIC
 	${LTDL_INCLUDE_DIR}
 )
 
+# Only link with specific Boost libraries needed rather than Boost_LIBRARIES
+# which links all Boost libraries asked for in the cmake config COMPONENTTS
+# specification for Boost.
 target_link_libraries(cbtf-core-static
         -Wl,--no-as-needed
-	${Boost_LIBRARIES}
+        ${Boost_FILESYSTEM_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
 	cbtf-messages-perfdata
 	cbtf-messages-base
 	${LTDL_LIBRARY_SHARED}

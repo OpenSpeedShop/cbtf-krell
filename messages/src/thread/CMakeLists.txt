@@ -17,23 +17,34 @@
 ################################################################################
 
 set(CBTF_MESSAGES_THREAD_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
-        ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
-	ThreadControl.x
+    ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
+    ThreadControl.x
 )
 
+# Adding the rpcgen .h files to converters sources to ensure
+# they are created.
 set(CBTF_MESSAGES_CONVERTERS_THREAD_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
-	Converters.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
+    Converters.cpp
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
-    COMMAND rpcgen -h -o ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
-    COMMAND rpcgen -c -o ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
+    OUTPUT
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
+    COMMAND rpcgen -h -o
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
+    COMMAND rpcgen -c -o
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.c
+	${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/ThreadControl.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.x
 )
+
+
+
 
 # Do not build the converters if we are targeting the compute node build for Intel MIC
 # which is a platform that runs the CBTF filters on a host processor not the
@@ -42,7 +53,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     add_library(cbtf-messages-converters-thread SHARED
         ${CBTF_MESSAGES_CONVERTERS_THREAD_SOURCES}
     )
-  
+
     target_include_directories(cbtf-messages-converters-thread PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -50,20 +61,17 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-thread
         -Wl,--no-as-needed
+	cbtf-messages-base
 	${MRNet_LIBRARIES}
-	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-messages-converters-thread PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-messages-converters-thread PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-thread PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-thread
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -82,27 +90,23 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-thread-static
         -Wl,--no-as-needed
+	cbtf-messages-base
 	${MRNet_LIBRARIES}
-	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-messages-converters-thread-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-thread-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-thread)
-    set_target_properties(cbtf-messages-converters-thread-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-thread-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-thread-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
     )
 endif()
-
 
 add_library(cbtf-messages-thread SHARED
 	${CBTF_MESSAGES_THREAD_SOURCES}
@@ -110,15 +114,13 @@ add_library(cbtf-messages-thread SHARED
 
 target_include_directories(cbtf-messages-thread PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
-	${LTDL_INCLUDE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(cbtf-messages-thread
         -Wl,--no-as-needed
 	cbtf-messages-base
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -128,6 +130,7 @@ install(TARGETS cbtf-messages-thread
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
 )
 
+
 # Install static version
 
 add_library(cbtf-messages-thread-static STATIC
@@ -136,15 +139,13 @@ add_library(cbtf-messages-thread-static STATIC
 
 target_include_directories(cbtf-messages-thread-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../base
-	${LTDL_INCLUDE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(cbtf-messages-thread-static
         -Wl,--no-as-needed
 	cbtf-messages-base
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -156,9 +157,10 @@ install(TARGETS cbtf-messages-thread-static
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
-        DESTINATION include/KrellInstitute/Messages
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+	DESTINATION include/KrellInstitute/Messages
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
+
 
 # rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ThreadControl.x DESTINATION .)

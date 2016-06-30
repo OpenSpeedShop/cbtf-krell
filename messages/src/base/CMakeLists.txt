@@ -17,32 +17,46 @@
 ################################################################################
 
 set(CBTF_MESSAGES_BASE_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/Address.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Address.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Blob.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Blob.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Error.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Error.c
-        ${CMAKE_CURRENT_BINARY_DIR}/File.h
-        ${CMAKE_CURRENT_BINARY_DIR}/File.c
-        ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h
-        ${CMAKE_CURRENT_BINARY_DIR}/StdIO.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Time.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Time.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Thread.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Thread.c
-	Address.x
-	Blob.x
-	Error.x
-	File.x
-	StdIO.x
-	Time.x
-	Thread.x
+    ${CMAKE_CURRENT_BINARY_DIR}/Address.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Address.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Blob.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Blob.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Error.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Error.c
+    ${CMAKE_CURRENT_BINARY_DIR}/File.h
+    ${CMAKE_CURRENT_BINARY_DIR}/File.c
+    ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h
+    ${CMAKE_CURRENT_BINARY_DIR}/StdIO.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Time.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Time.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Thread.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Thread.c
+    Address.x
+    Blob.x
+    Error.x
+    File.x
+    StdIO.x
+    Time.x
+    Thread.x
+)
 
-    )
+# Adding the rpcgen .h files to converters sources to ensure
+# they are created.
 set(CBTF_MESSAGES_CONVERTERS_BASE_SOURCES
-	Converters.cpp
-    )
+    ${CMAKE_CURRENT_BINARY_DIR}/Address.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Blob.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Error.h
+    ${CMAKE_CURRENT_BINARY_DIR}/File.h
+    ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Time.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Thread.h
+    Converters.cpp
+)
+
+
+# FIXME. This like was due to missing .h files in converters sources.
+#add_custom_target(runaddressh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h)
+
 
 add_custom_command(
     OUTPUT
@@ -57,8 +71,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Address.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
-    )
-add_custom_target(runaddressh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h)
+)
 
 
 add_custom_command(
@@ -74,7 +87,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Blob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Blob.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.x
-    )
+)
 
 add_custom_command(
     OUTPUT
@@ -89,7 +102,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Error.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Error.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Error.x
-    )
+)
 
 add_custom_command(
     OUTPUT
@@ -104,7 +117,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/File.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/File.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/File.x
-    )
+)
 
 add_custom_command(
     OUTPUT
@@ -119,7 +132,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/StdIO.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.x
-    )
+)
 
 add_custom_command(
     OUTPUT
@@ -134,7 +147,7 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Time.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Time.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Time.x
-    )
+)
 
 add_custom_command(
     OUTPUT
@@ -149,14 +162,14 @@ add_custom_command(
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Thread.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Thread.h
     DEPENDS
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.x
-    )
+)
 
 # Do not build the converters if we are targeting the compute node build for Intel MIC
 # which is a platform that runs the CBTF filters on a host processor not the
 # compute node processors.
 if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     add_library(cbtf-messages-converters-base SHARED
-        ${CBTF_MESSAGES_CONVERTERS_BASE_SOURCES}
+	${CBTF_MESSAGES_CONVERTERS_BASE_SOURCES}
     )
 
     target_include_directories(cbtf-messages-converters-base PUBLIC
@@ -165,20 +178,16 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-base
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
-	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-messages-converters-base PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-messages-converters-base PROPERTIES
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-base PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-base
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -187,7 +196,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 # Install static version
 
     add_library(cbtf-messages-converters-base-static STATIC
-        ${CBTF_MESSAGES_CONVERTERS_BASE_SOURCES}
+	${CBTF_MESSAGES_CONVERTERS_BASE_SOURCES}
     )
 
     target_include_directories(cbtf-messages-converters-base-static PUBLIC
@@ -196,21 +205,17 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-base-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
-	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-messages-converters-base-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-base-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-base)
-    set_target_properties(cbtf-messages-converters-base-static PROPERTIES
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-base-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-base-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -224,12 +229,10 @@ add_library(cbtf-messages-base SHARED
 target_include_directories(cbtf-messages-base PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-base
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -239,21 +242,19 @@ install(TARGETS cbtf-messages-base
         LIBRARY DESTINATION lib${LIB_SUFFIX}
 )
 
-# Install static version 
+# Install static version
 
 add_library(cbtf-messages-base-static STATIC
-        ${CBTF_MESSAGES_BASE_SOURCES}
+	${CBTF_MESSAGES_BASE_SOURCES}
 )
 
 target_include_directories(cbtf-messages-base-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-base-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -273,6 +274,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Address.h
               ${CMAKE_CURRENT_BINARY_DIR}/Thread.h
         DESTINATION include/KrellInstitute/Messages
         PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+
 
 # rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Address.x DESTINATION .)

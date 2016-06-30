@@ -16,25 +16,37 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-
 set(CBTF_MESSAGES_COLLECTOR_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/Collector.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Collector.c
-	Collector.x
+    ${CMAKE_CURRENT_BINARY_DIR}/Collector.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Collector.c
+    Collector.x
 )
 
+# Adding the rpcgen .h files to converters sources to ensure
+# they are created.
 set(CBTF_MESSAGES_CONVERTERS_COLLECTOR_SOURCES
-	Converters.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/Collector.h
+    Converters.cpp
 )
+
+
+# FIXME. This like was due to missing .h files in converters sources.
+#add_custom_target(runcollectorh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h)
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/Collector.c
-    COMMAND rpcgen -h -o ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
-    COMMAND rpcgen -c -o ${CMAKE_CURRENT_BINARY_DIR}/Collector.c ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
+    OUTPUT
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.h
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.c
+    COMMAND rpcgen -h -o
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.h
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.x
+    COMMAND rpcgen -c -o
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.c
+	${CMAKE_CURRENT_BINARY_DIR}/Collector.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Collector.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Collector.x
 )
-add_custom_target(runcollectorh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Collector.h)
+
 
 
 # Do not build the converters if we are targeting the compute node build for Intel MIC
@@ -42,7 +54,7 @@ add_custom_target(runcollectorh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellIns
 # compute node processors.
 if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     add_library(cbtf-messages-converters-collector SHARED
-        ${CBTF_MESSAGES_CONVERTERS_COLLECTOR_SOURCES}
+	${CBTF_MESSAGES_CONVERTERS_COLLECTOR_SOURCES}
     )
   
     target_include_directories(cbtf-messages-converters-collector PUBLIC
@@ -51,20 +63,16 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-collector
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
-	pthread
 	${CMAKE_DL_LIBS}
-	${LTDL_LIBRARY_SHARED}
     )
 
     set_target_properties(cbtf-messages-converters-collector PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-messages-converters-collector PROPERTIES
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}" )
+    set_target_properties(cbtf-messages-converters-collector PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}" )
 
 
     install(TARGETS cbtf-messages-converters-collector
@@ -83,21 +91,17 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-collector-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
-	pthread
 	${CMAKE_DL_LIBS}
-	${LTDL_LIBRARY_SHARED}
     )
 
     set_target_properties(cbtf-messages-converters-collector-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-collector-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-collector)
-    set_target_properties(cbtf-messages-converters-collector-static PROPERTIES
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-collector-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-collector-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -111,12 +115,10 @@ add_library(cbtf-messages-collector SHARED
 target_include_directories(cbtf-messages-collector PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-collector
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -136,12 +138,10 @@ add_library(cbtf-messages-collector-static STATIC
 target_include_directories(cbtf-messages-collector-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-collector-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -153,8 +153,8 @@ install(TARGETS cbtf-messages-collector-static
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Collector.h
-        DESTINATION include/KrellInstitute/Messages
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+	DESTINATION include/KrellInstitute/Messages
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
 # rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..

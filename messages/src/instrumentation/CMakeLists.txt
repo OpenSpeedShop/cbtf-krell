@@ -17,70 +17,71 @@
 ################################################################################
 
 set(CBTF_MESSAGES_INSTRUMENTATION_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.c
-	Instrument.x
-	MpiJob.x
-	Job.x
+    ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
+    ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
+    ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Job.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Job.c
+    Instrument.x
+    MpiJob.x
+    Job.x
 )
 
+
+# Adding the rpcgen .h files to converters sources to ensure
+# they are created.
 set(CBTF_MESSAGES_CONVERTERS_INSTRUMENTATION_SOURCES
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.c
-	Converters.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
+    ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Job.h
+    Converters.cpp
 )
+
 
 add_custom_command(
     OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
     COMMAND rpcgen -h -o
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.h
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
     COMMAND rpcgen -c -o
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.c
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Instrument.h
     DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
+	${CMAKE_CURRENT_BINARY_DIR}/Instrument.x
 )
 
 add_custom_command(
     OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
     COMMAND rpcgen -h -o
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
     COMMAND rpcgen -c -o
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.c
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/MpiJob.h
     DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
+	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.x
 )
 
 add_custom_command(
     OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.c
+	${CMAKE_CURRENT_BINARY_DIR}/Job.h
+	${CMAKE_CURRENT_BINARY_DIR}/Job.c
     COMMAND rpcgen -h -o
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.x
+	${CMAKE_CURRENT_BINARY_DIR}/Job.h
+	${CMAKE_CURRENT_BINARY_DIR}/Job.x
     COMMAND rpcgen -c -o
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.c
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.x
+	${CMAKE_CURRENT_BINARY_DIR}/Job.c
+	${CMAKE_CURRENT_BINARY_DIR}/Job.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Job.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Job.h
     DEPENDS
-        ${CMAKE_CURRENT_BINARY_DIR}/Job.x
+	${CMAKE_CURRENT_BINARY_DIR}/Job.x
 )
 
 #add_definitions(${MRNet_DEFINES})
@@ -97,12 +98,11 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     target_include_directories(cbtf-messages-converters-instrumentation PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}../base
-	${CMAKE_CURRENT_BINARY_DIR}../collector
+	${CMAKE_CURRENT_BINARY_DIR}/../base
+	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-instrumentation
@@ -110,14 +110,11 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	cbtf-messages-base
 	cbtf-messages-collector
 	${MRNet_LIBRARIES}
-	pthread
 	${CMAKE_DL_LIBS}
-	${LTDL_LIBRARY_SHARED}
     )
 
     set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES 
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-instrumentation
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -132,12 +129,11 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     target_include_directories(cbtf-messages-converters-instrumentation-static PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}../base
-	${CMAKE_CURRENT_BINARY_DIR}../collector
+	${CMAKE_CURRENT_BINARY_DIR}/../base
+	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${MRNet_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${CBTF_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-messages-converters-instrumentation-static
@@ -145,15 +141,12 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 	cbtf-messages-base
 	cbtf-messages-collector
 	${MRNet_LIBRARIES}
-	pthread
 	${CMAKE_DL_LIBS}
-	${LTDL_LIBRARY_SHARED}
     )
 
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-instrumentation)
-    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES 
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
     install(TARGETS cbtf-messages-converters-instrumentation-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -169,19 +162,16 @@ target_include_directories(cbtf-messages-instrumentation PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-instrumentation
         -Wl,--no-as-needed
-	pthread
-	${LTDL_LIBRARY_SHARED}
+	cbtf-messages-base
+	cbtf-messages-collector
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-messages-instrumentation PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-messages-instrumentation PROPERTIES 
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
 install(TARGETS cbtf-messages-instrumentation 
         LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -196,30 +186,29 @@ target_include_directories(cbtf-messages-instrumentation-static PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../base
 	${CMAKE_CURRENT_BINARY_DIR}/../collector
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-messages-instrumentation-static
         -Wl,--no-as-needed
-	pthread
-	${LTDL_LIBRARY_SHARED}
+	cbtf-messages-base
+	cbtf-messages-collector
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-instrumentation)
-set_target_properties(cbtf-messages-instrumentation-static PROPERTIES 
-	COMPILE_DEFINITIONS "${MRNet_DEFINES}")
 
 install(TARGETS cbtf-messages-instrumentation-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Instrument.h 
-              ${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h 
-              ${CMAKE_CURRENT_BINARY_DIR}/Job.h 
+install(FILES
+ 	${CMAKE_CURRENT_BINARY_DIR}/Instrument.h 
+      	${CMAKE_CURRENT_BINARY_DIR}/MpiJob.h 
+      	${CMAKE_CURRENT_BINARY_DIR}/Job.h 
         DESTINATION include/KrellInstitute/Messages
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
+        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+)
 
 # rpcgen processing done in CMAKE_CURRENT_BINARY_DIR..
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Instrument.x DESTINATION .)

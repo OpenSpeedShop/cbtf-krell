@@ -34,7 +34,7 @@ find_path(Mpich_INCLUDE_DIR
     NO_DEFAULT_PATH
     )
 
-find_library(Mpich_LIBRARY_SHARED NAMES mpich
+find_library(Mpich_LIBRARY_SHARED NAMES mpich mpi
     HINTS $ENV{MPICH_DIR}
     HINTS ${MPICH_DIR}
     PATHS /usr /usr/local /usr/lib64/mpich /usr/lib/mpich

@@ -491,9 +491,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     const char* sampling_rate = getenv("CBTF_USERTIME_RATE");
     args.sampling_rate = (sampling_rate != NULL) ? atoi(sampling_rate) : 35;
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
-#endif
 
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));

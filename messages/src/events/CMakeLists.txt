@@ -60,6 +60,12 @@ add_custom_command(
     OUTPUT
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.c
+    COMMAND cmake -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/OfflineEvents.x
+        ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x
+    COMMAND cmake -E remove -f
+        ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h
+        ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.c
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x

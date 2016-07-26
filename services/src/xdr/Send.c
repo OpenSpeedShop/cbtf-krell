@@ -25,6 +25,7 @@
 
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Services/Send.h"
 
 #include <alloca.h>
@@ -52,10 +53,10 @@ int cbtf_send(const unsigned, const void*);
  *
  * @ingroup RuntimeAPI
  */
-void CBTF_Send(const CBTF_DataHeader* header,
+void CBTF_Data_Send(const CBTF_DataHeader* header,
 		 const xdrproc_t xdrproc, const void* data)
 {
-    const size_t EncodingBufferSize = (1 /*CBTF_BlobSizeFactor*/ * 15 * 1024);
+    const size_t EncodingBufferSize = (CBTF_BlobSizeFactor * 15 * 1024);
     unsigned size;
     char* buffer = NULL;
     XDR xdrs;
@@ -83,6 +84,42 @@ void CBTF_Send(const CBTF_DataHeader* header,
     /* Close the XDR stream */
     xdr_destroy(&xdrs);
     
+    /* Send the data */
+    Assert(cbtf_send(size, buffer) == 1);
+}
+
+void CBTF_Event_Send(const CBTF_EventHeader* header,
+		 const xdrproc_t xdrproc, const void* data)
+{
+    const size_t EncodingBufferSize = (CBTF_BlobSizeFactor * 15 * 1024);
+    unsigned size;
+    char* buffer = NULL;
+    XDR xdrs;
+
+    /* Check preconditions */
+    Assert(header != NULL);
+    Assert(xdrproc != NULL);
+    Assert(data != NULL);
+
+    /* Allocate the encoding buffer */
+    buffer = alloca(EncodingBufferSize);
+
+
+    /* Create an XDR stream using the encoding buffer */
+    xdrmem_create(&xdrs, buffer, EncodingBufferSize, XDR_ENCODE);
+
+    /* Encode the performance data header to this stream */
+    Assert(xdr_CBTF_EventHeader(&xdrs, (void*)header) == TRUE);
+
+    /* Encode the data structure to this stream */
+    Assert((*xdrproc)(&xdrs, (void*)data) == TRUE);
+
+    /* Get the encoded size */
+    size = xdr_getpos(&xdrs);
+
+    /* Close the XDR stream */
+    xdr_destroy(&xdrs);
+
     /* Send the data */
     Assert(cbtf_send(size, buffer) == 1);
 }

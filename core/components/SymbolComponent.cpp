@@ -1085,6 +1085,17 @@ private:
 	}
 
 	AddressCounts ac = abuffer.addresscounts;
+#ifndef NDEBUG
+	if (is_debug_symbol_events_enabled) {
+            output << debug_prefix.str()
+                << "ResolveSymbols::finishedHandler"
+	        << " addresses:" << ac.size()
+	        << " symtabmap:" << symtabmap.size()
+	        << " linkedobjects:" << linkedobjectvec.size()
+		<< std::endl;
+	    flushOutput(output);
+	}
+#endif
 	for (AddressCounts::const_iterator aci = ac.begin(); aci != ac.end(); ++aci) {
 	    bool foundit = false;
 	    for (LinkedObjectEntryVec::iterator li = linkedobjectvec.begin(); li != linkedobjectvec.end(); ++li) {

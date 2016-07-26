@@ -441,9 +441,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->data.interval = (uint64_t)(1000000000) / (uint64_t)(hwcsamp_rate);;
 #endif
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
-#endif
 
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));

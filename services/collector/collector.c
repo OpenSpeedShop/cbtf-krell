@@ -44,6 +44,8 @@ typedef struct {
     bool_t defer_sampling;
     bool is_openmp;
     bool has_ompt;
+    bool is_mpi_job;
+    bool is_threaded_job;
 
 #if defined(CBTF_SERVICE_USE_MRNET)
     CBTF_Protocol_ThreadNameGroup tgrp;
@@ -52,8 +54,6 @@ typedef struct {
     CBTF_Protocol_ThreadsStateChanged thread_state_changed_message;
 
     bool connected_to_mrnet;
-    bool is_mpi_job;
-    bool is_threaded_job;
     bool sent_attached_to_threads;
 
     struct {
@@ -72,7 +72,6 @@ typedef struct {
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 extern void cbtf_offline_sent_data(int);
-extern void cbtf_send_info();
 #endif
 
 #ifdef USE_EXPLICIT_TLS
@@ -92,6 +91,57 @@ static __thread TLS the_tls;
 
 #endif
 
+#if defined (CBTF_SERVICE_USE_OFFLINE)
+
+void cbtf_offline_service_resume_sampling()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=FALSE;
+}
+
+void cbtf_offline_service_defer_sampling()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->defer_sampling=TRUE;
+}
+
+void cbtf_offline_service_start_timer()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    cbtf_collector_resume();
+}
+
+void cbtf_offline_service_stop_timer()
+{
+    cbtf_collector_pause();
+}
+#endif
+
+
 #if defined(CBTF_SERVICE_USE_MRNET)
 
 void init_process_thread()
@@ -109,8 +159,6 @@ void init_process_thread()
     tls->header.rank = monitor_mpi_comm_rank();
     tls->header.omp_tid = monitor_get_thread_num();
     tls->tname.omp_tid = monitor_get_thread_num();
-
-    // removed CBTF_Protocol_CreatedProcess message;
 
     tls->tgrp.names.names_len = 0;
     tls->tgrp.names.names_val = tls->tgrpbuf.tnames;
@@ -158,82 +206,7 @@ void send_attached_to_threads_message()
     }
 }
 
-void set_mpi_flag(bool flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
 
-    tls->is_mpi_job = flag;
-}
-
-void set_threaded_flag(bool flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->is_threaded_job = flag;
-}
-
-void cbtf_collector_set_openmp_threadid(int32_t omptid)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->header.omp_tid = omptid;
-    tls->tname.omp_tid = omptid;
-    tls->has_ompt = true;
-    tls->is_openmp = true;
-}
-
-int32_t cbtf_collector_get_openmp_threadid()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    // valid openmp thread id is 0 or greater...
-    if (tls->header.omp_tid >= 0)
-	return tls->header.omp_tid;
-    else
-	return -1;
-}
-
-void set_ompt_flag(bool flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->has_ompt = flag;
-}
 
 void set_threaded_mrnet_connection()
 {
@@ -292,6 +265,87 @@ void connect_to_mrnet()
 
 }
 #endif
+
+void cbtf_collector_set_openmp_threadid(int32_t omptid)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+
+#if defined(CBTF_SERVICE_USE_MRNET)
+    tls->tname.omp_tid = omptid;
+#endif
+    tls->header.omp_tid = omptid;
+    tls->has_ompt = true;
+    tls->is_openmp = true;
+}
+
+int32_t cbtf_collector_get_openmp_threadid()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    // valid openmp thread id is 0 or greater...
+    if (tls->header.omp_tid >= 0)
+	return tls->header.omp_tid;
+    else
+	return -1;
+}
+
+void set_ompt_flag(bool flag)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->has_ompt = flag;
+}
+
+void set_mpi_flag(bool flag)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->is_mpi_job = flag;
+}
+
+void set_threaded_flag(bool flag)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return;
+
+    tls->is_threaded_job = flag;
+}
+
 
 // noop for non mrnet collection.
 void send_thread_state_changed_message()
@@ -359,13 +413,12 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 #endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_Send(header, xdrproc, data);
+    CBTF_Data_Send(header, xdrproc, data);
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
 	    if (!tls->sent_attached_to_threads) {
-		//init_process_thread();
 	        send_attached_to_threads_message();
 	        tls->sent_attached_to_threads = true;
 	    }
@@ -411,7 +464,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     } else {
 	tls->debug_mrnet=false;
     }
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
 	tls->debug_collector=true;
     } else {
 	tls->debug_collector=false;
@@ -433,9 +486,6 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
     tls->header.id = strdup(cbtf_collector_unique_id);
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(&(tls->header), cbtf_collector_unique_id, "cbtf-data");
-#endif
 
 #if defined (CBTF_SERVICE_USE_MRNET)
     //CBTF_Protocol_ThreadName tname;
@@ -468,13 +518,10 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     connect_to_mrnet();
     if (tls->connected_to_mrnet) {
 	if (!tls->sent_attached_to_threads) {
-	    //init_process_thread();
 	    send_attached_to_threads_message();
 	    tls->sent_attached_to_threads = true;
 	}
     }
-    cbtf_send_info();
-    // defer record of dsos
 #endif
 
 #endif
@@ -482,6 +529,16 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     tls->header.posix_tid = local_data_header.posix_tid;
     tls->header.rank = local_data_header.rank;
     tls->header.omp_tid = monitor_get_thread_num();
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
+/* NOTE: this happens at process startup. mpi rank is not set yet
+ * so the header info for mpi rank is incorrect in this header.
+ * For FILEIO this must happen here since it uses async unsafe calls
+ * like malloc.
+ */
+    CBTF_SetSendToFile(&(tls->header), cbtf_collector_unique_id, "openss-data");
+#endif
+
     /* Begin collection */
     cbtf_collector_start(&tls->header);
 }
@@ -517,55 +574,6 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 }
 
 
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-
-void cbtf_offline_service_resume_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=FALSE;
-}
-
-void cbtf_offline_service_defer_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling=TRUE;
-}
-
-void cbtf_offline_service_start_timer()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    cbtf_collector_resume();
-}
-
-void cbtf_offline_service_stop_timer()
-{
-    cbtf_collector_pause();
-}
-#endif
 
 #ifdef USE_EXPLICIT_TLS
 void destroy_explicit_tls() {

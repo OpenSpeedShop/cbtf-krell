@@ -24,12 +24,13 @@
 
 /** Structure of the blob containing our file objects. */
 struct CBTF_Protocol_Offline_LinkedObject {
-    string   objname<>;   /** < Name of the object. */
-    uint64_t addr_begin;  /** < begin address of object */
-    uint64_t addr_end;    /** < end address of object */
-    uint64_t time_begin;  /** < load time of object */
-    uint64_t time_end;    /** < close time of object */
-    uint8_t  is_open;     /** < flag to indicate dlopen or dlclose */
+    string   objname<>;     /** < Name of the object. */
+    uint64_t addr_begin;    /** < begin address of object */
+    uint64_t addr_end;      /** < end address of object */
+    uint64_t time_begin;    /** < load time of object */
+    uint64_t time_end;      /** < close time of object */
+    uint8_t  is_open;       /** < flag to indicate dlopen or dlclose */
+    bool  is_executable; /** < flag to indicate dlopen or dlclose */
 };
 
 struct CBTF_Protocol_Offline_LinkedObjectGroup {

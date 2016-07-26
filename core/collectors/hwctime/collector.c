@@ -512,9 +512,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
     tls->data.interval = hwctime_papithreshold;
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
-#endif
 
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));

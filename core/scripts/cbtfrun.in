@@ -253,17 +253,6 @@ if [ "$has_openmp" == "true" ] ; then
 fi
 
 
-if [ "use_fileio" == "true" ]
-then
-  if [ "x${CBTF_RAWDATA_DIR}" == "x" ]
-  then
-   test -d "/tmp/${USER}/offline-cbtf" || mkdir -p "/tmp/${USER}/offline-cbtf"
-   export CBTF_RAWDATA_DIR="/tmp/${USER}/offline-cbtf"
-  else
-   test -d ${CBTF_RAWDATA_DIR} || mkdir -p ${CBTF_RAWDATA_DIR}
-  fi
-fi
-
 extra_mpi_libs=""
 
 
@@ -290,7 +279,7 @@ case "$collector" in
 	fi 
     elif [ $use_fileio == "true" ]
     then
-	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${offline_service}:${base_service}:${perfdata_service}:${collector_mon_fileio_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${extra_mpi_libs}:${libmonitor}
+	    export LD_PRELOAD=${monitor_service}:${unwind_service}:${fileio_service}:${events_service}:${data_service}:${common_service}:${offline_service}:${base_service}:${perfdata_service}:${send_service}:${collector_mon_fileio_service}:${cbtfk_plugins}/$collector-collector-monitor-fileio.so:${extra_mpi_libs}:${libmonitor}
     fi
     ;;
 

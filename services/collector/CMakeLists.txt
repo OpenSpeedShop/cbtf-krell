@@ -35,7 +35,6 @@ add_library(cbtf-services-collector-monitor-fileio SHARED
 target_include_directories(cbtf-services-collector-monitor-fileio PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -70,7 +69,6 @@ add_library(cbtf-services-collector-monitor-fileio-static STATIC
 target_include_directories(cbtf-services-collector-monitor-fileio-static PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -106,7 +104,6 @@ add_library(cbtf-services-collector-monitor-mrnet SHARED
 target_include_directories(cbtf-services-collector-monitor-mrnet PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${MRNet_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -143,7 +140,6 @@ add_library(cbtf-services-collector-monitor-mrnet-static STATIC
 target_include_directories(cbtf-services-collector-monitor-mrnet-static PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${MRNet_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -179,7 +175,6 @@ add_library(cbtf-services-collector-monitor-mrnet-mpi SHARED
 target_include_directories(cbtf-services-collector-monitor-mrnet-mpi PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${MRNet_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -216,7 +211,6 @@ add_library(cbtf-services-collector-monitor-mrnet-mpi-static STATIC
 target_include_directories(cbtf-services-collector-monitor-mrnet-mpi-static PUBLIC
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibMonitor_INCLUDE_DIRS}
 	${MRNet_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}

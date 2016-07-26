@@ -295,15 +295,16 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "mpi send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%u) events_len(%u)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 #if defined(PROFILE)
-		tls->data.stacktraces.stacktraces_len);
+		tls->data.stacktraces.stacktraces_len
 #else
 		tls->data.stacktraces.stacktraces_len,
-		tls->data.events.events_len);
+		tls->data.events.events_len
 #endif
+	    );
 	}
 #endif
 
@@ -684,10 +685,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 			   &args);
 #endif
 
-#if defined(CBTF_SERVICE_USE_FILEIO)
-    CBTF_SetSendToFile(cbtf_collector_unique_id, "cbtf-data");
-#endif
-
 #if defined(CBTF_SERVICE_USE_OFFLINE)
 
     /* If CBTF_MPI_TRACED is set to a valid list of mpi functions, trace only
@@ -814,14 +811,19 @@ void cbtf_collector_stop()
     /* Are there any unsent samples? */
 #if defined(PROFILE)
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr,"cbtf_collector_stop count_len:%d stacktraces_len%d\n",tls->data.count.count_len, tls->data.stacktraces.stacktraces_len);
-	}
+    }
 #endif
     if(tls->data.count.count_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
 #else
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	    fprintf(stderr,"cbtf_collector_stop events_len:%d stacktraces_len%d\n",tls->data.events.events_len, tls->data.stacktraces.stacktraces_len);
+    }
+#endif
     if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }

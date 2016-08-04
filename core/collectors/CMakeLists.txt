@@ -49,3 +49,8 @@ add_subdirectory(mpi)
 endif()
 endif()
 
+if(LIBIOMP_FOUND)
+if (LIBUNWIND_FOUND)
+add_subdirectory(omptp)
+endif()
+endif()

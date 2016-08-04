@@ -27,7 +27,13 @@ enum CBTF_ompt_type {
     CBTF_OMPT_UNKNOWN=0
 };
 
-/** Event structure describing a single I/O call. */
+/** Event structure describing a single OMPT event profile time. */
+struct CBTF_omptp_event {
+    uint64_t time;   /**< time of the call. */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+};
+
+/** Event structure describing a single OMPT event. */
 struct CBTF_ompt_event {
     uint64_t start_time;  /**< Start time of the call. */
     uint64_t stop_time;   /**< End time of the call. */
@@ -37,9 +43,21 @@ struct CBTF_ompt_event {
     CBTF_ompt_type ompt_type;
 };
 
+/** Structure of the blob containing profile performance data. */
+struct CBTF_ompt_profile_data {
+    uint64_t stacktraces<>;  /**< Stack traces. */
+    uint64_t time<>;      /**< Total time for stack trace.*/
+    uint8_t count<>;      /**< Count for stack trace. Entries with a positive */
+                          /**< count value represent the top of stack for a */
+                          /**< specifc stack. If stack count exceeds 255 */
+                          /**< a new entry is made in the sample buffer. */
+                          /**< Positive entries the count buffer represent */
+                          /**< the index into the address buffer (bt) for a */
+                          /**< specifc stack */
+};
 
 /** Structure of the blob containing extended trace performance data. */
 struct CBTF_ompt_exttrace_data {
-    uint64_t stacktraces<>;  /**< Stack traces. */
-    CBTF_ompt_event events<>;       /**< pthread call events. */
+    uint64_t stacktraces<>;   /**< Stack traces. */
+    CBTF_ompt_event events<>; /**< ompt events. */
 };

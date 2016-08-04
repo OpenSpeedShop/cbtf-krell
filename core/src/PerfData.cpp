@@ -39,6 +39,7 @@
 #include "KrellInstitute/Messages/IO_data.h"
 #include "KrellInstitute/Messages/Mem_data.h"
 #include "KrellInstitute/Messages/Mpi_data.h"
+#include "KrellInstitute/Messages/Ompt_data.h"
 #include "KrellInstitute/Messages/Pthreads_data.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
 
@@ -240,6 +241,29 @@ bool is_debug_aggregator_events_enabled =
 	    stdata.aggregateAddressCounts(addressTime,buf);
             xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
                      reinterpret_cast<char*>(&data));
+	} else if (id == "omptp") {
+            CBTF_ompt_profile_data data;
+            memset(&data, 0, sizeof(data));
+            unsigned bsize = blob.getXDRDecoding(reinterpret_cast<xdrproc_t>(xdr_CBTF_ompt_profile_data), &data);
+	    int eventcount = 0;
+	    AddressCounts addressTime;
+	    for(unsigned i = 0; i < data.time.time_len; ++i) {
+		++eventcount;
+	        Address a;
+		a = Address(data.stacktraces.stacktraces_val[i]);
+
+		AddressCounts::iterator it = addressTime.find(a);
+		if (it == addressTime.end() ) {
+		    addressTime.insert(std::make_pair(a,data.time.time_val[i]));
+		} else {
+		    (*it).second += data.time.time_val[i];
+		}
+	    }
+
+	    StacktraceData stdata;
+	    stdata.aggregateAddressCounts(addressTime,buf);
+            xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_ompt_profile_data),
+                     reinterpret_cast<char*>(&data));
 	} else if (id == "pthreads") {
             CBTF_pthreads_exttrace_data data;
             memset(&data, 0, sizeof(data));
@@ -392,7 +416,8 @@ int PerfData::aggregate(const Blob &blob, AddressBuffer &buf) {
         } else if (collectorID == "io" || collectorID == "iot" ||
 		   collectorID == "iop" || collectorID == "mem" ||
 		   collectorID == "mpi" || collectorID == "mpit" ||
-		   collectorID == "mpip" || collectorID == "pthreads") {
+		   collectorID == "mpip" || collectorID == "pthreads" ||
+		   collectorID == "omptp" ) {
             aggregateSTTraceData(collectorID, dblob, buf);
 	} else {
 	    std::cerr << "Unknown collector data handled!" << std::endl;

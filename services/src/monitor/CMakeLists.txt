@@ -97,20 +97,21 @@ install(TARGETS cbtf-services-monitor-static
 )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
-# Create Monitor.c.o and install into Collector directory
-# ar x .libs/libcbtf-services-monitor.a libcbtf_services_monitor_la-Monitor.o
-# cp  libcbtf_services_monitor_la-Monitor.o ${pkglibdir}/cbtf_monitor.o
+# Create Monitor.c.o and install as cbtf_monitor.o into Collector directory
 
 add_custom_command(
     POST_BUILD
-    OUTPUT ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cbtf_monitor.o
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors
-    COMMAND ar -x libcbtf-services-monitor.a
-    COMMAND cp Monitor.c.o ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcbtf-services-monitor.a
+    COMMAND ar -x ${CMAKE_CURRENT_BINARY_DIR}/libcbtf-services-monitor.a
+    COMMAND cp Monitor.c.o cbtf_monitor.o
+    DEPENDS cbtf-services-monitor-static
     COMMENT "Copying cbtf_monitor.o to the install directory for static linking via cbtflink..."
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
-add_custom_target(runcbtfmonitor ALL DEPENDS ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors/cbtf_monitor.o)
+add_custom_target(runcbtfmonitor ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cbtf_monitor.o)
+install (FILES ${CMAKE_CURRENT_BINARY_DIR}/cbtf_monitor.o
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors)
+
 

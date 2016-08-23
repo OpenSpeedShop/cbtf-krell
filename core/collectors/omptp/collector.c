@@ -239,8 +239,9 @@ static void send_samples(TLS *tls)
 /**
  * Start an event.
  *
- * Called by the omptp function wrappers each time an event is to be started.
+ * Called by certain omptp callbacks each time an event is to be started.
  * Initializes the event record and increments the wrappers nesting depth.
+ * For omptp we access the callstack when the event is started.
  *
  * @param event    Event to be started.
  */
@@ -293,7 +294,6 @@ void omptp_start_event(CBTF_omptp_event* event, uint64_t function, uint64_t* sta
  * @param function    Address of the ompt function for which the event is being
  *                    recorded.
  */
-//void omptp_record_event(const CBTF_omptp_event* event, uint64_t function)
 void omptp_record_event(const CBTF_omptp_event* event, uint64_t* stacktrace, unsigned stacktrace_size)
 {
     /* Access our thread-local storage */
@@ -308,28 +308,6 @@ void omptp_record_event(const CBTF_omptp_event* event, uint64_t* stacktrace, uns
     tls->do_trace = false;
 
     unsigned entry = 0, start, i;
-#if 0
-    uint64_t stacktrace[MaxFramesPerStackTrace];
-    unsigned stacktrace_size = 0;
-
-    /* Newer versions of libunwind now make io calls (open a file in /proc/<self>/maps)
-     * that cause a thread lock in the libunwind dwarf parser. We are not interested in
-     * any io done by libunwind while we get the stacktrace for the current context.
-     * So we need to bump the nesting_depth before requesting the stacktrace and
-     * then decrement nesting_depth after aquiring the stacktrace
-     */
-
-    ++tls->nesting_depth;
-    /* Obtain the stack trace from the current thread context */
-    CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
-				    MaxFramesPerStackTrace,
-				    &stacktrace_size, stacktrace);
-    --tls->nesting_depth;
-
-    if(stacktrace_size > 0 && function != NULL)
-	stacktrace[0] = function;
-#endif
-
     bool_t stack_already_exists = FALSE;
 
     int j;

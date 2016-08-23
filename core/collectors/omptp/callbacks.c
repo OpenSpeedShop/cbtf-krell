@@ -212,6 +212,7 @@ void CBTF_ompt_cb_parallel_region_begin (
     tls->region_event.time = 0;
 
 #if 0
+    /* DEBUG for viewing the stack frame addresses */
     int i;
     for (i=0; i < current_region_stacktrace_size; ++i) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_parallel_region_begin: current_region_stacktrace[%d]=%p\n",
@@ -237,8 +238,6 @@ void CBTF_ompt_cb_parallel_region_begin (
 }
 
 // ompt_event_MAY_ALWAYS
-// record regionID
-// if parallel flag, record stop time, decrement parallel flag.
 void CBTF_ompt_cb_parallel_region_end (
   ompt_parallel_id_t parallelID,    /* parallel region ID */
   ompt_task_id_t parent_taskID,     /* parent task id */
@@ -280,20 +279,16 @@ void CBTF_ompt_cb_parallel_region_end (
 #endif
 
     tls->region_event.time = CBTF_GetTime() - tls->region_btime;
-    //omptp_record_event(&tls->region_event, current_region_stacktrace, current_region_stacktrace_size);
     // resume collection
     cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS
-// record new_taskID as taskid.
-// record start time and get callstack of this context
-// increment is parallel flag.
 void CBTF_ompt_cb_task_begin (
   ompt_task_id_t parent_taskID,     /* parent task id */
   ompt_frame_t *parent_taskframe,   /* unused parent task frame data */
   ompt_task_id_t new_taskID,        /* new task id */
-  void *task_function)                    /* context of task - function pointer */
+  void *task_function)              /* context of task - function pointer */
 {
     cbtf_collector_pause();
 #ifndef NDEBUG
@@ -302,13 +297,10 @@ void CBTF_ompt_cb_task_begin (
 	omp_get_thread_num() ,parent_taskID, new_taskID, task_function);
     }
 #endif
-    //collector_record_addr("CBTF_OMP_TASK_BEGIN",(uint64_t)task_function);
     cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS
-//  new_taskID as taskid.
-// decrement is parallel flag.
 void CBTF_ompt_cb_task_end (
   ompt_task_id_t parent_taskID     /* parent task id */
   )
@@ -400,87 +392,73 @@ void CBTF_ompt_cb_runtime_shutdown()
 // ompt_event_MAY_ALWAYS_TRACE
 // set wait, start time wait on wait name
 void CBTF_ompt_cb_wait_atomic (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_wait_atomic: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // set wait, start time wait on wait name
 void CBTF_ompt_cb_wait_ordered (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_wait_ordered: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
 // set wait, start time wait on wait name
 void CBTF_ompt_cb_wait_critical (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_wait) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_wait_critical: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
 // set wait, start time wait on wait name
 void CBTF_ompt_cb_wait_lock (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_wait) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_wait_lock: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // if acquired, end time on wait name.
 // clear wait, set acquired, start time on region name
 void CBTF_ompt_cb_acquired_atomic (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_acquired_atomic: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // if acquired, end time on wait name.
 // clear wait, set acquired, start time on region name
 void CBTF_ompt_cb_acquired_ordered (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_acquired_ordered: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
 void CBTF_ompt_cb_acquired_critical (ompt_wait_id_t waitID) {
 #if 0
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_wait) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_acquired_critical: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 #endif
 }
 
@@ -488,56 +466,42 @@ void CBTF_ompt_cb_acquired_critical (ompt_wait_id_t waitID) {
 // if acquired, end time on wait name.
 // clear wait, set acquired, start time on region name
 void CBTF_ompt_cb_acquired_lock (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
-
 #if 0
     tls->lock_count++;
-    struct timespec now;
-    Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
-    tls->lock_btime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
-        (uint64_t)(now.tv_nsec);
-
+    tls->lock_btime = CBTF_GetTime();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_acquired_lock: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-
-// cbtf_collector_resume();
 #endif
 }
 
 // ompt_event_MAY_ALWAYS_BLAME
 void CBTF_ompt_cb_release_atomic (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_release_atomic: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_BLAME
 void CBTF_ompt_cb_release_ordered (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_release_ordered: waitID:%lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_BLAME
 void CBTF_ompt_cb_release_critical (ompt_wait_id_t waitID) {
-// cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_release_critical: waitID = %lu\n",omp_get_thread_num(),waitID);
     }
 #endif
-// cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_BLAME
@@ -551,8 +515,6 @@ void CBTF_ompt_cb_release_lock (ompt_wait_id_t waitID) {
 #endif
     Assert(tls != NULL);
 
-// cbtf_collector_pause();
-
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
 	fprintf(stderr, "[%d] CBTF_ompt_cb_release_lock: waitID = %lu\n",omp_get_thread_num(),waitID);
@@ -560,16 +522,9 @@ void CBTF_ompt_cb_release_lock (ompt_wait_id_t waitID) {
 #endif
 
    tls->lock_count++;
-
 #if 0
-    struct timespec now;
-    Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
-    uint64_t tls->lock_etime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
-        (uint64_t)(now.tv_nsec);
-    tls->lock_time += (tls->lock_etime - tls->lock_btime);
+    tls->lock_time += CBTF_GetTime() - tls->lock_btime;
 #endif
-
-// cbtf_collector_resume();
 }
 
 // TODO:
@@ -725,7 +680,6 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    //cbtf_collector_pause();
     ++tls->itask_count;
     tls->itask_btime = CBTF_GetTime();
 #ifndef NDEBUG
@@ -733,7 +687,6 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
 	fprintf(stderr,"[%d] CBTF_ompt_cb_implicit_task_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -749,7 +702,6 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
 #endif
 
     Assert(tls != NULL);
-    //cbtf_collector_pause();
     uint64_t t = CBTF_GetTime() - tls->itask_btime;
     CBTF_omptp_event event;
     memset(&event, 0, sizeof(CBTF_omptp_event));
@@ -763,7 +715,6 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
     }
 #endif
     omptp_record_event(&event, current_region_stacktrace, current_region_stacktrace_size);
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -771,13 +722,11 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_master_begin (ompt_parallel_id_t parallelID,
 		      ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_master_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -785,13 +734,11 @@ void CBTF_ompt_cb_master_begin (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_master_end (ompt_parallel_id_t parallelID,
 		    ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_master_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -799,13 +746,11 @@ void CBTF_ompt_cb_master_end (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_taskwait_begin (ompt_parallel_id_t parallelID,
 		        ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_taskwait_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -813,13 +758,11 @@ void CBTF_ompt_cb_taskwait_begin (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_taskwait_end (ompt_parallel_id_t parallelID,
 		      ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_taskwait_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
@@ -828,13 +771,11 @@ void CBTF_ompt_cb_wait_taskwait_begin (ompt_parallel_id_t parallelID,
 			     ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] BLAME CBTF_ompt_cb_wait_taskwait_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -844,13 +785,11 @@ void CBTF_ompt_cb_wait_taskwait_end (ompt_parallel_id_t parallelID,
 			   ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] BLAME CBTF_ompt_cb_wait_taskwait_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -860,13 +799,11 @@ void CBTF_ompt_cb_taskgroup_begin (ompt_parallel_id_t parallelID,
 			 ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_taskgroup_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -876,13 +813,11 @@ void CBTF_ompt_cb_taskgroup_end (ompt_parallel_id_t parallelID,
 		       ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_taskgroup_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -892,13 +827,11 @@ void CBTF_ompt_cb_wait_taskgroup_begin (ompt_parallel_id_t parallelID,
 			      ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_wait_taskgroup_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -908,13 +841,11 @@ void CBTF_ompt_cb_wait_taskgroup_end (ompt_parallel_id_t parallelID,
 			    ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_wait_taskgroup_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -923,13 +854,11 @@ void CBTF_ompt_cb_wait_taskgroup_end (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_single_others_begin (ompt_parallel_id_t parallelID,
 			     ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_others_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -937,13 +866,11 @@ void CBTF_ompt_cb_single_others_begin (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_single_others_end (ompt_parallel_id_t parallelID,
 			   ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_others_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
@@ -951,13 +878,11 @@ void CBTF_ompt_cb_single_others_end (ompt_parallel_id_t parallelID,
 void CBTF_ompt_cb_initial_task_begin (ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_others_begin taskID:%lu\n",omp_get_thread_num(),taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -966,13 +891,11 @@ void CBTF_ompt_cb_initial_task_begin (ompt_task_id_t taskID)
 void CBTF_ompt_cb_initial_task_end (ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_others_end: taskID:%lu\n",omp_get_thread_num(),taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -980,65 +903,55 @@ void CBTF_ompt_cb_initial_task_end (ompt_task_id_t taskID)
 // set regionId to parallelID, set taskID
 void CBTF_ompt_cb_loop_begin (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_loop_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(), parallelID, taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // set regionId to parallelID, set taskID
 void CBTF_ompt_cb_loop_end (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_loop_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // set regionId to parallelID, set taskID
 void CBTF_ompt_cb_single_in_block_begin (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_in_block_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
 // set regionId to parallelID, set taskID
 void CBTF_ompt_cb_single_in_block_end (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_single_in_block_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 }
 
 // ompt_event_UNIMPLEMENTED
 void CBTF_ompt_cb_sections_begin (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_sections_begin parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -1046,13 +959,11 @@ void CBTF_ompt_cb_sections_begin (ompt_parallel_id_t parallelID, ompt_task_id_t 
 void CBTF_ompt_cb_sections_end (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_sections_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -1062,13 +973,11 @@ void CBTF_ompt_cb_workshare_begin (ompt_parallel_id_t parallelID, ompt_task_id_t
 
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_workshare_begin parallelID:%lu taskID:%lu workshare_function:%p\n",omp_get_thread_num(),parallelID,taskID,workshare_function);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -1076,13 +985,11 @@ void CBTF_ompt_cb_workshare_begin (ompt_parallel_id_t parallelID, ompt_task_id_t
 void CBTF_ompt_cb_workshare_end (ompt_parallel_id_t parallelID, ompt_task_id_t taskID)
 {
 #if 0
-    //cbtf_collector_pause();
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_workshare_end: parallelID:%lu taskID:%lu\n",omp_get_thread_num(),parallelID,taskID);
     }
 #endif
-    //cbtf_collector_resume();
 #endif
 }
 
@@ -1104,11 +1011,11 @@ void CBTF_ompt_cb_idle_begin(ompt_thread_id_t thread_id /* ID of thread*/)
     OMPT_THREAD_IDLE(true);
     ++tls->idle_count;
     tls->idle_btime = CBTF_GetTime();
-    ompt_task_id_t tsk_id = ompt_get_task_id(0);
-    ompt_frame_t *idle_frame = ompt_get_idle_frame();
 
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
+	ompt_task_id_t tsk_id = ompt_get_task_id(0);
+	ompt_frame_t *idle_frame = ompt_get_idle_frame();
 	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_begin context:%p\n" ,omp_get_thread_num(), current_region_context);
 	fprintf(stderr, "[%d] tsk_id:%d CBTF_ompt_cb_idle_begin: idle_frame->exit_runtime_frame=%p idle_frame->reenter_runtime_frame=%p\n",
 	omp_get_thread_num(), tsk_id, idle_frame->exit_runtime_frame,idle_frame->reenter_runtime_frame);
@@ -1143,11 +1050,11 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id        /* ID of thread*/)
     }
     omptp_record_event(&event, tls->stacktrace, current_region_stacktrace_size);
 
-    ompt_task_id_t tsk_id = ompt_get_task_id(0);
-    ompt_frame_t *idle_frame = ompt_get_idle_frame();
 
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
+	ompt_task_id_t tsk_id = ompt_get_task_id(0);
+	ompt_frame_t *idle_frame = ompt_get_idle_frame();
 	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_end context:%p\n" ,omp_get_thread_num(), current_region_context);
 	fprintf(stderr, "[%d] tsk_id:%d CBTF_ompt_cb_idle_end: idle_frame->exit_runtime_frame=%p idle_frame->reenter_runtime_frame=%p\n",
 	omp_get_thread_num(), tsk_id, idle_frame->exit_runtime_frame,idle_frame->reenter_runtime_frame);

@@ -61,6 +61,8 @@ else ()
 if (LIBMONITOR_FOUND)
 
 set(CALLBACK_SOURCES
+	bst.h
+	bst.c
 	callbacks.c 
 )
 

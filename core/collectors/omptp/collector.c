@@ -33,8 +33,10 @@
 #include <string.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
+#if 0
 #include "KrellInstitute/Messages/Ompt.h"
 #include "KrellInstitute/Messages/Ompt_data.h"
+#endif
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -47,16 +49,18 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "collector.h"
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "omptp";
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
+/** These two frames are the start_event and OpenSSGetStackFromConext */
 const unsigned OverheadFrameCount = 2;
 
 /** Maximum number of frames to allow in each stack trace. */
-#define MaxFramesPerStackTrace 48
+//#define MaxFramesPerStackTrace 48
 
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
@@ -106,7 +110,6 @@ static __thread TLS the_tls;
 
 #endif
 
-#if 1
 void defer_trace(int defer_tracing) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -117,7 +120,6 @@ void defer_trace(int defer_tracing) {
     Assert(tls != NULL);
     tls->do_trace = defer_tracing;
 }
-#endif
 
 
 /**
@@ -166,12 +168,10 @@ inline void update_header_with_time(TLS* tls, uint64_t time)
 {
     Assert(tls != NULL);
 
-    if (time < tls->header.time_begin)
-    {
+    if (time < tls->header.time_begin) {
         tls->header.time_begin = time;
     }
-    if (time >= tls->header.time_end)
-    {
+    if (time >= tls->header.time_end) {
         tls->header.time_end = time + 1;
     }
 }
@@ -190,12 +190,10 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
 {
     Assert(tls != NULL);
 
-    if (addr < tls->header.addr_begin)
-    {
+    if (addr < tls->header.addr_begin) {
         tls->header.addr_begin = addr;
     }
-    if (addr >= tls->header.addr_end)
-    {
+    if (addr >= tls->header.addr_end) {
         tls->header.addr_end = addr + 1;
     }
 }

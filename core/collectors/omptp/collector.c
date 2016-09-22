@@ -72,6 +72,8 @@ const unsigned OverheadFrameCount = 2;
 // and the size of a ompt event.  Should find the best fit going forward.
 #define EventBufferSize (CBTF_BlobSizeFactor * 200)
 
+extern void CBTF_ompt_set_collector_active(bool);
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
@@ -219,8 +221,8 @@ static void send_samples(TLS *tls)
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "omptp send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "[%d] omptp send_samples: time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+		tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -432,6 +434,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->header.time_begin = CBTF_GetTime();
     tls->defer_sampling = 0;
     tls->do_trace = true;
+    CBTF_ompt_set_collector_active(true);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr, "[%d] cbtf_collector_start\n",monitor_get_thread_num());
+    }
+#endif
 }
 
 
@@ -504,8 +512,14 @@ void cbtf_collector_stop()
 #endif
 
     Assert(tls != NULL);
+    CBTF_ompt_set_collector_active(false);
 
     tls->header.time_end = CBTF_GetTime();
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr, "[%d] cbtf_collector_stop\n",monitor_get_thread_num());
+    }
+#endif
 
     /* Stop sampling */
     defer_trace(0);

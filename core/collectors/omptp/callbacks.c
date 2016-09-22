@@ -90,24 +90,24 @@ static int cbtf_ompt_debug_lock = 0;
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
-    uint64_t region_count;
+    bool     collector_active;
+    uint64_t collector_etime;
     uint64_t region_btime;
     uint64_t region_ttime;
-    uint64_t idle_count;
     uint64_t idle_btime;
     uint64_t idle_ttime;
-    uint64_t barrier_count;
     uint64_t barrier_btime;
     uint64_t barrier_ttime;
-    uint64_t wbarrier_count;
     uint64_t wbarrier_btime;
     uint64_t wbarrier_ttime;
-    uint64_t lock_count;
     uint64_t lock_btime;
     uint64_t lock_time;
-    uint64_t itask_count;
     uint64_t itask_btime;
     uint64_t itask_ttime;
+    uint64_t serial_btime;
+    uint64_t serial_ttime;
+    uint64_t thread_btime;
+    uint64_t thread_ttime;
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size;
     CBTF_omptp_event region_event;
@@ -160,6 +160,18 @@ void CBTF_register_ompt_callback(ompt_event_t event, void* callback)
 #endif
 }
 
+void CBTF_ompt_set_collector_active(bool flag)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+    tls->collector_active=flag;
+    tls->collector_etime=CBTF_GetTime();
+}
 
 // unused helper...
 #if 0
@@ -196,7 +208,6 @@ void CBTF_ompt_cb_parallel_begin (
     Assert(tls != NULL);
 
     // do not sample if inside our tool
-    ++tls->region_count;
     tls->region_btime = CBTF_GetTime();
 
  
@@ -256,6 +267,8 @@ void CBTF_ompt_cb_parallel_end (
 	ompt_get_thread_id(), parallelID, parent_taskID, invoker, current_region_context, (float)tls->region_ttime/1000000000);
     }
 #endif
+
+    current_region_context = (uint64_t)NULL;
 
 #if 0
     ompt_task_id_t tsk_id = ompt_get_task_id(0);
@@ -320,17 +333,15 @@ void CBTF_ompt_cb_thread_begin()
 #endif
     Assert(tls != NULL);
 
-    tls->region_count = 0;
+    tls->collector_etime = 0;
     tls->region_ttime = 0;
-    tls->idle_count = 0;
     tls->idle_ttime = 0;
-    tls->barrier_count = 0;
     tls->barrier_ttime = 0;
-    tls->wbarrier_count = 0;
     tls->wbarrier_ttime = 0;
-    tls->itask_count = 0;
     tls->itask_ttime = 0;
-    tls->lock_count = 0;
+    tls->serial_ttime = 0;
+    tls->serial_btime = CBTF_GetTime();
+    tls->thread_btime = tls->serial_btime;
     tls->lock_btime = 0;
     tls->lock_time = 0;
 #ifndef NDEBUG
@@ -353,11 +364,21 @@ void CBTF_ompt_cb_thread_end()
 #endif
     Assert(tls != NULL);
 
+    //tls->thread_ttime = CBTF_GetTime() - tls->thread_btime;
+    tls->thread_ttime = tls->collector_etime - tls->thread_btime;
+
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
-	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end: region_time:%f, barrier time:%f, wait_barrier_time:%f idle_time:%f region_count:%d, idle_count:%d, barrier_count:%d, wait_barrier_count:%d\n" ,ompt_get_thread_id(), (float)tls->region_ttime/1000000000, (float)tls->barrier_ttime/1000000000, (float)tls->wbarrier_ttime/1000000000, (float)tls->idle_ttime/1000000000, tls->region_count,tls->idle_count,tls->barrier_count,tls->wbarrier_count);
-	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end: itask_time:%f itask_count:%d\n" ,ompt_get_thread_id(), (float)tls->itask_ttime/1000000000, tls->itask_count);
-	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end: lock_time:%f lock_count:%d\n" ,ompt_get_thread_id(), (float)tls->lock_time/1000000000, tls->lock_count);
+	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end TIMES: thread:%f region:%f itask:%f serial:%f barrier:%f wait_barrier:%f idle:%f\n",
+	    ompt_get_thread_id(),
+	    (float)tls->thread_ttime/1000000000,
+	    (float)tls->region_ttime/1000000000,
+	    (float)tls->itask_ttime/1000000000,
+	    (float)tls->serial_ttime/1000000000,
+	    (float)tls->barrier_ttime/1000000000,
+	    (float)tls->wbarrier_ttime/1000000000,
+	    (float)tls->idle_ttime/1000000000
+	);
     }
 #endif
 }
@@ -472,7 +493,6 @@ void CBTF_ompt_cb_acquired_lock (ompt_wait_id_t *waitID) {
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    tls->lock_count++;
     tls->lock_btime = CBTF_GetTime();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
@@ -528,10 +548,7 @@ void CBTF_ompt_cb_release_lock (ompt_wait_id_t *waitID) {
     }
 #endif
 
-   tls->lock_count++;
-#if 1
     tls->lock_time += CBTF_GetTime() - tls->lock_btime;
-#endif
 }
 
 // TODO: LOCKS
@@ -617,8 +634,6 @@ void CBTF_ompt_cb_barrier_begin (ompt_parallel_id_t parallelID,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    ++tls->barrier_count;
 
     // record barrier begin time.
     tls->barrier_btime = CBTF_GetTime();
@@ -717,7 +732,6 @@ void CBTF_ompt_cb_wait_barrier_begin (ompt_parallel_id_t parallelID,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    ++tls->wbarrier_count;
     tls->wbarrier_btime = CBTF_GetTime();
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
@@ -797,6 +811,9 @@ void CBTF_ompt_cb_wait_barrier_end (ompt_parallel_id_t parallelID,
  * The OpenMP runtime system invokes this callback, after an implicit task
  * is fully initialized but before the task executes its work.
  * This callback executes in the context of the new implicit task.
+ * We overide the callstack's first frame with the context provided
+ * by the region this task is doing work in.
+ * Without this context, call stack is at __kmp_invoke_task_func.
  */
 void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
 		             ompt_task_id_t taskID)
@@ -808,8 +825,8 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    ++tls->itask_count;
     tls->itask_btime = CBTF_GetTime();
+    tls->serial_ttime += tls->itask_btime - tls->serial_btime;
     tls->task_event.time = 0;
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
@@ -824,30 +841,16 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
     }
 #endif
 
+    // Find the parallel region this task is running under.
+    // Aquire it's parallel context and use it here.
     CBTF_bst_node *pnode = CBTF_bst_find_node(regionMap, parallelID);
-
     uint64_t ctx = current_region_context;
     if (pnode != NULL) {
 	ctx = pnode->stacktrace[0];
     }
 
-#if 1
+    // Without this context (ctx), call stack is at __kmp_invoke_task_func.
     omptp_start_event(&tls->task_event,(uint64_t)ctx, tls->stacktrace, &tls->stacktrace_size);
-#else
-    uint64_t stacktrace[MaxFramesPerStackTrace];
-    unsigned stacktrace_size;
-    omptp_start_event(&tls->task_event,(uint64_t)ctx, stacktrace, &stacktrace_size);
-    taskMap = CBTF_bst_insert_node(taskMap, taskID, stacktrace, stacktrace_size);
-#endif
-
-#if 0
-    /* DEBUG for viewing the stack frame addresses */
-    int i;
-    for (i=0; i < tls->stacktrace_size; ++i) {
-	fprintf(stderr, "[%d] CBTF_ompt_cb_implicit_task_begin: stacktrace[%d]=%p\n",
-	    ompt_get_thread_id(), i, tls->stacktrace[i]);
-    }
-#endif
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -868,7 +871,9 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
 #endif
 
     Assert(tls != NULL);
-    uint64_t t = CBTF_GetTime() - tls->itask_btime;
+    uint64_t etime = CBTF_GetTime(); - tls->itask_btime;
+    uint64_t t = etime - tls->itask_btime;
+    tls->serial_btime = etime;
 #if 0
     CBTF_omptp_event event;
     memset(&event, 0, sizeof(CBTF_omptp_event));
@@ -885,16 +890,7 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
     }
 #endif
 
-#if 1
     omptp_record_event(&tls->task_event, tls->stacktrace, tls->stacktrace_size);
-#else
-    CBTF_bst_node *pnode = CBTF_bst_find_node(taskMap, taskID);
-    if (pnode != NULL) {
-	omptp_record_event(&tls->task_event, pnode->stacktrace, pnode->stacktrace_size);
-	taskMap = CBTF_bst_remove_node(taskMap, taskID);
-	
-    }
-#endif
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -1184,7 +1180,6 @@ void CBTF_ompt_cb_idle_begin(ompt_thread_id_t thread_id /* ID of thread*/)
     ompt_task_id_t tsk_id = ompt_get_task_id(0);
     ompt_state_t task_state = ompt_get_state(NULL);
 
-    ++tls->idle_count;
     tls->idle_btime = CBTF_GetTime();
 
 #ifndef NDEBUG
@@ -1221,7 +1216,13 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id /* ID of thread*/)
     ompt_task_id_t tsk_id = ompt_get_task_id(0);
     ompt_state_t task_state = ompt_get_state(NULL);
 
-    uint64_t t = CBTF_GetTime() - tls->idle_btime;
+    uint64_t t;
+    if (tls->collector_active) {
+	t = CBTF_GetTime() - tls->idle_btime;
+    } else {
+	t = tls->collector_etime - tls->idle_btime;
+    }
+
     CBTF_omptp_event event;
     memset(&event, 0, sizeof(CBTF_omptp_event));
     event.time = t;

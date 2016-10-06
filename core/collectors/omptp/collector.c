@@ -33,10 +33,6 @@
 #include <string.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
-#if 0
-#include "KrellInstitute/Messages/Ompt.h"
-#include "KrellInstitute/Messages/Ompt_data.h"
-#endif
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -272,10 +268,8 @@ void omptp_start_event(CBTF_omptp_event* event, uint64_t function, uint64_t* sta
     *stacktrace_size = st_size;
 
     if(st_size > 0 && function != 0) {
-//fprintf(stderr,"[%d] BLAMING FRAME 0 %p with %p\n",omp_get_thread_num() , stacktrace[0], function);
 	stacktrace[0] = function;
     }
-
     tls->do_trace = saved_do_trace;
 }
 
@@ -569,9 +563,6 @@ void cbtf_offline_service_defer_sampling()
 }
 #endif
 
-
-#if defined (HAVE_OMPT)
-#endif // if defined HAVE_OMPT
 /* 
  * These differ from sampling.  For a profile of idle,barrier,wait_barrier we
  * likely want to record total time here.  ie. get our context and pass
@@ -579,7 +570,7 @@ void cbtf_offline_service_defer_sampling()
  * In any case, we will have a callstack to say idle event and time for that idle.
  *
  */
-void OMPT_THREAD_IDLE(bool flag) {
+void IDLE(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -593,7 +584,7 @@ void OMPT_THREAD_IDLE(bool flag) {
     //tls->thread_idle=flag;
 }
 
-void OMPT_THREAD_BARRIER(bool flag) {
+void BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -608,7 +599,7 @@ void OMPT_THREAD_BARRIER(bool flag) {
     //tls->thread_barrier=flag;
 }
 
-void OMPT_THREAD_WAIT_BARRIER(bool flag) {
+void WAIT_BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);

@@ -274,7 +274,7 @@ void cbtf_offline_send_dsos(TLS *tls)
 {
     /* Send the offline "dsos" blob or message */
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+    if (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL) {
         fprintf(stderr,
     "cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
                 tls->dso_header.host, (long long)tls->dso_header.pid, 

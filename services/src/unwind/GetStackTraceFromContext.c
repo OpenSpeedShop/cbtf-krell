@@ -223,7 +223,7 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 	/* Otherwise store the PC value from this frame in the stack trace */
 	else {
 	    Assert(unw_get_reg(&cursor, UNW_REG_IP, &pc) == 0);
-#if defined(CBTF_USES_MONITOR_SERVICE)
+#if defined(USES_LIBMONITOR)
 	    /* Libmonitor provides a mechanism to detect when we are within
 	     * monitor_main or monitor_start_thread. We can use this to stop
 	     * unwinding at that point since we do not care about the details
@@ -237,7 +237,8 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 
 	    if (monitor_in_main_start_func_wide(pc) ||
 		monitor_in_start_func_wide(pc)) {
-		break;
+		//break;
+		; //noop
 	    } else {
 		// adjust address for finding correct line
 		stacktrace[index++] = (uint64_t) ((char *) pc - 1);

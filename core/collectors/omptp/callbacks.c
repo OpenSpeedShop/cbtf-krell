@@ -117,7 +117,6 @@ typedef struct {
 static uint64_t current_region_context = NULL;
 
 CBTF_bst_node *regionMap = NULL;
-CBTF_bst_node *taskMap = NULL;
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -211,14 +210,12 @@ void CBTF_ompt_cb_parallel_begin (
     tls->region_btime = CBTF_GetTime();
 
  
-    /* may need a stack to push nested regions... */
     /* Regions are only tracked on the master thread.  We will create a
      * callstack context here that is used by all the worker threads.
-     * The implicit_task callbasks will record the original context and
-     * for now we will not record the orignal context and region time
-     * when we get to the region_end callback.
+     * The implicit_task callbasks will record the original context
+     * from the master.
      *
-     * TODO: Handle nested regions...
+     * Handle nested regions via regionMap.
      */
 
     current_region_context = (uint64_t)parallel_function;
@@ -234,10 +231,6 @@ void CBTF_ompt_cb_parallel_begin (
 	fprintf(stderr,
 	"[%d] CBTF_ompt_cb_parallel_begin parallelID:%lu parent_taskID:%lu req_team_size:%u invoker:%d context:%p\n",
 	ompt_get_thread_id(), parallelID, parent_taskID, requested_team_size, invoker, parallel_function);
-	//fprintf(stderr, "[%d] CBTF_ompt_cb_parallel_begin: parent_taskframe->exit_runtime_frame=%p parent_taskframe->reenter_runtime_frame=%p\n",
-	//ompt_get_thread_id(), parent_taskframe->exit_runtime_frame,parent_taskframe->reenter_runtime_frame);
-	//print_ids(0);
-	// this ends ossompt -- BAD -- print_ids(1);
     }
 #endif
 }
@@ -280,13 +273,9 @@ void CBTF_ompt_cb_parallel_end (
 
     CBTF_bst_node *pnode = CBTF_bst_find_node(regionMap, parallelID);
     if (pnode != NULL) {
-#if 0
-	fprintf(stderr, "[%d] found %lu in regionMap!\n", ompt_get_thread_id(), parallelID);
-
-	int i;
-	for (i=0; i < pnode->stacktrace_size; ++i) {
-	    fprintf(stderr, "[%d] CBTF_ompt_cb_parallel_end: stacktrace[%d]=%p\n",
-	    ompt_get_thread_id(), i, pnode->stacktrace[i]);
+#ifndef NDEBUG
+	if (cbtf_ompt_debug) {
+	    fprintf(stderr, "[%d] found %lu in regionMap!\n", ompt_get_thread_id(), parallelID);
 	}
 #endif
 	regionMap = CBTF_bst_remove_node(regionMap, parallelID);
@@ -675,30 +664,18 @@ void CBTF_ompt_cb_barrier_end (ompt_parallel_id_t parallelID,
     event.time = t;
     tls->barrier_ttime += t;
     uint64_t stacktrace[MaxFramesPerStackTrace];
-#if 1
     int adjusted_size = tls->stacktrace_size;
     if (tls->stacktrace_size == MaxFramesPerStackTrace) {
 	--adjusted_size;
     }
     if(adjusted_size > 0) {
-	stacktrace[0] = (uint64_t)OMPT_THREAD_BARRIER;
+	stacktrace[0] = (uint64_t)BARRIER;
 	int i;
 	for (i = 1; i < adjusted_size; ++i) {
 	    stacktrace[i] = tls->stacktrace[i-1];
 	}
     }
-    //omptp_record_event(&event, stacktrace, adjusted_size);
     omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#else
-    if(tls->stacktrace_size > 0) {
-	int i;
-	for (i = 0; i < tls->stacktrace_size; ++i) {
-	    stacktrace[i] = tls->stacktrace[i];
-	}
-	stacktrace[0] = (uint64_t)OMPT_THREAD_BARRIER;
-    }
-    omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#endif
 
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
@@ -774,29 +751,18 @@ void CBTF_ompt_cb_wait_barrier_end (ompt_parallel_id_t parallelID,
     event.time = t;
     tls->wbarrier_ttime += t;
     uint64_t stacktrace[MaxFramesPerStackTrace];
-#if 1
     int adjusted_size = tls->stacktrace_size;
     if (tls->stacktrace_size == MaxFramesPerStackTrace) {
 	--adjusted_size;
     }
     if(adjusted_size > 0) {
-	stacktrace[0] = (uint64_t)OMPT_THREAD_WAIT_BARRIER;
+	stacktrace[0] = (uint64_t)WAIT_BARRIER;
 	int i;
 	for (i = 1; i < adjusted_size; ++i) {
 	    stacktrace[i] = tls->stacktrace[i-1];
 	}
     }
     omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#else
-    if(tls->stacktrace_size > 0) {
-	int i;
-	for (i = 0; i < tls->stacktrace_size; ++i) {
-	    stacktrace[i] = tls->stacktrace[i];
-	}
-	stacktrace[0] = (uint64_t)OMPT_THREAD_WAIT_BARRIER;
-    }
-    omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#endif
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
         ompt_state_t task_state = ompt_get_state(NULL);
@@ -844,13 +810,14 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
     // Find the parallel region this task is running under.
     // Aquire it's parallel context and use it here.
     CBTF_bst_node *pnode = CBTF_bst_find_node(regionMap, parallelID);
-    uint64_t ctx = current_region_context;
-    if (pnode != NULL) {
-	ctx = pnode->stacktrace[0];
-    }
 
-    // Without this context (ctx), call stack is at __kmp_invoke_task_func.
-    omptp_start_event(&tls->task_event,(uint64_t)ctx, tls->stacktrace, &tls->stacktrace_size);
+    // copy region callstack to use as context for all individual
+    // worker threads calling contexts.
+    int i;
+    tls->stacktrace_size = pnode->stacktrace_size;
+    for (i = 0; i < pnode->stacktrace_size ; ++i) {
+	tls->stacktrace[i] = pnode->stacktrace[i];
+    }
 }
 
 // ompt_event_MAY_ALWAYS_TRACE
@@ -874,15 +841,9 @@ void CBTF_ompt_cb_implicit_task_end (ompt_parallel_id_t parallelID,
     uint64_t etime = CBTF_GetTime(); - tls->itask_btime;
     uint64_t t = etime - tls->itask_btime;
     tls->serial_btime = etime;
-#if 0
-    CBTF_omptp_event event;
-    memset(&event, 0, sizeof(CBTF_omptp_event));
-    event.time = t;
-#else
     tls->task_event.time = t;
-#endif
-
     tls->itask_ttime += t;
+
 #ifndef NDEBUG
     if (cbtf_ompt_debug_trace) {
 	fprintf(stderr,"[%d] CBTF_ompt_cb_implicit_task_end parallelID:%lu taskID:%lu context:%p time:%f\n",
@@ -1228,30 +1189,16 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id /* ID of thread*/)
     event.time = t;
     tls->idle_ttime += t;
 
-    // the tls stack trace is in the context of the task begin.
-    // replacing frame 0 is likely not sufficient.
-    // try adding the blame function rather than replacing.
-    // this would require shifting the current stacktrace up 1.
+    // the tls stack trace is in the context of the master thread.
+    // We add an additional frame below the context to attribute
+    // the current idle to a specific region.
     uint64_t stacktrace[MaxFramesPerStackTrace];
-#if 0
-    if(tls->stacktrace_size > 0) {
-	int i;
-	for (i = 0; i < tls->stacktrace_size; ++i) {
-	    stacktrace[i] = tls->stacktrace[i];
-	}
-	stacktrace[0] = (uint64_t)OMPT_THREAD_IDLE;
-    }
-    // NOTE: FIXME: IDLE can occur outside of a implicit task.
-    // Therefore the stacktrace here should not attribute the
-    // idleness to activity in the task (region) context.
-    omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#else
     int adjusted_size = tls->stacktrace_size;
     if (tls->stacktrace_size == MaxFramesPerStackTrace) {
 	--adjusted_size;
     }
     if(adjusted_size > 0) {
-	stacktrace[0] = (uint64_t)OMPT_THREAD_IDLE;
+	stacktrace[0] = (uint64_t)IDLE;
 	int i;
 	for (i = 1; i < adjusted_size; ++i) {
 	    stacktrace[i] = tls->stacktrace[i-1];
@@ -1259,10 +1206,9 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id /* ID of thread*/)
     }
 
     // NOTE: FIXME: IDLE can occur outside of a implicit task.
-    // Therefore the stacktrace here should not attribute the
+    // Therefore the stacktrace here attributes the
     // idleness to activity in the task (region) context.
     omptp_record_event(&event, stacktrace, tls->stacktrace_size);
-#endif
 
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {

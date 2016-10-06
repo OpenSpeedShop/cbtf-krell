@@ -33,8 +33,6 @@
 #include <string.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
-#include "KrellInstitute/Messages/Ompt.h"
-#include "KrellInstitute/Messages/Ompt_data.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Messages/Thread.h"
 #include "KrellInstitute/Messages/ThreadEvents.h"
@@ -47,16 +45,18 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "collector.h"
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "omptp";
 
 
 /** Number of overhead frames in each stack frame to be skipped. */
+/** These two frames are the start_event and OpenSSGetStackFromConext */
 const unsigned OverheadFrameCount = 2;
 
 /** Maximum number of frames to allow in each stack trace. */
-#define MaxFramesPerStackTrace 48
+//#define MaxFramesPerStackTrace 48
 
 /** Number of stack trace entries in the tracing buffer. */
 /** event.stacktrace buffer is 64*8=512 bytes */
@@ -67,6 +67,8 @@ const unsigned OverheadFrameCount = 2;
 /** Number of event entries in the tracing buffer. */
 // and the size of a ompt event.  Should find the best fit going forward.
 #define EventBufferSize (CBTF_BlobSizeFactor * 200)
+
+extern void CBTF_ompt_set_collector_active(bool);
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -106,7 +108,6 @@ static __thread TLS the_tls;
 
 #endif
 
-#if 1
 void defer_trace(int defer_tracing) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -117,7 +118,6 @@ void defer_trace(int defer_tracing) {
     Assert(tls != NULL);
     tls->do_trace = defer_tracing;
 }
-#endif
 
 
 /**
@@ -166,12 +166,10 @@ inline void update_header_with_time(TLS* tls, uint64_t time)
 {
     Assert(tls != NULL);
 
-    if (time < tls->header.time_begin)
-    {
+    if (time < tls->header.time_begin) {
         tls->header.time_begin = time;
     }
-    if (time >= tls->header.time_end)
-    {
+    if (time >= tls->header.time_end) {
         tls->header.time_end = time + 1;
     }
 }
@@ -190,12 +188,10 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
 {
     Assert(tls != NULL);
 
-    if (addr < tls->header.addr_begin)
-    {
+    if (addr < tls->header.addr_begin) {
         tls->header.addr_begin = addr;
     }
-    if (addr >= tls->header.addr_end)
-    {
+    if (addr >= tls->header.addr_end) {
         tls->header.addr_end = addr + 1;
     }
 }
@@ -221,8 +217,8 @@ static void send_samples(TLS *tls)
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "omptp send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "[%d] omptp send_samples: time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+		tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -239,8 +235,9 @@ static void send_samples(TLS *tls)
 /**
  * Start an event.
  *
- * Called by the omptp function wrappers each time an event is to be started.
+ * Called by certain omptp callbacks each time an event is to be started.
  * Initializes the event record and increments the wrappers nesting depth.
+ * For omptp we access the callstack when the event is started.
  *
  * @param event    Event to be started.
  */
@@ -271,10 +268,8 @@ void omptp_start_event(CBTF_omptp_event* event, uint64_t function, uint64_t* sta
     *stacktrace_size = st_size;
 
     if(st_size > 0 && function != 0) {
-//fprintf(stderr,"[%d] BLAMING FRAME 0 %p with %p\n",omp_get_thread_num() , stacktrace[0], function);
 	stacktrace[0] = function;
     }
-
     tls->do_trace = saved_do_trace;
 }
 
@@ -293,7 +288,6 @@ void omptp_start_event(CBTF_omptp_event* event, uint64_t function, uint64_t* sta
  * @param function    Address of the ompt function for which the event is being
  *                    recorded.
  */
-//void omptp_record_event(const CBTF_omptp_event* event, uint64_t function)
 void omptp_record_event(const CBTF_omptp_event* event, uint64_t* stacktrace, unsigned stacktrace_size)
 {
     /* Access our thread-local storage */
@@ -308,28 +302,6 @@ void omptp_record_event(const CBTF_omptp_event* event, uint64_t* stacktrace, uns
     tls->do_trace = false;
 
     unsigned entry = 0, start, i;
-#if 0
-    uint64_t stacktrace[MaxFramesPerStackTrace];
-    unsigned stacktrace_size = 0;
-
-    /* Newer versions of libunwind now make io calls (open a file in /proc/<self>/maps)
-     * that cause a thread lock in the libunwind dwarf parser. We are not interested in
-     * any io done by libunwind while we get the stacktrace for the current context.
-     * So we need to bump the nesting_depth before requesting the stacktrace and
-     * then decrement nesting_depth after aquiring the stacktrace
-     */
-
-    ++tls->nesting_depth;
-    /* Obtain the stack trace from the current thread context */
-    CBTF_GetStackTraceFromContext(NULL, FALSE, OverheadFrameCount,
-				    MaxFramesPerStackTrace,
-				    &stacktrace_size, stacktrace);
-    --tls->nesting_depth;
-
-    if(stacktrace_size > 0 && function != NULL)
-	stacktrace[0] = function;
-#endif
-
     bool_t stack_already_exists = FALSE;
 
     int j;
@@ -456,6 +428,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->header.time_begin = CBTF_GetTime();
     tls->defer_sampling = 0;
     tls->do_trace = true;
+    CBTF_ompt_set_collector_active(true);
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr, "[%d] cbtf_collector_start\n",monitor_get_thread_num());
+    }
+#endif
 }
 
 
@@ -528,8 +506,14 @@ void cbtf_collector_stop()
 #endif
 
     Assert(tls != NULL);
+    CBTF_ompt_set_collector_active(false);
 
     tls->header.time_end = CBTF_GetTime();
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr, "[%d] cbtf_collector_stop\n",monitor_get_thread_num());
+    }
+#endif
 
     /* Stop sampling */
     defer_trace(0);
@@ -579,9 +563,6 @@ void cbtf_offline_service_defer_sampling()
 }
 #endif
 
-
-#if defined (HAVE_OMPT)
-#endif // if defined HAVE_OMPT
 /* 
  * These differ from sampling.  For a profile of idle,barrier,wait_barrier we
  * likely want to record total time here.  ie. get our context and pass
@@ -589,7 +570,7 @@ void cbtf_offline_service_defer_sampling()
  * In any case, we will have a callstack to say idle event and time for that idle.
  *
  */
-void OMPT_THREAD_IDLE(bool flag) {
+void IDLE(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -603,7 +584,7 @@ void OMPT_THREAD_IDLE(bool flag) {
     //tls->thread_idle=flag;
 }
 
-void OMPT_THREAD_BARRIER(bool flag) {
+void BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -618,7 +599,7 @@ void OMPT_THREAD_BARRIER(bool flag) {
     //tls->thread_barrier=flag;
 }
 
-void OMPT_THREAD_WAIT_BARRIER(bool flag) {
+void WAIT_BARRIER(bool flag) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);

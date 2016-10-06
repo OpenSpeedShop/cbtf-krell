@@ -60,6 +60,7 @@ find_package_handle_standard_args(
 set(LibMonitor_SHARED_LIBRARIES ${LibMonitor_LIBRARY_SHARED})
 set(LibMonitor_STATIC_LIBRARIES ${LibMonitor_LIBRARY_STATIC})
 set(LibMonitor_INCLUDE_DIRS ${LibMonitor_INCLUDE_DIR})
+set(LibMonitor_DEFINES "USES_LIBMONITOR")
 
 
 GET_FILENAME_COMPONENT(LibMonitor_LIB_DIR ${LibMonitor_LIBRARY_SHARED} PATH )

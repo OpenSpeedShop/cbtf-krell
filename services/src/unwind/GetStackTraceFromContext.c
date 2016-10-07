@@ -237,11 +237,9 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 
 	    if (monitor_in_main_start_func_wide(pc) ||
 		monitor_in_start_func_wide(pc)) {
-		//break;
 		; //noop
 	    } else {
-		// adjust address for finding correct line
-		stacktrace[index++] = (uint64_t) ((char *) pc - 1);
+		stacktrace[index++] = (uint64_t) ((char *) pc);
 	    }
 #else
 	    stacktrace[index++] = (uint64_t)pc;	    

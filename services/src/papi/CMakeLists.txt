@@ -27,7 +27,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${LTDL_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/services/include
-    ${CMAKE_INSTALL_PREFIX}/include
     ${Papi_INCLUDE_DIRS}
 )
 

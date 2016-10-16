@@ -37,7 +37,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
-	${CMAKE_INSTALL_PREFIX}/include
 	${MRNet_LW_INCLUDE_DIRS}
 )
 
@@ -73,7 +72,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
-	${CMAKE_INSTALL_PREFIX}/include
 	${MRNet_LW_INCLUDE_DIRS}
 )
 

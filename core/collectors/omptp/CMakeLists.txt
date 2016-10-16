@@ -364,6 +364,8 @@ if (NOT RUNTIME_ONLY)
     set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     set(collector_name "omptp")
     configure_file(../template.xml.in omptp.xml @ONLY)
 

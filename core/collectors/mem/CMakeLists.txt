@@ -351,6 +351,8 @@ if (NOT RUNTIME_ONLY)
     set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(collector_name "mem")
+    set(aggregation_plugin "MemAggregationPlugin.so")
+    set(aggregation_type "MemAggregator")
     configure_file(../template.xml.in mem.xml @ONLY)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mem.xml

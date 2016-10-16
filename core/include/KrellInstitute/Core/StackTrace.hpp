@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef _StacktraceData_
-#define _StacktraceData_
+#ifndef _StackTrace_
+#define _StackTrace_
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,6 +42,7 @@
 
 namespace KrellInstitute { namespace Core {
 
+
     /**
      * Stack trace.
      *
@@ -54,7 +55,6 @@ namespace KrellInstitute { namespace Core {
      *
      * @sa    http://en.wikipedia.org/wiki/Stack_trace
      *
-     * @ingroup CollectorAPI ToolAPI
      */
     class StackTrace :
 	public std::vector<Address>
@@ -72,7 +72,7 @@ namespace KrellInstitute { namespace Core {
 
 	StackTrace() :
 	    std::vector<Address>(),
-	    dm_thread(NULL),
+	    dm_thread(),
 	    dm_time(Time::TheBeginning())
 	{
 	}
@@ -100,6 +100,7 @@ namespace KrellInstitute { namespace Core {
 	
     };
     
+//    typedef std::map<StackTrace,int> StackCountsMap;
 } }
 
 

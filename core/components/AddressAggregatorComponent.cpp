@@ -452,14 +452,21 @@ private:
     // Handler for the "CBTF_Protocol_Blob" input. This handler unpacks the
     // incoming blobs at the leafCP nodes only. All other nodes should just
     // pass this on for now. In the future one could selectively pass on
-    // datablobs based on a thread of interest basis (metricly important thread).
+    // datablobs based on a thread of interest basis (metric important thread).
     // This is the main handler of performance data blobs streaming up from
-    // the collector BE's connected to this filter node. A CBTF_Protocol_Blob
-    // contains an xdr encoded header and an xdr encoded data payload.
-    // The header maps the data payload to a specific collector and the
-    // thread it came from. There can be 1 to N connections to a filter node.
-    // Each connection can stream data from any pthreads that share the connection.
-    // The total number of datablobs and the size of these blobs...
+    // the collector BE's connected to this filter node.
+    //
+    // If an experiment class needs to perform other metrics they may implement
+    // their own Aggregation plugin and compute any specific metrics or
+    // reductions. All experiments should implement the address aggregaton
+    // performed here since that creates the list of addresses used to resolve
+    // symbols in addition to aggregating counts or raw time per address.
+    //
+    // A CBTF_Protocol_Blob contains an xdr encoded header and an xdr encoded
+    // data payload. The header maps the data payload to a specific collector
+    // and the thread it came from. There can be 1 to N connections to a filter
+    // node. Each connection can stream data from any pthreads that share the
+    // connection. The total number of datablobs and the size of these blobs...
     // Therefore, an indeterminite number of data blobs can arrive per thread.
     //
     // TODO: queue the incoming datablobs rather than just resending them as
@@ -521,7 +528,7 @@ private:
 	} else {
 	}
 
-	// From this point on only leafCP nodes should decode and handle
+	// From this point on only leafCP nodes decode and handle
 	// the passed in performance data blobs.
 
 	Blob perfdatablob(in.get()->data.data_len, in.get()->data.data_val);
@@ -539,15 +546,11 @@ private:
 	// TODO: Map the incoming data size to it's thread and increment as new
 	// data for same thread arrives.  Could be use to identify threads
 	// that are generating more data than others. REDUCTION.
-	//unsigned data_size = perfdatablob.getSize() - header_size;
-	//total_data_size += data_size;
-	//const void* data_ptr = &(reinterpret_cast<const char *>(perfdatablob.getContents())[header_size]);
-	//Blob dblob(data_size,data_ptr);
+	unsigned data_size = perfdatablob.getSize() - header_size;
+	total_data_size += data_size;
 
 	AddressBuffer buf;
-        // CALL PERFDATA HERE
 	// update aggregate addresses and counts.
-	// TODO. What if we do not use counts for data like mem?
 	total_data_size += perfdata.aggregate(perfdatablob,buf);
 
 #ifndef NDEBUG
@@ -557,18 +560,16 @@ private:
 	    << " addresses for data from thread:" << threadname
 	    << " total data bytes: " << total_data_size
 	    << std::endl;
+	    flushOutput(output);
 	}
 #endif
 	abuffer.updateAddressCounts(buf);
 
-	// load balance on address counts or size.
+	// load balance on address counts or raw time.
 	updateAddrThreadCountMap(buf, addrThreadCount, threadname);
 
         xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_DataHeader), reinterpret_cast<char*>(&header));
 
-#ifndef NDEBUG
-	//flushOutput(output);
-#endif
 
     }
 

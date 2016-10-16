@@ -1,5 +1,5 @@
 /*******************************************************************************
-** Copyright (c) 2011 The KrellInstitute. All Rights Reserved.
+** Copyright (c) 2011-2015 The KrellInstitute. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -24,57 +24,54 @@
 
 
 enum CBTF_mem_type {
-    CBTF_MEM_UNKNOWN=0,
-    CBTF_MEM_MALLOC,
+    CBTF_MEM_MALLOC=0,
     CBTF_MEM_CALLOC,
     CBTF_MEM_REALLOC,
     CBTF_MEM_FREE,
     CBTF_MEM_MEMALIGN,
-    CBTF_MEM_POSIX_MEMALIGN
+    CBTF_MEM_POSIX_MEMALIGN,
+    CBTF_MEM_UNKNOWN
 };
 
-/** Event structure describing a single I/O call. */
-struct CBTF_mem_event {
-    uint64_t start_time;  /**< Start time of the call. */
-    uint64_t stop_time;   /**< End time of the call. */
-    uint16_t stacktrace;  /**< Index of the stack trace. */
-    CBTF_mem_type mem_type;
+enum CBTF_mem_reason {
+    CBTF_MEM_REASON_STILLALLOCATED = 0,	     /**< Memory still allocated from this event */
+    CBTF_MEM_REASON_UNIQUE_CALLPATH,         /**< Unique call path. */
+    CBTF_MEM_REASON_DURATION_OF_ALLOCATION,  /**< Duration time of allocation exceeds threshold */
+    CBTF_MEM_REASON_MAX_ALLOCATION,	     /**< Max allocation for event callstack */
+    CBTF_MEM_REASON_MIN_ALLOCATION,	     /**< Min allocation for event callstack */
+    CBTF_MEM_REASON_HIGHWATER_SET,           /**< Set the highwater mark */
+    CBTF_MEM_REASON_ALLOCATION_ADDRESS,      /**< Unique allocation address*/
+    CBTF_MEM_REASON_UNKNOWN
 };
 
-/** Event structure describing a single I/O call. */
+/** Event structure describing a single mem call with details. */
+/*  NOTE: There are numerous events traced with this collector.
+ *  The collector will send these events to be filtered for events
+ *  of interest.  Ultimately the blobs sent to the OSS database will
+ *  will be filtered from these events and resent as new reduced blobs.
+ *  Therefore the view code for the mem experiment will need to use
+ *  the new more detailed CBTF_mem_event_of_interest event and not
+ *  default to metrics based on time spent in the calls.
+ */
 struct CBTF_memt_event {
-    uint64_t start_time;  /**< Start time of the call. */
-    uint64_t stop_time;   /**< End time of the call. */
-    uint16_t stacktrace;  /**< Index of the stack trace. */
-    uint64_t retval;      /**< return values can be a void* */
-    uint64_t ptr;         /**< void* ptr type args */
-    int      size1;       /**< first size_t arg */
-    int      size2;       /**< second size_t arg */
-    CBTF_mem_type mem_type;
+    uint64_t start_time;	/**< Start time of the call. */
+    uint64_t stop_time;		/**< End time of the call. */
+    uint64_t retval;		/**< return values can be a void* */
+    uint64_t ptr;		/**< void* ptr type args */
+    uint64_t size1;		/**< first size_t arg */
+    uint64_t size2;		/**< second size_t arg */
+    uint64_t total_allocation;  /**< current total allocation size at this time */
+    uint64_t max;		/**< max allocation size seen*/
+    uint64_t min;		/**< min allocation size seen*/
+    uint32_t count;             /**< id of event as int. can serve as count. */
+    uint16_t stacktrace;	/**< Index of the stack trace. */
+    CBTF_mem_type mem_type;	/**< Memory call type */
+    CBTF_mem_reason reason;	/**< Reason for interest */
 };
 
-
-/** Structure of the blob containing trace performance data. */
-struct CBTF_mem_trace_data {
-    uint64_t stacktraces<>;  /**< Stack traces. */
-    CBTF_mem_event events<>;       /**< IO call events. */
-};
 
 /** Structure of the blob containing extended trace performance data. */
 struct CBTF_mem_exttrace_data {
-    uint64_t stacktraces<>;  /**< Stack traces. */
-    CBTF_memt_event events<>;       /**< IO call events. */
-};
-
-/** Structure of the blob containing profile performance data. */
-struct CBTF_mem_profile_data {
-    uint64_t stacktraces<>;  /**< Stack traces. */
-    uint64_t time<>;         /**< time spent in this stack trace. */
-    uint8_t count<>;      /**< Count for stack trace. Entries with a positive */
-			  /**< count value represent the top of stack for a */
-			  /**< specifc stack. If stack count exceeds 255 */
-			  /**< a new entry is made in the sample buffer. */
-			  /**< Positive entries the count buffer represent */
-			  /**< the index into the address buffer (bt) for a */
-			  /**< specifc stack */
+    uint64_t stacktraces<>;    /**< Stack traces. */
+    CBTF_memt_event events<>;  /**< Mem call events with details. */
 };

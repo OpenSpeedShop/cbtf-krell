@@ -32,7 +32,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${LibIomp_INCLUDE_DIRS}
 )
 

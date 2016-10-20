@@ -933,8 +933,8 @@ void MemAggregator::initialize_data(const ThreadName& tname,
     data_header.rank = tname.getMPIRank();
     data_header.omp_tid = tname.getOmpTid();
     // These will be filled in by the recorded events...
-    data_header.time_begin = 0;
-    data_header.time_end = 0;
+    data_header.time_begin = Time::TheEnd().getValue();
+    data_header.time_end = Time::TheBeginning().getValue();
     data_header.addr_begin = ~0;
     data_header.addr_end = 0;
 

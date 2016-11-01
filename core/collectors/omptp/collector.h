@@ -27,8 +27,14 @@
 #include "KrellInstitute/Messages/Ompt.h"
 #include "KrellInstitute/Messages/Ompt_data.h"
 
-#define MaxFramesPerStackTrace 32
+#define MAX_REGIONS 8		  /* maximum number of nested regions */
+#define MaxFramesPerStackTrace 32 /* maximum number of frames per stacktrace */
 
+typedef struct CBTF_omptp_region {
+  uint64_t id;
+  uint64_t stacktrace[MaxFramesPerStackTrace];
+  unsigned stacktrace_size;
+} CBTF_omptp_region;
 
 // these external calls are expected in the cbtf collectors either
 // as implementations or as empty functions.

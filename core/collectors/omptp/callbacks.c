@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "bst.h"
 #include "collector.h"
 #include "ompt.h"
 #include "KrellInstitute/Services/Assert.h"
@@ -94,6 +93,7 @@ typedef struct {
     uint64_t collector_etime;
     uint64_t region_btime;
     uint64_t region_ttime;
+    uint64_t region_count;
     uint64_t idle_btime;
     uint64_t idle_ttime;
     uint64_t barrier_btime;
@@ -116,7 +116,52 @@ typedef struct {
 
 static uint64_t current_region_context = NULL;
 
-CBTF_bst_node *regionMap = NULL;
+static int level = 0;
+static struct {
+    CBTF_omptp_region values[MAX_REGIONS];
+} Regions = { { 0 } };
+
+int CBTF_omptp_region_add(uint64_t parallelID, uint64_t *stacktrace, unsigned stacktrace_size)
+{
+    int i;
+    for (i = 0; i < MAX_REGIONS; ++i) {
+        if (Regions.values[i].id == 0) {
+	    Regions.values[i].id = parallelID;
+	    Regions.values[i].stacktrace_size = stacktrace_size;
+	    int j;
+	    for (j = 0; j < stacktrace_size; ++j) {
+		Regions.values[i].stacktrace[j] = stacktrace[j];
+	    }
+	    break;
+	}
+    }
+    return i;
+}
+
+void CBTF_omptp_region_clear(uint64_t id)
+{
+    int i;
+    for (i = 0; i < MAX_REGIONS; ++i) {
+        if (Regions.values[i].id == id) {
+	    Regions.values[i].id = 0;
+	    memset(&Regions.values[i],0,sizeof(CBTF_omptp_region));
+	    break;
+	}
+    }
+}
+
+CBTF_omptp_region CBTF_omptp_region_with_id(uint64_t id)
+{
+    CBTF_omptp_region region;
+    int i;
+    for (i = 0; i < MAX_REGIONS; ++i) {
+        if (Regions.values[i].id == id) {
+	    region = Regions.values[i];
+	    break;
+	}
+    }
+    return region;
+}
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -224,13 +269,13 @@ void CBTF_ompt_cb_parallel_begin (
     CBTF_omptp_event event;
     omptp_start_event(&event,(uint64_t)parallel_function, stacktrace, &stacktrace_size);
     tls->region_event.time = 0;
-    regionMap = CBTF_bst_insert_node(regionMap, parallelID, stacktrace, stacktrace_size);
+    int nest_level = CBTF_omptp_region_add(parallelID, stacktrace, stacktrace_size);
 
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,
-	"[%d] CBTF_ompt_cb_parallel_begin parallelID:%lu parent_taskID:%lu req_team_size:%u invoker:%d context:%p\n",
-	ompt_get_thread_id(), parallelID, parent_taskID, requested_team_size, invoker, parallel_function);
+	"[%d] CBTF_ompt_cb_parallel_begin parallelID:%lu parent_taskID:%lu req_team_size:%u invoker:%d context:%p nest_level=%d\n",
+	ompt_get_thread_id(), parallelID, parent_taskID, requested_team_size, invoker, parallel_function, nest_level);
     }
 #endif
 }
@@ -271,15 +316,7 @@ void CBTF_ompt_cb_parallel_end (
 	ompt_get_thread_id(), tsk_id, rt_frame->exit_runtime_frame,rt_frame->reenter_runtime_frame);
 #endif
 
-    CBTF_bst_node *pnode = CBTF_bst_find_node(regionMap, parallelID);
-    if (pnode != NULL) {
-#ifndef NDEBUG
-	if (cbtf_ompt_debug) {
-	    fprintf(stderr, "[%d] found %lu in regionMap!\n", ompt_get_thread_id(), parallelID);
-	}
-#endif
-	regionMap = CBTF_bst_remove_node(regionMap, parallelID);
-    }
+    CBTF_omptp_region_clear(parallelID);
 }
 
 // ompt_event_MAY_ALWAYS
@@ -809,14 +846,14 @@ void CBTF_ompt_cb_implicit_task_begin (ompt_parallel_id_t parallelID,
 
     // Find the parallel region this task is running under.
     // Aquire it's parallel context and use it here.
-    CBTF_bst_node *pnode = CBTF_bst_find_node(regionMap, parallelID);
+    CBTF_omptp_region r = CBTF_omptp_region_with_id(parallelID);
 
     // copy region callstack to use as context for all individual
     // worker threads calling contexts.
     int i;
-    tls->stacktrace_size = pnode->stacktrace_size;
-    for (i = 0; i < pnode->stacktrace_size ; ++i) {
-	tls->stacktrace[i] = pnode->stacktrace[i];
+    tls->stacktrace_size = r.stacktrace_size;
+    for (i = 0; i < r.stacktrace_size ; ++i) {
+	tls->stacktrace[i] = r.stacktrace[i];
     }
 }
 

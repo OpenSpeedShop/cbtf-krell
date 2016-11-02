@@ -522,7 +522,12 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #if defined(CBTF_SERVICE_USE_MRNET) || defined(CBTF_SERVICE_USE_MRNET_MPI)
 	    tls->connected_to_mrnet = true;
 	    set_threaded_mrnet_connection();
-	    send_attached_to_threads_message();
+	    // no longer attempting to send thread attached at init thread.
+	    // We are potentially called early in an mpi program and
+	    // there is only an mrnet connection AFTER the mpi rank is
+	    // set.  Therefore the send of thread attached needs to
+	    // wait until there is collected data to send or the thread
+	    // is finished.
 #endif
 	    break;
 	default:

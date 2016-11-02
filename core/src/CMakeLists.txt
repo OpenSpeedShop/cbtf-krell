@@ -59,7 +59,6 @@ target_include_directories(cbtf-core PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Boost_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -100,7 +99,6 @@ target_include_directories(cbtf-core-static PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Boost_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
@@ -141,7 +139,6 @@ target_include_directories(cbtf-core-bfd PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Binutils_INCLUDE_DIRS}
 	${Binutils_Iberty_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -179,7 +176,6 @@ target_include_directories(cbtf-core-bfd-static PUBLIC
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Binutils_INCLUDE_DIRS}
 	${Binutils_Iberty_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -219,7 +215,6 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Boost_INCLUDE_DIRS}
 	${SymtabAPI_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -260,7 +255,6 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
-	${CMAKE_INSTALL_PREFIX}/include
 	${Boost_INCLUDE_DIRS}
 	${SymtabAPI_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
@@ -311,7 +305,6 @@ if (NOT RUNTIME_ONLY)
     	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
-	    ${CMAKE_INSTALL_PREFIX}/include
 	    ${Boost_INCLUDE_DIRS}
 	    ${MRNet_INCLUDE_DIRS}
 	    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -327,7 +320,6 @@ if (NOT RUNTIME_ONLY)
 	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
-	    ${CMAKE_INSTALL_PREFIX}/include
 	    ${Boost_INCLUDE_DIRS}
 	    ${MRNet_INCLUDE_DIRS}
 	    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -367,7 +359,6 @@ if (NOT RUNTIME_ONLY)
     	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
-	    ${CMAKE_INSTALL_PREFIX}/include
 	    ${Boost_INCLUDE_DIRS}
 	    ${MRNet_INCLUDE_DIRS}
 	    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -383,7 +374,6 @@ if (NOT RUNTIME_ONLY)
 	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
-	    ${CMAKE_INSTALL_PREFIX}/include
 	    ${Boost_INCLUDE_DIRS}
 	    ${MRNet_INCLUDE_DIRS}
 	    ${CMAKE_CURRENT_SOURCE_DIR}

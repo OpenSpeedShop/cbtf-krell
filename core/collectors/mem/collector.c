@@ -403,9 +403,11 @@ void mem_record_event(const CBTF_memt_event* event, uint64_t function)
 	/* Add each frame in the stack trace to the tracing buffer. */	
 	entry = tls->data.stacktraces.stacktraces_len;
 	for(i = 0; i < stacktrace_size; ++i) {
-	    
+	    if (stacktrace[i] != 0) {
+//fprintf(stderr,"stack[%d]:%p\n",i,stacktrace[i]);   
 	    /* Add the i'th frame to the tracing buffer */
 	    tls->buffer.stacktraces[entry + i] = stacktrace[i];
+	    }
 	    
 	    /* Update the address interval in the data blob's header */
 	    if(stacktrace[i] < tls->header.addr_begin)

@@ -323,6 +323,8 @@ if (NOT RUNTIME_ONLY)
     set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(collector_name "hwc")
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     configure_file(../template.xml.in hwc.xml @ONLY)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwc.xml

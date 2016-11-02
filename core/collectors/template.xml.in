@@ -201,18 +201,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <SearchPath>@fe_component_location@</SearchPath>
 
-      <Plugin>AggregationPlugin.so</Plugin>
+      <Plugin>@aggregation_plugin@</Plugin>
       <Plugin>LinkedObjectPlugin.so</Plugin>
       <Plugin>MRNetConvertorsPlugin.so</Plugin>
       <Plugin>SymbolPlugin.so</Plugin>
       <Plugin>ThreadPlugin.so</Plugin>
 
 <!--
-     The Frontend AddressAggregator component.
+     The Frontend @aggregation_type@ component.
 -->
       <Component>
         <Name>Aggregator</Name>
-        <Type>AddressAggregator</Type>
+        <Type>@aggregation_type@</Type>
       </Component>
 
 <!--
@@ -294,7 +294,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
         <Name>IncomingBlobs</Name>
         <To>
           <Name>Aggregator</Name>
-          <Input>pass_cbtf_protocol_blob</Input>
+          <Input>cbtf_protocol_blob</Input>
         </To>
       </Input>
 
@@ -776,20 +776,20 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
       <SearchPath>@cn_component_location@</SearchPath>
 
-      <Plugin>AggregationPlugin.so</Plugin>
+      <Plugin>@aggregation_plugin@</Plugin>
       <Plugin>LinkedObjectPlugin.so</Plugin>
       <Plugin>MRNetConvertorsPlugin.so</Plugin>
       <Plugin>SymbolPlugin.so</Plugin>
       <Plugin>ThreadPlugin.so</Plugin>
 
 <!--
-     The AddressAggregator component.  The operations done in this filter
+     The @aggregation_type@ component.  The operations done in this filter
      are intended to run only at the leaf CP's in an mrnet tree.
 -->
 
       <Component>
         <Name>Aggregator</Name>
-        <Type>AddressAggregator</Type>
+        <Type>@aggregation_type@</Type>
       </Component>
 
 <!--

@@ -732,20 +732,38 @@ int PerfData::memMetrics(const Blob &blob, MemMetrics& metrics) {
 	    MemEvent m(data.events.events_val[i],stack);
 	    m.dm_reason = CBTF_MEM_REASON_UNIQUE_CALLPATH;
 	    switch (data.events.events_val[i].mem_type) {
-	        case CBTF_MEM_MALLOC:
-	        case CBTF_MEM_CALLOC:
-	        case CBTF_MEM_REALLOC: {
+	        case CBTF_MEM_MALLOC: {
 		    m.dm_total_allocation = data.events.events_val[i].size1;
 		    m.dm_max = data.events.events_val[i].size1;
 		    m.dm_min = data.events.events_val[i].size1;
-		    m.dm_count = 0;
+		    m.dm_count = 1;
+		    break;
+		}
+	        case CBTF_MEM_CALLOC: {
+		    uint64_t allocsize =
+			data.events.events_val[i].size1 * data.events.events_val[i].size2;
+		    m.dm_total_allocation = allocsize;
+		    m.dm_max = allocsize;
+		    m.dm_min = allocsize;
+		    m.dm_count = 1;
+		    break;
+		}
+	        case CBTF_MEM_REALLOC: {
+		    uint64_t allocsize = 0;
+		    if (data.events.events_val[i].ptr == 0) {
+			allocsize = data.events.events_val[i].size1;
+		    }
+		    m.dm_total_allocation = allocsize;
+		    m.dm_max = allocsize;
+		    m.dm_min = allocsize;
+		    m.dm_count = 1;
 		    break;
 		}
 	        case CBTF_MEM_FREE: {
 		    m.dm_total_allocation = metrics.currentAllocation;
 		    m.dm_max = 0;
 		    m.dm_min = 0;
-		    m.dm_count = 0;
+		    m.dm_count = 1;
 		    break;
 		}
 		default: {
@@ -760,9 +778,10 @@ int PerfData::memMetrics(const Blob &blob, MemMetrics& metrics) {
 	   // The view code needs to understand the overloaded nature of the
 	   // event's size1,size_t, and total_allocation members.
 	    switch (data.events.events_val[i].mem_type) {
-	        case CBTF_MEM_MALLOC:
-	        case CBTF_MEM_CALLOC:
-	        case CBTF_MEM_REALLOC: {
+	        case CBTF_MEM_MALLOC: {
+		    // malloc allocates size bytes. If size is 0, then malloc returns
+		    // either NULL, or unique pointer value that can passed to free.
+		    //
 		    // bump count
 		    stmei->second.dm_count++;
 		    // update total allocation along this path
@@ -774,6 +793,59 @@ int PerfData::memMetrics(const Blob &blob, MemMetrics& metrics) {
 		    // update min allocation along this path
 		    if (data.events.events_val[i].size1 < stmei->second.dm_min) {
 			stmei->second.dm_min = data.events.events_val[i].size1;
+		    }
+		    break;
+		}
+	        case CBTF_MEM_CALLOC: {
+		    // calloc allocates memory for an array of size1 elements of size2
+		    // bytes each. If size 1 is 0 the calloc returns either NULL,
+		    // or unique pointer value that can passed to free.
+		    //
+		    // bump count
+		    stmei->second.dm_count++;
+		    uint64_t allocsize =
+			data.events.events_val[i].size1 * data.events.events_val[i].size2;
+		    // update total allocation along this path
+		    stmei->second.dm_total_allocation += allocsize;
+		    // update max allocation along this path
+		    if (allocsize > stmei->second.dm_max) {
+			stmei->second.dm_max = allocsize;
+		    }
+		    // update min allocation along this path
+		    if (allocsize < stmei->second.dm_min) {
+			stmei->second.dm_min = allocsize;
+		    }
+		    break;
+		}
+	        case CBTF_MEM_REALLOC: {
+		    // FIXME: Need to handle case where prt is not NULL, case where
+		    // size is 0 and prt in not NULL (free), All non NULL values of
+		    // ptr must must be in out tracked calls.
+		    // realloc changes the size of the memory block pointed to by ptr
+		    // to size1 bytes.  The contents will be unchanged in the range from
+		    // the start of the region up to the minimum of the old and new sizes.
+		    // If the new size is larger than the old size, the added memory will
+		    // not be initialized.  If ptr is NULL, then the call is equivalent
+		    // to malloc(size), for all values of size; if size is equal to zero,
+		    // and ptr is not NULL, then the call is equivalent to free(ptr).
+		    // Unless ptr is NULL, it must have been  returned by an earlier call
+		    // to malloc, calloc or realloc.
+		    // If the area pointed to was moved, a free(ptr) is done.
+		    //
+		    // bump count
+		    stmei->second.dm_count++;
+		    uint64_t allocsize = data.events.events_val[i].size1;
+		    // update total allocation along this path
+		    if (data.events.events_val[i].ptr == 0) {
+			stmei->second.dm_total_allocation += allocsize;
+		    }
+		    // update max allocation along this path
+		    if (allocsize > stmei->second.dm_max) {
+			stmei->second.dm_max = allocsize;
+		    }
+		    // update min allocation along this path
+		    if (allocsize < stmei->second.dm_min) {
+			stmei->second.dm_min = allocsize;
 		    }
 		    break;
 		}

@@ -51,6 +51,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
     # Create and install xml for the experiment into the target cbtf-krell based location
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(collector_name "mem")
+    set(aggregation_plugin "MemAggregationPlugin.so")
+    set(aggregation_type "MemAggregator")
     configure_file(../template.xml.in mem.xml @ONLY)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mem.xml

@@ -49,6 +49,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
     set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
 
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
 
     # Create and install xml for the experiment into the target cbtf-krell based location
     set(collector_name "io")

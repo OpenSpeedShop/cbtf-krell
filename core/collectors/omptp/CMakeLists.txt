@@ -50,6 +50,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 
     # Create and install xml for the experiment into the target cbtf-krell based location
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     set(collector_name "ompt")
     configure_file(../template.xml.in ompt.xml @ONLY)
 

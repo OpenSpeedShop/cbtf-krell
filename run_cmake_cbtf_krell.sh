@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm -rf  build
 mkdir build
 pushd build
@@ -5,12 +7,12 @@ pushd build
 export CC=gcc
 export CXX=g++
 
-export KRELL_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export DYNINST_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export CBTF_ROOT=/opt/DEVEL/cbtf_v2.2.4
-export CBTF_KRELL_PREFIX=/opt/DEVEL/cbtf_v2.2.4
-export MRNET_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export XERCESC_ROOT=/opt/DEVEL/krellroot_v2.2.3
+export KRELL_ROOT=/opt/STABLE/krellroot_v2.3.0
+export DYNINST_ROOT=/opt/STABLE/krellroot_v2.3.0
+export CBTF_ROOT=/opt/STABLE/cbtf_v2.3.x
+export CBTF_KRELL_PREFIX=/opt/STABLE/cbtf_v2.3.x
+export MRNET_ROOT=/opt/STABLE/krellroot_v2.3.0
+export XERCESC_ROOT=/opt/STABLE/krellroot_v2.3.0
 
 cmake .. \
         -DCMAKE_BUILD_TYPE=None \
@@ -26,6 +28,8 @@ cmake .. \
 	-DMRNET_DIR=${MRNET_ROOT} \
 	-DDYNINST_DIR=${DYNINST_ROOT} \
 	-DXERCESC_DIR=${XERCESC_ROOT} \
+        -DLIBDWARF_DIR=${KRELL_ROOT} \
+        -DLIBELF_DIR=${KRELL_ROOT} \
 	-DOPENMPI_DIR=/opt/openmpi-2.0.1
 
 make clean

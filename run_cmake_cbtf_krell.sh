@@ -13,6 +13,7 @@ export CBTF_ROOT=/opt/STABLE/cbtf_v2.3.x
 export CBTF_KRELL_PREFIX=/opt/STABLE/cbtf_v2.3.x
 export MRNET_ROOT=/opt/STABLE/krellroot_v2.3.0
 export XERCESC_ROOT=/opt/STABLE/krellroot_v2.3.0
+export BOOST_ROOT=/opt/boost-1.59.0
 
 cmake .. \
         -DCMAKE_BUILD_TYPE=None \
@@ -30,7 +31,8 @@ cmake .. \
 	-DXERCESC_DIR=${XERCESC_ROOT} \
         -DLIBDWARF_DIR=${KRELL_ROOT} \
         -DLIBELF_DIR=${KRELL_ROOT} \
-	-DOPENMPI_DIR=/opt/openmpi-2.0.1
+	-DOPENMPI_DIR=/opt/openmpi-2.0.1 \
+	-DCBTF_BOOST_ROOT=${BOOST_ROOT}
 
 make clean
 make

@@ -53,6 +53,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
     # Create and install xml for the experiment into the target cbtf-krell based location
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(collector_name "hwctime")
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     configure_file(../template.xml.in hwctime.xml @ONLY)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwctime.xml
@@ -88,7 +90,6 @@ target_link_libraries(hwctime-collector-monitor-fileio
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
-	cbtf-services-timer
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
@@ -136,7 +137,6 @@ target_link_libraries(hwctime-monitor-fileio
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
-	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-fileio-static
 	${LibMonitor_STATIC_LIBRARIES}
@@ -179,7 +179,6 @@ target_link_libraries(hwctime-collector-monitor-mrnet
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
-	cbtf-services-timer
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
@@ -224,7 +223,6 @@ target_link_libraries(hwctime-monitor-mrnet
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
-	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-static
 	${LibMonitor_STATIC_LIBRARIES}
@@ -266,7 +264,6 @@ target_link_libraries(hwctime-collector-monitor-mrnet-mpi
 	cbtf-services-common
 	cbtf-services-monitor
 	cbtf-services-offline
-	cbtf-services-timer
 	cbtf-services-data
 	cbtf-services-unwind
 	cbtf-services-collector-monitor-mrnet-mpi
@@ -312,7 +309,6 @@ target_link_libraries(hwctime-monitor-mrnet-mpi
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
-	cbtf-services-timer-static
 	cbtf-services-data-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
@@ -348,6 +344,8 @@ if (NOT RUNTIME_ONLY)
     set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(collector_name "hwctime")
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     configure_file(../template.xml.in hwctime.xml @ONLY)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwctime.xml

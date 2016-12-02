@@ -56,6 +56,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <stdbool.h>
 #include "monitor.h"
 
 #include "KrellInstitute/Services/Monitor.h"
@@ -85,6 +86,7 @@ typedef struct {
     CBTF_Monitor_Status sampling_status;
     int process_is_terminating;
     int thread_is_terminating;
+    bool  sent_attached_threads;
     pthread_t tid;
     pid_t pid;
     CBTF_Monitor_Type CBTF_monitor_type;
@@ -307,6 +309,10 @@ void monitor_fini_thread(void *ptr)
 		tls->pid,tls->tid);
     }
 
+    if (!tls->sent_attached_threads) {
+	send_attached_to_threads_message();
+	tls->sent_attached_threads = true;
+    }
     tls->sampling_status = CBTF_Monitor_Finished;
     tls->thread_is_terminating = 1;
     cbtf_offline_stop_sampling(NULL,1);
@@ -340,7 +346,7 @@ void *monitor_init_thread(int tid, void *data)
 
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	tls->debug=1;
-        //fprintf(stderr,"Entered monitor_init_thread\n");
+        fprintf(stderr,"Entered monitor_init_thread\n");
     } else {
 	tls->debug=0;
     }
@@ -350,12 +356,15 @@ void *monitor_init_thread(int tid, void *data)
 	debug_mpi_pcontrol=1;
     }
 
+// this was found to cause the cuda collector to miss a needed worker thread.
+#if 0
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init == 1) {
         if (tls->debug) {
 	    fprintf(stderr,"monitor_init_thread returns early due to in mpi init\n");
 	}
 	return;
     }
+#endif
 
     tls->pid = getpid();
     tls->cbtf_dllist_head = NULL;
@@ -366,6 +375,7 @@ void *monitor_init_thread(int tid, void *data)
     }
 
     tls->in_mpi_pre_init = 0;
+    tls->sent_attached_threads = false;
     tls->CBTF_monitor_type = CBTF_Monitor_Thread;
 
     int mpi_pcontrol = 0, start_enabled = 0;
@@ -401,19 +411,25 @@ void *monitor_init_thread(int tid, void *data)
 
 void monitor_init_thread_support(void)
 {
-    //fprintf(stderr,"Entered cbtf monitor_init_thread_support callback\n");
+    if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
+	fprintf(stderr,"Entered cbtf monitor_init_thread_support callback\n");
+    }
 }
 
 void*
 monitor_thread_pre_create(void)
 {
-    //fprintf(stderr,"Entered cbtf monitor_thread_pre_create callback\n");
+    if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
+	fprintf(stderr,"Entered cbtf monitor_thread_pre_create callback\n");
+    }
 }
 
 void
 monitor_thread_post_create(void* data)
 {
-    //fprintf(stderr,"Entered cbtf monitor_thread_post_create callback\n");
+    if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
+	fprintf(stderr,"Entered cbtf monitor_thread_post_create callback\n");
+    }
 }
 
 #endif
@@ -715,6 +731,11 @@ void monitor_mpi_pre_init(void)
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_pause_sampling(CBTF_Monitor_MPI_pre_init_event);
+    } else {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_mpi_pre_init IS PAUSED %d,%lu\n",
+		    tls->pid,tls->tid);
+        }
     }
 }
 
@@ -737,6 +758,11 @@ monitor_init_mpi(int *argc, char ***argv)
 	tls->sampling_status = CBTF_Monitor_Resumed;
 	tls->CBTF_monitor_type = CBTF_Monitor_Proc;
 	cbtf_offline_resume_sampling(CBTF_Monitor_MPI_init_event);
+    } else {
+        if (tls->debug) {
+	    fprintf(stderr,"monitor_init_mpi SAMPLING %d,%lu\n",
+		    tls->pid,tls->tid);
+        }
     }
 
     tls->in_mpi_pre_init = 0;

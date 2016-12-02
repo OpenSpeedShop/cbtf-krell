@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011 Krell Institute. All Rights Reserved.
+// Copyright (c) 2011-2016 Krell Institute. All Rights Reserved.
 //
 // This library is free software; you can redistribute it and/or modify it under
 // the terms of the GNU Lesser General Public License as published by the Free
@@ -19,8 +19,7 @@
 /** @file Declaration and definition of the XDR/MRNet conversion classes. */
 
 #include <KrellInstitute/CBTF/XDR.hpp>
-
-#include "Symbol.h"
+#include <KrellInstitute/Messages/Symbol.h>
 
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_AddressBitmap)
 KRELL_INSTITUTE_CBTF_REGISTER_XDR_CONVERTERS(CBTF_Protocol_FunctionEntry)

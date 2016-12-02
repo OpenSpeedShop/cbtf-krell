@@ -274,7 +274,7 @@ void cbtf_offline_send_dsos(TLS *tls)
 {
     /* Send the offline "dsos" blob or message */
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+    if (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL) {
         fprintf(stderr,
     "cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
                 tls->dso_header.host, (long long)tls->dso_header.pid, 
@@ -522,7 +522,12 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #if defined(CBTF_SERVICE_USE_MRNET) || defined(CBTF_SERVICE_USE_MRNET_MPI)
 	    tls->connected_to_mrnet = true;
 	    set_threaded_mrnet_connection();
-	    send_attached_to_threads_message();
+	    // no longer attempting to send thread attached at init thread.
+	    // We are potentially called early in an mpi program and
+	    // there is only an mrnet connection AFTER the mpi rank is
+	    // set.  Therefore the send of thread attached needs to
+	    // wait until there is collected data to send or the thread
+	    // is finished.
 #endif
 	    break;
 	default:

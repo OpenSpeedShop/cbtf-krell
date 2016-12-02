@@ -251,3 +251,54 @@ set_target_properties(LinkedObjectPlugin PROPERTIES
 install(TARGETS LinkedObjectPlugin
         LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
 )
+
+
+set(MemAggregationPlugin_SOURCES
+	MemAggregatorComponent.cpp
+	AddressBufferComponent.cpp
+)
+
+add_library(MemAggregationPlugin MODULE
+	${MemAggregationPlugin_SOURCES}
+)
+
+target_include_directories(MemAggregationPlugin PUBLIC
+	${PROJECT_SOURCE_DIR}/core/include
+	${PROJECT_SOURCE_DIR}/messages/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/services/collector
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
+	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
+	${MRNet_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${CBTF_INCLUDE_DIRS}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_link_libraries(MemAggregationPlugin
+        -Wl,--no-as-needed
+	cbtf-core
+	cbtf-messages-base
+	cbtf-messages-converters-base
+	cbtf-messages-collector
+	cbtf-messages-converters-collector
+	cbtf-messages-events
+	cbtf-messages-converters-events
+	cbtf-messages-perfdata
+	cbtf-messages-converters-perfdata
+	${CBTF_LIBRARIES}
+	${MRNet_LIBRARIES}
+	pthread
+	${CMAKE_DL_LIBS}
+)
+
+set_target_properties(MemAggregationPlugin PROPERTIES PREFIX "")
+set_target_properties(MemAggregationPlugin PROPERTIES
+        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+
+
+install(TARGETS MemAggregationPlugin
+        LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Components
+)

@@ -59,7 +59,7 @@ target_link_libraries(cbtf-services-unwind
 )
 
 set_target_properties(cbtf-services-unwind PROPERTIES VERSION 1.1.0)
-set_target_properties(cbtf-services-unwind PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES}")
+set_target_properties(cbtf-services-unwind PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES};${LibMonitor_DEFINES}")
 
 install(TARGETS cbtf-services-unwind
 	LIBRARY DESTINATION lib${LIB_SUFFIX}

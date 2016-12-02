@@ -49,6 +49,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 
     # Create and install xml for the experiment into the target cbtf-krell based location
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     set(collector_name "pthreads")
     configure_file(../template.xml.in pthreads.xml @ONLY)
 
@@ -350,6 +352,8 @@ if (NOT RUNTIME_ONLY)
     set(fe_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cn_component_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Components)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
+    set(aggregation_plugin "AggregationPlugin.so")
+    set(aggregation_type "AddressAggregator")
     set(collector_name "pthreads")
     configure_file(../template.xml.in pthreads.xml @ONLY)
 

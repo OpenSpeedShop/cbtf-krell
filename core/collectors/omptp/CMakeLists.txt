@@ -34,7 +34,7 @@ include(CheckIncludeFile)
 #              This has just the collector runtime source.
 # core/collectors/pcsamp/xml/CMakeLists.txt  
 #              This one just builds the xml from the template or uses it's own specific xml 
-#              rules or xml file. (ompt is an example soon). 
+#              rules or xml file. (omptp is an example soon). 
 
 if (BUILD_FE_USING_CN_RUNTIMES)
     # This is the BUILD_FE_USING_CN_RUNTIMES section where we create the xml that includes both the traditional
@@ -52,10 +52,10 @@ if (BUILD_FE_USING_CN_RUNTIMES)
     set(cbtflib_location ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
     set(aggregation_plugin "AggregationPlugin.so")
     set(aggregation_type "AddressAggregator")
-    set(collector_name "ompt")
-    configure_file(../template.xml.in ompt.xml @ONLY)
+    set(collector_name "omptp")
+    configure_file(../template.xml.in omptp.xml @ONLY)
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ompt.xml
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/omptp.xml
         DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
 
 else ()

@@ -504,6 +504,7 @@ find_package(CrayAlps)
 
 if (CRAYALPS_FOUND)
   set(HAVE_CRAYALPS "true")
+  set(CRAYALPS_DEFINES "HAVE_CRAYALPS=1")
 endif()
 
 find_package(LibIomp)

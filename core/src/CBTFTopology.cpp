@@ -208,7 +208,7 @@ int CBTFTopology::getCrayFENid( void )
 {
     int nid = -1;
 
-#if HAVE_CRAYALPS && (defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY))
+#if defined(HAVE_CRAYALPS) && (defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY))
     // alps.h defines ALPS_XT_NID to be the file containing the nid.
     // it's /proc/cray_xt/nid for the machines we've seen so far
     std::ifstream ifs( ALPS_XT_NID );
@@ -1095,11 +1095,12 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 #endif
 
     std::string fehostname;
+
     if (getIsCray()) {
 	// On a cray, the node names are always "nid".
 	// The method getCrayFENid() should get the correct nid
 	// based on the /proc/cray_xt/nid contents.
-#if HAVE_CRAYALPS
+#if defined(HAVE_CRAYALPS)
 	fehostname = formatCrayNid("nid",getCrayFENid());
 #else
 	fehostname = getLocalHostName();

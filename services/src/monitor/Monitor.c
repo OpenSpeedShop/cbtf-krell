@@ -331,18 +331,11 @@ void *monitor_init_thread(int tid, void *data)
 #endif
     Assert(tls != NULL);
 
-#if 0
-	/* get the identifier of this thread */
-	pthread_t (*f_pthread_self)();
-	f_pthread_self = (pthread_t (*)())dlsym(RTLD_DEFAULT, "pthread_self");
-	tls->tid = (f_pthread_self != NULL) ? (*f_pthread_self)() : 0;
-#else
-	if (monitor_is_threaded()) {
+    if (monitor_is_threaded()) {
 	tls->tid = monitor_get_thread_num();
-	} else {
+    } else {
 	tls->tid = 0;
-	}
-#endif
+    }
 
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	tls->debug=1;
@@ -355,16 +348,6 @@ void *monitor_init_thread(int tid, void *data)
     if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
 	debug_mpi_pcontrol=1;
     }
-
-// this was found to cause the cuda collector to miss a needed worker thread.
-#if 0
-    if (CBTF_in_mpi_startup || tls->in_mpi_pre_init == 1) {
-        if (tls->debug) {
-	    fprintf(stderr,"monitor_init_thread returns early due to in mpi init\n");
-	}
-	return;
-    }
-#endif
 
     tls->pid = getpid();
     tls->cbtf_dllist_head = NULL;
@@ -667,11 +650,11 @@ void * monitor_pre_fork(void)
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Started) {
         if (tls->debug) {
-	    fprintf(stderr,"monitor_pre_fork FINISHED SAMPLING %d,%lu\n",
+	    fprintf(stderr,"monitor_pre_fork PAUSE SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	tls->sampling_status = CBTF_Monitor_Finished;
-	cbtf_offline_stop_sampling(NULL,1);
+	tls->sampling_status = CBTF_Monitor_Paused;
+	cbtf_offline_pause_sampling(CBTF_Monitor_pre_fork_event);
     }
     return (NULL);
 }
@@ -697,12 +680,12 @@ void monitor_post_fork(pid_t child, void *data)
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Finished) {
         if (tls->debug) {
-	    fprintf(stderr,"monitor_post_fork BEGIN SAMPLING %d,%lu\n",
+	    fprintf(stderr,"monitor_post_fork RESUME SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
 	tls->CBTF_monitor_type = CBTF_Monitor_Proc;
-	tls->sampling_status = 1;
-	cbtf_offline_start_sampling(NULL);
+	tls->sampling_status = CBTF_Monitor_Resumed;
+	cbtf_offline_resume_sampling(CBTF_Monitor_post_fork_event);
     }
 }
 #endif

@@ -48,6 +48,7 @@ typedef struct {
     bool is_threaded_job;
 
 #if defined(CBTF_SERVICE_USE_MRNET)
+    /** These are only valid with mrnet based collection. */
     CBTF_Protocol_ThreadNameGroup tgrp;
     CBTF_Protocol_ThreadName tname;
     CBTF_Protocol_AttachedToThreads attached_to_threads_message;
@@ -142,10 +143,11 @@ void cbtf_offline_service_stop_timer()
 #endif
 
 
-#if defined(CBTF_SERVICE_USE_MRNET)
 
+/** init_process_thread only valid with mrnet based collection. */
 void init_process_thread()
 {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -182,10 +184,13 @@ void init_process_thread()
 	    );
         }
 #endif
+#endif
 }
 
+/** send_attached_to_threads_message only valid with mrnet based collection. */
 void send_attached_to_threads_message()
 {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -216,12 +221,15 @@ void send_attached_to_threads_message()
 	tls->sent_attached_to_threads = true;
 	cbtf_offline_service_start_timer();
     }
+#endif
 }
 
 
 
+/** set_threaded_mrnet_connection only valid with mrnet based collection. */
 void set_threaded_mrnet_connection()
 {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -232,11 +240,14 @@ void set_threaded_mrnet_connection()
 	return;
 
     tls->connected_to_mrnet = true;
+#endif
 }
 
 
+/** connect_to_mrnet only valid with mrnet based collection. */
 void connect_to_mrnet()
 {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -275,8 +286,8 @@ void connect_to_mrnet()
     }
 #endif
 
-}
 #endif
+}
 
 void cbtf_collector_set_openmp_threadid(int32_t omptid)
 {
@@ -291,6 +302,9 @@ void cbtf_collector_set_openmp_threadid(int32_t omptid)
 
 
 #if defined(CBTF_SERVICE_USE_MRNET)
+    /* mrnet collectors send a threadname message that requires
+     * it's own omp identifier.
+    */
     tls->tname.omp_tid = omptid;
 #endif
     tls->header.omp_tid = omptid;
@@ -360,6 +374,7 @@ void set_threaded_flag(bool flag)
 
 
 // noop for non mrnet collection.
+/** send_thread_state_changed_message only valid with mrnet based collection. */
 void send_thread_state_changed_message()
 {
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -424,10 +439,15 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
     }
 #endif
 
+/** The data send routines for performance data are specific to
+ *  the data collection method.  Only one will be defined at build time.
+ */
+/** Data send support for --offline (fileio) mode of collection. */
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_Data_Send(header, xdrproc, data);
 #endif
 
+/** Data send support for ltwt mrnet mode of collection. */
 #if defined(CBTF_SERVICE_USE_MRNET)
 	if (tls->connected_to_mrnet) {
 	    if (!tls->sent_attached_to_threads) {
@@ -500,7 +520,6 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
 
 #if defined (CBTF_SERVICE_USE_MRNET)
-    //CBTF_Protocol_ThreadName tname;
     tls->tname.experiment = 0;
     tls->tname.host = strdup(local_data_header.host);
     tls->tname.pid = local_data_header.pid;

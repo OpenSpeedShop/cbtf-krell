@@ -51,7 +51,6 @@ target_link_libraries(daemonTool
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
-    ${Bfd_LIBRARY_SHARED}
     ${CBTF_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}

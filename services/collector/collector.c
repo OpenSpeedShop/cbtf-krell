@@ -35,6 +35,29 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Collector.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h" // monitor_get_thread_num
+
+/* FIXME: defined in services/src/data/InitializeDataHeader.c. need include. */
+extern void CBTF_InitializeDataHeader(int experiment, int collector,
+                               CBTF_DataHeader* header);
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
+/* FIXME: defined in services/src/xdr/Send.c. need include. */
+extern void CBTF_Data_Send(const CBTF_DataHeader* header,
+                 const xdrproc_t xdrproc, const void* data);
+/* FIXME: defined in services/src/fileio/SendToFile.c. need include. */
+extern void CBTF_SetSendToFile(CBTF_DataHeader* header, const char* unique_id,
+                        const char* suffix);
+#endif
+
+/* FIXME: defined in services/src/mrnet/MRNet_Send.c. need include. */
+#if defined(CBTF_SERVICE_USE_MRNET)
+extern void CBTF_MRNet_Send(const int tag,
+                 const xdrproc_t xdrproc, const void* data);
+extern void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
+                 const xdrproc_t xdrproc, const void* data);
+extern int CBTF_MRNet_LW_connect (const int con_rank);
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -281,8 +304,8 @@ void connect_to_mrnet()
 #ifndef NDEBUG
     if (tls->debug_mrnet) {
 	 fprintf(stderr,
-        "connect_to_mrnet reports connection successful for %s:%lld:%lld:%d:%d\n",
-             tls->header.host, (long long)tls->header.pid,tls->header.posix_tid,tls->header.rank,tls->header.omp_tid);
+        "connect_to_mrnet reports connection successful for %s:%ld:%ld:%d:%d\n",
+             tls->header.host, tls->header.pid,tls->header.posix_tid,tls->header.rank,tls->header.omp_tid);
     }
 #endif
 
@@ -321,7 +344,7 @@ int32_t cbtf_collector_get_openmp_threadid()
     TLS* tls = &the_tls;
 #endif
     if (tls == NULL)
-	return;
+	return -1;
 
     // valid openmp thread id is 0 or greater...
     if (tls->header.omp_tid >= 0)

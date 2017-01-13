@@ -242,7 +242,7 @@ std::string Exception::getDescription() const
 	    description = DescriptionTable[i].dm_description;
 	    
 	    // Iterate over each of this exception's arguments
-	    for(int j = 0; j < dm_arguments.size(); ++j) {
+	    for(unsigned int j = 0; j < dm_arguments.size(); ++j) {
 
 		// Form the argument search term for this argument
 		std::ostringstream search;

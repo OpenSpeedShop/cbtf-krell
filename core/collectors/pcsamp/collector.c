@@ -46,6 +46,7 @@
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h"
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
@@ -229,8 +230,8 @@ static void send_samples (TLS* tls)
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"PCSamp send_samples DATA:\n");
-        fprintf(stderr,"time_range[%lu, %lu) addr range [%#lx, %#lx] pc_len(%d)\n",
+        fprintf(stderr,"send_samples (%d,%d) time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%d)\n",
+	    tls->header.pid, tls->header.omp_tid,
             (uint64_t)tls->header.time_begin, (uint64_t)tls->header.time_end,
             tls->header.addr_begin, tls->header.addr_end,
             tls->data.pc.pc_len);

@@ -85,7 +85,7 @@ static __thread TLS the_tls;
  * @ingroup RuntimeAPI
  */
 
-void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
+void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_tid,
 			  const char* unique_id, const char* suffix)
 {
 
@@ -124,16 +124,16 @@ void __CBTF_SetSendToFile(const char* host, pid_t pid, pthread_t posix_tid,
      */
 
     cbtf_rawdata_dir = getenv("CBTF_RAWDATA_DIR");
-    sprintf(dir_path, "%s/cbtf-rawdata-%s-%d",
+    sprintf(dir_path, "%s/cbtf-rawdata-%s-%lu",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp",
 	     host,pid);
 
     char *exe_name = basename(executable_path);
     if(posix_tid == 0) {
-	sprintf(tls->path, "%s/%s-%lld", dir_path, exe_name, pid);
+	sprintf(tls->path, "%s/%s-%lu", dir_path, exe_name, pid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     } else {
-	sprintf(tls->path, "%s/%s-%lld-%llu", dir_path, exe_name, (int64_t)pid,(uint64_t)posix_tid);
+	sprintf(tls->path, "%s/%s-%lu-%lu", dir_path, exe_name, pid, posix_tid);
 	sprintf(tls->path, "%s.%s", tls->path, suffix);
     }
 

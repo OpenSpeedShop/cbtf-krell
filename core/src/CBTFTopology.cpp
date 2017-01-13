@@ -99,7 +99,7 @@ std::string extract_ranges(std::string nodeListNames) {
   std::set< int64_t>:: iterator setit;
   std::string S = "";
   std::string outputList = "";
-  int current, count, next ;
+  int current, count=0, next ;
   bool first_time = true;
 
   // Get the numeric values into a set which will be automatically sorted
@@ -1169,8 +1169,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 void CBTFTopology::createTopology()
 {
     FILE *file;
-    unsigned int i, j, layer;
-    unsigned int depth = 0, fanout = 0;
+    int i, j, layer;
+    int depth = 0, fanout = 0;
     std::string topoIter, current;
     std::string::size_type dashPos, lastPos;
 

@@ -170,7 +170,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%d, 3=%d, 4=%s, 5=%d\n",
+	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%lu, 3=%lu, 4=%s, 5=%lu\n",
         BE_argv[0], BE_argv[1], strtoul( BE_argv[2], NULL, 10 ),
         strtoul( BE_argv[3], NULL, 10 ), BE_argv[4], strtoul( BE_argv[5], NULL, 10 ));
 
@@ -187,7 +187,6 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     Assert(CBTF_MRNet_netPtr);
 
     int tag;
-    const char* fmt_str = "%d";
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
@@ -289,7 +288,7 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
 void CBTF_MRNet_Send(const int tag,
                  const xdrproc_t xdrproc, const void* data)
 {
-    unsigned size,dm_size;
+    unsigned size=0,dm_size=0;
     char* dm_contents = NULL;
 
     for(size = 1024; dm_contents == NULL; size *= 2) {
@@ -337,7 +336,7 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 
     /* send it as a blob */
     CBTF_Protocol_Blob blob;
-    blob.data.data_val = buffer;
+    blob.data.data_val = (uint8_t*) buffer;
     blob.data.data_len = size;
 
     CBTF_MRNet_Send(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,

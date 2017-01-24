@@ -725,10 +725,17 @@ void CBTFTopology::parsePBSEnv()
 	     numcpnodes++;
 
 	int num_nodes_for_app;
+        int remainder_for_app_node;
 	if (isAttachBEMode()) {
 	    if (getNumBE() > dm_procs_per_node) {
 	        // initialize to enough nodes to handle number of request BEs.
 		num_nodes_for_app = getNumBE()/dm_procs_per_node;
+                // We must add an additional application node, if there are remaining BEs
+                // from the division above.  We determine this by finding the remainder.
+                remainder_for_app_node = getNumBE() % dm_procs_per_node;
+                if (remainder_for_app_node > 0) {
+                   num_nodes_for_app++  ;
+                }
 	    } else {
 	        // initialize to at least one node.
 		num_nodes_for_app = 1;

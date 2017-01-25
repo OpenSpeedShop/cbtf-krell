@@ -59,6 +59,2050 @@ extern bool_t mpi_do_trace(const char*);
 
 static int debug_trace = 0;
 
+//start new mpi functions
+
+/*
+ * MPI_Iallgather
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iallgather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iallgather
+#else
+int mpi_PMPI_Iallgather
+#endif
+		    (const void* sendbuf, int sendcount, MPI_Datatype sendtype, 
+		    void * recvbuf, int recvcount, MPI_Datatype recvtype,
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iallgather");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iallgather(sendbuf, sendcount, sendtype,
+			recvbuf, recvcount, recvtype, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+	event.source = -1;
+    event.size = 0;
+    event.tag = 0;
+    event.datatype = 0;
+
+
+    event.destination = -1;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iallgather));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Iallgatherv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iallgatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iallgatherv
+#else
+int mpi_PMPI_Iallgatherv
+#endif
+		    (const void* sendbuf, int sendcount, MPI_Datatype sendtype, 
+		    void * recvbuf, const int recvcounts [], const int displs[], MPI_Datatype recvtype,
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iallgatherv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iallgatherv(sendbuf, sendcount, sendtype,
+			recvbuf, recvcounts, displs, recvtype, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+    event.datatype = 0;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iallgatherv));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Iallreduce
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iallreduce
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iallreduce
+#else
+int mpi_PMPI_Iallreduce
+#endif
+		    (const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, 
+			MPI_Op op, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iallreduce");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iallreduce(sendbuf, recvbuf, count, datatype,
+			op, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iallreduce));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ialltoall
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ialltoall
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ialltoall
+#else
+int mpi_PMPI_Ialltoall
+#endif
+		    (const void* sendbuf, int sendcount, MPI_Datatype sendtype,
+			void* recvbuf, int recvcount, MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ialltoall");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ialltoall(sendbuf, sendcount, sendtype,
+			recvbuf, recvcount, recvtype,
+			comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ialltoall));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ialltoallv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ialltoallv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ialltoallv
+#else
+int mpi_PMPI_Ialltoallv
+#endif
+		    (const void* sendbuf, const int sendcounts [], const int sdispls [], MPI_Datatype sendtype,
+			void* recvbuf, const int recvcounts [], const int rdispls [], MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ialltoallv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ialltoallv(sendbuf, sendcounts, sdispls, sendtype,
+			recvbuf, recvcounts, rdispls, recvtype,
+			comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ialltoallv));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ialltoallw
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ialltoallw
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ialltoallw
+#else
+int mpi_PMPI_Ialltoallw
+#endif
+		    (const void* sendbuf, const int sendcounts [], const int sdispls [], const MPI_Datatype sendtypes [],
+			void* recvbuf, const int recvcounts [], const int rdispls [], const MPI_Datatype recvtypes [], 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ialltoallw");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ialltoallw(sendbuf, sendcounts, sdispls, sendtypes,
+			recvbuf, recvcounts, rdispls, recvtypes,
+			comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(*recvtypes, &datatype_size);
+
+    event.size = *recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t)( *recvtypes);
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ialltoallw));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ibarrier
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ibarrier
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ibarrier
+#else
+int mpi_PMPI_Ibarrier
+#endif
+		    (MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ibarrier");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ibarrier(comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+
+    event.size = 0;
+    event.communicator = (int64_t) comm;
+    event.datatype = 0;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ibarrier));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ibcast
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ibcast
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ibcast
+#else
+int mpi_PMPI_Ibcast
+#endif
+		    (void* buffer, int count, MPI_Datatype datatype,
+			int root, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ibcast");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ibcast(buffer, count, datatype,
+			root, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ibcast));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Iexscan
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iexscan
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iexscan
+#else
+int mpi_PMPI_Iexscan
+#endif
+		    (const void* sendbuf, void* recvbuf, int count,
+			MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iexscan");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iexscan(sendbuf, recvbuf, count, datatype,
+			op, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size = count * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) datatype;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iexscan));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Igather
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Igather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Igather
+#else
+int mpi_PMPI_Igather
+#endif
+		    (const void* sendbuf, int sendcount, MPI_Datatype sendtype,
+			void* recvbuf, int recvcount, MPI_Datatype recvtype, int root,
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Igather");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Igather(sendbuf, sendcount, sendtype,
+			recvbuf, recvcount, recvtype, root, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = recvcount * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Igather));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Igatherv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Igatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Igatherv
+#else
+int mpi_PMPI_Igatherv
+#endif
+		    (const void* sendbuf, int sendcount, MPI_Datatype sendtype,
+			void* recvbuf, const int recvcounts [], const int displs [], 
+			MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Igatherv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Igatherv(sendbuf, sendcount, sendtype,
+			recvbuf, recvcounts, displs, recvtype, root, comm, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size = * recvcounts * datatype_size;
+    event.communicator = (int64_t) comm;
+    event.datatype = (int64_t) recvtype;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.tag = 0;
+    event.destination = -1;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Igatherv));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+
+/*
+ * MPI_Improbe
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Improbe
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Improbe
+#else
+int mpi_PMPI_Improbe
+#endif
+		(int source, 
+		int tag, MPI_Comm comm, 
+		int *flag, 
+#if MPI_VERSION >= 3
+		MPI_Message *message, 
+		MPI_Status* status)
+#else
+		MPI_Status* status)
+#endif
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Improbe");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+#if MPI_VERSION >= 3
+    retval = PMPI_Improbe(source, tag, comm, flag, message, status);
+#else
+    retval = PMPI_Improbe(source, tag, comm, flag, status);
+#endif
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    event.source = source;
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    //PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  0;
+    event.communicator = (int64_t) comm;
+    event.datatype = 0;
+    event.tag = tag;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Improbe));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Imrecv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Imrecv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Imrecv
+#else
+int mpi_PMPI_Imrecv
+#endif
+		    (void *buf, int count, MPI_Datatype datatype, 
+			MPI_Message *message, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Imrecv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Imrecv(buf, count, datatype,
+						message, request);
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  count * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.communicator = 0;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Imrecv));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ineighbor_allgather
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ineighbor_allgather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ineighbor_allgather
+#else
+int mpi_PMPI_Ineighbor_allgather
+#endif
+		    (const void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+		    void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ineighbor_allgather");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ineighbor_allgather(sendbuf, sendcount, sendtype,
+    					recvbuf, recvcount, recvtype, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  recvcount * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ineighbor_allgather));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ineighbor_allgatherv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ineighbor_allgatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ineighbor_allgatherv
+#else
+int mpi_PMPI_Ineighbor_allgatherv
+#endif
+		    (const void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+		    void *recvbuf, const int recvcounts [], const int displs [], MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ineighbor_allgatherv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ineighbor_allgatherv(sendbuf, sendcount, sendtype,
+    					recvbuf, recvcounts, displs, recvtype, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  *recvcounts * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ineighbor_allgatherv));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ineighbor_alltoall
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ineighbor_alltoall
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ineighbor_alltoall
+#else
+int mpi_PMPI_Ineighbor_alltoall
+#endif
+		    (const void *sendbuf, int sendcount, MPI_Datatype sendtype, 
+		    void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ineighbor_alltoall");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ineighbor_alltoall(sendbuf, sendcount, sendtype,
+    					recvbuf, recvcount, recvtype, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  recvcount * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.source = -1;
+    event.destination = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ineighbor_alltoall));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ineighbor_alltoallv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ineighbor_alltoallv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ineighbor_alltoallv
+#else
+int mpi_PMPI_Ineighbor_alltoallv
+#endif
+		    (const void *sendbuf, const int sendcounts [], const int sdispls [], MPI_Datatype sendtype, 
+		    void *recvbuf, const int recvcounts [], const int rdispls [],  MPI_Datatype recvtype, 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ineighbor_alltoallv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ineighbor_alltoallv(sendbuf, sendcounts, sdispls, sendtype,
+    					recvbuf, recvcounts, rdispls, recvtype, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  *recvcounts * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ineighbor_alltoallv));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ineighbor_alltoallw
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ineighbor_alltoallw
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ineighbor_alltoallw
+#else
+int mpi_PMPI_Ineighbor_alltoallw
+#endif
+		    (const void *sendbuf, const int sendcounts [], const MPI_Aint sdispls [], const MPI_Datatype sendtypes [], 
+		    void *recvbuf, const int recvcounts [], const MPI_Aint rdispls [],  const MPI_Datatype recvtypes [], 
+			MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ineighbor_alltoallw");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ineighbor_alltoallw(sendbuf, sendcounts, sdispls, sendtypes,
+    					recvbuf, recvcounts, rdispls, recvtypes, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(*recvtypes, &datatype_size);
+
+    event.size =  *recvcounts * datatype_size;
+    event.datatype = (int64_t) (*recvtypes);
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ineighbor_alltoallw));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ireduce
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ireduce
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ireduce
+#else
+int mpi_PMPI_Ireduce
+#endif
+		    (const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, 
+			MPI_Op op, int root, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ireduce");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ireduce(sendbuf, recvbuf, count,
+						datatype, op, root, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  count * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+    event.communicator = -1;
+    event.destination = -1;
+    event.datatype = 0;
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ireduce));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Ireduce_scatter
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ireduce_scatter
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ireduce_scatter
+#else
+int mpi_PMPI_Ireduce_scatter
+#endif
+		    (const void *sendbuf, void *recvbuf, const int recvcounts [], MPI_Datatype datatype, 
+			MPI_Op op,  MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ireduce_scatter");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ireduce_scatter(sendbuf, recvbuf, recvcounts,
+						datatype, op, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  (*recvcounts) * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+    event.communicator = -1;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ireduce_scatter));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Ireduce_scatter_block
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Ireduce_scatter_block
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Ireduce_scatter_block
+#else
+int mpi_PMPI_Ireduce_scatter_block
+#endif
+		    (const void *sendbuf, void *recvbuf, int recvcount, MPI_Datatype datatype, 
+			MPI_Op op,  MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Ireduce_scatter_block");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Ireduce_scatter_block(sendbuf, recvbuf, recvcount,
+						datatype, op, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  recvcount * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Ireduce_scatter_block));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+/*
+ * MPI_Comm_idup
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Comm_idup
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Comm_idup
+#else
+int mpi_PMPI_Comm_idup
+#endif
+		    (MPI_Comm comm, MPI_Comm *newcomm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Comm_idup");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Comm_idup(comm, newcomm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    //PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  0;
+    event.datatype = 0;
+    event.communicator = (int64_t) newcomm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Comm_idup));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Iscan
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iscan
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iscan
+#else
+int mpi_PMPI_Iscan
+#endif
+		    (const void *sendbuf, void *recvbuf, int count,
+			MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iscan");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iscan(sendbuf, recvbuf, count, datatype, op, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(datatype, &datatype_size);
+
+    event.size =  count * datatype_size;
+    event.datatype = (int64_t) datatype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iscan));
+
+    }
+
+    return retval;
+}
+#endif
+
+
+
+/*
+ * MPI_Iscatter
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iscatter
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iscatter
+#else
+int mpi_PMPI_Iscatter
+#endif
+		    (const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+			void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+			int root, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iscatter");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iscatter(sendbuf, sendcount, sendtype,
+			recvbuf, recvcount, recvtype, root, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  recvcount * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iscatter));
+
+    }
+
+    return retval;
+}
+#endif
+
+/*
+ * MPI_Iscatterv
+ */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+int MPI_Iscatterv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+int __wrap_MPI_Iscatterv
+#else
+int mpi_PMPI_Iscatterv
+#endif
+		    (const void *sendbuf, const int sendcounts [], const int displs [], MPI_Datatype sendtype,
+			void *recvbuf, int recvcount, MPI_Datatype recvtype, 
+			int root, MPI_Comm comm, MPI_Request* request)
+{
+    int retval;
+#if defined(PROFILE)
+    CBTF_mpip_event event;
+    uint64_t start_time = 0;
+#else
+#if defined(EXTENDEDTRACE)
+    CBTF_mpit_event event;
+    int datatype_size;
+#else
+    CBTF_mpi_event event;
+#endif
+#endif
+    
+    bool_t dotrace = mpi_do_trace("MPI_Iscatterv");
+
+    if (dotrace) {
+
+    mpi_start_event(&event);
+#if defined(PROFILE)
+    start_time = CBTF_GetTime();
+#else
+    event.start_time = CBTF_GetTime();
+#endif
+
+    }
+
+    retval = PMPI_Iscatterv(sendbuf, sendcounts, displs, sendtype,
+			recvbuf, recvcount, recvtype, root, comm, request);
+
+
+    if (dotrace) {
+#if defined(PROFILE)
+    event.time = CBTF_GetTime() - start_time;
+#else
+
+    event.stop_time = CBTF_GetTime();
+#endif
+
+    /*TRACE DETAILS*/
+#if defined(EXTENDEDTRACE)
+
+    PMPI_Comm_rank(MPI_COMM_WORLD, &(event.destination));
+    PMPI_Type_size(recvtype, &datatype_size);
+
+    event.size =  recvcount * datatype_size;
+    event.datatype = (int64_t) recvtype;
+    event.communicator = (int64_t) comm;
+
+    /* Initialize unused arguments */
+    event.destination = -1;
+    event.source = -1;
+    event.tag = 0;
+
+
+#endif
+
+
+    mpi_record_event(&event, CBTF_GetAddressOfFunction(PMPI_Iscatterv));
+
+    }
+
+    return retval;
+}
+#endif
+
+// end new mpi async functions
+
 /*
  * MPI_Irecv
  */

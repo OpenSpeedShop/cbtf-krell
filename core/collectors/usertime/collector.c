@@ -47,6 +47,7 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h"
 
 #if UNW_TARGET_X86 || UNW_TARGET_X86_64
 # define STACK_SIZE     (128*1024)      /* On x86, SIGSTKSZ is too small */
@@ -73,6 +74,10 @@ const char* const cbtf_collector_unique_id = "usertime";
 const char* const data_suffix = "cbtf-data";
 #endif
 
+#define CBTF_HANDLE_UNWIND_SEGV 1
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+#include <setjmp.h>
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -97,8 +102,15 @@ typedef struct {
 
     /* debug flags */
     bool debug_collector;
-
     bool defer_sampling;
+
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+    sigjmp_buf unwind_jmp;
+    bool is_unwinding;
+    int unwind_segvcount;
+    int sample_count;
+#endif
+
 } TLS;
 
 #if defined(USE_EXPLICIT_TLS)
@@ -157,6 +169,63 @@ void OMPT_THREAD_WAIT_BARRIER(bool flag) {
     tls->thread_wait_barrier=flag;
 }
 #endif // if defined HAVE_OMPT
+
+
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+int CBTF_Usertime_SEGVhandler(int sig, siginfo_t *siginfo, void *context)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL) {
+	return 1;
+    }
+
+    if (tls != NULL && tls->is_unwinding) {
+	/* keep a count of unwinds that did not complete due to sigsegv or sigbus. */
+        tls->unwind_segvcount++;
+        //fprintf(stderr,"usertime unwinder SIGSEGV count:%d\n",tls->unwind_segvcount);
+        siglongjmp(tls->unwind_jmp,9);
+	return 0;
+    }
+    return 1;
+}
+
+// Implement a sigsegv,sigbus handler specific to usertime.
+// We see both sigsegv or sigbus when unwinding fails do to
+// any number of reasons (libunwind).  So install a handler for both.
+// libmonitor provides an easy to use sigaction override so use it.:)
+int CBTF_Usertime_SetSEGVhandler(void)
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    if (tls == NULL)
+	return -1;
+
+    /* inititalization of unwind flag and count of unwinds that did not
+     * complete due to sigsegv or sigbus.
+    */
+    tls->is_unwinding = false;
+    tls->unwind_segvcount = 0;
+
+    int rval = monitor_sigaction(SIGSEGV, &CBTF_Usertime_SEGVhandler, 0, NULL);
+    if (rval != 0) {
+        fprintf(stderr,"usertime unwinder SIGSEGV handler failed to install\n");
+    }
+    rval = monitor_sigaction(SIGBUS, &CBTF_Usertime_SEGVhandler, 0, NULL);
+    if (rval != 0) {
+        fprintf(stderr,"usertime unwinder SIGBUS handler failed to install\n");
+    }
+    return rval;
+}
+#endif
 
 /**
  * Initialize the performance data header and blob contained within the given
@@ -254,7 +323,7 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "usertime send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -299,28 +368,54 @@ static void serviceTimerHandler(const ucontext_t* context)
         return;
     }
  
-
-    int framecount = 0;
+    unsigned int framecount = 0;
     int stackindex = 0;
     uint64_t framebuf[CBTF_USERTIME_MAXFRAMES];
 
     memset(framebuf,0, sizeof(framebuf));
 
-    /* get stack address for current context and store them into framebuf. */
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+    /* counter for total samples seen. use for getting ratio of failed
+     * unwind samples due to segv. */
+    tls->sample_count++;
+    /* flag handling of unwind for segv handler. */
+    /* This enables our segv handling while unwinding this sample (libunwind). */
+    /* If libunwind encounters a sigsegv or sigbus, do not die. */
+    tls->is_unwinding = true;
 
+    int ourlongjmp = sigsetjmp(tls->unwind_jmp, 1);
+    if (ourlongjmp == 0 ) {
+
+	/* simple test to verify segv handler works as expected. */
+	//if (tls->sample_count == 10) {
+	//   raise(SIGSEGV);
+	//}
+#endif
+
+	/* get stack address for current context and store them into framebuf. */
 #if defined(__linux) && defined(__x86_64)
 
 #if defined(USE_FASTTRACE)
-    CBTF_GetStackTrace(TRUE, 0,
+	/* The x86_64 unwinder uses fast cache based storage of addresses. */
+	CBTF_GetStackTrace(TRUE, 0,
                         CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
 #else
-    CBTF_GetStackTraceFromContext (context, TRUE, 0,
+	CBTF_GetStackTraceFromContext (context, TRUE, 0,
                         CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
 #endif
 
 #else
-    CBTF_GetStackTraceFromContext (context, TRUE, 0,
+	CBTF_GetStackTraceFromContext (context, TRUE, 0,
                         CBTF_USERTIME_MAXFRAMES /* maxframes*/, &framecount, framebuf) ;
+#endif
+
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+    } else {
+	/* Anything to do here if setsigjmp failes?. */
+    }
+
+    /* This restores normal segv handling outside of the unwinder (libunwind). */
+    tls->is_unwinding = false;
 #endif
 
 
@@ -516,6 +611,16 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->thread_idle =  tls->thread_wait_barrier = tls->thread_barrier = false;
 #endif
 
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+    memset((void *)tls->unwind_jmp, '\0', sizeof(tls->unwind_jmp));
+    /* install segv handler */
+    int rval = CBTF_Usertime_SetSEGVhandler();
+    if (rval != 0) {
+        fprintf(stderr,"No handler for unwind SIGSEGV\n");
+    }
+    tls->sample_count = 0;
+#endif
+
     /* Begin sampling */
     CBTF_Timer(tls->data.interval, serviceTimerHandler);
 }
@@ -594,6 +699,15 @@ void cbtf_collector_stop()
 	/* Send these samples */
 	send_samples(tls);
     }
+
+#if defined(CBTF_HANDLE_UNWIND_SEGV)
+    if (tls->debug_collector) {
+	if (tls->unwind_segvcount > 0) {
+            fprintf(stderr,"usertime unwinder sample count:%d SIGSEGV count:%d\n",
+		tls->sample_count, tls->unwind_segvcount);
+	}
+    }
+#endif
 
     /* Destroy our thread-local storage */
 #ifdef CBTF_SERVICE_USE_EXPLICIT_TLS

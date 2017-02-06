@@ -42,6 +42,10 @@
 #include <sys/uio.h>
 #include <stdlib.h>
 
+extern bool_t mem_do_trace(const char* traced_func);
+extern void mem_start_event(CBTF_memt_event* event);
+extern void mem_record_event(const CBTF_memt_event* event, uint64_t function);
+
 #if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_SERVICE_BUILD_STATIC)
 #if 0
 static bool is_initializing;

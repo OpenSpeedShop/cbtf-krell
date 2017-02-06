@@ -85,12 +85,18 @@ insert_files=
 
 default_mpi_impl=@default_mpi_impl@
 
+# Support both the CBTF_MPI_IMPLEMENTATION and
+# OPENSS_MPI_IMPLEMENTATION (for when cbtf is used
+# with OpenSpeedShop)
+#
 if [ -n "$CBTF_MPI_IMPLEMENTATION" ] ; then
     mpitouse=$CBTF_MPI_IMPLEMENTATION
+elif [ -n "$OPENSS_MPI_IMPLEMENTATION" ] ; then
+    mpitouse=$OPENSS_MPI_IMPLEMENTATION
 else
     mpitouse=`echo ${default_mpi_impl} |tr '[A-Z]' '[a-z]'`
     export CBTF_MPI_IMPLEMENTATION=$mpitouse
-fi
+fi 
 
 
 # Space-separated list of extra symbol names to wrap.

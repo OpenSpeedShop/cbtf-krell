@@ -340,9 +340,13 @@ if (NOT RUNTIME_ONLY)
     )
 
     set_target_properties(cbtf-core-mrnet PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-core-mrnet PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
+    if (HAVE_CRAYALPS MATCHES "true")
+        set_target_properties(cbtf-core-mrnet PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES};${CRAYALPS_DEFINES}")
+    else()
+        set_target_properties(cbtf-core-mrnet PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    endif()
 
     install(TARGETS cbtf-core-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -394,8 +398,13 @@ if (NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-core-mrnet-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-core-mrnet-static PROPERTIES OUTPUT_NAME cbtf-core-mrnet)
-    set_target_properties(cbtf-core-mrnet-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    if (HAVE_CRAYALPS MATCHES "true")
+        set_target_properties(cbtf-core-mrnet-static PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES};${CRAYALPS_DEFINES}")
+    else()
+        set_target_properties(cbtf-core-mrnet-static PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    endif()
 
     install(TARGETS cbtf-core-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

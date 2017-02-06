@@ -99,7 +99,7 @@ std::string extract_ranges(std::string nodeListNames) {
   std::set< int64_t>:: iterator setit;
   std::string S = "";
   std::string outputList = "";
-  int current, count, next ;
+  int current, count=0, next ;
   bool first_time = true;
 
   // Get the numeric values into a set which will be automatically sorted
@@ -208,7 +208,7 @@ int CBTFTopology::getCrayFENid( void )
 {
     int nid = -1;
 
-#if HAVE_CRAYALPS && (defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY))
+#if defined(HAVE_CRAYALPS) && (defined(RUNTIME_PLATFORM_CRAYXK) || defined(RUNTIME_PLATFORM_CRAYXE) || defined(RUNTIME_PLATFORM_CRAY) || defined(CN_RUNTIME_PLATFORM_CRAY))
     // alps.h defines ALPS_XT_NID to be the file containing the nid.
     // it's /proc/cray_xt/nid for the machines we've seen so far
     std::ifstream ifs( ALPS_XT_NID );
@@ -725,10 +725,17 @@ void CBTFTopology::parsePBSEnv()
 	     numcpnodes++;
 
 	int num_nodes_for_app;
+        int remainder_for_app_node;
 	if (isAttachBEMode()) {
 	    if (getNumBE() > dm_procs_per_node) {
 	        // initialize to enough nodes to handle number of request BEs.
 		num_nodes_for_app = getNumBE()/dm_procs_per_node;
+                // We must add an additional application node, if there are remaining BEs
+                // from the division above.  We determine this by finding the remainder.
+                remainder_for_app_node = getNumBE() % dm_procs_per_node;
+                if (remainder_for_app_node > 0) {
+                   num_nodes_for_app++  ;
+                }
 	    } else {
 	        // initialize to at least one node.
 		num_nodes_for_app = 1;
@@ -1095,11 +1102,12 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 #endif
 
     std::string fehostname;
+
     if (getIsCray()) {
 	// On a cray, the node names are always "nid".
 	// The method getCrayFENid() should get the correct nid
 	// based on the /proc/cray_xt/nid contents.
-#if HAVE_CRAYALPS
+#if defined(HAVE_CRAYALPS)
 	fehostname = formatCrayNid("nid",getCrayFENid());
 #else
 	fehostname = getLocalHostName();
@@ -1168,8 +1176,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 void CBTFTopology::createTopology()
 {
     FILE *file;
-    unsigned int i, j, layer;
-    unsigned int depth = 0, fanout = 0;
+    int i, j, layer;
+    int depth = 0, fanout = 0;
     std::string topoIter, current;
     std::string::size_type dashPos, lastPos;
 

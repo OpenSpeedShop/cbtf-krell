@@ -21,6 +21,7 @@
 #ifndef __USE_GNU 
 #define __USE_GNU /* XXX for RTLD_NEXT on Linux */ 
 #endif /* !__USE_GNU */
+#define _XOPEN_SOURCE 500 /* for readlink */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

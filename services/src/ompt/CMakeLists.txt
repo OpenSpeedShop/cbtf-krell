@@ -33,11 +33,13 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${LibIomp_INCLUDE_DIRS}
+	${LibMonitor_INCLUDE_DIRS}
 )
 
 target_link_libraries(cbtf-services-ompt
         -Wl,--no-as-needed
 	${LibIomp_SHARED_LIBRARIES}
+	${LibMonitor_SHARED_LIBRARIES}
 	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )

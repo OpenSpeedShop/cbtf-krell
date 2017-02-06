@@ -48,6 +48,7 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "MemTraceableFunctions.h"
+#include "monitor.h"
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "mem";
@@ -240,7 +241,7 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "mem send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) events_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,

@@ -51,15 +51,10 @@ extern void cbtf_offline_record_dlopen(const char* dsoname, uint64_t begin, uint
 
 extern const char* CBTF_GetExecutablePath();
 
-#if defined(RUNTIME_PLATFORM_BGP)
+#if defined(RUNTIME_PLATFORM_BGP) || defined(RUNTIME_PLATFORM_BGQ)
 #include <link.h>
 extern etext;
 extern edata;
-#elif defined(RUNTIME_PLATFORM_BGQ)
-#include <link.h>
-extern etext;
-extern edata;
-#endif
 
 const char *monlibs_vdso_name = "[vdso]";
 const char *monlibs_exe_name = "[exe]";
@@ -111,7 +106,9 @@ static int exe_is_static()
    }
    return 1;
 }
+#endif
 
+#if defined(CBTF_USE_DL_ITERATE) && defined(JUNK)
 static int dl_cb(struct dl_phdr_info *info, size_t size, void *data)
 {
    if (new_list_size >= lists_max_size) {
@@ -258,6 +255,7 @@ static void lc(ElfW(Addr) base_address, const char *name, mem_region *regions,
 	cbtf_offline_record_dso(name, regions[0].mem_addr, regions[0].mem_addr + regions[0].mem_size, is_load);
     }
 }
+#endif
 
 int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 {
@@ -291,7 +289,6 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
     while(!feof(mapfile)) {
 	char buf[PATH_MAX+100], perm[5], dev[6], mappedpath[PATH_MAX];
 	unsigned long begin, end, inode, offset;
-	int n;
 
 	/* read in one line from the /proc maps file for this pid. */
 	if(fgets(buf, sizeof(buf), mapfile) == 0) {

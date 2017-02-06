@@ -20,10 +20,10 @@ cmake_minimum_required(VERSION 2.8.0)
 
 project(cbtf-krell C CXX)
 
-set(CBTF_KRELL_VERSION 1.8.0)
+set(CBTF_KRELL_VERSION 1.8.1)
 set(CBTF_KRELL_VERSION_MAJOR 1)
 set(CBTF_KRELL_VERSION_MINOR 8)
-set(CBTF_KRELL_VERSION_PATCH 0)
+set(CBTF_KRELL_VERSION_PATCH 1)
 set(CBTF_KRELL_VERSION_TWEAK 0)
 add_definitions(-DVERSION="${CBTF_KRELL_VERSION}")
 
@@ -504,6 +504,7 @@ find_package(CrayAlps)
 
 if (CRAYALPS_FOUND)
   set(HAVE_CRAYALPS "true")
+  set(CRAYALPS_DEFINES "HAVE_CRAYALPS=1")
 endif()
 
 find_package(LibIomp)

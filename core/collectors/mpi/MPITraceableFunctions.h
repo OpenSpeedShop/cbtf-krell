@@ -120,6 +120,7 @@
     static const char* TraceableCategories[] = {
 
 	"all",
+        "async_nonblocking",
 	"asynchronous_p2p",
 	"collective_com",
 	"datatypes",
@@ -268,6 +269,37 @@
 	NULL
     };
 
+    static const char* TraceableAsyncNonBlocking[] = {
+          "MPI_Iallgather",
+          "MPI_Iallgatherv",
+          "MPI_Iallreduce",
+          "MPI_Ialltoall",
+          "MPI_Ialltoallv",
+          "MPI_Ialltoallw",
+          "MPI_Ibarrier",
+          "MPI_Ibcast",
+          "MPI_Iexscan",
+          "MPI_Igather",
+          "MPI_Igatherv",
+          "MPI_Ibsend",
+          "MPI_Improbe",
+          "MPI_Imrecv",
+          "MPI_Ineighbor_allgather",
+          "MPI_Ineighbor_allgatherv",
+          "MPI_Ineighbor_alltoall",
+          "MPI_Ineighbor_alltoallv",
+          "MPI_Ineighbor_alltoallw",
+          "MPI_Ireduce",
+          "MPI_Ireduce_scatter",
+          "MPI_Ireduce_scatter_block",
+          "MPI_Comm_idup",
+          "MPI_Iscan",
+          "MPI_Iscatter",
+          "MPI_Iscatterv",
+	  // End Of Table Entry
+          NULL
+    };
+
 /* -------------------------------------------------------- */
 
 static    char *asynchronous_p2p = (char *)
@@ -311,11 +343,20 @@ static    char *synchronous_p2p = (char *)
 "MPI_Bsend:MPI_Get_count:MPI_Probe:MPI_Recv:\
 MPI_Rsend:MPI_Send:MPI_Sendrecv:MPI_Sendrecv_replace:MPI_Ssend";
 
+static    char *async_nonblocking = (char *)
+"MPI_Iallgather:MPI_Iallgatherv:MPI_Iallreduce:MPI_Ialltoall:\
+MPI_Ialltoallv:MPI_Ialltoallw:MPI_Ibarrier:MPI_Ibcast:\
+MPI_Iexscan:MPI_Igather:MPI_Igatherv:MPI_Ibsend:MPI_Improbe:\
+MPI_Imrecv:MPI_Ineighbor_allgather:MPI_Ineighbor_allgatherv:\
+MPI_Ineighbor_alltoall:MPI_Ineighbor_alltoallv:MPI_Ineighbor_alltoallw:\
+MPI_Ireduce:MPI_Ireduce_scatter:MPI_Ireduce_scatter_block:\
+MPI_Comm_idup:MPI_Iscan:MPI_Iscatter:MPI_Iscatterv";
+
 static    char *all = (char *)
 "MPI_Allgather:MPI_Allgatherv:MPI_Allreduce:MPI_Alltoall:\
 MPI_Alltoallv:MPI_Barrier:MPI_Bcast:MPI_Bsend:MPI_Bsend_init:\
 MPI_Cancel:MPI_Cart_create:MPI_Cart_sub:MPI_Comm_create:\
-MPI_Comm_dup:MPI_Comm_free:MPI_Comm_split:MPI_File_close:\
+MPI_Comm_dup:MPI_Comm_free:MPI_Comm_idup:MPI_Comm_split:MPI_File_close:\
 MPI_File_delete:MPI_File_get_amode:MPI_File_get_group:MPI_File_get_info:\
 MPI_File_get_position:MPI_File_get_position_shared: \
 MPI_File_get_size:MPI_File_get_view:MPI_File_iread:MPI_File_iread_at:\
@@ -326,12 +367,18 @@ MPI_File_seek_shared:MPI_File_set_info:MPI_File_set_size:MPI_File_set_view:\
 MPI_File_write:MPI_File_write_all:MPI_File_write_at:MPI_File_write_at_all:\
 MPI_File_write_ordered:MPI_File_write_shared:MPI_Finalize:\
 MPI_Gather:MPI_Gatherv:MPI_Get_count:MPI_Graph_create:\
-MPI_Ibsend:MPI_Init:MPI_Intercomm_create:MPI_Intercomm_merge:\
-MPI_Iprobe:MPI_Irecv:MPI_Irsend:MPI_Isend:MPI_Issend:\
+MPI_Iallgather:MPI_Iallgatherv:MPI_Iallreduce:MPI_Ialltoall:\
+MPI_Ialltoallv:MPI_Ialltoallw:MPI_Ibarrier:MPI_Ibcast:\
+MPI_Ibsend:MPI_Iexscan:MPI_Igather:MPI_Ibsend:MPI_Improbe:\
+MPI_Imrecv:MPI_Ineighbor_allgather:MPI_Ineighbor_allgatherv:\
+MPI_Ineighbor_alltoall:MPI_Ineighbor_alltoallv:MPI_Ineighbor_alltoallw:\
+MPI_Init:MPI_Intercomm_create:MPI_Intercomm_merge:\
+MPI_Iprobe:MPI_Irecv:MPI_Ireduce:MPI_Ireduce_scatter:MPI_Ireduce_scatter_block:\
+MPI_Irsend:MPI_Iscan:MPI_Iscatter:MPI_Iscatterv:MPI_Isend:MPI_Issend:\
 MPI_Pack:MPI_Probe:MPI_Recv:MPI_Recv_init:MPI_Reduce:\
 MPI_Reduce_scatter:MPI_Request_free:MPI_Rsend:MPI_Rsend_init:\
 MPI_Scan:MPI_Scatter:MPI_Scatterv:MPI_Send:MPI_Sendrecv:\
 MPI_Sendrecv_replace:MPI_Ssend:MPI_Ssend_init:MPI_Start:\
 MPI_Startall:MPI_Test:MPI_Testall:MPI_Testany:MPI_Testsome:\
 MPI_Unpack:MPI_Wait:MPI_Waitall:MPI_Waitany:MPI_Waitsome";
-	
+

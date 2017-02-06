@@ -43,10 +43,13 @@ extern "C" {
 #endif
 
 const PAPI_hw_info_t *hw_info ;       /* PAPI hardware information */
-static int papithreshold = THRESHOLD;
 
+//static int papithreshold = THRESHOLD;
+#ifdef USE_ALLOC_VALUES
 static long_long values[2] = { 0, 0 };
 extern long_long **allocate_test_space(int , int);
+#endif
+
 extern void get_papi_name(int, char*);
 extern int get_papi_eventcode (char* eventname);
 extern void print_papi_error(int);

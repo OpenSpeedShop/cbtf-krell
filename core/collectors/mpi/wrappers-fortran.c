@@ -54,6 +54,1028 @@
   void static_name##__ signature { wrapper_function params; } \
   void upper_case signature { wrapper_function params; }
 
+//start new mpi functions
+
+/*
+ *  * MPI_Iallgather
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iallgather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iallgather
+#endif
+  (char* sendbuf,
+    MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+	MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iallgather(sendbuf, *sendcount, MPI_Type_f2c(*sendtype), recvbuf, *recvcount,
+                    MPI_Type_f2c(*recvtype), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLGATHER,mpi_iallgather,__wrap_mpi_iallgather,
+    (char* sendbuf,
+    MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Iallgatherv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iallgatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iallgatherv
+#endif
+  (char* sendbuf,
+    MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcounts,
+    MPI_Fint* displs,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iallgatherv(sendbuf, *sendcount, MPI_Type_f2c(*sendtype), recvbuf, recvcounts,
+                    displs, MPI_Type_f2c(*recvtype), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLGATHERV,mpi_iallgatherv,__wrap_mpi_iallgatherv,
+    (char* sendbuf,
+    MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcounts,
+	MPI_Fint* displs,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm, request, ierr))
+#endif
+
+
+/*
+ *  * MPI_Iallreduce
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iallreduce
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iallreduce
+#endif
+  (char* sendbuf,
+    char* recvbuf,
+    MPI_Fint* count,
+    MPI_Fint* datatype,
+    MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iallreduce(sendbuf, recvbuf, *count, MPI_Type_f2c(*datatype),
+                    MPI_Op_f2c(*op), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLREDUCE,mpi_iallreduce,__wrap_mpi_iallreduce,
+    (char* sendbuf,
+    char* recvbuf,
+    MPI_Fint* count,
+    MPI_Fint* datatype,
+	MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, count, datatype, op, comm, request, ierr))
+#endif
+
+
+/*
+ *  * MPI_Ialltoall
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ialltoall
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ialltoall
+#endif
+  (char* sendbuf,
+    MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoall(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLTOALL,mpi_ialltoall,__wrap_mpi_ialltoall,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+	MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ialltoallv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ialltoallv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ialltoallv
+#endif
+  (char* sendbuf,
+    MPI_Fint* sendcounts,
+    MPI_Fint* sdispls,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+    MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoallv(sendbuf, sendcounts, sdispls,  MPI_Type_f2c(*sendtype),
+				recvbuf, recvcounts, rdispls, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLTOALLV,mpi_ialltoallv,__wrap_mpi_ialltoallv,
+    (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+	MPI_Fint* sendtype,
+    char* recvbuf,
+    MPI_Fint* recvcounts,
+    MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcounts, sdispls, sendtype, recvbuf, rdispls, recvcounts, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ialltoallw
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ialltoallw
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ialltoallw
+#endif
+  (char* sendbuf,
+    MPI_Fint* sendcounts,
+    MPI_Fint* sdispls,
+    MPI_Fint* sendtypes,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+    MPI_Fint* rdispls,
+    MPI_Fint* recvtypes,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  int group_size = 0; //init to avoid compiler warnings
+  int i = 0; //init to avoid compiler warnings
+  MPI_Comm ccomm = PMPI_Comm_f2c(*comm);
+  PMPI_Comm_size(ccomm, &group_size);
+  MPI_Datatype * c_sendtypes = (MPI_Fint *) malloc(sizeof(MPI_Datatype)*group_size);
+  MPI_Datatype * c_recvtypes = (MPI_Fint *) malloc(sizeof(MPI_Datatype)*group_size);
+  
+  for (i = 0; i < group_size; ++i) { //convert array to c types
+	c_sendtypes[i] = MPI_Type_f2c(sendtypes[i]);
+	c_recvtypes[i] = MPI_Type_f2c(recvtypes[i]);
+  }
+
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoallw(sendbuf, sendcounts, sdispls, c_sendtypes,
+				recvbuf, recvcounts, rdispls, c_recvtypes,
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IALLTOALLW,mpi_ialltoallw,__wrap_mpi_ialltoallw,
+    (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+	MPI_Fint* sendtypes,
+    char* recvbuf,
+    MPI_Fint* recvcounts,
+    MPI_Fint* rdispls,
+    MPI_Fint* recvtypes,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcounts, sdispls, sendtypes, recvbuf, rdispls, recvcounts, recvtypes, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ibarrier
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ibarrier
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ibarrier
+#endif
+  (
+  MPI_Fint* comm,
+  MPI_Fint* request,
+  MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_IBarrier(MPI_Type_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IBARRIER,mpi_ibarrier,__wrap_mpi_ibarrier,
+    (MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (comm, request, ierr))
+#endif
+
+
+/*
+ *  * MPI_Ibcast
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ibcast
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ibcast
+#endif
+  (char* buffer,
+    MPI_Fint* count,
+    MPI_Fint* datatype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ibcast(buffer, *count, MPI_Type_f2c(*datatype), *root,
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IBCAST,mpi_ibcast,__wrap_mpi_ibcast,
+    (char* buffer,
+	MPI_Fint* count,
+	MPI_Fint* datatype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (buffer, count, datatype, root, comm, request, ierr))
+#endif
+
+
+/*
+ *  * MPI_Iexscan
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iexscan
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iexscan
+#endif
+  (char* sendbuf,
+	char * recvbuf,
+    MPI_Fint* count,
+    MPI_Fint* datatype,
+    MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iexscan(sendbuf, recvbuf, *count, MPI_Type_f2c(*datatype),
+				MPI_Op_f2c(*op), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IEXSCAN,mpi_iexscan,__wrap_mpi_iexscan,
+    (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* count,
+	MPI_Fint* datatype,
+    MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, count, datatype, op, comm, request, ierr))
+#endif
+
+
+/*
+ *  * MPI_Igather
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_igather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_igather
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char * recvbuf,
+    MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Igather(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype), *root,
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IGATHER,mpi_igather,__wrap_mpi_igather,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+	MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+	MPI_Fint* recvtype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Igatherv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_igatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_igatherv
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char * recvbuf,
+    MPI_Fint* recvcounts,
+    MPI_Fint* displs,
+    MPI_Fint* recvtype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Igatherv(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, recvcounts, displs, MPI_Type_f2c(*recvtype), *root,
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IGATHERV,mpi_igatherv,__wrap_mpi_igatherv,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+	MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* displs,
+	MPI_Fint* recvtype,
+    MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Improbe
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_improbe
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_improbe
+#endif
+  (MPI_Fint* source,
+	MPI_Fint* tag,
+    MPI_Fint* comm,
+    MPI_Fint* flag,
+    MPI_Fint* message,
+    MPI_Fint* status,
+    MPI_Fint* ierr)
+{
+  MPI_Status c_status;
+  *ierr = MPI_Improbe(*source, *tag, MPI_Comm_f2c(*comm), *flag,
+				MPI_Message_f2c(*message), &c_status);
+  if (*ierr == MPI_SUCCESS) MPI_Status_c2f(&c_status, *status);
+}
+OSS_WRAP_FORTRAN(MPI_IMPROBE,mpi_improbe,__wrap_mpi_improbe,
+    (MPI_Fint* source,
+	MPI_Fint* tag,
+    MPI_Fint* comm,
+    MPI_Fint* flag,
+    MPI_Fint* message,
+    MPI_Fint* status,
+    MPI_Fint* ierr),
+    (source, tag, comm, flag, message, status, ierr))
+#endif
+
+
+/*
+ *  * MPI_Imrecv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_imrecv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_imrecv
+#endif
+  (char* buf,
+	MPI_Fint* count,
+    MPI_Fint* type,
+    MPI_Fint* message,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Imrecv(buf, *count, MPI_Type_f2c(*type),
+				MPI_Message_f2c(*message), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IMRECV,mpi_imrecv,__wrap_mpi_imrecv,
+    (char* buf,
+	MPI_Fint* count,
+    MPI_Fint* type,
+    MPI_Fint* message,
+    MPI_Fint* status,
+    MPI_Fint* ierr),
+    (buf, count, type, message, status, ierr))
+#endif
+
+/*
+ *  * MPI_Ineighbor_allgather
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ineighbor_allgather
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_neighbor_allgather
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iallgather(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_INEIGHBOR_ALLGATHER,mpi_ineighbor_allgather,__wrap_mpi_ineighbor_allgather,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ineighbor_allgatherv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ineighbor_allgatherv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_neighbor_allgatherv
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* displs,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iallgatherv(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, recvcounts, displs, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_INEIGHBOR_ALLGATHERV,mpi_ineighbor_allgatherv,__wrap_mpi_ineighbor_allgatherv,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* displs,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ineighbor_alltoall
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ineighbor_alltoall
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_neighbor_alltoall
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoall(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_INEIGHBOR_ALLTOALL,mpi_ineighbor_alltoall,__wrap_mpi_ineighbor_alltoall,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ineighbor_alltoallv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ineighbor_alltoallv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_neighbor_alltoallv
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoallv(sendbuf, sendcounts, sdispls, MPI_Type_f2c(*sendtype),
+				recvbuf, recvcounts, sdispls, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_INEIGHBOR_ALLTOALLV,mpi_ineighbor_alltoallv,__wrap_mpi_ineighbor_alltoallv,
+    (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype, comm,  request, ierr))
+#endif
+
+/*
+ *  * MPI_Ineighbor_alltoallw
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ineighbor_alltoallw
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_neighbor_alltoallw
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ialltoallw(sendbuf, sendcounts, sdispls, MPI_Type_f2c(*sendtype),
+				recvbuf, recvcounts, sdispls, MPI_Type_f2c(*recvtype),
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_INEIGHBOR_ALLTOALLW,mpi_ineighbor_alltoallw,__wrap_mpi_ineighbor_alltoallw,
+    (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* sdispls,
+    MPI_Fint* sendtype,
+    char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* rdispls,
+    MPI_Fint* recvtype,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype, comm,  request, ierr))
+#endif
+
+/*
+ *  * MPI_Ireduce
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ireduce
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ireduce
+#endif
+  (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* count,
+	MPI_Fint* datatype,
+    MPI_Fint* op,
+	MPI_Fint* root,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ireduce(sendbuf, recvbuf, *count, MPI_Type_f2c(*datatype),
+				MPI_Op_f2c(*op), *root,
+				MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IREDUCE,mpi_ireduce,__wrap_mpi_ireduce,
+    (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* count,
+    MPI_Fint* datatype,
+	MPI_Fint* op,
+	MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, count, datatype, op, root, comm,  request, ierr))
+#endif
+
+/*
+ *  * MPI_Ireduce_scatter
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ireduce_scatter
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ireduce_scatter
+#endif
+  (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+	MPI_Fint* datatype,
+    MPI_Fint* op,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ireduce_scatter(sendbuf, recvbuf, recvcounts, MPI_Type_f2c(*datatype),
+				MPI_Op_f2c(*op), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IREDUCE_SCATTER,mpi_ireduce_scatter,__wrap_mpi_ireduce_scatter,
+    (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* recvcounts,
+    MPI_Fint* datatype,
+	MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, recvcounts, datatype, op, comm,  request, ierr))
+#endif
+
+/*
+ *  * MPI_Ireduce_scatter_block
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_ireduce_scatter_block
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_ireduce_scatter_block
+#endif
+  (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+	MPI_Fint* datatype,
+    MPI_Fint* op,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Ireduce_scatter_block(sendbuf, recvbuf, *recvcount, MPI_Type_f2c(*datatype),
+				MPI_Op_f2c(*op), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_IREDUCE_SCATTER_BLOCK,mpi_ireduce_scatter_block,__wrap_mpi_ireduce_scatter_block,
+    (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* datatype,
+	MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, recvcount, datatype, op, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Comm_idup
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_comm_idup
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_comm_idup
+#endif
+  (MPI_Fint* comm,
+	MPI_Fint* newcomm,
+    MPI_Fint* request,
+	MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  MPI_Comm l_comm;
+  *ierr = MPI_Comm_idup(MPI_Comm_f2c(*comm), &l_comm, &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+  if (*ierr == MPI_SUCCESS) *newcomm = MPI_Comm_c2f(l_comm);
+}
+OSS_WRAP_FORTRAN(MPI_COMM_IDUP,mpi_comm_idup,__wrap_mpi_comm_idup,
+    (MPI_Fint* comm,
+    MPI_Fint* newcomm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (comm, newcomm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Ireduce_scatter_block
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iscan
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iscan
+#endif
+  (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* count,
+	MPI_Fint* datatype,
+    MPI_Fint* op,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iscan(sendbuf, recvbuf, *count, MPI_Type_f2c(*datatype),
+				MPI_Op_f2c(*op), MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_ISCAN,mpi_iscan,__wrap_mpi_iscan,
+    (char* sendbuf,
+	char* recvbuf,
+	MPI_Fint* count,
+    MPI_Fint* datatype,
+	MPI_Fint* op,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, recvbuf, count, datatype, op, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Iscatter
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iscatter
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iscatter
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcount,
+	MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+	MPI_Fint* recvtype,
+    MPI_Fint* root,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iscatter(sendbuf, *sendcount, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype),
+				*root, MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_ISCATTER,mpi_iscatter,__wrap_mpi_iscatter,
+    (char* sendbuf,
+	MPI_Fint* sendcount,
+    MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+	MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm, request, ierr))
+#endif
+
+/*
+ *  * MPI_Iscatterv
+ *   */
+
+/* Protect this function, it was introduced in MPI-3 standard */
+#if MPI_VERSION >= 3
+
+#if defined (CBTF_SERVICE_USE_OFFLINE) && !defined(CBTF_STATIC)
+void mpi_iscatterv
+#elif defined (CBTF_STATIC) && defined (CBTF_SERVICE_USE_OFFLINE)
+void __wrap_mpi_iscatterv
+#endif
+  (char* sendbuf,
+	MPI_Fint* sendcounts,
+	MPI_Fint* displs,
+	MPI_Fint* sendtype,
+	char* recvbuf,
+	MPI_Fint* recvcount,
+	MPI_Fint* recvtype,
+    MPI_Fint* root,
+	MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr)
+{
+  MPI_Request l_request;
+  *ierr = MPI_Iscatterv(sendbuf, sendcounts, *displs, MPI_Type_f2c(*sendtype),
+				recvbuf, *recvcount, MPI_Type_f2c(*recvtype),
+				*root, MPI_Comm_f2c(*comm), &l_request);
+  if (*ierr == MPI_SUCCESS) *request = MPI_Request_c2f(l_request);
+}
+OSS_WRAP_FORTRAN(MPI_ISCATTERV,mpi_iscatterv,__wrap_mpi_iscatterv,
+    (char* sendbuf,
+	MPI_Fint* sendcounts,
+    MPI_Fint* sendtype,
+	MPI_Fint* displs,
+    char* recvbuf,
+	MPI_Fint* recvcount,
+    MPI_Fint* recvtype,
+	MPI_Fint* root,
+    MPI_Fint* comm,
+    MPI_Fint* request,
+    MPI_Fint* ierr),
+    (sendbuf, sendcounts, sendtype, displs, recvbuf, recvcount, recvtype, root, comm, request, ierr))
+#endif
+
+
+//end new mpi functions
 
 /*
  * MPI_Irecv

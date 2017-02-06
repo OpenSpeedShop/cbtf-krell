@@ -29,8 +29,13 @@
 #include "KrellInstitute/Services/Assert.h"
 #include <time.h>
 
+#include "omp.h"     // omp_get_thread_num
 #include "ompt.h"
 #include "KrellInstitute/Services/Ompt.h"
+#include "monitor.h" // monitor_get_thread_num
+
+/* FIXME: This exists in services/collector/collector.c.  need include. */
+extern void cbtf_collector_set_openmp_threadid(int32_t omptid);
 
 ompt_enumerate_state_t ompt_enumerate_state;
 ompt_set_callback_t ompt_set_callback;
@@ -227,7 +232,7 @@ void CBTF_ompt_cb_thread_end()
 {
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
-	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end: barrier time:%f, lock count:%d lock_time:%f\n"
+	fprintf(stderr, "[%d] CBTF_ompt_cb_thread_end: barrier time:%f, lock count:%lu lock_time:%f\n"
 	,omp_get_thread_num(), (float)barrier_ttime/1000000000, lock_count, (float)lock_time/1000000000);
     }
 #endif
@@ -239,7 +244,7 @@ void CBTF_ompt_cb_control(uint64_t command, uint64_t modifier)
 {
 #ifndef NDEBUG
     if (cbtf_ompt_debug_details) {
-	fprintf(stderr,"[%d] CBTF_ompt_cb_control: %llx, %llx\n",omp_get_thread_num(), command, modifier);
+	fprintf(stderr,"[%d] CBTF_ompt_cb_control: %lu, %lu\n",omp_get_thread_num(), command, modifier);
     }
 #endif
 }
@@ -867,7 +872,7 @@ void CBTF_ompt_cb_idle_begin(ompt_thread_id_t thread_id /* ID of thread*/)
     OMPT_THREAD_IDLE(true);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
-	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_begin %u\n" ,omp_get_thread_num(), thread_id);
+	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_begin %u\n" ,omp_get_thread_num(), (unsigned int) thread_id);
     }
 #endif
     cbtf_collector_resume();
@@ -882,7 +887,7 @@ void CBTF_ompt_cb_idle_end(ompt_thread_id_t thread_id        /* ID of thread*/)
     OMPT_THREAD_IDLE(false);
 #ifndef NDEBUG
     if (cbtf_ompt_debug_blame) {
-	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_end %u\n" ,omp_get_thread_num(), thread_id);
+	fprintf(stderr,"[%d] CBTF_ompt_cb_idle_end %u\n" ,omp_get_thread_num(), (unsigned int) thread_id);
     }
 #endif
     cbtf_collector_resume();

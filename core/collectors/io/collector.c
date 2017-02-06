@@ -46,6 +46,7 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "IOTraceableFunctions.h"
+#include "monitor.h"
 
 /** String uniquely identifying this collector. */
 #if defined(PROFILE)
@@ -308,7 +309,7 @@ static void send_samples(TLS *tls)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr, "io send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d)\n",
+	    fprintf(stderr, "time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len

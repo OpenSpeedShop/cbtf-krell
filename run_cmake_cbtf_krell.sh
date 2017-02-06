@@ -9,16 +9,16 @@ export CXX=g++
 
 export KRELL_ROOT=/opt/STABLE/krellroot_v2.3.0
 export DYNINST_ROOT=/opt/STABLE/krellroot_v2.3.0
-export CBTF_ROOT=/opt/STABLE/cbtf_v2.3.x
-export CBTF_KRELL_PREFIX=/opt/STABLE/cbtf_v2.3.x
+export CBTF_ROOT=/opt/TEST/cbtf_v2.3.x
+export CBTF_KRELL_PREFIX=/opt/TEST/cbtf_v2.3.x
 export MRNET_ROOT=/opt/STABLE/krellroot_v2.3.0
 export XERCESC_ROOT=/opt/STABLE/krellroot_v2.3.0
 export BOOST_ROOT=/opt/boost-1.59.0
 
 cmake .. \
         -DCMAKE_BUILD_TYPE=None \
-        -DCMAKE_CXX_FLAGS="-g -O2" \
-        -DCMAKE_C_FLAGS="-g -O2" \
+        -DCMAKE_CXX_FLAGS="-g -O2 -m64 -mcmodel=medium" \
+        -DCMAKE_C_FLAGS="-g -O2 -m64 -mcmodel=medium" \
 	-DCMAKE_INSTALL_PREFIX=${CBTF_KRELL_PREFIX} \
 	-DCMAKE_PREFIX_PATH=${CBTF_ROOT} \
 	-DCBTF_DIR=${CBTF_ROOT} \

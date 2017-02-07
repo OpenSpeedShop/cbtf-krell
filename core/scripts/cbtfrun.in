@@ -252,6 +252,9 @@ if [ "$has_openmp" == "true" ] ; then
   fi
 fi
 
+if [ -n "$OPENSS_NO_OMPT_SERVICE" ] ; then
+    ompt_service=
+fi
 
 extra_mpi_libs=""
 

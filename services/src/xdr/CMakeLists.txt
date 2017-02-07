@@ -30,7 +30,6 @@ include_directories(
 	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/services/src/data
-	${CMAKE_INSTALL_PREFIX}/include
 )
 
 add_library(cbtf-services-send SHARED

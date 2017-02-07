@@ -33,7 +33,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/services/include
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_INSTALL_PREFIX}/include
 )
 
 add_library(cbtf-services-data SHARED

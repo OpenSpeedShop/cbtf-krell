@@ -170,6 +170,18 @@ void init_process_thread()
 
     //CBTF_Protocol_AttachedToThreads tmessage;
     tls->attached_to_threads_message.threads = tls->tgrp;
+#ifndef NDEBUG
+        if (tls->debug_mrnet) {
+    	     fprintf(stderr,
+	   "init_process_thread [%d] INIT THREAD OR PROCESS %s:%lld:%lld:%d:%d\n",
+		     tls->tgrp.names.names_len,
+                     tls->header.host, (long long)tls->header.pid,
+                     (long long)tls->header.posix_tid,
+		     tls->header.rank,
+		     tls->header.omp_tid
+	    );
+        }
+#endif
 }
 
 void send_attached_to_threads_message()

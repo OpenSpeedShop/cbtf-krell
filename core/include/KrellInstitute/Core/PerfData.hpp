@@ -28,17 +28,39 @@
 #include "config.h"
 #endif
 
+#include "KrellInstitute/Messages/Blob.h"
+#include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/Address.h"
+#include "KrellInstitute/Messages/PCSamp_data.h"
+#include "KrellInstitute/Messages/Usertime_data.h"
+#include "KrellInstitute/Messages/Hwc_data.h"
+#include "KrellInstitute/Messages/Hwcsamp_data.h"
+#include "KrellInstitute/Messages/Hwctime_data.h"
+#include "KrellInstitute/Messages/IO_data.h"
+#include "KrellInstitute/Messages/Mem_data.h"
+#include "KrellInstitute/Messages/Mpi_data.h"
+#include "KrellInstitute/Messages/Ompt_data.h"
+#include "KrellInstitute/Messages/Pthreads_data.h"
+#include "KrellInstitute/Messages/ThreadEvents.h"
 #include "KrellInstitute/Core/AddressBuffer.hpp"
 #include "KrellInstitute/Core/Blob.hpp"
-//#include "KrellInstitute/Core/ThreadName.hpp"
+#include "KrellInstitute/Core/Address.hpp"
+#include "KrellInstitute/Core/AddressEntry.hpp"
+#include "KrellInstitute/Core/PCData.hpp"
+#include "KrellInstitute/Core/StackTrace.hpp"
+#include "KrellInstitute/Core/StacktraceData.hpp"
+#include "KrellInstitute/Core/Time.hpp"
+#include "KrellInstitute/Core/TimeInterval.hpp"
+#include "KrellInstitute/Core/MemEventMetrics.hpp"
+
 
 namespace KrellInstitute { namespace Core {
-
 
     class PerfData {
 
 	public:
-	   int aggregate(const Blob&, AddressBuffer &buf);
+	   int aggregate(const Blob&, AddressBuffer& buf);
+	   int memMetrics(const Blob&, MemMetrics&);
 
 
 	private:

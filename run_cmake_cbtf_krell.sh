@@ -7,8 +7,8 @@ export CXX=g++
 
 export KRELL_ROOT=/opt/DEVEL/krellroot_v2.2.3
 export DYNINST_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export CBTF_ROOT=/opt/DEVEL2/cbtf_v2.2.4
-export CBTF_KRELL_PREFIX=/opt/DEVEL2/cbtf_v2.2.4
+export CBTF_ROOT=/opt/DEVEL3/cbtf_v2.3.1
+export CBTF_KRELL_PREFIX=/opt/DEVEL3/cbtf_v2.3.1
 export MRNET_ROOT=/opt/DEVEL/krellroot_v2.2.3
 export XERCESC_ROOT=/opt/DEVEL/krellroot_v2.2.3
 

@@ -7,13 +7,15 @@ pushd build
 export CC=gcc
 export CXX=g++
 
-export KRELL_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export DYNINST_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export CBTF_ROOT=/opt/DEVEL3/cbtf_v2.3.1
-export CBTF_KRELL_PREFIX=/opt/DEVEL3/cbtf_v2.3.1
-export MRNET_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export XERCESC_ROOT=/opt/DEVEL/krellroot_v2.2.3
-export BOOST_ROOT=/usr
+export KRELL_ROOT=/u/glschult/OSS/krellroot_v2.3.1
+export DYNINST_ROOT=/u/glschult/OSS/krellroot_v2.3.1
+export MRNET_ROOT=/u/glschult/OSS/krellroot_v2.3.1
+export XERCESC_ROOT=/u/glschult/OSS/krellroot_v2.3.1
+export BOOST_ROOT=/u/glschult/OSS/krellroot_v2.3.1
+export CBTF_ROOT=/u/glschult/OSS/cbtf_v2.3.1
+export CBTF_KRELL_PREFIX=/u/glschult/OSS/cbtf_v2.3.1
+export OPENMPI_INSTALL_ROOT=/nasa/openmpi/1.6.5/gcc
+export CUDA_DIR=/nasa/cuda/7.5
 
 cmake .. \
         -DCMAKE_BUILD_TYPE=None \
@@ -31,8 +33,9 @@ cmake .. \
 	-DXERCESC_DIR=${XERCESC_ROOT} \
         -DLIBDWARF_DIR=${KRELL_ROOT} \
         -DLIBELF_DIR=${KRELL_ROOT} \
-	-DOPENMPI_DIR=/opt/openmpi-2.0.1 \
-	-DCBTF_BOOST_ROOT=${BOOST_ROOT}
+	-DOPENMPI_DIR=${OPENMPI_INSTALL_ROOT} \
+	-DCBTF_BOOST_ROOT=${BOOST_ROOT} \
+        -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_DIR}
 
 make clean
 make

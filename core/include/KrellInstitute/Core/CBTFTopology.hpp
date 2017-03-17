@@ -75,6 +75,8 @@ struct PBSEnvInfo
 };
 
 #define CBTF_MAX_FANOUT 64
+#define CBTF_DEFAULT_FANOUT 32
+#define CBTF_DEFAULT_DEPTH 1
 
 typedef enum {
     BE_ATTACH = 0,
@@ -118,16 +120,21 @@ class CBTFTopology {
 	    };
 
 
+	    // FIXME: used by daemonTool.  numBE 0 here is or should
+	    // default to one BE daemon per node.  The depth 0 should
+	    // mean let the topology creation code determine the value.
 	    void autoCreateTopology(const MRNetStartMode& mode) {
-		autoCreateTopology(mode,0,0,0);	
+		autoCreateTopology(mode,0,CBTF_DEFAULT_FANOUT,0);	
 	    };
 
+	    // Used by osscollect and collectionTool.
 	    void autoCreateTopology(const MRNetStartMode& mode, const int& numBE) {
-		autoCreateTopology(mode,numBE,0,0);	
+		autoCreateTopology(mode,numBE,CBTF_DEFAULT_FANOUT,CBTF_DEFAULT_DEPTH);	
 	    };
 
-	    void autoCreateTopology(const MRNetStartMode&, const int&,
-				    const unsigned int&, const unsigned int&);
+	    // Actual imlementation of topology creation.
+	    void autoCreateTopology(const MRNetStartMode& mode, const int& numBE,
+				    const unsigned int& fanout, const unsigned int& depth);
 
 	    void createTopologyFromSpec(const MRNetStartMode&, const std::string&);
 
@@ -163,6 +170,7 @@ class CBTFTopology {
             std::string createRangeCSVstring(std::list<std::string> &);
 
 
+	    void parseEnv();
 	    void parseSlurmEnv();
 	    void parsePBSEnv();
 
@@ -225,67 +233,67 @@ class CBTFTopology {
 		return dm_fe_node;
 	    };
 
-	    void setNumCPProcs(const int& val) {
+	    void setNumCPProcs(const unsigned int& val) {
 		dm_cp_max_procs = val;
 	    };
 
-	    int  getNumCPProcs() {
+	    unsigned int  getNumCPProcs() {
 		return dm_cp_max_procs;
 	    };
 
-	    void setNumBEProcs(const int& val) {
+	    void setNumBEProcs(const unsigned int& val) {
 		dm_be_max_procs = val;
 	    };
 
-	    int  getNumBEProcs() {
+	    unsigned int  getNumBEProcs() {
 		return dm_be_max_procs;
 	    };
 
-	    void setMaxProcs(const int& val) {
+	    void setMaxProcs(const unsigned int& val) {
 		dm_max_procs = val;
 	    };
 
-	    int  getMaxProcs() {
+	    unsigned int  getMaxProcs() {
 		return dm_max_procs;
 	    };
 
-	    void setNumProcsPerNode(const int& val) {
+	    void setNumProcsPerNode(const unsigned int& val) {
 		dm_procs_per_node = val;
 	    };
 
-	    int  getNumProcsPerNode() {
+	    unsigned int  getNumProcsPerNode() {
 		return dm_procs_per_node;
 	    };
 
-	    void setNumAppNodes(const int& val) {
+	    void setNumAppNodes(const unsigned int& val) {
 		dm_num_app_nodes = val;
 	    };
 
-	    int  getNumAppNodes() {
+	    unsigned int  getNumAppNodes() {
 		return dm_num_app_nodes;
 	    };
 
-	    void setDepth(const int& val) {
+	    void setDepth(const unsigned int& val) {
 		dm_top_depth = val;
 	    };
 
-	    int  getDepth() {
+	    unsigned int  getDepth() {
 		return dm_top_depth;
 	    };
 
-	    void setFanout(const int& val) {
+	    void setFanout(const unsigned int& val) {
 		dm_top_fanout = val;
 	    };
 
-	    int  getFanout() {
+	    unsigned int  getFanout() {
 		return dm_top_fanout;
 	    };
 
-	    void setNumCPNodes(const int& val) {
+	    void setNumCPNodes(const unsigned int& val) {
 		dm_num_cp_nodes = val;
 	    };
 
-	    int  getNumCPNodes() {
+	    unsigned int  getNumCPNodes() {
 		return dm_num_cp_nodes;
 	    };
 
@@ -303,6 +311,13 @@ class CBTFTopology {
 		return is_pbs_valid;
 	    };
 
+	    void setLSFValid( const bool& val) {
+		is_lsf_valid = val;
+	    };
+	    bool isLSFValid() {
+		return is_lsf_valid;
+	    };
+
 	    void setAttachBEMode(const bool& val) {
 		attach_be_mode = val;
 	    };
@@ -311,11 +326,11 @@ class CBTFTopology {
 		return attach_be_mode;
 	    };
 
-	    void setNumBE(const int& val) {
+	    void setNumBE(const unsigned int& val) {
 		dm_top_numbe = val;
 	    };
 
-	    int getNumBE() {
+	    unsigned int getNumBE() {
 		return dm_top_numbe;
 	    };
 
@@ -330,6 +345,9 @@ class CBTFTopology {
 	    std::list<std::string> getAppNodeList() {
 		return dm_app_nodelist;
 	    };
+
+	    void processNodeFile(const std::string& nodeFile);
+	    void processEnv();
 
 	    typedef enum {
 		BALANCED,
@@ -348,15 +366,14 @@ class CBTFTopology {
 	    std::string dm_topology;
 	    std::string dm_fe_node;
 	    MRN::Tree * dm_tree;
-	    int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs, dm_procs_per_node;
-	    bool is_pbs_valid, is_slurm_valid, dm_is_cray;
+	    unsigned int dm_max_procs, dm_app_procs, dm_be_max_procs, dm_cp_max_procs, dm_procs_per_node;
+	    bool is_pbs_valid, is_slurm_valid, is_lsf_valid, is_jobid_valid, dm_is_cray;
 	    bool attach_be_mode, dm_colocate_mrnet_procs;
-	    long dm_slurm_jobid, dm_slurm_num_nodes, dm_slurm_job_tasks;
-	    long dm_pbs_jobid, dm_pbs_num_nodes, dm_pbs_job_tasks;
+	    long dm_jobid, dm_num_nodes, dm_job_tasks;
 
 	public:
-	    int dm_top_depth, dm_top_fanout, dm_top_numbe;
-	    int dm_num_app_nodes, dm_num_cp_nodes;
+	    unsigned int dm_top_depth, dm_top_fanout, dm_top_numbe;
+	    unsigned int dm_num_app_nodes, dm_num_cp_nodes;
 	    std::list<std::string> dm_cp_nodelist;
  	    std::list<std::string> dm_app_nodelist;
  	    std::list<std::string> dm_nodelist;

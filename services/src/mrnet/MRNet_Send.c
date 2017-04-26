@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) The Krell Institute. 2011-2013  All Rights Reserved.
-** Copyright (c) 2016 Argo Navis Technologies. All Rights Reserved.
+** Copyright (c) 2016-2017 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -27,8 +27,17 @@
 #include "config.h"
 #endif
 
+#include <errno.h>
 #include <pthread.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
@@ -49,6 +58,158 @@ static int mrnet_connected = 0;
 
 static pthread_mutex_t mrnet_connected_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mrnet_connected_cond = PTHREAD_COND_INITIALIZER;
+
+static bool do_record_playback = false;
+static bool do_replay_playback = false;
+static bool is_first_message = true;
+static bool do_squelch_message = false;
+
+static char playback_file[PATH_MAX] = "";
+
+
+
+static void CBTF_MRNet_LW_sendToFrontend(const int tag,
+                                         const int size, void *data);
+
+
+
+static void configure_playback()
+{
+    do_record_playback = (getenv("CBTF_MRNET_RECORD_PLAYBACK") != NULL);
+    do_replay_playback = (getenv("CBTF_MRNET_REPLAY_PLAYBACK") != NULL);
+    
+    if (do_record_playback && do_replay_playback)
+    {
+        do_record_playback = false;
+        do_replay_playback = false;
+
+        fprintf(stderr, "CBTF_MRNet_LW_connect: "
+                "cannot both record and replay a playback concurrently!\n");
+        fflush(stderr);
+    }
+    else if (do_record_playback || do_replay_playback)
+    {
+        char* directory = do_record_playback ?
+            getenv("CBTF_MRNET_RECORD_PLAYBACK") :
+            getenv("CBTF_MRNET_REPLAY_PLAYBACK");
+        
+        struct stat status;
+        int retval = stat(directory, &status);
+
+        if ((retval == -1) || (!S_ISDIR(status.st_mode)))
+        {
+            do_record_playback = false;
+            do_replay_playback = false;
+
+            fprintf(stderr, "CBTF_MRNet_LW_connect: "
+                    "playback directory \"%s\" couldn't be accessed!\n",
+                    directory);
+            fflush(stderr);
+        }
+        else
+        {
+            sprintf(playback_file, "%s/cbtf-mrnet-playback-%u",
+                    directory, Network_get_LocalRank(CBTF_MRNet_netPtr));
+
+            retval = stat(playback_file, &status);
+
+            if (do_record_playback &&
+                ((retval == 0) || (errno != ENOENT)))
+            {
+                do_record_playback = false;
+                
+                fprintf(stderr, "CBTF_MRNet_LW_connect: "
+                        "playback file \"%s\" already exists!\n",
+                        playback_file);
+                fflush(stderr);
+            }
+            
+            if (do_replay_playback &&
+                ((retval == -1) || !S_ISREG(status.st_mode)))
+            {
+                do_replay_playback = false;
+                
+                fprintf(stderr, "CBTF_MRNet_LW_connect: "
+                        "playback file \"%s\" couldn't be opened!\n",
+                        playback_file);
+                fflush(stderr);
+            }
+        }
+    }
+}
+
+
+
+static void record_to_playback(int32_t tag, uint32_t size, void* data)
+{
+    uint64_t time = CBTF_GetTime();
+    FILE* fp = fopen(playback_file, "a+");
+
+    Assert(fp != NULL);
+
+    Assert(fwrite(&time, sizeof(uint64_t), 1, fp) == 1);
+    Assert(fwrite(&tag, sizeof(int32_t), 1, fp) == 1);
+    Assert(fwrite(&size, sizeof(uint32_t), 1, fp) == 1);
+    Assert(fwrite(data, size, 1, fp) == 1);
+    
+    Assert(fclose(fp) == 0);
+}
+
+
+
+static void replay_from_playback()
+{
+    bool is_first = true;
+    uint64_t previous_time = 0;
+    FILE* fp = fopen(playback_file, "r");
+
+    Assert(fp != NULL);
+
+    while (true)
+    {
+        uint64_t time = 0;
+        int32_t tag = 0;
+        uint32_t size = 0;
+
+        if (fread(&time, sizeof(uint64_t), 1, fp) < 1)
+        {
+            break;
+        }
+
+        if (fread(&tag, sizeof(int32_t), 1, fp) < 1)
+        {
+            break;
+        }
+
+        if (fread(&size, sizeof(uint32_t), 1, fp) < 1)
+        {
+            break;
+        }
+
+        void* data = malloc(size);
+
+        if (fread(data, size, 1, fp) < 1)
+        {
+            free(data);
+            break;
+        }
+
+        if (!is_first)
+        {
+            usleep((time - previous_time) / 1000 /* us/ns */);
+        }
+
+        is_first = false;
+        previous_time = time;
+
+        CBTF_MRNet_LW_sendToFrontend(tag, (int)size, data);        
+        free(data);
+    }
+        
+    Assert(fclose(fp) == 0);
+}
+
+
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
@@ -242,6 +403,13 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 #endif
      }
 
+    /*
+     * Determine if the sent messages should be recorded for future playback,
+     * or replayed from an existing playback. And, if so, check for the given
+     * playback directory and determine the name of the proper playback file.
+     */
+    configure_playback();
+
     mrnet_connected = 1;
     pthread_cond_broadcast(&mrnet_connected_cond);
     pthread_mutex_unlock(&mrnet_connected_mutex);
@@ -267,6 +435,33 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
         pthread_cond_wait(&mrnet_connected_cond, &mrnet_connected_mutex);
     }
     pthread_mutex_unlock(&mrnet_connected_mutex);
+
+    /* Record this message to a playback file if requested. */
+    if (do_record_playback)
+    {
+        record_to_playback(tag, (uint32_t)size, data);
+    }
+
+    /*
+     * Squelch the actual sending of this message if replay of a playback file
+     * has been requested. But if this is the first message, do the replay too.
+     * Things get slightly complicated because replay_from_playback() must use
+     * this same function to send its messages...     
+     */
+    if (do_replay_playback)
+    {
+        if (is_first_message)
+        {
+            is_first_message = false;
+            replay_from_playback();
+            do_squelch_message = true;
+        }
+
+        if (do_squelch_message)
+        {
+            return;
+        }
+    }
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {

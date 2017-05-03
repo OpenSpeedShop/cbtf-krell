@@ -661,3 +661,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/CBTF-KrellConfigVersion.cmake
     DESTINATION share/CBTF-Krell/cmake )
 
+#--------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------
+add_subdirectory(utils/cbtf-mrnet-playback)
+if (HAVE_MPI)
+  add_subdirectory(utils/cbtf-mrnet-playback-mpi)
+endif()

@@ -881,6 +881,18 @@ void CBTFTopology::parseEnv()
 	setNodeList(envval);
     }
 
+    // Is there a LSF nodelist available?
+    // This node list is essentially the same as the PBS_NODEFILE
+    // So, the processing is the same
+    if ((envval = getenv("LSB_DJOB_RANKFILE")) == NULL) {
+       has_lsf = false;
+       has_nodelist = false;
+    } else {
+       has_lsf = true;
+       std::string nodefile(envval);
+       processNodeFile(nodefile);
+    }
+
     is_pbs_valid = has_pbs;
     is_slurm_valid = has_slurm;
     is_lsf_valid = has_lsf;

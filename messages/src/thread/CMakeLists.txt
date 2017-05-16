@@ -72,6 +72,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-messages-converters-thread PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-thread PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-thread PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-thread
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -102,6 +103,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     set_target_properties(cbtf-messages-converters-thread-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-thread-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-thread)
     set_target_properties(cbtf-messages-converters-thread-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-thread-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-thread-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -125,6 +127,7 @@ target_link_libraries(cbtf-messages-thread
 )
 
 set_target_properties(cbtf-messages-thread PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-thread PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-thread
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -151,6 +154,7 @@ target_link_libraries(cbtf-messages-thread-static
 
 set_target_properties(cbtf-messages-thread-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-thread-static PROPERTIES OUTPUT_NAME cbtf-messages-thread)
+set_target_properties(cbtf-messages-thread-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-thread-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

@@ -26,7 +26,6 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${Binutils_INCLUDE_DIRS}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 )
 
@@ -37,7 +36,6 @@ add_library(cbtf-services-binutils SHARED
 target_link_libraries(cbtf-services-binutils
         -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -45,6 +43,7 @@ set_target_properties(cbtf-services-binutils PROPERTIES VERSION 1.1.0)
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-services-binutils PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")
+set_target_properties(cbtf-services-binutils PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-binutils
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -59,7 +58,6 @@ add_library(cbtf-services-binutils-static STATIC
 target_link_libraries(cbtf-services-binutils-static
         -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -69,10 +67,8 @@ set_target_properties(cbtf-services-binutils-static PROPERTIES OUTPUT_NAME cbtf-
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-services-binutils-static PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")
+set_target_properties(cbtf-services-binutils-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-binutils-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-

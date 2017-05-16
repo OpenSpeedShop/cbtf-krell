@@ -31,7 +31,6 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 )
 
@@ -41,12 +40,12 @@ add_library(cbtf-services-offline SHARED
 
 target_link_libraries(cbtf-services-offline
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-events
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-offline PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-offline PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-offline
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -60,16 +59,14 @@ add_library(cbtf-services-offline-static STATIC
 
 target_link_libraries(cbtf-services-offline-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	cbtf-messages-events
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-offline-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-offline-static PROPERTIES OUTPUT_NAME cbtf-services-offline)
+set_target_properties(cbtf-services-offline-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-offline-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-

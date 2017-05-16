@@ -16,7 +16,6 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-
 include(CheckIncludeFile)
 
 # FIXME:  dpm comments about changes in this area
@@ -59,6 +58,7 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hwctime.xml
         DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
+
 else ()
 
 if (LIBMONITOR_FOUND)
@@ -87,16 +87,27 @@ target_include_directories(hwctime-collector-monitor-fileio PUBLIC
 
 target_link_libraries(hwctime-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
+	${Papi_SHARED_LIBRARIES}
+	${Papi_pfm_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/papi/libcbtf-services-papi.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(hwctime-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -141,6 +152,8 @@ target_link_libraries(hwctime-monitor-fileio
 	cbtf-services-collector-monitor-fileio-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
+	${Papi_STATIC_LIBRARIES}
+	${Papi_pfm_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -176,17 +189,28 @@ target_include_directories(hwctime-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(hwctime-collector-monitor-mrnet
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
+	${Papi_SHARED_LIBRARIES}
+	${Papi_pfm_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/papi/libcbtf-services-papi.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(hwctime-collector-monitor-mrnet PROPERTIES PREFIX "")
@@ -227,6 +251,8 @@ target_link_libraries(hwctime-monitor-mrnet
 	cbtf-services-collector-monitor-mrnet-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
+	${Papi_STATIC_LIBRARIES}
+	${Papi_pfm_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -261,18 +287,28 @@ target_include_directories(hwctime-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(hwctime-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
+	${Papi_SHARED_LIBRARIES}
+	${Papi_pfm_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/papi/libcbtf-services-papi.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(hwctime-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -314,6 +350,8 @@ target_link_libraries(hwctime-monitor-mrnet-mpi
 	cbtf-services-collector-monitor-mrnet-mpi-static
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
+	${Papi_STATIC_LIBRARIES}
+	${Papi_pfm_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
@@ -328,15 +366,15 @@ install(TARGETS hwctime-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
 )
 
-endif() # end of MRNET_FOUND
+endif() # end MRNET_FOUND
 
-endif() # end of LIBMONITOR_FOUND
+endif() # end LIBMONITOR_FOUND
 
 if (NOT RUNTIME_ONLY)
     # If we are building the targeted runtimes/collectors, then don't build the xml
-    # We will do that as part of the targeted build of the FE  (BUILD_FE_USING_CN_RUNTIMES) 
+    # We will do that as part of the targeted build of the FE (BUILD_FE_USING_CN_RUNTIMES) 
     # See the top of this file for the BUILD_FE_USING_CN_RUNTIMES section of
-    # code, where we build the xml for the experiment.
+    # code where we build the xml for the experiment.
     #
     # Immediately below is the normal cluster - non-targeted build of the xml file.
     #

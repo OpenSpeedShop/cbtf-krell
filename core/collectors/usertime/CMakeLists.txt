@@ -58,6 +58,7 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/usertime.xml
         DESTINATION ${CBTF_KRELL_CN_RUNTIME_DIR}/share/KrellInstitute/xml)
+
 else ()
 
 if (LIBMONITOR_FOUND)
@@ -87,15 +88,22 @@ target_link_libraries(usertime-collector-monitor-fileio
         -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
-	cbtf-services-common
-	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(usertime-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -133,14 +141,14 @@ target_include_directories(usertime-monitor-fileio PUBLIC
 
 target_link_libraries(usertime-monitor-fileio
         -Wl,--no-as-needed
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-fileio-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -178,15 +186,22 @@ target_link_libraries(usertime-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
-	cbtf-services-common
-	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(usertime-collector-monitor-mrnet PROPERTIES PREFIX "")
@@ -219,15 +234,15 @@ target_include_directories(usertime-monitor-mrnet PUBLIC
 
 target_link_libraries(usertime-monitor-mrnet
         -Wl,--no-as-needed
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
 	cbtf-services-timer-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -263,16 +278,22 @@ target_link_libraries(usertime-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
-	cbtf-services-common
-	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(usertime-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -305,9 +326,6 @@ target_include_directories(usertime-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(usertime-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	${LibMonitor_STATIC_LIBRARIES}
-	${LibUnwind_STATIC_LIBRARIES}
-	${MRNet_LWR_STATIC_LIBRARIES}
 	cbtf-services-common-static
 	cbtf-services-monitor-static
 	cbtf-services-offline-static
@@ -315,6 +333,9 @@ target_link_libraries(usertime-monitor-mrnet-mpi
 	cbtf-services-data-static
 	cbtf-services-unwind-static
 	cbtf-services-collector-monitor-mrnet-mpi-static
+	${LibMonitor_STATIC_LIBRARIES}
+	${LibUnwind_STATIC_LIBRARIES}
+	${MRNet_LWR_STATIC_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
@@ -353,4 +374,4 @@ if (NOT RUNTIME_ONLY)
 endif()
 
 
-endif() # end of the BUILD_FE_USING_CN_RUNTIMES section of code
+endif() # end of non BUILD_FE_USING_CN_RUNTIMES section of code

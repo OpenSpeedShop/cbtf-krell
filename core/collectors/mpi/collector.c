@@ -46,6 +46,7 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "MPITraceableFunctions.h"
+#include "monitor.h"
 
 
 /** String uniquely identifying this collector. */

@@ -25,7 +25,6 @@ set(SERVICES_TIMER_SOURCES
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 )
 
@@ -35,12 +34,12 @@ add_library(cbtf-services-timer SHARED
 
 target_link_libraries(cbtf-services-timer
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-timer PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-timer PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-timer PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS cbtf-services-timer
@@ -55,16 +54,15 @@ add_library(cbtf-services-timer-static STATIC
 
 target_link_libraries(cbtf-services-timer-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-timer-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-timer-static PROPERTIES OUTPUT_NAME cbtf-services-timer)
 set_target_properties(cbtf-services-timer-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-timer-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 install(TARGETS cbtf-services-timer-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-

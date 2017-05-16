@@ -82,6 +82,59 @@ set(COLLECTOR_SOURCES
 	collector.c
 )
 
+set(COMMON_INCLUDE_DIRS
+	${PROJECT_SOURCE_DIR}/messages/include
+	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/services/collector
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+)
+
+set(COMMON_SHARED_LIBS
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+)
+
+set(COMMON_MRNET_SHARED_LIBS
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+        ${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+)
+
+set(COMMON_FILEIO_SHARED_LIBS
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+)
+
+set(COMMON_STATIC_LIBS
+        cbtf-messages-events-static
+        cbtf-messages-base-static
+        cbtf-services-common-static
+        cbtf-services-monitor-static
+        cbtf-services-offline-static
+        cbtf-services-data-static
+        cbtf-services-unwind-static
+        cbtf-services-send-static
+)
+
+set(COMMON_MRNET_STATIC_LIBS
+        cbtf-services-collector-monitor-mrnet-mpi
+	cbtf-services-mrnet-static
+)
+
+set(COMMON_FILEIO_STATIC_LIBS
+	cbtf-services-collector-monitor-fileio-static
+	cbtf-services-fileio-static
+)
+
 if (HAVE_OPENMPI)
 #
 # mpi experiment libraries for openmpi
@@ -95,31 +148,22 @@ target_include_directories(mpi-openmpi-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-openmpi-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -141,25 +185,13 @@ target_include_directories(mpi-openmpi-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-openmpi-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
@@ -186,31 +218,22 @@ target_include_directories(mpit-openmpi-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-openmpi-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -232,25 +255,13 @@ target_include_directories(mpit-openmpi-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-openmpi-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
@@ -277,31 +288,22 @@ target_include_directories(mpip-openmpi-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-openmpi-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${OpenMPI_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-openmpi-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -323,25 +325,13 @@ target_include_directories(mpip-openmpi-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-openmpi-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${OpenMPI_STATIC_LIBRARIES}
@@ -370,27 +360,13 @@ target_include_directories(mpi-openmpi-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-openmpi-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-data
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -398,6 +374,10 @@ target_link_libraries(mpi-openmpi-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -419,27 +399,14 @@ target_include_directories(mpi-openmpi-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-openmpi-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -470,27 +437,13 @@ target_include_directories(mpip-openmpi-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-openmpi-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-data
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -498,6 +451,10 @@ target_link_libraries(mpip-openmpi-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -518,26 +475,13 @@ target_include_directories(mpip-openmpi-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-openmpi-monitor-mrnet-mpi
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
-	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -567,27 +511,13 @@ target_include_directories(mpit-openmpi-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-openmpi-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -595,6 +525,10 @@ target_link_libraries(mpit-openmpi-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-openmpi-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -615,27 +549,14 @@ target_include_directories(mpit-openmpi-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-openmpi-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -670,31 +591,22 @@ target_include_directories(mpi-mpich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -714,25 +626,12 @@ target_include_directories(mpi-mpich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
@@ -760,31 +659,22 @@ target_include_directories(mpit-mpich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -804,25 +694,13 @@ target_include_directories(mpit-mpich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
@@ -849,31 +727,22 @@ target_include_directories(mpip-mpich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -893,25 +762,13 @@ target_include_directories(mpip-mpich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich_STATIC_LIBRARIES}
@@ -940,27 +797,13 @@ target_include_directories(mpi-mpich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -968,6 +811,10 @@ target_link_libraries(mpi-mpich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -988,27 +835,14 @@ target_include_directories(mpi-mpich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1037,27 +871,13 @@ target_include_directories(mpip-mpich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -1065,6 +885,10 @@ target_link_libraries(mpip-mpich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -1085,27 +909,14 @@ target_include_directories(mpip-mpich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1134,27 +945,13 @@ target_include_directories(mpit-mpich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -1162,6 +959,10 @@ target_link_libraries(mpit-mpich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -1182,27 +983,14 @@ target_include_directories(mpit-mpich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1242,31 +1030,22 @@ target_include_directories(mpi-mpich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -1286,25 +1065,13 @@ target_include_directories(mpi-mpich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
@@ -1332,31 +1099,22 @@ target_include_directories(mpit-mpich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -1376,25 +1134,13 @@ target_include_directories(mpit-mpich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
@@ -1421,31 +1167,22 @@ target_include_directories(mpip-mpich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -1465,25 +1202,13 @@ target_include_directories(mpip-mpich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpich2_STATIC_LIBRARIES}
@@ -1512,27 +1237,13 @@ target_include_directories(mpi-mpich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -1540,6 +1251,10 @@ target_link_libraries(mpi-mpich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -1560,27 +1275,14 @@ target_include_directories(mpi-mpich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1609,27 +1311,13 @@ target_include_directories(mpip-mpich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -1637,6 +1325,10 @@ target_link_libraries(mpip-mpich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -1657,27 +1349,14 @@ target_include_directories(mpip-mpich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1706,27 +1385,13 @@ target_include_directories(mpit-mpich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -1734,6 +1399,10 @@ target_link_libraries(mpit-mpich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -1754,27 +1423,14 @@ target_include_directories(mpit-mpich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -1814,31 +1470,22 @@ target_include_directories(mpi-mvapich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -1858,25 +1505,13 @@ target_include_directories(mpi-mvapich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
@@ -1904,31 +1539,22 @@ target_include_directories(mpit-mvapich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -1948,25 +1574,13 @@ target_include_directories(mpit-mvapich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
@@ -1993,31 +1607,22 @@ target_include_directories(mpip-mvapich-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mvapich-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -2037,25 +1642,13 @@ target_include_directories(mpip-mvapich-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich_STATIC_LIBRARIES}
@@ -2084,27 +1677,13 @@ target_include_directories(mpi-mvapich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2112,6 +1691,10 @@ target_link_libraries(mpi-mvapich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2132,27 +1715,14 @@ target_include_directories(mpi-mvapich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2181,27 +1751,13 @@ target_include_directories(mpip-mvapich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2209,6 +1765,10 @@ target_link_libraries(mpip-mvapich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2229,27 +1789,14 @@ target_include_directories(mpip-mvapich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2278,27 +1825,13 @@ target_include_directories(mpit-mvapich-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2306,6 +1839,10 @@ target_link_libraries(mpit-mvapich-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mvapich-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2326,27 +1863,14 @@ target_include_directories(mpit-mvapich-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2386,31 +1910,22 @@ target_include_directories(mpi-mvapich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -2430,25 +1945,13 @@ target_include_directories(mpi-mvapich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
@@ -2476,31 +1979,22 @@ target_include_directories(mpit-mvapich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -2520,25 +2014,13 @@ target_include_directories(mpit-mvapich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
@@ -2565,31 +2047,22 @@ target_include_directories(mpip-mvapich2-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich2-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mvapich2_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mvapich2-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -2609,25 +2082,13 @@ target_include_directories(mpip-mvapich2-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich2-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mvapich2_STATIC_LIBRARIES}
@@ -2656,27 +2117,13 @@ target_include_directories(mpi-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2684,6 +2131,10 @@ target_link_libraries(mpi-mvapich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2704,27 +2155,14 @@ target_include_directories(mpi-mvapich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mvapich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2753,27 +2191,13 @@ target_include_directories(mpip-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2781,6 +2205,10 @@ target_link_libraries(mpip-mvapich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2801,27 +2229,14 @@ target_include_directories(mpip-mvapich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mvapich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2850,27 +2265,13 @@ target_include_directories(mpit-mvapich2-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich2-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -2878,6 +2279,10 @@ target_link_libraries(mpit-mvapich2-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mvapich2-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -2898,27 +2303,14 @@ target_include_directories(mpit-mvapich2-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mvapich2-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -2958,31 +2350,22 @@ target_include_directories(mpi-mpt-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpt-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -3002,25 +2385,13 @@ target_include_directories(mpi-mpt-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpt-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
@@ -3048,31 +2419,22 @@ target_include_directories(mpit-mpt-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpt-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -3092,25 +2454,13 @@ target_include_directories(mpit-mpt-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpt-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
@@ -3137,31 +2487,22 @@ target_include_directories(mpip-mpt-collector-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpt-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${Mpt_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_FILEIO_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpt-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -3181,25 +2522,13 @@ target_include_directories(mpip-mpt-monitor-fileio PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpt-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-fileio-static
+	${COMMON_FILEIO_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${Mpt_STATIC_LIBRARIES}
@@ -3228,27 +2557,13 @@ target_include_directories(mpi-mpt-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -3256,6 +2571,10 @@ target_link_libraries(mpi-mpt-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpi-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -3276,27 +2595,14 @@ target_include_directories(mpi-mpt-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpi-mpt-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -3325,27 +2631,13 @@ target_include_directories(mpip-mpt-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpt-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -3353,6 +2645,10 @@ target_link_libraries(mpip-mpt-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpip-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -3373,27 +2669,14 @@ target_include_directories(mpip-mpt-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpip-mpt-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static
-	cbtf-messages-base-static
-	cbtf-services-common-static
-	cbtf-services-monitor-static
-	cbtf-services-offline-static
-	cbtf-services-data-static
-	cbtf-services-unwind-static
-	cbtf-services-collector-monitor-mrnet-mpi-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}
@@ -3422,27 +2705,13 @@ target_include_directories(mpit-mpt-collector-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpt-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events
-	cbtf-messages-base
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
@@ -3450,6 +2719,10 @@ target_link_libraries(mpit-mpt-collector-monitor-mrnet-mpi
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${COMMON_MRNET_SHARED_LIBS}
+	${COMMON_SHARED_LIBS}
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(mpit-mpt-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -3470,27 +2743,14 @@ target_include_directories(mpit-mpt-monitor-mrnet-mpi PUBLIC
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/messages/include
-	${PROJECT_SOURCE_DIR}/services/include
-	${PROJECT_SOURCE_DIR}/services/collector
 	${MRNet_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base
+	${COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(mpit-mpt-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-messages-events-static-static
-	cbtf-messages-base-static-static
-	cbtf-services-common-static-static
-	cbtf-services-monitor-static-static
-	cbtf-services-offline-static-static
-	cbtf-services-data-static-static
-	cbtf-services-unwind-static-static
-	cbtf-services-collector-monitor-mrnet-mpi-static-static
+	${COMMON_MRNET_STATIC_LIBS}
+	${COMMON_STATIC_LIBS}
 	${LibMonitor_STATIC_LIBRARIES}
 	${LibUnwind_STATIC_LIBRARIES}
 	${MRNet_LWR_STATIC_LIBRARIES}

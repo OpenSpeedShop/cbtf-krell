@@ -25,7 +25,6 @@ set(SERVICES_PAPI_SOURCES
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${LTDL_INCLUDE_DIR}
     ${PROJECT_SOURCE_DIR}/services/include
     ${Papi_INCLUDE_DIRS}
 )
@@ -37,11 +36,11 @@ add_library(cbtf-services-papi SHARED
 target_link_libraries(cbtf-services-papi
     -Wl,--no-as-needed
     ${Papi_SHARED_LIBRARIES}
-    ${LTDL_LIBRARY_SHARED}
     ${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-papi PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-papi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-papi
     LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -56,16 +55,13 @@ add_library(cbtf-services-papi-static STATIC
 target_link_libraries(cbtf-services-papi-static
     -Wl,--no-as-needed
     ${Papi_SHARED_LIBRARIES}
-    ${LTDL_LIBRARY_SHARED}
     ${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-papi-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-papi-static PROPERTIES OUTPUT_NAME cbtf-services-papi)
+set_target_properties(cbtf-services-papi-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-papi-static
     ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-
-

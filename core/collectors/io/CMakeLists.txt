@@ -16,7 +16,6 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-
 include(CheckIncludeFile)
 
 # FIXME:  dpm comments about changes in this area
@@ -101,16 +100,24 @@ target_include_directories(io-collector-monitor-fileio PUBLIC
 
 target_link_libraries(io-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(io-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -184,16 +191,24 @@ target_include_directories(iot-collector-monitor-fileio PUBLIC
 
 target_link_libraries(iot-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iot-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -267,16 +282,24 @@ target_include_directories(iop-collector-monitor-fileio PUBLIC
 
 target_link_libraries(iop-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iop-collector-monitor-fileio PROPERTIES PREFIX "")
@@ -353,17 +376,25 @@ target_include_directories(io-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(io-collector-monitor-mrnet
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-collector-monitor-mrnet
-	cbtf-services-unwind
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(io-collector-monitor-mrnet PROPERTIES PREFIX "")
@@ -418,6 +449,7 @@ set_target_properties(io-monitor-mrnet PROPERTIES
 install(TARGETS io-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
 )
+
 #
 # io experiment libraries with MRNET and MPI
 #
@@ -442,18 +474,25 @@ target_include_directories(io-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(io-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(io-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -532,18 +571,25 @@ target_include_directories(iop-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(iop-collector-monitor-mrnet
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-collector-monitor-mrnet
-	cbtf-services-unwind
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iop-collector-monitor-mrnet PROPERTIES PREFIX "")
@@ -622,18 +668,25 @@ target_include_directories(iop-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(iop-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-collector-monitor-mrnet-mpi
-	cbtf-services-unwind
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iop-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -712,18 +765,25 @@ target_include_directories(iot-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(iot-collector-monitor-mrnet
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iot-collector-monitor-mrnet PROPERTIES PREFIX "")
@@ -802,18 +862,25 @@ target_include_directories(iot-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(iot-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-data
-	cbtf-services-unwind
-	cbtf-services-collector-monitor-mrnet-mpi
 	${LibMonitor_SHARED_LIBRARIES}
 	${LibUnwind_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/unwind/libcbtf-services-unwind.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(iot-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
@@ -906,7 +973,4 @@ if (NOT RUNTIME_ONLY)
         DESTINATION share/KrellInstitute/xml)
 endif()
 
-
-endif()  # end of non BUILD_FE_USING_CN_RUNTIMES section of code
-
-
+endif() # end of non BUILD_FE_USING_CN_RUNTIMES section of code

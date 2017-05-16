@@ -73,6 +73,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-messages-converters-collector PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-collector PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}" )
+    set_target_properties(cbtf-messages-converters-collector PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
     install(TARGETS cbtf-messages-converters-collector
@@ -102,6 +103,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     set_target_properties(cbtf-messages-converters-collector-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-collector-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-collector)
     set_target_properties(cbtf-messages-converters-collector-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-collector-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-collector-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -123,6 +125,7 @@ target_link_libraries(cbtf-messages-collector
 )
 
 set_target_properties(cbtf-messages-collector PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-collector PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-collector
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -147,6 +150,8 @@ target_link_libraries(cbtf-messages-collector-static
 
 set_target_properties(cbtf-messages-collector-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-collector-static PROPERTIES OUTPUT_NAME cbtf-messages-collector)
+set_target_properties(cbtf-messages-collector-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 
 install(TARGETS cbtf-messages-collector-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

@@ -50,6 +50,7 @@ target_link_libraries(MRNetConvertorsPlugin
 set_target_properties(MRNetConvertorsPlugin PROPERTIES PREFIX "")
 set_target_properties(MRNetConvertorsPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+set_target_properties(MRNetConvertorsPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS MRNetConvertorsPlugin
@@ -100,6 +101,7 @@ target_link_libraries(AggregationPlugin
 set_target_properties(AggregationPlugin PROPERTIES PREFIX "")
 set_target_properties(AggregationPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+set_target_properties(AggregationPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS AggregationPlugin
@@ -150,6 +152,7 @@ if (DYNINSTAPI_FOUND)
     set_target_properties(SymbolPlugin PROPERTIES PREFIX "")
     set_target_properties(SymbolPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(SymbolPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
     install(TARGETS SymbolPlugin
@@ -200,6 +203,7 @@ target_link_libraries(ThreadPlugin
 set_target_properties(ThreadPlugin PROPERTIES PREFIX "")
 set_target_properties(ThreadPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+set_target_properties(ThreadPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS ThreadPlugin
@@ -246,6 +250,7 @@ target_link_libraries(LinkedObjectPlugin
 set_target_properties(LinkedObjectPlugin PROPERTIES PREFIX "")
 set_target_properties(LinkedObjectPlugin PROPERTIES 
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+set_target_properties(LinkedObjectPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS LinkedObjectPlugin
@@ -297,6 +302,7 @@ target_link_libraries(MemAggregationPlugin
 set_target_properties(MemAggregationPlugin PROPERTIES PREFIX "")
 set_target_properties(MemAggregationPlugin PROPERTIES
         COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+set_target_properties(MemAggregationPlugin PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS MemAggregationPlugin

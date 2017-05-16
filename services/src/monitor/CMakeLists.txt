@@ -46,7 +46,6 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${LibMonitor_INCLUDE_DIRS}
 )
@@ -54,12 +53,12 @@ include_directories(
 target_link_libraries(cbtf-services-monitor
         -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-monitor PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-monitor PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-monitor PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS cbtf-services-monitor
@@ -74,26 +73,25 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${LibMonitor_INCLUDE_DIRS}
 )
 
+## FIXME: should this be using LibMonitor_STATIC_LIBRARIES ??
 target_link_libraries(cbtf-services-monitor-static
         -Wl,--no-as-needed
 	${LibMonitor_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-monitor-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-monitor-static PROPERTIES OUTPUT_NAME cbtf-services-monitor)
 set_target_properties(cbtf-services-monitor-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-monitor-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-monitor-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
 # Create Monitor.c.o and install as cbtf_monitor.o into Collector directory
 
@@ -111,5 +109,3 @@ add_custom_command(
 add_custom_target(runcbtfmonitor ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cbtf_monitor.o)
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/cbtf_monitor.o
         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/KrellInstitute/Collectors)
-
-

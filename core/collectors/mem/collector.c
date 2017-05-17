@@ -50,6 +50,10 @@
 #include "MemTraceableFunctions.h"
 #include "monitor.h"
 
+#ifdef USE_EXPLICIT_TLS
+#undef USE_EXPLICIT_TLS
+#endif
+
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "mem";
 #if defined(CBTF_SERVICE_USE_FILEIO)

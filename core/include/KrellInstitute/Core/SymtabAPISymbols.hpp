@@ -31,7 +31,6 @@ namespace KrellInstitute { namespace Core {
 class SymtabAPISymbols {
 
     public:
-	void    getAllSymbols(const LinkedObjectEntry&, SymbolTable&);
 	void    getSymbols(const AddressBuffer&,
 			   const LinkedObjectEntry&, SymbolTable&);
 	void    getSymbols(const std::set<Address>& ,

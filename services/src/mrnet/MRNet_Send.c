@@ -39,6 +39,7 @@
 
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Common.h"
+#include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Messages/Blob.h"
@@ -61,6 +62,7 @@ static pthread_cond_t mrnet_connected_cond = PTHREAD_COND_INITIALIZER;
 
 static bool do_record_playback = false;
 static bool do_replay_playback = false;
+static bool no_playback_delay = false;
 static bool is_first_message = true;
 static bool do_squelch_message = false;
 
@@ -77,6 +79,7 @@ static void configure_playback()
 {
     do_record_playback = (getenv("CBTF_MRNET_RECORD_PLAYBACK") != NULL);
     do_replay_playback = (getenv("CBTF_MRNET_REPLAY_PLAYBACK") != NULL);
+    no_playback_delay = (getenv("CBTF_MRNET_NO_PLAYBACK_DELAY") != NULL);
     
     if (do_record_playback && do_replay_playback)
     {
@@ -194,7 +197,7 @@ static void replay_from_playback()
             break;
         }
 
-        if (!is_first)
+        if (!is_first && !no_playback_delay)
         {
             usleep((time - previous_time) / 1000 /* us/ns */);
         }
@@ -202,7 +205,7 @@ static void replay_from_playback()
         is_first = false;
         previous_time = time;
 
-        CBTF_MRNet_LW_sendToFrontend(tag, (int)size, data);        
+        CBTF_MRNet_LW_sendToFrontend(tag, (int)size, data);
         free(data);
     }
         

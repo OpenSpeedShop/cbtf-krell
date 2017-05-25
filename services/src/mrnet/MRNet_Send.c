@@ -282,7 +282,7 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
     }
     pthread_mutex_unlock(&mrnet_connected_mutex);
 
-#if defined(ENABLE_CBTF_MRNET_REPLAY)
+#if defined(ENABLE_CBTF_MRNET_PLAYBACK)
     if (playback_intercept(tag, (uint32_t)size, data))
     {
         return; /* Squelch the actual sending of this message. */

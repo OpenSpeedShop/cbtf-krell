@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <pthread.h>
 #include <rpc/xdr.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -49,6 +50,10 @@ static bool do_replay_playback = false;
 
 /** Should the recorded delay between each message be ignored? */
 static bool no_playback_delay = false;
+
+/** Mutex insuring only one thread enters playback_intercept() at a time. */
+static pthread_mutex_t playback_mutex;
+static pthread_mutexattr_t playback_mutexattr;
 
 /** Path of the playback directory. */
 static char playback_directory[PATH_MAX] = "";
@@ -130,6 +135,10 @@ void playback_configure(uint32_t rank)
             }
         }
     }
+
+    pthread_mutexattr_init(&playback_mutexattr);
+    pthread_mutexattr_settype(&playback_mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&playback_mutex, &playback_mutexattr);
 }
 
 
@@ -145,11 +154,10 @@ void playback_configure(uint32_t rank)
  */
 static int mkpath(const char* path)
 {
+    errno = 0;
+
     const size_t length = strlen(path);
     char temp[PATH_MAX];
-    char *ptr;
-
-    errno = 0;
 
     if (length > (sizeof(temp) - 1))
     {
@@ -159,6 +167,7 @@ static int mkpath(const char* path)
     
     strcpy(temp, path);
 
+    char *ptr;
     for (ptr = temp + 1; *ptr != '\0'; ptr++)
     {
         if (*ptr == '/')
@@ -192,19 +201,20 @@ static int mkpath(const char* path)
  */
 void copyfile(const char* source)
 {
-    static char buffer[8192];
-    char temp[PATH_MAX] = "";
-    char destination[PATH_MAX] = "";
-    int src = -1, tmp = -1, dst = -1;
-    
-    sprintf(temp, "%s/XXXXXX", playback_directory);
-    sprintf(destination, "%s%s", playback_directory, source);
+    int src = open(source, O_RDONLY);
 
-    Assert((tmp = mkstemp(temp)) != -1);
-    Assert((src = open(source, O_RDONLY)) != -1);
+    Assert(src != -1);
     
+    char temp[PATH_MAX] = "";
+    sprintf(temp, "%s/XXXXXX", playback_directory);
+    int dst = mkstemp(temp);
+
+    Assert(dst != -1);
+
     while (true)
     {
+        static char buffer[8192];
+        
         ssize_t n = read(src, buffer, sizeof(buffer));
 
         if (n == 0)
@@ -212,12 +222,15 @@ void copyfile(const char* source)
             break;
         }
 
-        Assert(write(tmp, buffer, n) == n);
+        Assert(write(dst, buffer, n) == n);
     }
 
     Assert(close(src) == 0);
-    Assert(close(tmp) == 0);
+    Assert(close(dst) == 0);
 
+    char destination[PATH_MAX] = "";
+    sprintf(destination, "%s%s", playback_directory, source);
+    
     Assert(mkpath(destination) == 0);
     Assert(rename(temp, destination) == 0);
 }
@@ -332,12 +345,11 @@ static void replay_from_playback()
             int i;
             for (i = 0; i < group.linkedobjects.linkedobjects_len; ++i)
             {
-                char rehomed[PATH_MAX] = "";
-
                 char** original = &(
                     group.linkedobjects.linkedobjects_val[i].linked_object.path
                     );
                 
+                char rehomed[PATH_MAX] = "";
                 sprintf(rehomed, "%s%s", playback_directory, *original);
 
                 free(*original);
@@ -381,17 +393,16 @@ static void replay_from_playback()
  */
 bool playback_intercept(int32_t tag, uint32_t size, void* data)
 {
-    /** Is this the first message to be intercepted? */
-    static bool is_first_message = true;
+    static bool is_first_message = true;    /* First message? */
+    static bool do_squelch_message = false; /* Squelch sends now? */
 
-    /** Should sends now be squelched? */
-    static bool do_squelch_message = false;
-
+    Assert(pthread_mutex_lock(&playback_mutex) == 0);
+        
     /* Record this message to a playback file if requested. */
     if (do_record_playback)
     {
         record_to_playback(tag, (uint32_t)size, data);
-
+        Assert(pthread_mutex_unlock(&playback_mutex) == 0);
         return false; /* Don't squelch the actual sending of this message. */
     }
 
@@ -413,9 +424,11 @@ bool playback_intercept(int32_t tag, uint32_t size, void* data)
         
         if (do_squelch_message)
         {
+            Assert(pthread_mutex_unlock(&playback_mutex) == 0);
             return true; /* Squelch the actual sending of this message. */
         }
     }
     
+    Assert(pthread_mutex_unlock(&playback_mutex) == 0);
     return false; /* Don't squelch the actual sending of this message. */
 }

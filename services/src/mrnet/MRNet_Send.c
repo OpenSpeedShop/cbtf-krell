@@ -251,7 +251,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
      }
 
 #if defined(ENABLE_CBTF_MRNET_PLAYBACK)
-    configure_playback(Network_get_LocalRank(CBTF_MRNet_netPtr));
+    playback_configure(Network_get_LocalRank(CBTF_MRNet_netPtr));
 #endif
     
     mrnet_connected = 1;

@@ -19,14 +19,19 @@
 /** @file Definition of the playback globals and functions. */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
+#include <rpc/xdr.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "KrellInstitute/Messages/LinkedObjectEvents.h"
+#include "KrellInstitute/Messages/ToolMessageTags.h"
 #include "KrellInstitute/Services/Assert.h"
 #include "KrellInstitute/Services/Time.h"
 
@@ -44,6 +49,9 @@ static bool do_replay_playback = false;
 
 /** Should the recorded delay between each message be ignored? */
 static bool no_playback_delay = false;
+
+/** Path of the playback directory. */
+static char playback_directory[PATH_MAX] = "";
 
 /** Path of the playback file. */
 static char playback_file[PATH_MAX] = "";
@@ -75,12 +83,12 @@ void playback_configure(uint32_t rank)
     }
     else if (do_record_playback || do_replay_playback)
     {
-        char* directory = do_record_playback ?
-            getenv("CBTF_MRNET_RECORD_PLAYBACK") :
-            getenv("CBTF_MRNET_REPLAY_PLAYBACK");
+        strcpy(playback_directory, do_record_playback ?
+               getenv("CBTF_MRNET_RECORD_PLAYBACK") :
+               getenv("CBTF_MRNET_REPLAY_PLAYBACK"));
         
         struct stat status;
-        int retval = stat(directory, &status);
+        int retval = stat(playback_directory, &status);
 
         if ((retval == -1) || (!S_ISDIR(status.st_mode)))
         {
@@ -89,13 +97,13 @@ void playback_configure(uint32_t rank)
 
             fprintf(stderr, "[CBTF/MRNet Playback] "
                     "Playback directory \"%s\" couldn't be accessed!\n",
-                    directory);
+                    playback_directory);
             fflush(stderr);
         }
         else
         {
             sprintf(playback_file, "%s/cbtf-mrnet-playback-%u",
-                    directory, rank);
+                    playback_directory, rank);
 
             retval = stat(playback_file, &status);
 
@@ -127,6 +135,96 @@ void playback_configure(uint32_t rank)
 
 
 /**
+ * Equivalent of "mkdir -p", but ignoring the last path component, which is
+ * assumed to be a filename. Taken (with modifications) from the link below.
+ *
+ * @param path    Path of the file for whom all parent directories are created.
+ * @return        Integer indicating success (0) or failure (-1).
+ * 
+ * @sa https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950
+ */
+static int mkpath(const char* path)
+{
+    const size_t length = strlen(path);
+    char temp[PATH_MAX];
+    char *ptr;
+
+    errno = 0;
+
+    if (length > (sizeof(temp) - 1))
+    {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    
+    strcpy(temp, path);
+
+    for (ptr = temp + 1; *ptr != '\0'; ptr++)
+    {
+        if (*ptr == '/')
+        {
+            *ptr = '\0';
+
+            if (mkdir(temp, S_IRWXU) != 0)
+            {
+                if (errno != EEXIST)
+                {
+                    return -1;
+                }
+            }
+
+            *ptr = '/';
+        }
+    }
+
+    return 0;
+}
+
+
+
+/**
+ * Copy the specified file to a location within the playback directory that
+ * includes the original file's full path. This is done atomically such that
+ * multiple processes may copy the same file and only one, consistent, copy
+ * will be kept.
+ *
+ * @param source    Path of the file to be copied.
+ */
+void copyfile(const char* source)
+{
+    static char buffer[8192];
+    char temp[PATH_MAX] = "";
+    char destination[PATH_MAX] = "";
+    int src = -1, tmp = -1, dst = -1;
+    
+    sprintf(temp, "%s/XXXXXX", playback_directory);
+    sprintf(destination, "%s%s", playback_directory, source);
+
+    Assert((tmp = mkstemp(temp)) != -1);
+    Assert((src = open(source, O_RDONLY)) != -1);
+    
+    while (true)
+    {
+        ssize_t n = read(src, buffer, sizeof(buffer));
+
+        if (n == 0)
+        {
+            break;
+        }
+
+        Assert(write(tmp, buffer, n) == n);
+    }
+
+    Assert(close(src) == 0);
+    Assert(close(tmp) == 0);
+
+    Assert(mkpath(destination) == 0);
+    Assert(rename(temp, destination) == 0);
+}
+
+
+
+/**
  * Record the specified message to the previously configured playback file.
  *
  * @param tag     Tag for the message.
@@ -136,6 +234,29 @@ void playback_configure(uint32_t rank)
 static void record_to_playback(int32_t tag, uint32_t size, void* data)
 {
     uint64_t time = CBTF_GetTime();
+
+    if (tag == CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP)
+    {
+        XDR xdr;
+        CBTF_Protocol_LinkedObjectGroup group;
+
+        xdrmem_create(&xdr, data, size, XDR_DECODE);
+        memset(&group, 0, sizeof(CBTF_Protocol_LinkedObjectGroup));
+        xdr_CBTF_Protocol_LinkedObjectGroup(&xdr, &group);
+        xdr_destroy(&xdr);
+
+        int i;
+        for (i = 0; i < group.linkedobjects.linkedobjects_len; ++i)
+        {
+            copyfile(
+                group.linkedobjects.linkedobjects_val[i].linked_object.path
+                );
+        }
+
+        xdr_free((xdrproc_t)xdr_CBTF_Protocol_LinkedObjectGroup,
+                 (char*)&group);
+    }
+    
     FILE* fp = fopen(playback_file, "a+");
 
     Assert(fp != NULL);
@@ -198,6 +319,44 @@ static void replay_from_playback()
         is_first = false;
         previous_time = time;
 
+        if (tag == CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP)
+        {
+            XDR xdr;
+            CBTF_Protocol_LinkedObjectGroup group;
+            
+            xdrmem_create(&xdr, data, size, XDR_DECODE);
+            memset(&group, 0, sizeof(CBTF_Protocol_LinkedObjectGroup));
+            xdr_CBTF_Protocol_LinkedObjectGroup(&xdr, &group);
+            xdr_destroy(&xdr);
+
+            int i;
+            for (i = 0; i < group.linkedobjects.linkedobjects_len; ++i)
+            {
+                char rehomed[PATH_MAX] = "";
+
+                char** original = &(
+                    group.linkedobjects.linkedobjects_val[i].linked_object.path
+                    );
+                
+                sprintf(rehomed, "%s%s", playback_directory, *original);
+
+                free(*original);
+                *original = strdup(rehomed);
+            }
+
+            free(data);
+            size *= 2; /* Should be more than enough for re-encoding */
+            data = malloc(size);
+            
+            xdrmem_create(&xdr, data, size, XDR_ENCODE);
+            xdr_CBTF_Protocol_LinkedObjectGroup(&xdr, &group);
+            size = xdr_getpos(&xdr);
+            xdr_destroy(&xdr);
+
+            xdr_free((xdrproc_t)xdr_CBTF_Protocol_LinkedObjectGroup,
+                     (char*)&group);
+        }
+        
         CBTF_MRNet_LW_sendToFrontend(tag, (int)size, data);
         free(data);
     }

@@ -137,7 +137,7 @@ void playback_configure(uint32_t rank)
     }
 
     pthread_mutexattr_init(&playback_mutexattr);
-    pthread_mutexattr_settype(&playback_mutexattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutexattr_settype(&playback_mutexattr, PTHREAD_MUTEX_RECURSIVE_NP);
     pthread_mutex_init(&playback_mutex, &playback_mutexattr);
 }
 

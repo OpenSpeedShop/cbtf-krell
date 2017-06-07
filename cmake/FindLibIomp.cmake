@@ -67,6 +67,12 @@ if(LIBIOMP_FOUND)
     else()
 	message(STATUS "LibIomp uses ompt_initialize for initialization.")
     endif()
+
+# Clean up, so that future find_package calls do not find the settings 
+# (used above) for these variables
+    SET(CMAKE_REQUIRED_LIBRARIES "")
+    SET(CMAKE_REQUIRED_INCLUDES "")
+
 endif()
 
 mark_as_advanced(

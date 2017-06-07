@@ -230,7 +230,7 @@ static void send_samples (TLS* tls)
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"send_samples (%d,%d) time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%d)\n",
+        fprintf(stderr,"send_samples (%ld,%d) time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%d)\n",
 	    tls->header.pid, tls->header.omp_tid,
             (uint64_t)tls->header.time_begin, (uint64_t)tls->header.time_end,
             tls->header.addr_begin, tls->header.addr_end,

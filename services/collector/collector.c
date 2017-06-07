@@ -626,16 +626,3 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
     CBTF_SetTLS(TLSKey, NULL);
 #endif
 }
-
-
-
-#ifdef USE_EXPLICIT_TLS
-void destroy_explicit_tls() {
-    TLS* tls = CBTF_GetTLS(TLSKey);
-    /* Destroy our thread-local storage */
-    if (tls) {
-        free(tls);
-    }
-    CBTF_SetTLS(TLSKey, NULL);
-}
-#endif

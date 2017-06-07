@@ -209,6 +209,12 @@ void CBTF_ompt_set_collector_active(bool flag)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
+    if (tls == NULL) {
+        tls = malloc(sizeof(TLS));
+        Assert(tls != NULL);
+        CBTF_SetTLS(TLSKey, tls);
+        ompt_cb_init_tls_done = 1;
+    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -354,6 +360,12 @@ void CBTF_ompt_cb_thread_begin()
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
+    if (tls == NULL) {
+        tls = malloc(sizeof(TLS));
+        Assert(tls != NULL);
+        CBTF_SetTLS(TLSKey, tls);
+        ompt_cb_init_tls_done = 1;
+    }
 #else
     TLS* tls = &the_tls;
 #endif

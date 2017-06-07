@@ -47,6 +47,7 @@
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h" /* monitor_get_thread_num and friends */
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwcsamp";
@@ -261,7 +262,7 @@ fprintf(stderr,"send_samples: size of eventssize = %d\n",eventssize);
 
 
 	    fprintf(stderr, "hwcsamp send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_range(%lu,%lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.pc.pc_len,

@@ -73,6 +73,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-messages-converters-symtab PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-symtab PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-symtab PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-symtab
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -103,6 +104,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-symtab)
     set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-symtab-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-symtab-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -126,6 +128,7 @@ target_link_libraries(cbtf-messages-symtab
 )
 
 set_target_properties(cbtf-messages-symtab PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-symtab PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-symtab 
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -152,6 +155,7 @@ target_link_libraries(cbtf-messages-symtab-static
 
 set_target_properties(cbtf-messages-symtab-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-symtab-static PROPERTIES OUTPUT_NAME cbtf-messages-symtab)
+set_target_properties(cbtf-messages-symtab-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-symtab-static 
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

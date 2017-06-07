@@ -60,7 +60,7 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 else ()
 
 if (LIBMONITOR_FOUND)
-    
+
 set(COLLECTOR_SOURCES
 	collector.c
 )
@@ -83,18 +83,28 @@ target_include_directories(pcsamp-collector-monitor-fileio PUBLIC
 
 target_link_libraries(pcsamp-collector-monitor-fileio
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-collector-monitor-fileio
 	${LibMonitor_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/fileio/libcbtf-services-fileio.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-fileio.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(pcsamp-collector-monitor-fileio PROPERTIES PREFIX "")
+set_target_properties(pcsamp-collector-monitor-fileio PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 #
 # These defines apply only for this target module.  Note the OMPT defines are
 # included here.  
@@ -140,6 +150,7 @@ target_link_libraries(pcsamp-monitor-fileio
 
 set_target_properties(pcsamp-monitor-fileio PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_FILEIO;${OMPT_DEFINES}")
+set_target_properties(pcsamp-monitor-fileio PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS pcsamp-monitor-fileio
         ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -166,21 +177,30 @@ target_include_directories(pcsamp-collector-monitor-mrnet PUBLIC
 
 target_link_libraries(pcsamp-collector-monitor-mrnet
         -Wl,--no-as-needed
-	cbtf-services-common
 	cbtf-services-monitor
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-collector-monitor-mrnet
 	${LibMonitor_SHARED_LIBRARIES}
 	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(pcsamp-collector-monitor-mrnet PROPERTIES PREFIX "")
 set_target_properties(pcsamp-collector-monitor-mrnet PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
+set_target_properties(pcsamp-collector-monitor-mrnet PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS pcsamp-collector-monitor-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -221,6 +241,7 @@ target_link_libraries(pcsamp-monitor-mrnet
 
 set_target_properties(pcsamp-monitor-mrnet PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;${MRNet_DEFINES};${OMPT_DEFINES}")
+set_target_properties(pcsamp-monitor-mrnet PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS pcsamp-monitor-mrnet
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
@@ -245,21 +266,30 @@ target_include_directories(pcsamp-collector-monitor-mrnet-mpi PUBLIC
 
 target_link_libraries(pcsamp-collector-monitor-mrnet-mpi
         -Wl,--no-as-needed
-	cbtf-services-collector-monitor-mrnet-mpi
 	cbtf-services-monitor
-	cbtf-services-common
-	cbtf-services-offline
-	cbtf-services-timer
-	cbtf-services-data
 	${LibMonitor_SHARED_LIBRARIES}
+	${MRNet_LWR_SHARED_LIBRARIES}
 	pthread
 	rt
 	${CMAKE_DL_LIBS}
+	-Wl,--whole-archive
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata/libcbtf-messages-perfdata.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events/libcbtf-messages-events.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/base/libcbtf-messages-base.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/mrnet/libcbtf-services-mrnet.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/common/libcbtf-services-common.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/offline/libcbtf-services-offline.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/timer/libcbtf-services-timer.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/data/libcbtf-services-data.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/src/xdr/libcbtf-services-send.a
+	${CMAKE_CURRENT_BINARY_DIR}/../../../services/collector/libcbtf-services-collector-monitor-mrnet-mpi.a
+	-Wl,--no-whole-archive
 )
 
 set_target_properties(pcsamp-collector-monitor-mrnet-mpi PROPERTIES PREFIX "")
 set_target_properties(pcsamp-collector-monitor-mrnet-mpi PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
+set_target_properties(pcsamp-collector-monitor-mrnet-mpi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS pcsamp-collector-monitor-mrnet-mpi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
@@ -302,13 +332,14 @@ target_link_libraries(pcsamp-monitor-mrnet-mpi
 set_target_properties(pcsamp-monitor-mrnet-mpi PROPERTIES VERSION 1.1.0)
 set_target_properties(pcsamp-monitor-mrnet-mpi PROPERTIES
         COMPILE_DEFINITIONS "${TLS_DEFINES};CBTF_SERVICE_USE_OFFLINE;CBTF_SERVICE_USE_MRNET;CBTF_SERVICE_USE_MRNET_MPI;${MRNet_DEFINES};${OMPT_DEFINES}")
+set_target_properties(pcsamp-monitor-mrnet-mpi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS pcsamp-monitor-mrnet-mpi
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors/static
 )
-    
+
 endif() # end of MRNET_FOUND
-    
+
 endif() # end of LIBMONITOR_FOUND
 
 if (NOT RUNTIME_ONLY)

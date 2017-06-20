@@ -1,5 +1,6 @@
 ################################################################################
 # Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2017 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,9 +19,14 @@
 
 include(CheckIncludeFile)
 
+if(ENABLE_CBTF_MRNET_PLAYBACK)
+    add_definitions(-DENABLE_CBTF_MRNET_PLAYBACK)
+endif()
+
 set(SERVICES_MRNET_SOURCES
 	MRNet_Send.c
 	MRNet_Senders.c
+    playback.h playback.c
 )
 
 add_library(cbtf-services-mrnet SHARED

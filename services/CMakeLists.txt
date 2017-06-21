@@ -22,10 +22,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -D__STDC_INT64__")
 add_subdirectory(src)
 add_subdirectory(collector)
 
-install( FILES CBTF-ServicesConfig.cmake
-         DESTINATION share/CBTF-Services/cmake)
-
-
 install(DIRECTORY include/KrellInstitute
         DESTINATION include
         FILES_MATCHING

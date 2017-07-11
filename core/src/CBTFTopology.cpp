@@ -633,6 +633,7 @@ void CBTFTopology::processEnv()
 	} else {
 	    // initialize to all nodes in allocation for daemonTools.
 	    num_nodes_for_app = dm_num_nodes;
+	    setNumBE(dm_num_nodes);
 	}
 
 	int procsNeeded = 0;
@@ -1005,9 +1006,8 @@ void CBTFTopology::autoCreateTopology(const MRNetStartMode& mode, const int& num
 		setDepth(1);
 	}
     } else {
-	// FIXME: For daemon tools, what about slurm? etc.
-	if (getDepth() == 0 || isPBSValid() || isLSFValid()) {
-		setDepth(3);
+	if (getDepth() < 2) {
+		setDepth(2);
 	}
     }
     
@@ -1072,7 +1072,7 @@ void CBTFTopology::createTopology()
 
 #ifndef NDEBUG
     if(CBTFTopology::is_debug_topology_enabled) {
-	std::cerr << "CBTFTopology::createTopology topologyspec:" << topologyspec
+	std::cerr << "CBTFTopology::createTopology PASSED topologyspec:" << topologyspec
 	<< " desiredDepth from getDepth():" << getDepth()
 	<< " desiredMaxFanout from getFanout():" << getFanout()
 	<< std::endl;
@@ -1085,10 +1085,10 @@ void CBTFTopology::createTopology()
     // earlier to a value greater than 0 to be the default of
     // 32.  This fanout default should be configureable for user.
     if (!isAttachBEMode()) {
-	// always at least 3 for a daemonTool.  needs to ba able
+	// always at least 2 for a daemonTool.  needs to ba able
 	// to increase if need be...
-	if (desiredDepth < 3) {
-	    desiredDepth = 3;
+	if (desiredDepth < 2) {
+	    desiredDepth = 2;
 	}
 	dm_num_app_nodes = dm_cp_nodelist.size();
 	if (desiredMaxFanout == 0) {
@@ -1105,7 +1105,6 @@ void CBTFTopology::createTopology()
         unsigned int fanout = 0;
         if (desiredDepth == 0) {
             // Compute desired depth based on the fanout and number of app nodes.
-            // NOTE: We really should not get here!
             for (desiredDepth = 1; desiredDepth < 1024; desiredDepth++) {
                 fanout = (int)ceil(pow((float)dm_num_app_nodes, (float)1.0 / (float)desiredDepth));
                 if (fanout <= desiredMaxFanout)
@@ -1114,6 +1113,12 @@ void CBTFTopology::createTopology()
         } else {
 	    fanout = desiredMaxFanout;
 	}
+
+	// For daemon type tools where the clients start the mrnet backends
+	// we need one more level of depth to specify the backends.
+	if (!isAttachBEMode()) {
+	    ++desiredDepth;
+        }
 
 #ifndef NDEBUG
 	if(CBTFTopology::is_debug_topology_enabled) {
@@ -1132,8 +1137,12 @@ void CBTFTopology::createTopology()
         // where a BE will run.  ie all the nodes in the partition at this time...
         std::ostringstream ostr;
 	if (isAttachBEMode()) {
-	  //std::cerr << "CBTFTopology::createTopology: desiredDepth:" << desiredDepth
-	  //<< " fanout:" << fanout << std::endl;
+#ifndef NDEBUG
+	  if(CBTFTopology::is_debug_topology_enabled) {
+	    std::cerr << "CBTFTopology::createTopology isAttachBEMode: desiredDepth:" << desiredDepth
+	    << " fanout:" << fanout << std::endl;
+	  }
+#endif
           for (i = 1; i <= desiredDepth; i++) {
             if (i == 1) {
 		ostr << fanout;
@@ -1148,37 +1157,41 @@ void CBTFTopology::createTopology()
 	  topologyspec = ostr.str();
 	} else {
 	  // using dm_num_app_nodes
+	  // for deamonTools
+#ifndef NDEBUG
+	  if(CBTFTopology::is_debug_topology_enabled) {
+	    std::cerr << "CBTFTopology::createTopology isSTARTBEMode: desiredDepth:" << desiredDepth
+	    << " fanout:" << fanout << std::endl;
+	  }
+#endif
 	  std::vector<int> nodecount;
 	  int numnodes = dm_num_app_nodes;
-          for (i = desiredDepth; i > 0; --i) {
+          for (i = 1; i <= desiredDepth; i++) {
             if (i == 1) {
 		int val = numnodes/fanout;
 		if (numnodes%fanout > 0 ) ++val;
-                procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
-		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
+                procsNeeded += val;
 		nodecount.push_back(val);
-		//nodecount.push_back(getNumBE());
+		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
 	    } else if ( i == desiredDepth) {
-		//nodecount.push_back(numnodes);
 		nodecount.push_back(getNumBE());
                 procsNeeded += getNumBE();
-                //procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
 		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << numnodes << std::endl;
             } else {
 		int val = numnodes/fanout;
 		if (numnodes%fanout > 0 ) ++val;
-		numnodes = val;
-                procsNeeded += (int)ceil(pow((float)fanout, (float)1.0 / (float)i));
-		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
+                procsNeeded += val;
 		nodecount.push_back(val);
+		//std::cerr << "level:" << i << " " << ostr.str() << "nodes val:" << val << std::endl;
             }
-	    //std::cerr << "procesNeeded:" << procsNeeded << std::endl;
           }
-	  for (std::vector<int>::reverse_iterator k = nodecount.rbegin(); k != nodecount.rend() ; ++k) {
+	  //std::cerr << "procesNeeded:" << procsNeeded << std::endl;
+	  for (std::vector<int>::iterator k = nodecount.begin(); k != nodecount.end() ; ++k) {
 	     //std::cerr << " level: " << *k << std::endl;
-	     if (k == nodecount.rbegin()) {
+	     if (k == nodecount.begin()) {
 		ostr << " " << *k;
-	     } else {
+	     } else if (*k > 0) {
+		// if there are no nodes at this level, do not add.
 		ostr << "-" << *k;
 	     }
 	  }
@@ -1187,7 +1200,7 @@ void CBTFTopology::createTopology()
 
 #ifndef NDEBUG
 	if(CBTFTopology::is_debug_topology_enabled) {
-	    std::cerr << "CBTFTopology::createTopology topologyspec:" << ostr.str() << std::endl;
+	    std::cerr << "CBTFTopology::createTopology CREATED topologyspec:" << ostr.str() << std::endl;
 	    std::cerr << "num cp nodes:" << dm_cp_nodelist.size()
 		<< " cp procs available:" << dm_cp_nodelist.size() * dm_procs_per_node
 		<< " cp procsNeeded:" << procsNeeded << std::endl;

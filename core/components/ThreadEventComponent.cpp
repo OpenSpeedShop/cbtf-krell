@@ -41,6 +41,7 @@
 
 
 using namespace KrellInstitute::CBTF;
+using namespace KrellInstitute::CBTF::Impl;
 using namespace KrellInstitute::Core;
 
 /** requires std::ostringstream debug_prefix in namespace **/
@@ -188,13 +189,13 @@ bool is_time_thread_events_enabled =
     int _NumChildren = 0;
 
     bool isFrontend() {
-	return Impl::TheTopologyInfo.IsFrontend;
+	return TheTopologyInfo.IsFrontend;
     }
     bool isLeafCP() {
-	return (!Impl::TheTopologyInfo.IsFrontend && _MaxLeafDistance == 1);
+	return (!TheTopologyInfo.IsFrontend && _MaxLeafDistance == 1);
     }
     bool isNonLeafCP() {
-	return (!Impl::TheTopologyInfo.IsFrontend && _MaxLeafDistance > 1);
+	return (!TheTopologyInfo.IsFrontend && _MaxLeafDistance > 1);
     }
     int getNumChildren() {
 	 return _NumChildren;
@@ -211,12 +212,12 @@ bool is_time_thread_events_enabled =
 
 	bool initMaxLeafDistance = false;
 	bool initNumChildren = false;
-	if (_MaxLeafDistance == 0 && Impl::TheTopologyInfo.MaxLeafDistance > 0) {
-	    _MaxLeafDistance = Impl::TheTopologyInfo.MaxLeafDistance;
+	if (_MaxLeafDistance == 0 && TheTopologyInfo.MaxLeafDistance > 0) {
+	    _MaxLeafDistance = TheTopologyInfo.MaxLeafDistance;
 	    initMaxLeafDistance = true;
 	}
-	if (_NumChildren == 0 && Impl::TheTopologyInfo.NumChildren > 0) {
-	    _NumChildren = Impl::TheTopologyInfo.NumChildren;
+	if (_NumChildren == 0 && TheTopologyInfo.NumChildren > 0) {
+	    _NumChildren = TheTopologyInfo.NumChildren;
 	    initNumChildren = true;
 	}
 	initialized_topology_info = (initMaxLeafDistance && initNumChildren);
@@ -281,7 +282,7 @@ private:
 	init_TopologyInfo();
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(TheTopologyInfo.IsFrontend,TheTopologyInfo.MaxLeafDistance);
 	if (is_time_thread_events_enabled) {
 	    if (numTerminated == 0) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -318,7 +319,7 @@ private:
 	init_TopologyInfo();
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(TheTopologyInfo.IsFrontend,TheTopologyInfo.MaxLeafDistance);
 	if (is_time_thread_events_enabled) {
 	    if (numBE == 0) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -360,7 +361,7 @@ private:
 
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(TheTopologyInfo.IsFrontend,TheTopologyInfo.MaxLeafDistance);
 	if (is_time_thread_events_enabled) {
 	    if (threads_finished == 0) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -387,7 +388,7 @@ private:
 	if (is_debug_thread_events_enabled) {
 	    output << debug_prefix.str() << "ThreadEventComponent::threadstateHandler"
 	    << " numChildNodes:" << getNumChildren()
-	    << " MaxLeafDistance:" << Impl::TheTopologyInfo.MaxLeafDistance
+	    << " MaxLeafDistance:" << TheTopologyInfo.MaxLeafDistance
 	    << std::endl;
 	    flushOutput(output);
 	}
@@ -399,8 +400,8 @@ private:
 #ifndef NDEBUG
 	    if (is_debug_thread_events_enabled) {
 	      CBTF_Protocol_ThreadsStateChanged *message = in.get();
-	      CBTF_Protocol_ThreadState state = message->state;
-	      for(int i = 0; i < message->threads.names.names_len; ++i) {
+	      //CBTF_Protocol_ThreadState state = message->state;
+	      for(unsigned int i = 0; i < message->threads.names.names_len; ++i) {
 		const CBTF_Protocol_ThreadName& msg_thread =
 					message->threads.names.names_val[i];
 		ThreadName tname(msg_thread);
@@ -413,7 +414,7 @@ private:
 #endif
 	
 	    bool send_attached = false;
-            bool send_finished = false;
+            //bool send_finished = false;
             bool send_threadvec = false;
 
 	    // At the leafCP level the condition that all threads have finished is
@@ -447,7 +448,7 @@ private:
 		// no sense sending the same thread list with just the additional
 		// state message. (or we should have just added that state to
 		// the main threadlist message and changed it to terminated here).
-		send_finished = true;
+		// send_finished = true;
 
 	    } else {
 	    }
@@ -538,7 +539,7 @@ private:
 
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(TheTopologyInfo.IsFrontend,TheTopologyInfo.MaxLeafDistance);
 	if (is_time_thread_events_enabled) {
 	    if (threads_finished_msgs == 0) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -562,6 +563,9 @@ private:
 	}
 #endif
 
+	// FIXME: This is wrong potentially.  Really need to send (at least at FE)
+	// when threads_finished_msgs == threads_attached.
+	// Maybe rename threads_attached to threads_attached_msgs.
 	if ((isFrontend() || isNonLeafCP()) && (threads_finished_msgs == getNumChildren()) ) {
 #ifndef NDEBUG
 		if (is_trace_thread_events_enabled) {
@@ -596,7 +600,7 @@ private:
 
 #ifndef NDEBUG
 	std::stringstream output;
-	DEBUGPREFIX(Impl::TheTopologyInfo.IsFrontend,Impl::TheTopologyInfo.MaxLeafDistance);
+	DEBUGPREFIX(TheTopologyInfo.IsFrontend,TheTopologyInfo.MaxLeafDistance);
 	if (is_time_thread_events_enabled) {
 	    if (threads_attached == 0) {
 		output << Time::Now() << " " << debug_prefix.str()
@@ -644,7 +648,7 @@ private:
 
 	// update the threadnamevec
         CBTF_Protocol_AttachedToThreads *message = in.get();
-	for(int i = 0; i < message->threads.names.names_len; ++i) {
+	for(unsigned int i = 0; i < message->threads.names.names_len; ++i) {
 	    const CBTF_Protocol_ThreadName& msg_thread =
 				message->threads.names.names_val[i];
 
@@ -713,33 +717,10 @@ private:
 #endif
 	    emitOutput<long>("numTerminatedOut",threadnamevec.size());
 
-	    // Only emit this at the non leaf CPs.
+	    // No longer do we emit Threads_finished at the non leaf CPs.
 	    // The FE network will emit the final finished to the client
-	    // from the finishedHandler. sigh.
-	    if (isNonLeafCP()) {
-#ifndef NDEBUG
-		if (is_trace_thread_events_enabled) {
-		    output << debug_prefix.str() << "ThreadEventComponent::threadsHandler"
-			<< " EMITS finished" << std::endl;
-		    flushOutput(output);
-		}
-#endif
-		// This is client output for the benefit of notifying the user
-		// that the tool has finished receiving data from the collectors.
-		//if(isFrontend()) {
-		 //   std::cout << "All Threads are finished." << std::endl;
-		//}
-
-		emitOutput<bool>("Threads_finished", true);
-		is_finished = true;
-	    }
-
+	    // from the finishedHandler.
 	}
-
-#ifndef NDEBUG
-	//flushOutput(output);
-#endif
-
     }
 
     ThreadNameVec threadnamevec;

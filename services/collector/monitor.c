@@ -24,6 +24,8 @@
 #endif
 
 #include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Messages/LinkedObjectEvents.h"
@@ -39,6 +41,28 @@
 #include "KrellInstitute/Services/Path.h"
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/TLS.h"
+
+/* FIXME: defined in services/src/data/InitializeEventHeader.c. need include. */
+extern void CBTF_InitializeEventHeader( CBTF_EventHeader* header);
+
+/* FIXME: defined in services/collector/collector.c. need include. */
+extern void cbtf_timer_service_start_sampling(const char* arguments);
+extern void cbtf_timer_service_stop_sampling(const char* arguments);
+
+#if defined(CBTF_SERVICE_USE_FILEIO)
+/* FIXME: defined in services/src/xdr/Send.c. need include. */
+extern void CBTF_Event_Send(const CBTF_EventHeader* header,
+                 const xdrproc_t xdrproc, const void* data);
+#endif
+
+/* FIXME: defined in services/src/mrnet/MRNet_Send.c. need include. */
+#if defined(CBTF_SERVICE_USE_MRNET)
+extern void CBTF_Waitfor_MRNet_Shutdown();
+#endif
+#if defined(CBTF_SERVICE_USE_MRNET_MPI) || defined(CBTF_SERVICE_USE_MRNET)
+extern void CBTF_MRNet_Send(const int tag,
+                 const xdrproc_t xdrproc, const void* data);
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -373,12 +397,12 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_offline_start_sampling BEGINS for %s:%lld:%lld:%d:%d\n",
-                (long long)tls->dso_header.host,
-                (long long)tls->dso_header.pid,
-                (long long)tls->dso_header.posix_tid,
-                (long long)tls->dso_header.omp_tid,
-                (long long)tls->dso_header.rank);
+	    fprintf(stderr,"cbtf_offline_start_sampling BEGINS for %s:%ld:%ld:%d:%d\n",
+                tls->dso_header.host,
+                tls->dso_header.pid,
+                tls->dso_header.posix_tid,
+                tls->dso_header.omp_tid,
+                tls->dso_header.rank);
     }
 #endif
 
@@ -457,11 +481,11 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	    fprintf(stderr,"cbtf_offline_stop_sampling FINISHED for %s:%lld:%lld:%d:%d\n",
-                (long long)tls->dso_header.host,
+                tls->dso_header.host,
                 (long long)tls->dso_header.pid,
                 (long long)tls->dso_header.posix_tid,
-                (long long)tls->dso_header.rank,
-                (long long)tls->dso_header.omp_tid);
+                tls->dso_header.rank,
+                tls->dso_header.omp_tid);
 	}
 #endif
     }
@@ -599,7 +623,7 @@ void cbtf_record_dsos()
 		(long long)local_header.posix_tid, local_header.rank, local_header.omp_tid);
     }
 #endif
-    CBTF_GetDLInfo(getpid(), NULL);
+    CBTF_GetDLInfo(getpid(), NULL, 0, 0);
 
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
@@ -786,7 +810,8 @@ void cbtf_offline_record_dso(const char* dsoname,
             fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid,
-		    tls->dso_header.rank);
+		    tls->dso_header.rank,
+                    tls->dso_header.omp_tid);
 	}
 #endif
 	cbtf_offline_send_dsos(tls);

@@ -33,6 +33,8 @@
 */
 #if defined(__linux) && (defined(__i386) || defined(__x86_64) || defined(__powerpc__) || defined(__powerpc64__))
 
+#include <sys/types.h>
+#include <unistd.h>
 #include <bfd.h>
 #include <stdint.h>
 #include <dis-asm.h>

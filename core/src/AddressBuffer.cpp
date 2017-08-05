@@ -80,6 +80,8 @@ void AddressBuffer::printResults() const {
 	    << "\n" << std::endl;
 }
 
+// FIXME: These methods return bool but are not returning as expected
+// Do the callsites use a return value?
 bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
 {
     if (pc == 0) {

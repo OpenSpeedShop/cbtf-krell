@@ -230,7 +230,7 @@ void print_papi_events ()
     {
         int retval = PAPI_get_event_info(i, &info);
         if (retval == PAPI_OK) {
-            printf("%-30s 0x%-10x0s\n", info.symbol, info.event_code, info.long_descr);
+            printf("%-30s 0x%-10x %s\n", info.symbol, info.event_code, info.long_descr);
         }
     } while (PAPI_enum_event(&i, PAPI_PRESET_ENUM_AVAIL) == PAPI_OK);
 }
@@ -281,7 +281,7 @@ int get_papi_eventcode (char* eventname)
     strptr = ename;
     if (PAPI_event_name_to_code(strptr,&EventCode) != PAPI_OK) {
         fprintf(stderr,"get_papi_eventcode: PAPI_event_name_to_code failed!\n");
-        return;
+        return PAPI_NULL;
     }
     return EventCode;
 }
@@ -348,6 +348,7 @@ static oss_boolean CBTF_event_exists (int event)
 		info.symbol ? info.symbol : "");
 	}
 #endif
+	return true;
 }
 
 void CBTF_Create_Eventset(int *EventSet)

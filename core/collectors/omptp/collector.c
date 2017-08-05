@@ -530,7 +530,7 @@ void cbtf_collector_stop()
 #endif
 }
 
-#if defined (CBTF_SERVICE_USE_OFFLINE)
+#if 0 //#if defined (CBTF_SERVICE_USE_OFFLINE)
 
 void cbtf_offline_service_resume_sampling()
 {

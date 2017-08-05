@@ -1,6 +1,6 @@
 /*******************************************************************************
 ** Copyright (c) The Krell Institute. 2011-2013  All Rights Reserved.
-** Copyright (c) 2016 Argo Navis Technologies. All Rights Reserved.
+** Copyright (c) 2016-2017 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -40,6 +40,10 @@
 
 #include "KrellInstitute/CBTF/Impl/MessageTags.h"
 
+#if defined(ENABLE_CBTF_MRNET_PLAYBACK)
+#include "playback.h"
+#endif
+
 Network_t* CBTF_MRNet_netPtr;
 // make the id of the stream we want global and use Network_get_Stream
 // locally in the send function to retrieve it.
@@ -49,6 +53,8 @@ static int mrnet_connected = 0;
 
 static pthread_mutex_t mrnet_connected_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mrnet_connected_cond = PTHREAD_COND_INITIALIZER;
+
+
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
@@ -103,6 +109,8 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
 
     return 1;
 }
+
+
 
 int CBTF_MRNet_LW_connect (const int con_rank)
 {
@@ -170,7 +178,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%d, 3=%d, 4=%s, 5=%d\n",
+	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%lu, 3=%lu, 4=%s, 5=%lu\n",
         BE_argv[0], BE_argv[1], strtoul( BE_argv[2], NULL, 10 ),
         strtoul( BE_argv[3], NULL, 10 ), BE_argv[4], strtoul( BE_argv[5], NULL, 10 ));
 
@@ -187,7 +195,6 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     Assert(CBTF_MRNet_netPtr);
 
     int tag;
-    const char* fmt_str = "%d";
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
@@ -243,6 +250,10 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 #endif
      }
 
+#if defined(ENABLE_CBTF_MRNET_PLAYBACK)
+    playback_configure(Network_get_LocalRank(CBTF_MRNet_netPtr));
+#endif
+    
     mrnet_connected = 1;
     pthread_cond_broadcast(&mrnet_connected_cond);
     pthread_mutex_unlock(&mrnet_connected_mutex);
@@ -253,7 +264,9 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     return 1;
 }
 
-static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
+
+
+void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
 {
     const char* fmt_str = "%auc";
 
@@ -269,6 +282,13 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
     }
     pthread_mutex_unlock(&mrnet_connected_mutex);
 
+#if defined(ENABLE_CBTF_MRNET_PLAYBACK)
+    if (playback_intercept(tag, (uint32_t)size, data))
+    {
+        return; /* Squelch the actual sending of this message. */
+    }
+#endif
+    
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
 	fprintf(stderr,"CBTF_MRNet_LW_sendToFrontend: sends message with tag %d\n",tag);
@@ -286,15 +306,11 @@ static void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *da
     fflush(stderr);
 }
 
-void CBTF_MRNet_Send(const int tag,
-                 const xdrproc_t xdrproc, const void* data)
+
+
+void CBTF_MRNet_Send(const int tag, const xdrproc_t xdrproc, const void* data)
 {
-#ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	fprintf(stderr,"CBTF_MRNet_Send: sends message with tag %d\n",tag);
-    }
-#endif
-    unsigned size,dm_size;
+    unsigned size=0,dm_size=0;
     char* dm_contents = NULL;
 
     for(size = 1024; dm_contents == NULL; size *= 2) {
@@ -310,11 +326,19 @@ void CBTF_MRNet_Send(const int tag,
         xdr_destroy(&xdrs);
     }
 
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	fprintf(stderr,"CBTF_MRNet_Send: sends message tag:%d size: %d\n",tag ,dm_size);
+    }
+#endif
+
     CBTF_MRNet_LW_sendToFrontend(tag ,dm_size , (void *) dm_contents);
 }
 
+
+
 void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
-                 const xdrproc_t xdrproc, const void* data)
+                              const xdrproc_t xdrproc, const void* data)
 {
     const size_t EncodingBufferSize = (CBTF_BlobSizeFactor * 15 * 1024);
     unsigned size;
@@ -336,14 +360,17 @@ void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 
     /* send it as a blob */
     CBTF_Protocol_Blob blob;
-    blob.data.data_val = buffer;
+    blob.data.data_val = (uint8_t*) buffer;
     blob.data.data_len = size;
 
     CBTF_MRNet_Send(CBTF_PROTOCOL_TAG_PERFORMANCE_DATA,
                  (xdrproc_t) xdr_CBTF_Protocol_Blob, &blob);
 }
 
-void CBTF_Waitfor_MRNet_Shutdown() {
+
+
+void CBTF_Waitfor_MRNet_Shutdown()
+{
 
     Packet_t * p;
     p = (Packet_t *)malloc(sizeof(Packet_t));

@@ -46,7 +46,7 @@ void CBTF_EncodeParameters(const void* data,
 			     const xdrproc_t xdrproc, char* argument)
 {
     const size_t EncodingBufferSize = 15 * 1024;
-    unsigned i, j, size;
+    unsigned i, size;
     char* buffer = NULL;
     XDR xdrs;
     

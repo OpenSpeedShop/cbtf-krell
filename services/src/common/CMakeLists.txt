@@ -19,7 +19,6 @@
 include(CheckIncludeFile)
 
 add_definitions( -D_GNU_SOURCE )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
 set(SERVICES_COMMON_SOURCES
 	GetPCFromContext.c
@@ -33,7 +32,6 @@ set(SERVICES_COMMON_SOURCES
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 )
 
@@ -43,11 +41,11 @@ add_library(cbtf-services-common SHARED
 
 target_link_libraries(cbtf-services-common
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-common PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-common PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-common
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -61,12 +59,12 @@ add_library(cbtf-services-common-static STATIC
 
 target_link_libraries(cbtf-services-common-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-common-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-common-static PROPERTIES OUTPUT_NAME cbtf-services-common)
+set_target_properties(cbtf-services-common-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-common-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

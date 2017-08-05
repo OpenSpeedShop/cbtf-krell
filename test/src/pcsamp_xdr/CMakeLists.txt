@@ -47,7 +47,6 @@ target_link_libraries(testXDR
     cbtf-messages-base
     cbtf-messages-converters-base
     ${Boost_LIBRARIES}
-    ${Bfd_LIBRARY_SHARED}
     ${CBTF_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}

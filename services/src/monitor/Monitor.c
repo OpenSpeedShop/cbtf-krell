@@ -57,6 +57,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "monitor.h"
 
 #include "KrellInstitute/Services/Monitor.h"
@@ -66,12 +68,12 @@
 
 extern void cbtf_offline_start_sampling(const char* arguments);
 extern void cbtf_offline_stop_sampling(const char* arguments, const int finished);
-//extern void cbtf_offline_record_dso(const char* dsoname);
 extern void cbtf_offline_record_dso(const char* dsoname, uint64_t begin, uint64_t end, uint8_t is_dlopen);
 extern void cbtf_offline_record_dlopen(const char* dsoname, uint64_t begin, uint64_t end, uint64_t b_time, uint64_t e_time);
 extern void cbtf_offline_defer_sampling(const int flag);
 extern void cbtf_offline_pause_sampling();
 extern void cbtf_offline_resume_sampling();
+extern void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event);
 
 extern short cbtf_connected_to_mrnet();
 extern void cbtf_offline_waitforshutdown();
@@ -331,18 +333,11 @@ void *monitor_init_thread(int tid, void *data)
 #endif
     Assert(tls != NULL);
 
-#if 0
-	/* get the identifier of this thread */
-	pthread_t (*f_pthread_self)();
-	f_pthread_self = (pthread_t (*)())dlsym(RTLD_DEFAULT, "pthread_self");
-	tls->tid = (f_pthread_self != NULL) ? (*f_pthread_self)() : 0;
-#else
-	if (monitor_is_threaded()) {
+    if (monitor_is_threaded()) {
 	tls->tid = monitor_get_thread_num();
-	} else {
+    } else {
 	tls->tid = 0;
-	}
-#endif
+    }
 
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	tls->debug=1;
@@ -355,16 +350,6 @@ void *monitor_init_thread(int tid, void *data)
     if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
 	debug_mpi_pcontrol=1;
     }
-
-// this was found to cause the cuda collector to miss a needed worker thread.
-#if 0
-    if (CBTF_in_mpi_startup || tls->in_mpi_pre_init == 1) {
-        if (tls->debug) {
-	    fprintf(stderr,"monitor_init_thread returns early due to in mpi init\n");
-	}
-	return;
-    }
-#endif
 
     tls->pid = getpid();
     tls->cbtf_dllist_head = NULL;
@@ -422,6 +407,7 @@ monitor_thread_pre_create(void)
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	fprintf(stderr,"Entered cbtf monitor_thread_pre_create callback\n");
     }
+    return (NULL);
 }
 
 void
@@ -447,7 +433,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
     TLS* tls = &the_tls;
 #endif
 
-    if (tls == NULL || tls && tls->sampling_status == 0 ) {
+    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
 	return;
     }
 
@@ -481,7 +467,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
     tls->cbtf_dllist_curr->cbtf_dlinfo_next = tls->cbtf_dllist_head;
     tls->cbtf_dllist_head = tls->cbtf_dllist_curr;
 
-    if (tls->sampling_status == CBTF_Monitor_Paused && !tls->in_mpi_pre_init) {
+    if ((tls->sampling_status == CBTF_Monitor_Paused) && !tls->in_mpi_pre_init) {
         if (tls->debug) {
 	    fprintf(stderr,"monitor_dlopen RESUME SAMPLING %d,%lu\n",
 		tls->pid,tls->tid);
@@ -501,7 +487,7 @@ monitor_pre_dlopen(const char *path, int flags)
     TLS* tls = &the_tls;
 #endif
 
-    if (tls == NULL || tls && tls->sampling_status == 0 ) {
+    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
 	return;
     }
 
@@ -546,7 +532,7 @@ monitor_dlclose(void *handle)
 #endif
 
 
-    if (tls == NULL || tls && tls->sampling_status == 0 ) {
+    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
 	return;
     }
 
@@ -563,7 +549,7 @@ monitor_dlclose(void *handle)
 
             if (tls->debug) {
 	        fprintf(stderr,"FOUND %p %s\n",handle, tls->cbtf_dllist_curr->cbtf_dlinfo_entry.name);
-	        fprintf(stderr,"loaded at %d, unloaded at %d\n",
+	        fprintf(stderr,"loaded at %lu, unloaded at %lu\n",
 		               tls->cbtf_dllist_curr->cbtf_dlinfo_entry.load_time,
 		               tls->cbtf_dllist_curr->cbtf_dlinfo_entry.unload_time);
 	    }
@@ -573,6 +559,7 @@ monitor_dlclose(void *handle)
 	    * So we need to use getpid() directly here.
 	    */ 
 
+	   /* FIXME: Handle return value? */
 	   int retval = CBTF_GetDLInfo(getpid(),
 					 tls->cbtf_dllist_curr->cbtf_dlinfo_entry.name,
 					 tls->cbtf_dllist_curr->cbtf_dlinfo_entry.load_time,
@@ -606,7 +593,7 @@ monitor_post_dlclose(void *handle, int ret)
     TLS* tls = &the_tls;
 #endif
 
-    if (tls == NULL || tls && tls->sampling_status == 0 ) {
+    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
 	return;
     }
 
@@ -634,6 +621,7 @@ monitor_post_dlclose(void *handle, int ret)
 #ifdef HAVE_TARGET_FORK
 /* 
  * callbacks for handling of FORK.
+ * NOTE that this callback can return a void pointer if desired.
  */
 void * monitor_pre_fork(void)
 {
@@ -660,18 +648,18 @@ void * monitor_pre_fork(void)
         if (tls->debug) {
 	    fprintf(stderr,"monitor_pre_fork returns early due to in mpi init\n");
 	}
-	return;
+	return (NULL);
     }
 
     /* Stop sampling prior to real fork. */
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Started) {
         if (tls->debug) {
-	    fprintf(stderr,"monitor_pre_fork FINISHED SAMPLING %d,%lu\n",
+	    fprintf(stderr,"monitor_pre_fork PAUSE SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
-	tls->sampling_status = CBTF_Monitor_Finished;
-	cbtf_offline_stop_sampling(NULL,1);
+	tls->sampling_status = CBTF_Monitor_Paused;
+	cbtf_offline_pause_sampling(CBTF_Monitor_pre_fork_event);
     }
     return (NULL);
 }
@@ -697,12 +685,12 @@ void monitor_post_fork(pid_t child, void *data)
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Finished) {
         if (tls->debug) {
-	    fprintf(stderr,"monitor_post_fork BEGIN SAMPLING %d,%lu\n",
+	    fprintf(stderr,"monitor_post_fork RESUME SAMPLING %d,%lu\n",
 		    tls->pid,tls->tid);
         }
 	tls->CBTF_monitor_type = CBTF_Monitor_Proc;
-	tls->sampling_status = 1;
-	cbtf_offline_start_sampling(NULL);
+	tls->sampling_status = CBTF_Monitor_Resumed;
+	cbtf_offline_resume_sampling(CBTF_Monitor_post_fork_event);
     }
 }
 #endif
@@ -838,16 +826,18 @@ void monitor_mpi_post_comm_rank(void)
 #endif
     Assert(tls != NULL);
 
-    if (tls->debug) {
+    if (tls->debug && !cbtf_connected_to_mrnet()) {
 	fprintf(stderr,"monitor_mpi_post_comm_rank CALLED %d,%lu at %lu\n",
 		tls->pid,tls->tid, CBTF_GetTime());
     }
 
     if (cbtf_connected_to_mrnet()) {
+#if 0
         if (tls->debug) {
 	    fprintf(stderr,"monitor_mpi_post_comm_rank already connected to mrnet %d,%lu\n",
 		    tls->pid,tls->tid);
         }
+#endif
 	return;
     }
 

@@ -66,7 +66,6 @@ target_include_directories(cbtf-core PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${LTDL_INCLUDE_DIR}
 )
 
 # Only link with specific Boost libraries needed rather than Boost_LIBRARIES
@@ -79,11 +78,11 @@ target_link_libraries(cbtf-core
         ${Boost_THREAD_LIBRARY}
 	cbtf-messages-perfdata
 	cbtf-messages-base
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-core PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-core
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -106,7 +105,6 @@ target_include_directories(cbtf-core-static PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/perfdata
-	${LTDL_INCLUDE_DIR}
 )
 
 # Only link with specific Boost libraries needed rather than Boost_LIBRARIES
@@ -119,12 +117,12 @@ target_link_libraries(cbtf-core-static
         ${Boost_THREAD_LIBRARY}
 	cbtf-messages-perfdata
 	cbtf-messages-base
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-core-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-core-static PROPERTIES OUTPUT_NAME cbtf-core)
+set_target_properties(cbtf-core-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-core-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -146,14 +144,12 @@ target_include_directories(cbtf-core-bfd PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-core-bfd
         -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	cbtf-messages-perfdata
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -161,6 +157,7 @@ set_target_properties(cbtf-core-bfd PROPERTIES VERSION 1.1.0)
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-core-bfd PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")
+set_target_properties(cbtf-core-bfd PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-core-bfd
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -183,14 +180,12 @@ target_include_directories(cbtf-core-bfd-static PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${LTDL_INCLUDE_DIR}
 )
 
 target_link_libraries(cbtf-core-bfd-static
         -Wl,--no-as-needed
 	${Bfd_SHARED_LIBRARY}
 	cbtf-messages-perfdata
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
@@ -199,6 +194,7 @@ set_target_properties(cbtf-core-bfd-static PROPERTIES OUTPUT_NAME cbtf-core-bfd)
 # Work around problem defined by:
 # https://stackoverflow.com/questions/11748035/binutils-bfd-h-wants-config-h-now
 set_target_properties(cbtf-core-bfd-static PROPERTIES COMPILE_DEFINITIONS "PACKAGE=1;PACKAGE_VERSION=1")
+set_target_properties(cbtf-core-bfd-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-core-bfd-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -222,7 +218,6 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-core-symtabapi
@@ -234,12 +229,12 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${DyninstAPI_dynElf_LIBRARY}
 	${DyninstAPI_dynDwarf_LIBRARY}
 	${DyninstAPI_symLite_LIBRARY}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
         cbtf-core
     )
 
     set_target_properties(cbtf-core-symtabapi PROPERTIES VERSION 1.1.0)
+    set_target_properties(cbtf-core-symtabapi PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-core-symtabapi
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -262,7 +257,6 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	${LTDL_INCLUDE_DIR}
     )
 
     target_link_libraries(cbtf-core-symtabapi-static
@@ -274,12 +268,12 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
 	${DyninstAPI_dynElf_LIBRARY}
 	${DyninstAPI_dynDwarf_LIBRARY}
 	${DyninstAPI_symLite_LIBRARY}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-core-symtabapi-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-core-symtabapi-static PROPERTIES OUTPUT_NAME cbtf-core-symtabapi)
+    set_target_properties(cbtf-core-symtabapi-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-core-symtabapi-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -313,7 +307,6 @@ if (NOT RUNTIME_ONLY)
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	    ${CrayAlps_INCLUDE_DIRS}
-	    ${LTDL_INCLUDE_DIR}
         )
     else()
         target_include_directories(cbtf-core-mrnet PUBLIC
@@ -327,7 +320,6 @@ if (NOT RUNTIME_ONLY)
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	    ${LTDL_INCLUDE_DIR}
         )
     endif()
 
@@ -335,14 +327,18 @@ if (NOT RUNTIME_ONLY)
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-core-mrnet PROPERTIES VERSION 1.1.0)
-    set_target_properties(cbtf-core-mrnet PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
-
+    set_target_properties(cbtf-core-mrnet PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if (HAVE_CRAYALPS MATCHES "true")
+        set_target_properties(cbtf-core-mrnet PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES};${CRAYALPS_DEFINES}")
+    else()
+        set_target_properties(cbtf-core-mrnet PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    endif()
 
     install(TARGETS cbtf-core-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -367,7 +363,6 @@ if (NOT RUNTIME_ONLY)
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
 	    ${CrayAlps_INCLUDE_DIRS}
-	    ${LTDL_INCLUDE_DIR}
         )
     else()
         target_include_directories(cbtf-core-mrnet-static PUBLIC
@@ -381,21 +376,25 @@ if (NOT RUNTIME_ONLY)
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/base
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/events
 	    ${CMAKE_CURRENT_BINARY_DIR}/../../messages/src/symtab
-	    ${LTDL_INCLUDE_DIR}
         )
     endif()
     target_link_libraries(cbtf-core-mrnet-static
         -Wl,--no-as-needed
 	${MRNet_LIBRARIES}
 	pthread
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
     )
 
     set_target_properties(cbtf-core-mrnet-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-core-mrnet-static PROPERTIES OUTPUT_NAME cbtf-core-mrnet)
-    set_target_properties(cbtf-core-mrnet-static PROPERTIES 
-        COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-core-mrnet-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if (HAVE_CRAYALPS MATCHES "true")
+        set_target_properties(cbtf-core-mrnet-static PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES};${CRAYALPS_DEFINES}")
+    else()
+        set_target_properties(cbtf-core-mrnet-static PROPERTIES 
+            COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    endif()
 
     install(TARGETS cbtf-core-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}

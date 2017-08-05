@@ -23,7 +23,8 @@
  *
  */
 
-
+/* FIXME: Need to add an include for the fileio function definitions. */
+extern int CBTF_SendToFile(const unsigned size, const void* data);
 
 /**
  * Send performance data.

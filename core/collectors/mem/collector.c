@@ -48,6 +48,11 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "MemTraceableFunctions.h"
+#include "monitor.h"
+
+#ifdef USE_EXPLICIT_TLS
+#undef USE_EXPLICIT_TLS
+#endif
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "mem";
@@ -239,8 +244,9 @@ static void send_samples(TLS *tls)
 
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "mem send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	    fprintf(stderr, "[%d:%d] mem send_samples:\n", tls->header.rank, tls->header.omp_tid);
+	    fprintf(stderr, "[%d:%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) events_len(%d)\n",
+		tls->header.rank, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -252,6 +258,7 @@ static void send_samples(TLS *tls)
 
     /* Re-initialize the data blob's header */
     initialize_data(tls);
+    tls->do_trace = saved_do_trace;
 }
 
 /**
@@ -589,13 +596,18 @@ void cbtf_collector_stop()
     defer_trace(0);
 
     /* Are there any unsent samples? */
-    if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
+    /* If there are events then there are stacktraces. */
+    /* If there are stacktraces then there are events. */
+    /* So this should be an and op rather than an or. */
+    if(tls->data.events.events_len > 0 && tls->data.stacktraces.stacktraces_len > 0) {
 	send_samples(tls);
     }
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_MEM_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_collector_stop event count is %d\n", tls->event_count);
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"[%d:%d] cbtf_collector_stop events:%d\n",
+		tls->header.rank, tls->header.omp_tid,
+		tls->event_count);
     }
 #endif
 

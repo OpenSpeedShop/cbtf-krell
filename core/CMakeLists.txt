@@ -37,10 +37,6 @@ else()
     add_subdirectory(daemonTool)
 endif()
 
-install( FILES CBTF-CoreConfig.cmake
-         DESTINATION share/CBTF-Core/cmake)
-
-
 install(DIRECTORY include/KrellInstitute
         DESTINATION include
         FILES_MATCHING

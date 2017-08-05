@@ -30,24 +30,23 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${LibIomp_INCLUDE_DIRS}
+	${LibMonitor_INCLUDE_DIRS}
 )
 
 target_link_libraries(cbtf-services-ompt
         -Wl,--no-as-needed
 	${LibIomp_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
+	${LibMonitor_SHARED_LIBRARIES}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-ompt PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-ompt PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES};${LibIomp_DEFINES}")
+set_target_properties(cbtf-services-ompt PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS cbtf-services-ompt
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

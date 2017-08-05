@@ -7,13 +7,13 @@ pushd build
 export CC=gcc
 export CXX=g++
 
-export KRELL_ROOT=/u/glschult/OSS/krellroot_v2.3.1
-export DYNINST_ROOT=/u/glschult/OSS/krellroot_v2.3.1
-export MRNET_ROOT=/u/glschult/OSS/krellroot_v2.3.1
-export XERCESC_ROOT=/u/glschult/OSS/krellroot_v2.3.1
-export BOOST_ROOT=/u/glschult/OSS/krellroot_v2.3.1
-export CBTF_ROOT=/u/glschult/OSS/cbtf_v2.3.1
-export CBTF_KRELL_PREFIX=/u/glschult/OSS/cbtf_v2.3.1
+export KRELL_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export DYNINST_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export MRNET_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export XERCESC_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export BOOST_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export CBTF_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+export CBTF_KRELL_PREFIX=/u/glschult/OSS/osscbtf_v2.3.1
 export OPENMPI_INSTALL_ROOT=/nasa/openmpi/1.6.5/gcc
 export CUDA_DIR=/nasa/cuda/7.5
 

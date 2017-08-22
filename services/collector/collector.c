@@ -26,6 +26,7 @@
 #endif
 
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
@@ -283,7 +284,7 @@ void connect_to_mrnet()
     if (tls->connected_to_mrnet) {
 #ifndef NDEBUG
     if (tls->debug_mrnet) {
-        fprintf(stderr,"ALREADY connected  connect_to_mrnet \n");
+        fprintf(stderr,"[%d,%d] ALREADY connected  connect_to_mrnet\n",getpid(),monitor_get_thread_num());
     }
 #endif
 	return;
@@ -291,8 +292,8 @@ void connect_to_mrnet()
 
 #ifndef NDEBUG
     if (tls->debug_mrnet) {
-	 fprintf(stderr,"connect_to_mrnet() calling CBTF_MRNet_LW_connect for rank %d\n",
-	monitor_mpi_comm_rank());
+	 fprintf(stderr,"[%d,%d] connect_to_mrnet() calling CBTF_MRNet_LW_connect for rank %d\n",
+	getpid(),monitor_get_thread_num(),monitor_mpi_comm_rank());
     }
 #endif
 
@@ -410,8 +411,8 @@ void send_thread_state_changed_message()
 
     if (tls == NULL) {
 #ifndef NDEBUG
-        fprintf(stderr,"EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
-		monitor_mpi_comm_rank());
+        fprintf(stderr,"[%d,%d] EARLY EXIT send_thread_state_changed_message NO TLS for rank %d\n",
+		getpid(),monitor_get_thread_num(),monitor_mpi_comm_rank());
 #endif
 	return;
     }
@@ -452,11 +453,13 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"cbtf_collector_send DATA for %s:%lld:%lld:%d:%d\n",
-                     tls->header.host, (long long)tls->header.pid,
-                     (long long)tls->header.posix_tid, tls->header.rank,
-		     tls->header.omp_tid);
-        fprintf(stderr,"time_range[%lu, %lu) addr range [%#lx, %#lx]\n",
+        fprintf(stderr,"[%d,%d] cbtf_collector_send DATA for %s:%lld:%lld:%d:%d\n",
+		getpid(),monitor_get_thread_num(),
+                tls->header.host, (long long)tls->header.pid,
+                (long long)tls->header.posix_tid, tls->header.rank,
+		tls->header.omp_tid);
+        fprintf(stderr,"[%d,%d] time_range[%lu, %lu) addr range [%#lx, %#lx]\n",
+	    getpid(),monitor_get_thread_num(),
             (uint64_t)header->time_begin, (uint64_t)header->time_end,
 	    header->addr_begin, header->addr_end);
     }
@@ -480,7 +483,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 	    CBTF_MRNet_Send_PerfData(header, xdrproc, data);
 	} else {
-	    fprintf(stderr,"cbtf_collector_send called but no longer connected!!!\n");
+	    fprintf(stderr,"[%d,%d] cbtf_collector_send called but no longer connected!!!\n",getpid(),monitor_get_thread_num());
 	}
 #endif
 
@@ -566,7 +569,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     // Non-mpi applications connect here.
 #ifndef NDEBUG
     if (tls->debug_mrnet) {
-	fprintf(stderr,"cbtf_timer_service_start_sampling calls connect_to_mrnet for NON MPI program\n");
+	fprintf(stderr,"[%d,%d] cbtf_timer_service_start_sampling calls connect_to_mrnet for NON MPI program\n",getpid(),monitor_get_thread_num());
     }
 #endif
     connect_to_mrnet();

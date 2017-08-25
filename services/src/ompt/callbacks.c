@@ -438,7 +438,7 @@ void CBTF_ompt_cb_release_lock (ompt_wait_id_t waitID) {
 void CBTF_ompt_cb_barrier_begin (ompt_parallel_id_t parallelID,
 		       ompt_task_id_t taskID)
 {
-    cbtf_collector_pause();
+    //cbtf_collector_pause();
     OMPT_THREAD_BARRIER(true);
 
     // record barrier begin time.
@@ -453,7 +453,7 @@ void CBTF_ompt_cb_barrier_begin (ompt_parallel_id_t parallelID,
 		,omp_get_thread_num(), parallelID,taskID, barrier_btime);
     }
 #endif
-    cbtf_collector_resume();
+    //cbtf_collector_resume();
 }
 
 // ompt_event_MAY_ALWAYS_TRACE but always used as BLAME??

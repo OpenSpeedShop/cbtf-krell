@@ -772,6 +772,8 @@ void CBTFTopology::parseEnv()
     	has_numnodes = true;
     } else if ((envval = getenv("SLURM_JOB_NUM_NODES")) != NULL) {
     	has_numnodes = true;
+    } else if ((envval = getenv("SLURM_NNODES")) != NULL) {
+	has_numnodes = true;
     } else {
     	has_numnodes = false;
     }

@@ -24,10 +24,10 @@
  *
  */
 
-#include "KrellInstitute/Services/Common.h"
-#include "KrellInstitute/Services/Timer.h"
-#include "KrellInstitute/Services/TLS.h"
-
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <stdbool.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -35,7 +35,20 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "KrellInstitute/Services/Common.h"
+#include "KrellInstitute/Services/Timer.h"
+#include "KrellInstitute/Services/TLS.h"
 
+#define CBTF_ITIMER_SIGNAL   (SIGPROF)
+#ifdef HAVE_POSIX_TIMERS
+#define CBTF_REALTIME_SIGNAL (SIGRTMIN+3)
+#ifndef sigev_notify_thread_id
+/* manpages claim sigev_notify_thread_id. but this appears hidden
+ * on some systems
+ */
+#define sigev_notify_thread_id  _sigev_un._tid
+#endif
+#endif
 
 /** Mutual exclusion lock for accessing shared state. */
 static pthread_mutex_t mutex_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -46,13 +59,21 @@ static unsigned num_threads = 0;
 /** Old SIGPROF signal handler action (shared state). */
 struct sigaction original_sigprof_action;
 
+static int cbtf_timer_signal = 0;
 
+static bool use_posix_timer = true;
+static bool init_timer_signal = false;
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
     /** Timer event handling function. */
     CBTF_TimerEventHandler timer_handler;
+#ifdef HAVE_POSIX_TIMERS
+    struct sigevent sig_event;
+    timer_t	    timerid;
+    bool	    posix_timer_initialized;
+#endif
 
 } TLS;
 
@@ -138,10 +159,13 @@ static void signalHandler(int signal, siginfo_t* info, void* ptr)
  *
  * @ingroup RuntimeAPI
  */
-void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
+static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 {
     struct sigaction action;
-    struct itimerval spec;
+#ifdef HAVE_POSIX_TIMERS
+    struct itimerspec itspec;
+#endif
+    struct itimerval itval;
 
     /* Create and/or access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -157,8 +181,14 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
     Assert(tls != NULL);
 
     /* Disable the timer for this thread */
-    memset(&spec, 0, sizeof(spec));
-    Assert(setitimer(ITIMER_PROF, &spec, NULL) == 0);
+    if (use_posix_timer) {
+#ifdef HAVE_POSIX_TIMERS
+	memset(&itspec, 0, sizeof(itspec));
+#endif
+    } else {
+	memset(&itval, 0, sizeof(itval));
+	Assert(setitimer(ITIMER_PROF, &itval, NULL) == 0);
+    }
 
     /* Obtain exclusive access to shared state */
     Assert(pthread_mutex_lock(&mutex_lock) == 0);
@@ -174,8 +204,27 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 	    action.sa_sigaction = signalHandler;
 	    sigfillset(&(action.sa_mask));
 	    action.sa_flags = SA_SIGINFO;
-	    Assert(sigaction(SIGPROF, &action, &original_sigprof_action) == 0);
+	    Assert(sigaction(cbtf_timer_signal, &action, &original_sigprof_action) == 0);
 
+	}
+
+	/* If using posix timers we need to set a timer for each thread */
+	if (use_posix_timer) {
+#ifdef HAVE_POSIX_TIMERS
+	    if(tls->posix_timer_initialized == false) {
+		memset(&tls->sig_event, 0, sizeof(tls->sig_event));
+		tls->sig_event.sigev_notify = SIGEV_THREAD_ID;
+		tls->sig_event.sigev_signo = (CBTF_REALTIME_SIGNAL);
+		tls->sig_event.sigev_value.sival_ptr = &tls->timerid;
+		tls->sig_event.sigev_notify_thread_id = syscall(SYS_gettid);
+
+		clockid_t clock = CLOCK_REALTIME;
+		int ret = timer_create(clock, &tls->sig_event, &tls->timerid);
+		if (ret == 0) {
+		    tls->posix_timer_initialized = true;
+		}
+	    }
+#endif
 	}
 	
 	/* Is this thread using a timer now were it wasn't previously? */
@@ -191,14 +240,28 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
     /* Is this thread disabling its timer? */
     if((interval == 0) || (handler == NULL)) {
 	
+	if (use_posix_timer) {
+#ifdef HAVE_POSIX_TIMERS
+	    struct itimerspec stop_spec;
+	    memset(&stop_spec, 0, sizeof(stop_spec));
+	    if (tls->posix_timer_initialized) {
+		int ret = timer_delete(tls->timerid);
+		if (ret < 0) {
+		    fprintf(stderr,"timer_delete failed!\n");
+		}
+	    }
+	    tls->posix_timer_initialized = false;
+#endif
+	}
+
 	/* Decrement the timer usage thread count */
 	--num_threads;
 
 	/* Was this the last thread using the timer? */
 	if(num_threads == 0) {
 	    
-	    /* Return the SIGPROF signal action to its original value */
-	    Assert(sigaction(SIGPROF, &original_sigprof_action, NULL) == 0);
+	    /* Return the signal action to its original value */
+	    Assert(sigaction(cbtf_timer_signal, &original_sigprof_action, NULL) == 0);
 	    
 	}	
 	
@@ -214,12 +277,27 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 	tls->timer_handler = handler;
 	
 	/* Enable a timer for this thread */
-	spec.it_interval.tv_sec = interval / (uint64_t)(1000000000);
-	spec.it_interval.tv_usec =
+	if (use_posix_timer) {
+#ifdef HAVE_POSIX_TIMERS
+	    tls->timer_handler = handler;
+	    itspec.it_interval.tv_sec = interval / (uint64_t)(1000000000);
+	    itspec.it_interval.tv_nsec =
+	    (1000 * (interval % (uint64_t)(1000000000))) / (uint64_t)(1000);
+	    itspec.it_value.tv_sec = itspec.it_interval.tv_sec;
+	    itspec.it_value.tv_nsec = itspec.it_interval.tv_nsec;
+	    int rval = timer_settime(tls->timerid, 0, &itspec, NULL);
+	    if (rval) {
+		fprintf(stderr,"timer_settime FAILED!\n");
+	    }
+#endif
+	} else {
+	    itval.it_interval.tv_sec = interval / (uint64_t)(1000000000);
+	    itval.it_interval.tv_usec =
 	    (interval % (uint64_t)(1000000000)) / (uint64_t)(1000);
-	spec.it_value.tv_sec = spec.it_interval.tv_sec;
-	spec.it_value.tv_usec = spec.it_interval.tv_usec;
-	Assert(setitimer(ITIMER_PROF, &spec, NULL) == 0);
+	    itval.it_value.tv_sec = itval.it_interval.tv_sec;
+	    itval.it_value.tv_usec = itval.it_interval.tv_usec;
+	    Assert(setitimer(ITIMER_PROF, &itval, NULL) == 0);
+	}
 	
     }    
     else {
@@ -228,4 +306,69 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 	tls->timer_handler = NULL;
 	
     }
+}
+
+
+void CBTF_SetTimerSignal()
+{
+    if(!init_timer_signal) {
+#ifdef HAVE_POSIX_TIMERS
+	cbtf_timer_signal = CBTF_REALTIME_SIGNAL;
+	use_posix_timer = true;
+#else
+	cbtf_timer_signal = CBTF_ITIMER_SIGNAL;
+	use_posix_timer = false;
+#endif
+	if (getenv("CBTF_FORCE_ITIMER_SIGNAL") != NULL) {
+	    cbtf_timer_signal = CBTF_ITIMER_SIGNAL;
+	    use_posix_timer = false;
+	}
+	init_timer_signal = true;
+    }
+}
+
+int CBTF_GetTimerSignal()
+{
+    return cbtf_timer_signal;
+}
+
+void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
+{
+    if(!init_timer_signal) {
+	CBTF_SetTimerSignal();
+    }
+    __CBTF_Timer(interval, handler);
+}
+
+/* BLOCK profiling signals.
+ * We need to do more than ignore samples (defer_sampling).
+ * It is best to block the profiling signal. Currently that
+ * is SIGPROF. When we add a posix based timer that handles
+ * thread samples correctly we will be blocking one of the
+ * real time signals (SIGRTMIN or SIGRTMIN+N) as well and
+ * likely default to the posix based timer.
+ * fixes issues seen with omnipath based mpi connects.
+ */
+void CBTF_BlockTimerSignal()
+{
+    if(!init_timer_signal) {
+	CBTF_SetTimerSignal();
+    }
+    sigset_t signal_set;
+    sigemptyset(&signal_set);
+    sigaddset(&signal_set, CBTF_GetTimerSignal());
+    sigprocmask(SIG_BLOCK, &signal_set, NULL);
+}
+
+/* BLOCK profiling signals.
+ */
+void CBTF_UnBlockTimerSignal()
+{
+    if(!init_timer_signal) {
+	CBTF_SetTimerSignal();
+    }
+    sigset_t signal_set;
+    sigemptyset(&signal_set);
+    sigaddset(&signal_set, CBTF_GetTimerSignal());
+    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }

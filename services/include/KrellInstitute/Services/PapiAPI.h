@@ -67,6 +67,7 @@ void CBTF_Stop(int, long long *);
 void CBTF_HWCAccum(int,long long *);
 void CBTF_HWCRead(int, long long *);
 void CBTF_PAPIerror (int , const char *);
+void CBTF_init_papi();
 
 #ifdef __cplusplus
 }

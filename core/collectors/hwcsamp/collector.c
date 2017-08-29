@@ -371,11 +371,6 @@ void collector_record_addr(char* name, uint64_t addr)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    tls->defer_sampling = true;
-    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
-    /* Update the sampling buffer and check if it has been filled */
-    tls->defer_sampling = false;
 }
 
 
@@ -460,7 +455,18 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_begin = CBTF_GetTime();
 
+
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+	    fprintf(stderr,"[%d,%d]ENTER cbtf_collector_start\n",tls->header.pid,tls->header.omp_tid);
+	}
+#endif
     if(hwcsamp_papi_init_done == 0) {
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+	    fprintf(stderr,"[%d,%d] cbtf_collector_start: initialize papi\n",tls->header.pid,tls->header.omp_tid);
+	}
+#endif
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
 	tls->data.clock_mhz = (float) hw_info->mhz;
@@ -495,6 +501,10 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
 #endif
 
+    /* NOTE: if multiplex is turned on, papi internaly uses a SIGPROF handler.
+     * Since we are sampling potentially with SIGPROF or now SIGRTMIN and we
+     * prefer to limit our events to 6, we do not need multiplexing.
+     */
     if (getenv("CBTF_HWCSAMP_MULTIPLEX") != NULL) {
 #if !defined(RUNTIME_PLATFORM_BGP) 
 	rval = PAPI_set_multiplex( tls->EventSet );
@@ -562,7 +572,7 @@ void cbtf_collector_pause()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwcsamp_papi_init_done == 0 || tls == NULL)
+    if (tls == NULL)
 	return;
 
     // BLOCK profiling signals.
@@ -573,13 +583,11 @@ void cbtf_collector_pause()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigaddset(&signal_set, SIGRTMIN);
-    sigprocmask(SIG_BLOCK, &signal_set, NULL);
+    CBTF_BlockTimerSignal();
     tls->defer_sampling=true;
-    CBTF_Stop(tls->EventSet, evalues);
+    if (hwcsamp_papi_init_done) {
+	CBTF_Stop(tls->EventSet, evalues);
+    }
 }
 
 
@@ -595,7 +603,7 @@ void cbtf_collector_resume()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwcsamp_papi_init_done == 0 || tls == NULL)
+    if (tls == NULL)
 	return;
 
     // UNBLOCK profiling signals.
@@ -606,12 +614,11 @@ void cbtf_collector_resume()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+    CBTF_UnBlockTimerSignal();
     tls->defer_sampling=false;
-    CBTF_Start(tls->EventSet);
+    if (hwcsamp_papi_init_done) {
+	CBTF_Start(tls->EventSet);
+    }
 }
 
 

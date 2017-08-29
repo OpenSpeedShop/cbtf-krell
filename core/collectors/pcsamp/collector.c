@@ -323,15 +323,6 @@ void collector_record_addr(char* name, uint64_t addr)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    tls->defer_sampling = true;
-    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
-    /* Update the sampling buffer and check if it has been filled */
-    if(CBTF_UpdatePCData(addr, &tls->buffer)) {
-	/* Send these samples */
-	send_samples(tls);
-    }
-    tls->defer_sampling = false;
 }
 
 
@@ -437,10 +428,7 @@ void cbtf_collector_pause()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigprocmask(SIG_BLOCK, &signal_set, NULL);
+    CBTF_BlockTimerSignal();
     tls->defer_sampling=true;
 }
 
@@ -468,10 +456,7 @@ void cbtf_collector_resume()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+    CBTF_UnBlockTimerSignal();
     tls->defer_sampling=false;
 }
 

@@ -40,3 +40,7 @@
 typedef void (*CBTF_TimerEventHandler)(const ucontext_t*);
 
 void CBTF_Timer(uint64_t, const CBTF_TimerEventHandler);
+void CBTF_SetTimerSignal();
+int  CBTF_GetTimerSignal();
+void CBTF_BlockTimerSignal();
+void CBTF_UnBlockTimerSignal();

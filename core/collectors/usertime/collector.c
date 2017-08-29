@@ -48,6 +48,7 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
+#include <libunwind.h>
 #include "monitor.h"
 
 #if UNW_TARGET_X86 || UNW_TARGET_X86_64
@@ -530,11 +531,6 @@ void collector_record_addr(char* name, uint64_t addr)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    tls->defer_sampling = true;
-    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
-    /* Update the sampling buffer and check if it has been filled */
-    tls->defer_sampling = false;
 }
 
 
@@ -577,6 +573,11 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     } else {
 	tls->debug_collector_ompt = false;
     }
+#endif
+
+/* testing this for performance improvements - dpm 8-17-2017 */
+#if 0
+    unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
 #endif
 
     /* handle arguments */
@@ -651,10 +652,7 @@ void cbtf_collector_pause()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigprocmask(SIG_BLOCK, &signal_set, NULL);
+    CBTF_BlockTimerSignal();
     tls->defer_sampling=true;
 }
 
@@ -682,10 +680,7 @@ void cbtf_collector_resume()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGPROF);
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+    CBTF_UnBlockTimerSignal();
     tls->defer_sampling=false;
 }
 

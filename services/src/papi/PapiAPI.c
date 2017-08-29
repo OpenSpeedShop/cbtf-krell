@@ -107,10 +107,16 @@ void CBTF_init_papi()
 
 
 
-
+    /* NOTE: if multiplex is turned on, papi internaly uses a SIGPROF handler.
+     * Since we are sampling potentially with SIGPROF or now SIGRTMIN and we
+     * prefer to limit our events to 6, we do not need multiplexing.
+     * We can allow this override here for this use case outside of hwcsamp etc.
+     */
     /* init papi for multiplexing events */
-    if (PAPI_multiplex_init() != PAPI_OK) {
-        fprintf(stderr, "PAPI_multiplex_init failed\n") ;
+    if (getenv("CBTF_HWCSAMP_MULTIPLEX") != NULL) {
+	if (PAPI_multiplex_init() != PAPI_OK) {
+	    fprintf(stderr, "PAPI_multiplex_init failed\n") ;
+	}
     }
 }
 

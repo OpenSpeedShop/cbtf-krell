@@ -31,6 +31,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Hwcsamp.h"
@@ -47,6 +48,7 @@
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h" /* monitor_get_thread_num and friends */
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwcsamp";
@@ -135,6 +137,7 @@ void OMPT_THREAD_WAIT_BARRIER(bool flag) {
 	return;
     tls->thread_wait_barrier=flag;
 }
+
 #endif // if defined HAVE_OMPT
 
 /**
@@ -237,14 +240,12 @@ static void send_samples (TLS* tls)
     tls->data.count.count_len = tls->buffer.length;
     tls->data.events.events_len = tls->buffer.length;
 
-#ifndef NDEBUG
-    if (tls->debug_collector) {
-
 #if 0
 int bufsize = tls->buffer.length * sizeof(tls->buffer);
 int pcsize =  tls->buffer.length * sizeof(tls->data.pc.pc_val);
 int countsize =  tls->buffer.length * sizeof(tls->data.count.count_val);
 
+fprintf(stderr,"[%d:%d] HWCSAMP SEND SAMPLES\n", tls->header.pid,tls->header.omp_tid);
 fprintf(stderr,"send_samples: size of tls data is %d, buffer is %d\n",sizeof(tls->data), sizeof(tls->buffer));
 fprintf(stderr,"send_samples: size of tls PC data is %d  %d, COUNT is %d  %d\n",tls->buffer.length , pcsize,tls->buffer.length , countsize);
 fprintf(stderr,"send_samples: size of tls HASH is %d\n", sizeof(tls->buffer.hash_table));
@@ -259,9 +260,10 @@ int eventssize =  tls->buffer.length * sizeof(tls->data.events.events_val);
 fprintf(stderr,"send_samples: size of eventssize = %d\n",eventssize);
 #endif
 
-
+#ifndef NDEBUG
+    if (tls->debug_collector) {
 	    fprintf(stderr, "hwcsamp send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "time_range(%lu,%lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.pc.pc_len,
@@ -369,12 +371,8 @@ void collector_record_addr(char* name, uint64_t addr)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    tls->defer_sampling = true;
-    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
-    /* Update the sampling buffer and check if it has been filled */
-    tls->defer_sampling = false;
 }
+
 
 /**
  * Called by the CBTF collector service in order to start data collection.
@@ -399,6 +397,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
 
     tls->defer_sampling=false;
 
@@ -456,7 +455,18 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_begin = CBTF_GetTime();
 
+
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+	    fprintf(stderr,"[%d,%d]ENTER cbtf_collector_start\n",tls->header.pid,tls->header.omp_tid);
+	}
+#endif
     if(hwcsamp_papi_init_done == 0) {
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+	    fprintf(stderr,"[%d,%d] cbtf_collector_start: initialize papi\n",tls->header.pid,tls->header.omp_tid);
+	}
+#endif
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
 	tls->data.clock_mhz = (float) hw_info->mhz;
@@ -491,6 +501,10 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
 #endif
 
+    /* NOTE: if multiplex is turned on, papi internaly uses a SIGPROF handler.
+     * Since we are sampling potentially with SIGPROF or now SIGRTMIN and we
+     * prefer to limit our events to 6, we do not need multiplexing.
+     */
     if (getenv("CBTF_HWCSAMP_MULTIPLEX") != NULL) {
 #if !defined(RUNTIME_PLATFORM_BGP) 
 	rval = PAPI_set_multiplex( tls->EventSet );
@@ -558,11 +572,22 @@ void cbtf_collector_pause()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwcsamp_papi_init_done == 0 || tls == NULL)
+    if (tls == NULL)
 	return;
 
+    // BLOCK profiling signals.
+    // We need to do more than ignore samples (defer_sampling).
+    // It is best to block the profiling signal. Currently that
+    // is SIGPROF. When we add a posix based timer that handles
+    // thread samples correctly we will be blocking one of the
+    // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
+    // likely default to the posix based timer.
+    // fixes issues seen with omnipath based mpi connects.
+    CBTF_BlockTimerSignal();
     tls->defer_sampling=true;
-    CBTF_Stop(tls->EventSet, evalues);
+    if (hwcsamp_papi_init_done) {
+	CBTF_Stop(tls->EventSet, evalues);
+    }
 }
 
 
@@ -578,11 +603,22 @@ void cbtf_collector_resume()
 #else
     TLS* tls = &the_tls;
 #endif
-    if (hwcsamp_papi_init_done == 0 || tls == NULL)
+    if (tls == NULL)
 	return;
 
+    // UNBLOCK profiling signals.
+    // We need to do more than ignore samples (defer_sampling).
+    // It is best to block the profiling signal. Currently that
+    // is SIGPROF. When we add a posix based timer that handles
+    // thread samples correctly we will be blocking one of the
+    // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
+    // likely default to the posix based timer.
+    // fixes issues seen with omnipath based mpi connects.
+    CBTF_UnBlockTimerSignal();
     tls->defer_sampling=false;
-    CBTF_Start(tls->EventSet);
+    if (hwcsamp_papi_init_done) {
+	CBTF_Start(tls->EventSet);
+    }
 }
 
 
@@ -636,33 +672,3 @@ void cbtf_collector_stop()
     destroy_explicit_tls();
 #endif
 }
-
-
-// UNUSED at this time.
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-void hwcsamp_collector_event_timer_start()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (hwcsamp_papi_init_done == 0 || tls == NULL)
-	return;
-    CBTF_Start(tls->EventSet);
-    CBTF_Timer(tls->data.interval, hwcsampTimerHandler);
-}
-
-void hwcsamp_collector_event_timer_stop()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    CBTF_Stop(tls->EventSet, evalues);
-    CBTF_Timer(0, NULL);
-}
-#endif

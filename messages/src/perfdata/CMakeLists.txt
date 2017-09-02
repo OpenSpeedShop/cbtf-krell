@@ -500,6 +500,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-messages-converters-perfdata PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-perfdata PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-perfdata PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-perfdata
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -530,6 +531,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-perfdata)
     set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-perfdata-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-perfdata-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -553,6 +555,7 @@ target_link_libraries(cbtf-messages-perfdata
 )
 
 set_target_properties(cbtf-messages-perfdata PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-perfdata PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-perfdata 
         LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -579,6 +582,7 @@ target_link_libraries(cbtf-messages-perfdata-static
 
 set_target_properties(cbtf-messages-perfdata-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-perfdata-static PROPERTIES OUTPUT_NAME cbtf-messages-perfdata)
+set_target_properties(cbtf-messages-perfdata-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-perfdata-static 
         ARCHIVE DESTINATION lib${LIB_SUFFIX}

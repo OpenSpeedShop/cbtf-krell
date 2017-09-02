@@ -60,13 +60,24 @@ if(LIBIOMP_FOUND)
     SET(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${LibIomp_INCLUDE_DIRS})
     CHECK_SYMBOL_EXISTS(ompt_tool "omp.h;ompt.h" HAVE_OMPT_TOOL)
     message(STATUS "LibIomp HAVE_OMPT_TOOL : " ${HAVE_OMPT_TOOL})
+    CHECK_SYMBOL_EXISTS(ompt_start_tool "omp.h;ompt.h" HAVE_OMPT50_TOOL)
+    message(STATUS "LibIomp HAVE_OMPT50_TOOL : " ${HAVE_OMPT50_TOOL})
 
-    if (${HAVE_OMPT_TOOL})
+    if (${HAVE_OMPT50_TOOL})
+	set(LibIomp_DEFINES "INIT_AS_OMPT50_TOOL")
+	message(STATUS "LibIomp uses ompt_start_tool for initialization.")
+    elseif (${HAVE_OMPT_TOOL})
 	set(LibIomp_DEFINES "INIT_AS_OMPT_TOOL")
 	message(STATUS "LibIomp uses ompt_tool for initialization.")
     else()
 	message(STATUS "LibIomp uses ompt_initialize for initialization.")
     endif()
+
+# Clean up, so that future find_package calls do not find the settings 
+# (used above) for these variables
+    SET(CMAKE_REQUIRED_LIBRARIES "")
+    SET(CMAKE_REQUIRED_INCLUDES "")
+
 endif()
 
 mark_as_advanced(

@@ -175,7 +175,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_pre_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -184,7 +184,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -192,7 +192,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -200,7 +200,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_fini_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_fini_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_fini_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_stop_timer();
@@ -224,14 +224,14 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_pre_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    tls->mpi_init_done = true;
@@ -240,14 +240,14 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,
-		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n");
+		"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_com_rank_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    if (!tls->connected_to_mrnet && ( monitor_mpi_comm_rank() >= 0 || tls->mpi_init_done)) {
 #ifndef NDEBUG
 		if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
 	            fprintf(stderr,
-		    "cbtf_offline_resume_sampling CBTF_Monitor_MPI_post_com_rank_event calls connect_to_mrnet\n");
+		    "[%d,%d] cbtf_offline_resume_sampling CBTF_Monitor_MPI_post_com_rank_event calls connect_to_mrnet\n",getpid(),monitor_get_thread_num());
 		}
 #endif
 		tls->connected_to_mrnet = true;
@@ -271,7 +271,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,
-		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n");
+		"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_start_timer();
@@ -355,7 +355,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
     Assert(tls != NULL);
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"ENTER cbtf_offline_start_sampling\n");
+	fprintf(stderr,"[%d,%d] ENTER cbtf_offline_start_sampling\n",getpid(),monitor_get_thread_num());
     }
 #endif
 
@@ -381,7 +381,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
  */
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_offline_start_sampling calls connect_to_mrnet for NON MPI program\n");
+	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling calls connect_to_mrnet for NON MPI program\n",getpid(),monitor_get_thread_num());
     }
 #endif
 
@@ -410,21 +410,21 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 #elif defined(CBTF_SERVICE_USE_MRNET) && defined(CBTF_SERVICE_USE_MRNET_MPI)
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_offline_start_sampling BEGINS for mpi program. defer init of event header.\n");
+	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS for mpi program. defer init of event header.\n",getpid(),monitor_get_thread_num());
     }
 #endif
 /* OFFLINE collection */
 #else
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_offline_start_sampling BEGINS non mrnet collection. defer init of event header.\n");
+	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS non mrnet collection. defer init of event header.\n",getpid(),monitor_get_thread_num());
     }
 #endif
 #endif
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n");
+	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n",getpid(),monitor_get_thread_num());
     }
 #endif
     cbtf_timer_service_start_sampling(NULL);
@@ -454,7 +454,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
     if (!tls) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"warn: cbtf_offline_stop_sampling has no TLS for %d\n",getpid());
+	    fprintf(stderr,"[%d,%d] warn: cbtf_offline_stop_sampling has no TLS\n",getpid(),monitor_get_thread_num());
 	}
 #endif
 	return;
@@ -480,7 +480,9 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const int finished)
     if (finished && tls->sent_data) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_offline_stop_sampling FINISHED for %s:%lld:%lld:%d:%d\n",
+	    fprintf(stderr,"[%d,%d] cbtf_offline_stop_sampling FINISHED for %s:%lld:%lld:%d:%d\n",
+                getpid(),
+                monitor_get_thread_num(),
                 tls->dso_header.host,
                 (long long)tls->dso_header.pid,
                 (long long)tls->dso_header.posix_tid,
@@ -504,7 +506,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	        fprintf(stderr,"cbtf_offline_notify_event passed event CBTF_Monitor_MPI_pre_init_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event passed event CBTF_Monitor_MPI_pre_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -512,7 +514,7 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	         fprintf(stderr,"cbtf_offline_notify_event passed event CBTF_Monitor_MPI_init_event\n");
+	         fprintf(stderr,"[%d,%d] cbtf_offline_notify_event passed event CBTF_Monitor_MPI_init_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    set_mpi_flag(true);
@@ -520,8 +522,8 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
-			monitor_mpi_comm_rank());
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_MPI_post_comm_rank_event for rank %d\n",
+			getpid(),monitor_get_thread_num(),monitor_mpi_comm_rank());
 	    }
 	    set_mpi_flag(true);
 #endif
@@ -529,16 +531,16 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_process_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_init_process_event for pid %d\n",
-			getpid());
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_init_process_event\n",
+			getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_init_thread_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_notify_event CBTF_Monitor_init_thread_event for pid %d\n",
-			getpid());
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_init_thread_event\n",
+			getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    // threads share process wide mrnet connection.
@@ -572,7 +574,7 @@ void cbtf_offline_finish()
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-        fprintf(stderr, "cbtf_offline_finish entered.\n");
+        fprintf(stderr, "[%d,%d] cbtf_offline_finish entered.\n",getpid(),monitor_get_thread_num());
     }
 #endif
 
@@ -605,7 +607,7 @@ void cbtf_record_dsos()
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-        fprintf(stderr, "cbtf_record_dsos entered.\n");
+        fprintf(stderr, "[%d,%d] cbtf_record_dsos entered.\n",getpid(),monitor_get_thread_num());
     }
 #endif
 

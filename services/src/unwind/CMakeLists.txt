@@ -45,6 +45,7 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
+	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 )
 
@@ -60,6 +61,7 @@ target_link_libraries(cbtf-services-unwind
 
 set_target_properties(cbtf-services-unwind PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-unwind PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES};${LibMonitor_DEFINES}")
+set_target_properties(cbtf-services-unwind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-unwind
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -79,8 +81,8 @@ target_link_libraries(cbtf-services-unwind-static
 set_target_properties(cbtf-services-unwind-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-unwind-static PROPERTIES OUTPUT_NAME cbtf-services-unwind)
 set_target_properties(cbtf-services-unwind-static PROPERTIES COMPILE_DEFINITIONS "${LibUnwind_DEFINES}")
+set_target_properties(cbtf-services-unwind-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-unwind-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

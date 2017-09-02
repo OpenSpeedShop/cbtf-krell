@@ -1,5 +1,6 @@
 ################################################################################
 # Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2017 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,9 +19,14 @@
 
 include(CheckIncludeFile)
 
+if(ENABLE_CBTF_MRNET_PLAYBACK)
+    add_definitions(-DENABLE_CBTF_MRNET_PLAYBACK)
+endif()
+
 set(SERVICES_MRNET_SOURCES
 	MRNet_Send.c
 	MRNet_Senders.c
+    playback.h playback.c
 )
 
 add_library(cbtf-services-mrnet SHARED
@@ -30,7 +36,6 @@ add_library(cbtf-services-mrnet SHARED
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CBTF_INCLUDE_DIR}
@@ -45,7 +50,6 @@ target_link_libraries(cbtf-services-mrnet
 	cbtf-messages-events
 	cbtf-messages-base
 	${MRNet_LWR_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	pthread
 	${CMAKE_DL_LIBS}
 )
@@ -53,6 +57,7 @@ target_link_libraries(cbtf-services-mrnet
 set_target_properties(cbtf-services-mrnet PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-mrnet PROPERTIES 
         COMPILE_DEFINITIONS "${TLS_DEFINES};${MRNet_DEFINES}")
+set_target_properties(cbtf-services-mrnet PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-mrnet
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -65,7 +70,6 @@ add_library(cbtf-services-mrnet-static STATIC
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${CBTF_INCLUDE_DIR}
@@ -80,7 +84,6 @@ target_link_libraries(cbtf-services-mrnet-static
 	cbtf-messages-events
 	cbtf-messages-base
 	${MRNet_LWR_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	pthread
 	${CMAKE_DL_LIBS}
 )
@@ -89,9 +92,8 @@ set_target_properties(cbtf-services-mrnet-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-mrnet-static PROPERTIES OUTPUT_NAME cbtf-services-mrnet)
 set_target_properties(cbtf-services-mrnet-static PROPERTIES 
         COMPILE_DEFINITIONS "${TLS_DEFINES};${MRNet_DEFINES}")
+set_target_properties(cbtf-services-mrnet-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-mrnet-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-

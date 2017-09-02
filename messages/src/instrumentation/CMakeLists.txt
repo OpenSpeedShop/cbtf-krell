@@ -115,6 +115,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
 
     set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-instrumentation PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-instrumentation
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -147,6 +148,7 @@ if ((RUNTIME_ONLY AND CBTF_FILTERS_RUN_ON MATCHES "native") OR NOT RUNTIME_ONLY)
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES VERSION 1.1.0)
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-converters-instrumentation)
     set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES COMPILE_DEFINITIONS "${MRNet_DEFINES}")
+    set_target_properties(cbtf-messages-converters-instrumentation-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     install(TARGETS cbtf-messages-converters-instrumentation-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
@@ -172,6 +174,7 @@ target_link_libraries(cbtf-messages-instrumentation
 )
 
 set_target_properties(cbtf-messages-instrumentation PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-messages-instrumentation PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-instrumentation 
         LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -197,6 +200,7 @@ target_link_libraries(cbtf-messages-instrumentation-static
 
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-messages-instrumentation-static PROPERTIES OUTPUT_NAME cbtf-messages-instrumentation)
+set_target_properties(cbtf-messages-instrumentation-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-messages-instrumentation-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}

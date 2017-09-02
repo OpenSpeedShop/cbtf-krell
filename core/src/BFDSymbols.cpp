@@ -82,10 +82,17 @@ bool BFDSymbols::is_debug_bfd_symbols_details_enabled =
     (getenv("CBTF_DEBUG_BFD_SYMBOLS_DETAILS") != NULL);
 #endif
 
+
+#if 0
+/* binutils 2.23/2.24 use this definition */
+/* 2.28 replaces ... with va_list, but there is no */
+/* binutils version string to create a version specific */
+/* routine, so commenting out for now */
 static void bfdErrHandler (const char *s, ...)
 {
     // empty.  TODO.
 }
+#endif
 
 // lifted from objdump
 void BFDSymbols::slurp_symtab (bfd *abfd)
@@ -717,8 +724,14 @@ int BFDSymbols::initBFD (std::string filename)
 {
     bfd_init();
 
+#if 0
+/* binutils 2.23/2.24 use this definition */
+/* 2.28 replaces ... with va_list, but there is no */
+/* binutils version string to create a version specific */
+/* routine, so commenting out for now */
     // create an error handler for bfd.
     bfd_set_error_handler(bfdErrHandler);
+#endif
 
     // open bfd for native target.
     theBFD = bfd_openr(filename.c_str(),NULL);

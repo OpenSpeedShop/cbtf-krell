@@ -47,6 +47,7 @@
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "monitor.h" /* monitor_get_thread_num and friends */
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "hwc";

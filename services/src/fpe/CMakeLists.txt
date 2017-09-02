@@ -25,7 +25,6 @@ set(SERVICES_FPE_SOURCES
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 )
 
@@ -35,12 +34,12 @@ add_library(cbtf-services-fpe SHARED
 
 target_link_libraries(cbtf-services-fpe
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-fpe PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-fpe PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-fpe PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS cbtf-services-fpe
@@ -55,17 +54,14 @@ add_library(cbtf-services-fpe-static STATIC
 
 target_link_libraries(cbtf-services-fpe-static
         -Wl,--no-as-needed
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-fpe-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-fpe-static PROPERTIES OUTPUT_NAME cbtf-services-fpe)
 set_target_properties(cbtf-services-fpe-static PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES}")
+set_target_properties(cbtf-services-fpe-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-fpe-static
 	ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-
-

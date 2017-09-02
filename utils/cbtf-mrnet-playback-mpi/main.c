@@ -1,7 +1,5 @@
-/*
-** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
-** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2010 The Krell Institute. All Rights Reserved.
+/*******************************************************************************
+** Copyright (c) 2017 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
 ** the terms of the GNU Lesser General Public License as published by the Free
@@ -18,29 +16,19 @@
 ** 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *******************************************************************************/
 
-/** @file
- *
- * Declaration of the CBTF Timer.
- *
- */
+#include <mpi.h>
+#include <stdio.h>
+#include <unistd.h>
 
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "Assert.h"
-
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-#include <ucontext.h>
-
-/** Type representing a function pointer to a timer event handler. */
-typedef void (*CBTF_TimerEventHandler)(const ucontext_t*);
-
-void CBTF_Timer(uint64_t, const CBTF_TimerEventHandler);
-void CBTF_SetTimerSignal();
-int  CBTF_GetTimerSignal();
-void CBTF_BlockTimerSignal();
-void CBTF_UnBlockTimerSignal();
+int main(int argc, char* argv[])
+{
+    MPI_Init(&argc, &argv);
+    int rank = -1, size = -1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    fprintf(stdout, "%s: %d of %d\n", argv[0], rank + 1, size);
+    fflush(stdout);
+    sleep(1);
+    MPI_Finalize();
+    return 0;
+}

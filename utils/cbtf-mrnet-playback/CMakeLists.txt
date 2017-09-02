@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2017 Argo Navis Technologies. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,17 +16,5 @@
 # Place, Suite 330, Boston, MA  02111-1307  USA
 ################################################################################
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -D__STDC_INT64__")
-
-
-add_subdirectory(src)
-add_subdirectory(collector)
-
-install(DIRECTORY include/KrellInstitute
-        DESTINATION include
-        FILES_MATCHING
-        PATTERN "*.h"
-        PATTERN "Makefile.*" EXCLUDE
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-
-
+add_executable(cbtf-mrnet-playback main.c)
+install(TARGETS cbtf-mrnet-playback RUNTIME DESTINATION bin)

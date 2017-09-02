@@ -22,9 +22,6 @@ add_subdirectory(src)
 # So, taking it out
 #add_subdirectory(test)
 
-install( FILES CBTF-MessagesConfig.cmake
-         DESTINATION share/CBTF-Messages/cmake)
-
 install(DIRECTORY include/KrellInstitute
         DESTINATION include
         FILES_MATCHING

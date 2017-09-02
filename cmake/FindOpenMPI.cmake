@@ -33,7 +33,7 @@ find_path(OpenMPI_INCLUDE_DIR
     NO_DEFAULT_PATH
     )
 
-find_library(OpenMPI_LIBRARY_SHARED NAMES mpi
+find_library(OpenMPI_LIBRARY_SHARED NAMES mpi mpi_ibm
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
     PATHS /usr /usr/local

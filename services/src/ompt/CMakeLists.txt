@@ -22,15 +22,24 @@ set(SERVICES_OMPT_SOURCES
 	callbacks.c
 )
 
+set(SERVICES_OMPT50_SOURCES
+	callbacks-50.c
+)
+
+if (${HAVE_OMPT50_TOOL})
+add_library(cbtf-services-ompt SHARED
+	${SERVICES_OMPT50_SOURCES}
+)
+else()
 add_library(cbtf-services-ompt SHARED
 	${SERVICES_OMPT_SOURCES}
 )
+endif()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${LibIomp_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
@@ -40,16 +49,14 @@ target_link_libraries(cbtf-services-ompt
         -Wl,--no-as-needed
 	${LibIomp_SHARED_LIBRARIES}
 	${LibMonitor_SHARED_LIBRARIES}
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-ompt PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-ompt PROPERTIES COMPILE_DEFINITIONS "${TLS_DEFINES};${LibIomp_DEFINES}")
+set_target_properties(cbtf-services-ompt PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 install(TARGETS cbtf-services-ompt
 	LIBRARY DESTINATION lib${LIB_SUFFIX}
 )
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

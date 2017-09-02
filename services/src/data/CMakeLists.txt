@@ -29,7 +29,6 @@ set(SERVICES_DATA_SOURCES
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${LTDL_INCLUDE_DIR}
 	${PROJECT_SOURCE_DIR}/services/include
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
@@ -44,11 +43,11 @@ target_link_libraries(cbtf-services-data
 	cbtf-messages-base
 	cbtf-messages-events
 	cbtf-messages-perfdata
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-data PROPERTIES VERSION 1.1.0)
+set_target_properties(cbtf-services-data PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-data
         LIBRARY DESTINATION lib${LIB_SUFFIX}
@@ -65,15 +64,13 @@ target_link_libraries(cbtf-services-data-static
 	cbtf-messages-base
 	cbtf-messages-events
 	cbtf-messages-perfdata
-	${LTDL_LIBRARY_SHARED}
 	${CMAKE_DL_LIBS}
 )
 
 set_target_properties(cbtf-services-data-static PROPERTIES VERSION 1.1.0)
 set_target_properties(cbtf-services-data-static PROPERTIES OUTPUT_NAME cbtf-services-data)
+set_target_properties(cbtf-services-data-static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS cbtf-services-data-static
         ARCHIVE DESTINATION lib${LIB_SUFFIX}
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-

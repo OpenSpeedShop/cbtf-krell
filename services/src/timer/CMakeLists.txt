@@ -17,6 +17,46 @@
 ################################################################################
 
 include(CheckIncludeFile)
+include(CheckFunctionExists)
+include(CheckLibraryExists)
+include(CheckCSourceCompiles)
+
+CHECK_LIBRARY_EXISTS(rt timer_create "time.h" HAVE_TIMER_CREATE)
+if (NOT HAVE_TIMER_CREATE)
+   set(CMAKE_EXTRA_INCLUDE_FILES time.h)
+   CHECK_FUNCTION_EXISTS(timer_create HAVE_TIMER_CREATE)
+   SET(CMAKE_EXTRA_INCLUDE_FILES)
+endif()
+CHECK_LIBRARY_EXISTS(rt timer_settime "time.h" HAVE_TIMER_SETTIME)
+if (NOT HAVE_TIMER_SETTIME)
+   set(CMAKE_EXTRA_INCLUDE_FILES time.h)
+   CHECK_FUNCTION_EXISTS(timer_settime HAVE_TIMER_SETTIME)
+   SET(CMAKE_EXTRA_INCLUDE_FILES)
+endif()
+
+CHECK_SYMBOL_EXISTS(SIGEV_THREAD_ID "signal.h;time.h" HAVE_SIGEV_THREAD_ID)
+
+# Check for the Linux-specific POSIX timers API.
+IF(HAVE_TIMER_CREATE AND HAVE_TIMER_SETTIME AND HAVE_SIGEV_THREAD_ID)
+  SET(HAVE_POSIX_TIMERS 1 CACHE INTERNAL "Have POSIX timer-related functions")
+  add_definitions(-DHAVE_POSIX_TIMERS)
+ENDIF()
+message(STATUS "HAVE_POSIX_TIMERS ${HAVE_POSIX_TIMERS}")
+
+CHECK_C_SOURCE_COMPILES(
+"
+#include <signal.h>
+int main(int ac, char **av)
+{
+    sigset_t ss;
+    struct sigaction sa;
+    sigemptyset(&ss); sigsuspend(&ss);
+    sigaction(SIGINT, &sa, (struct sigaction *) 0);
+    sigprocmask(SIG_BLOCK, &ss, (sigset_t *) 0);
+}
+"
+  HAVE_POSIX_SIGNALS)
+
 
 set(SERVICES_TIMER_SOURCES
 	TimerHandler.c

@@ -22,9 +22,19 @@ set(SERVICES_OMPT_SOURCES
 	callbacks.c
 )
 
+set(SERVICES_OMPT50_SOURCES
+	callbacks-50.c
+)
+
+if (${HAVE_OMPT50_TOOL})
+add_library(cbtf-services-ompt SHARED
+	${SERVICES_OMPT50_SOURCES}
+)
+else()
 add_library(cbtf-services-ompt SHARED
 	${SERVICES_OMPT_SOURCES}
 )
+endif()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}

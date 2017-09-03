@@ -31,6 +31,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/PCSamp.h"
@@ -46,7 +47,7 @@
 #include "KrellInstitute/Services/Time.h"
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
-#include "monitor.h"
+#include "monitor.h" /* monitor_get_thread_num and friends */
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
@@ -218,7 +219,7 @@ static void send_samples (TLS* tls)
 {
     Assert(tls != NULL);
 
-    tls->header.time_end =  CBTF_GetTime();
+    tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = tls->buffer.addr_begin;
     tls->header.addr_end = tls->buffer.addr_end;
 
@@ -230,7 +231,7 @@ static void send_samples (TLS* tls)
 
 #ifndef NDEBUG
     if (tls->debug_collector) {
-        fprintf(stderr,"send_samples (%ld,%d) time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%d)\n",
+        fprintf(stderr,"[%ld:%d] send_samples: time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%u)\n",
 	    tls->header.pid, tls->header.omp_tid,
             (uint64_t)tls->header.time_begin, (uint64_t)tls->header.time_end,
             tls->header.addr_begin, tls->header.addr_end,
@@ -322,15 +323,6 @@ void collector_record_addr(char* name, uint64_t addr)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-    tls->defer_sampling = true;
-    //fprintf(stderr,"collector_record_addr %#lx for %s\n",addr,name);
-    /* Update the sampling buffer and check if it has been filled */
-    if(CBTF_UpdatePCData(addr, &tls->buffer)) {
-	/* Send these samples */
-	send_samples(tls);
-    }
-    tls->defer_sampling = false;
 }
 
 
@@ -357,6 +349,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
 
     tls->defer_sampling=false;
 
@@ -400,6 +393,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->header.id = strdup(cbtf_collector_unique_id);
     tls->header.time_begin = CBTF_GetTime();
 
+
 #if defined (HAVE_OMPT)
     /* these are ompt specific.*/
     /* initialize the flags and counts for idle,wait_barrier.  */
@@ -426,6 +420,15 @@ void cbtf_collector_pause()
     if (tls == NULL)
 	return;
 
+    // BLOCK profiling signals.
+    // We need to do more than ignore samples (defer_sampling).
+    // It is best to block the profiling signal. Currently that
+    // is SIGPROF. When we add a posix based timer that handles
+    // thread samples correctly we will be blocking one of the
+    // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
+    // likely default to the posix based timer.
+    // fixes issues seen with omnipath based mpi connects.
+    CBTF_BlockTimerSignal();
     tls->defer_sampling=true;
 }
 
@@ -445,6 +448,15 @@ void cbtf_collector_resume()
     if (tls == NULL)
 	return;
 
+    // UNBLOCK profiling signals.
+    // We need to do more than ignore samples (defer_sampling).
+    // It is best to block the profiling signal. Currently that
+    // is SIGPROF. When we add a posix based timer that handles
+    // thread samples correctly we will be blocking one of the
+    // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
+    // likely default to the posix based timer.
+    // fixes issues seen with omnipath based mpi connects.
+    CBTF_UnBlockTimerSignal();
     tls->defer_sampling=false;
 }
 
@@ -490,26 +502,3 @@ void cbtf_collector_stop()
     destroy_explicit_tls();
 #endif
 }
-
-
-// UNUSED at this time.
-#if defined (CBTF_SERVICE_USE_OFFLINE)
-void pcsamp_collector_timer_start()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    CBTF_Timer(tls->data.interval, serviceTimerHandler);
-}
-
-void pcsamp_collector_timer_stop()
-{
-    CBTF_Timer(0, NULL);
-}
-#endif // if defined CBTF_SERVICE_USE_OFFLINE

@@ -61,11 +61,19 @@ else ()
 
 if (LIBMONITOR_FOUND)
 
+if (${HAVE_OMPT50_TOOL})
+set(CALLBACK_SOURCES
+	bst.h
+	bst.c
+	callbacks-50.c
+)
+else()
 set(CALLBACK_SOURCES
 	bst.h
 	bst.c
 	callbacks.c 
 )
+endif()
 
 set(COLLECTOR_SOURCES
 	collector.c

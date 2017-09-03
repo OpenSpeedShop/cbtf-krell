@@ -50,6 +50,7 @@ target_link_libraries(testXDR
     ${CBTF_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
+    ${ICU_LIBRARIES}
     ${CMAKE_DL_LIBS}
 )
 

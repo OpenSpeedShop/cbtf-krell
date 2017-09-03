@@ -500,6 +500,7 @@ find_package(Boost 1.39.0 REQUIRED
 find_package(CUDA)
 find_package(MRNet 4.0.0)
 find_package(XercesC 3.0)
+find_package(ICU COMPONENTS data i18n uc)
 find_package(CrayAlps)
 
 if (CRAYALPS_FOUND)
@@ -619,6 +620,9 @@ set(ALL_MPI_IMPL_NAMES ${all_mpi_names})
 #
 find_package(CBTF)
 
+set(ICU_LIBRARY "-L/nasa/pkgsrc/2016Q2/lib -licui18n -licuuc -licudata")
+find_package(ICU COMPONENTS data i18n uc)
+
 #--------------------------------------------------------------------------------
 # Build the major components for cbtf-krell if CBTF is found
 # Required external packages are checked for in the sub-directories' cmake files
@@ -635,7 +639,7 @@ if(CBTF_FOUND OR (CBTF_FILTERS_RUN_ON MATCHES "host" AND RUNTIME_ONLY MATCHES "t
             add_subdirectory(services)
         endif()
         add_subdirectory(core)
-        add_subdirectory(test)
+#        add_subdirectory(test)
     endif()
 endif()
 

@@ -58,6 +58,7 @@ target_link_libraries(collectionTool
     ${DyninstAPI_LIBRARIES}
     ${XercesC_LIBRARIES}
     ${MRNet_LIBRARIES}
+    ${ICU_LIBRARIES}
     ${CMAKE_DL_LIBS}
     rt
 )

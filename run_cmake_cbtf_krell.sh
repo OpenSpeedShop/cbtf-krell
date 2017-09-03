@@ -12,6 +12,7 @@ export DYNINST_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
 export MRNET_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
 export XERCESC_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
 export BOOST_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
+#export BOOST_ROOT=/nasa/pkgsrc/sles12/2016Q4/views/boost/1.62
 export CBTF_ROOT=/u/glschult/OSS/osscbtf_v2.3.1
 export CBTF_KRELL_PREFIX=/u/glschult/OSS/osscbtf_v2.3.1
 export OPENMPI_INSTALL_ROOT=/nasa/openmpi/1.6.5/gcc
@@ -34,7 +35,7 @@ cmake .. \
         -DLIBDWARF_DIR=${KRELL_ROOT} \
         -DLIBELF_DIR=${KRELL_ROOT} \
 	-DOPENMPI_DIR=${OPENMPI_INSTALL_ROOT} \
-	-DCBTF_BOOST_ROOT=${BOOST_ROOT} \
+	-DCMAKE_FIND_ROOT_PATH=${BOOST_ROOT} \
         -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_DIR}
 
 make clean

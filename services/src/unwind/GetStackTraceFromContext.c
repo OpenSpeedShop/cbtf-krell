@@ -124,16 +124,24 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
  
 #elif defined(__linux) && defined( __powerpc64__ )
 
-    Assert(getcontext(&context) == 0);
-    skip_frames = 5;
-    skip_signal_frames = FALSE;
+    if (signal_context != NULL) {
+       context = *signal_context;
+       skip_signal_frames = FALSE;
+       skip_frames = 0;
+    } else {
+       Assert(unw_getcontext(&context) == 0);
+    }
 
 #elif defined(__linux) && defined( __powerpc__ )
 
-    Assert(getcontext(&context) == 0);
-    skip_frames = 5;
-    skip_signal_frames = FALSE;
-
+    /* likely untested in openspeedshop context */
+    if (signal_context != NULL) {
+       context = *signal_context;
+       skip_signal_frames = FALSE;
+       skip_frames = 0;
+    } else {
+       Assert(unw_getcontext(&context) == 0);
+    }
 
 #elif defined(__linux) && defined(__ia64)
 

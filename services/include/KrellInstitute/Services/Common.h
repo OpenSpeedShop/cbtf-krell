@@ -38,7 +38,11 @@
 #include <ucontext.h>
 
 
+#if defined(__linux) && (defined( __powerpc64__ ) || defined( __powerpc__ ))
+#define CBTF_BlobSizeFactor 8
+#else
 #define CBTF_BlobSizeFactor 15
+#endif
 
 
 uint64_t CBTF_GetAddressOfFunction(const void*);

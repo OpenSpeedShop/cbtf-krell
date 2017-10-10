@@ -28,7 +28,10 @@
 #include "KrellInstitute/Services/Common.h"
 #include <rpc/rpc.h>
 #include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/EventHeader.h"
 
-void CBTF_Send(const CBTF_DataHeader*, const xdrproc_t, const void*);
+
+void CBTF_Data_Send(const CBTF_DataHeader*, const xdrproc_t, const void*);
+void CBTF_Event_Send(const CBTF_EventHeader*, const xdrproc_t, const void*);
 
 #endif

@@ -60,6 +60,9 @@ extern void CBTF_MRNet_Send_PerfData(const CBTF_DataHeader* header,
 extern int CBTF_MRNet_LW_connect (const int con_rank);
 #endif
 
+/* forward declaration */
+void cbtf_reset_header_begin_time();
+
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
 
@@ -309,7 +312,7 @@ void connect_to_mrnet()
              tls->header.host, tls->header.pid,tls->header.posix_tid,tls->header.rank,tls->header.omp_tid);
     }
 #endif
-
+    cbtf_reset_header_begin_time();
 #endif
 }
 
@@ -628,4 +631,28 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
     free(tls);
     CBTF_SetTLS(TLSKey, NULL);
 #endif
+}
+
+/**
+ * When running with the cbtf intrumentation we incur overhead
+ * from the mrnet connection time.  Since our data headers are
+ * created when monitor_init_process first calls our collector
+ * we therefore have this overhead in the performance data span.
+ * To eliminate this overhead we need to reset our data header
+ * time_begin to the time right after the mrnet connection completes.
+ * For mpi programs this is actually just after the mpi rank is
+ * set for the process.  This does not affect threads with in a
+ * process since they share the process wide mrnet connection.
+ */
+void cbtf_reset_header_begin_time()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+
+    Assert(tls != NULL);
+    tls->header.time_begin = CBTF_GetTime();
 }

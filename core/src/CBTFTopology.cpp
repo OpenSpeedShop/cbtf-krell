@@ -458,7 +458,12 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                        leadingZero = true;
                     }
                     num2 = atoi(numString);
-		    int tLength = floor(log10(abs(num2)))+1;
+                    // There is no std::abs for unsigned int on Intel. Static cast num2 to a long long first. 
+                    // The unsigned bit should be 32-bit and long long 64-bit. The latter is always big enough 
+                    // to hold the former. So you won't loose anything by doing long long calculations. 
+                    // Might need to cast back again when you are done.
+                    // Was: int tLength = floor(log10(abs(num2)))+1;
+		    int tLength = floor(log10(abs(static_cast<long long>(num2))))+1;
                     for (j = num1; j <= num2; j++) {
 			if (getIsCray()) {
                             dm_nodelist.push_back(formatCrayNid(baseNodeName,j));

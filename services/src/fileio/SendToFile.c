@@ -85,7 +85,7 @@ static __thread TLS the_tls;
  * @ingroup RuntimeAPI
  */
 
-void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_tid,
+static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_tid,
 			  const char* unique_id, const char* suffix)
 {
 

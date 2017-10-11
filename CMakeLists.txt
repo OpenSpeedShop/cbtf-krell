@@ -477,8 +477,6 @@ find_package(Mvapich)
 
 find_package(PythonInterp)
 find_package(PythonLibs)
-find_package(LibElf)
-find_package(LibDwarf)
 find_package(Binutils)
 find_package(Threads)
 find_package(Sqlite3)

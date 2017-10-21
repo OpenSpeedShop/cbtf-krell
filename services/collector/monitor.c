@@ -48,6 +48,7 @@ extern void CBTF_InitializeEventHeader( CBTF_EventHeader* header);
 /* FIXME: defined in services/collector/collector.c. need include. */
 extern void cbtf_timer_service_start_sampling(const char* arguments);
 extern void cbtf_timer_service_stop_sampling(const char* arguments);
+extern void cbtf_offline_service_defer_sampling(bool);
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
 /* FIXME: defined in services/src/xdr/Send.c. need include. */
@@ -63,6 +64,20 @@ extern void CBTF_Waitfor_MRNet_Shutdown();
 extern void CBTF_MRNet_Send(const int tag,
                  const xdrproc_t xdrproc, const void* data);
 #endif
+
+// external functions for all collection types.
+extern void cbtf_offline_service_start_timer(CBTF_Monitor_Status);
+extern void cbtf_offline_service_stop_timer(CBTF_Monitor_Status);
+extern void set_mpi_flag(bool);
+extern void set_threaded_flag(bool);
+extern void set_threaded_mrnet_connection();
+
+// external functions for using mrnet.
+#if defined(CBTF_SERVICE_USE_MRNET)
+extern void connect_to_mrnet();
+extern void send_attached_to_threads_message();
+#endif
+
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -98,15 +113,15 @@ typedef struct {
 
 
     int  dsoname_len;
-    bool  started;
+    bool started;
     int  finished;
     int  sent_data;
 
     // marker if ANY collector is connected to mrnet.
     // this applies to the non mrnet builds.
-    bool  connected_to_mrnet;
+    bool connected_to_mrnet;
 
-    bool  mpi_init_done;
+    bool mpi_init_done;
 
 } TLS;
 
@@ -128,23 +143,6 @@ static __thread TLS the_tls;
 
 #endif
 
-// external functions for all collection types.
-extern void cbtf_offline_service_start_timer();
-extern void cbtf_offline_service_stop_timer();
-extern void set_mpi_flag(bool);
-extern void set_threaded_flag(bool);
-extern void set_threaded_mrnet_connection();
-// omp,ompt
-extern int32_t cbtf_collector_get_openmp_threadid();
-
-// external functions for using mrnet.
-#if defined(CBTF_SERVICE_USE_MRNET)
-extern void connect_to_mrnet();
-extern void send_thread_state_changed_message();
-extern void send_process_created_message();
-extern void send_attached_to_threads_message();
-#endif
-
 // No-op for non mrnet builds.
 void cbtf_offline_waitforshutdown() {
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -157,6 +155,12 @@ bool_t cbtf_connected_to_mrnet() {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
+    if (tls == NULL) {
+	tls = malloc(sizeof(TLS));
+	Assert(tls != NULL);
+	CBTF_SetTLS(TLSKey, tls);
+	tls->connected_to_mrnet = false;
+    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -164,6 +168,17 @@ bool_t cbtf_connected_to_mrnet() {
     return tls->connected_to_mrnet;
 }
 
+void cbtf_set_connected_to_mrnet()
+{
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+    tls->connected_to_mrnet = true;
+}
 
 // forward declarations.
 void cbtf_offline_finish();
@@ -179,7 +194,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    set_mpi_flag(true);
-	    cbtf_offline_service_stop_timer();
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
@@ -203,9 +218,48 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_fini_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
-	    cbtf_offline_service_stop_timer();
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	    break;
+	case CBTF_Monitor_init_process_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_init_process_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(true);
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	case CBTF_Monitor_init_thread_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_init_thread_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(true);
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	    break;
+	case CBTF_Monitor_mpi_pcontrol_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(true);
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	    break;
+	case CBTF_Monitor_Default_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_Default_event\n");
+	    }
+#endif
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
 	default:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event unknown event\n");
+	    }
+#endif
 	    break;
     }
 }
@@ -264,19 +318,50 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 		// are found.
 		send_attached_to_threads_message();
 #endif
-		cbtf_offline_service_start_timer();
+		// we really do not want to resume here IFF not start_enabled.
+		cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    }
 	    break;
 	case CBTF_Monitor_MPI_post_fini_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,
-		"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n",getpid(),monitor_get_thread_num());
+		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n");
 	    }
 #endif
-	    cbtf_offline_service_start_timer();
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
+	case CBTF_Monitor_init_thread_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_init_thread_event\n");
+	    }
+#endif
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
+	case CBTF_Monitor_mpi_pcontrol_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(false);
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
+	case CBTF_Monitor_Default_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_Default_event\n");
+	    }
+#endif
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    break;
 	default:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event unknown event\n");
+	    }
+#endif
 	    break;
     }
 }
@@ -300,15 +385,13 @@ void cbtf_offline_send_dsos(TLS *tls)
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL) {
         fprintf(stderr,
-    "cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
+		"cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
                 tls->dso_header.host, (long long)tls->dso_header.pid, 
                 (long long)tls->dso_header.posix_tid, tls->dso_header.rank,tls->dso_header.omp_tid);
     }
 #endif
 
 #if defined(CBTF_SERVICE_USE_FILEIO)
-    //CBTF_EventSetSendToFile(&(tls->dso_header),
-    //                        cbtf_collector_unique_id, "openss-dsos");
     CBTF_Event_Send(&(tls->dso_header),
 		(xdrproc_t)xdr_CBTF_Protocol_Offline_LinkedObjectGroup,
 		&(tls->data));
@@ -346,9 +429,12 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 {
     /* Create and access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
-    TLS* tls = malloc(sizeof(TLS));
-    Assert(tls != NULL);
-    CBTF_SetTLS(TLSKey, tls);
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    if (tls == NULL) {
+	tls = malloc(sizeof(TLS));
+	Assert(tls != NULL);
+	CBTF_SetTLS(TLSKey, tls);
+    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -668,8 +754,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
 
     if (is_dlopen) {
-// FIXME: arg here should be CBTF_Monitor_Event_Type.
-	cbtf_offline_pause_sampling(0);
+	cbtf_offline_pause_sampling(CBTF_Monitor_Default_event);
     }
 
     //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
@@ -719,7 +804,6 @@ void cbtf_offline_record_dso(const char* dsoname,
 
     CBTF_Protocol_FileName dsoFilename;
     dsoFilename.path = strdup(dsoname);
-    //objects.linked_object = strdup(dsoname);
     objects.linked_object = dsoFilename;
 
     objects.range.begin = begin;
@@ -835,8 +919,7 @@ void cbtf_offline_record_dso(const char* dsoname,
     tls->dsoname_len += dsoname_len;
 
     if (is_dlopen) {
-// FIXME: argument here is not a simple int. should be a CBTF_Monitor_Event_Type.
-	cbtf_offline_resume_sampling(0);
+	cbtf_offline_resume_sampling(CBTF_Monitor_Default_event);
     }
 }
 
@@ -864,7 +947,7 @@ void cbtf_offline_record_dlopen(const char* dsoname,
 #endif
     Assert(tls != NULL);
 
-    cbtf_offline_pause_sampling(0);
+    cbtf_offline_pause_sampling(CBTF_Monitor_Default_event);
 
     /* Initialize the offline "dso" blob's header */
     CBTF_EventHeader local_header;
@@ -976,5 +1059,5 @@ void cbtf_offline_record_dlopen(const char* dsoname,
     tls->data.linkedobjects.linkedobjects_len++;
     tls->dsoname_len += dsoname_len;
 
-    cbtf_offline_resume_sampling(0);
+    cbtf_offline_resume_sampling(CBTF_Monitor_Default_event);
 }

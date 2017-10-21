@@ -36,6 +36,7 @@
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Collector.h"
 #include "KrellInstitute/Services/TLS.h"
+#include "KrellInstitute/Services/Monitor.h"
 #include "monitor.h" // monitor_get_thread_num
 
 /* FIXME: defined in services/src/data/InitializeDataHeader.c. need include. */
@@ -68,7 +69,7 @@ typedef struct {
 
     CBTF_DataHeader header;  /**< Header for data blobs. */
 
-    bool_t defer_sampling;
+    bool defer_sampling;
     bool is_openmp;
     bool has_ompt;
     bool is_mpi_job;
@@ -87,8 +88,6 @@ typedef struct {
     struct {
         CBTF_Protocol_ThreadName tnames[4096];
     } tgrpbuf;
-
-
 #endif
 
 #ifndef NDEBUG
@@ -121,7 +120,7 @@ static __thread TLS the_tls;
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
-void cbtf_offline_service_resume_sampling()
+void cbtf_offline_service_defer_sampling(bool defer)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -132,10 +131,10 @@ void cbtf_offline_service_resume_sampling()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=defer;
 }
 
-void cbtf_offline_service_defer_sampling()
+void cbtf_offline_service_start_timer(CBTF_Monitor_Status current_status)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -146,10 +145,25 @@ void cbtf_offline_service_defer_sampling()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+        fprintf(stderr,"cbtf_offline_service_start_timer calls cbtf_collector_resume for %s:%lld:%lld:%d:%d\n",
+                     tls->header.host, (long long)tls->header.pid,
+                     (long long)tls->header.posix_tid, tls->header.rank,
+		     tls->header.omp_tid);
+	}
+#endif
+
+    /* call the actual collector resume. For sampling collectors this
+     * will unblock the sampling signal
+     */
+    if (!tls->defer_sampling) {
+	cbtf_collector_resume();
+    }
+
 }
 
-void cbtf_offline_service_start_timer()
+void cbtf_offline_service_stop_timer(CBTF_Monitor_Status current_status)
 {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -160,12 +174,20 @@ void cbtf_offline_service_start_timer()
     if (tls == NULL)
 	return;
 
-    cbtf_collector_resume();
-}
+#ifndef NDEBUG
+	if (tls->debug_collector) {
+        fprintf(stderr,"cbtf_offline_service_stop_timer calls cbtf_collector_pause for %s:%lld:%lld:%d:%d\n",
+                     tls->header.host, (long long)tls->header.pid,
+                     (long long)tls->header.posix_tid, tls->header.rank,
+		     tls->header.omp_tid);
+	}
+#endif
 
-void cbtf_offline_service_stop_timer()
-{
+    /* call the actual collector pause. For sampling collectors this
+     * will block the sampling signal
+     */
     cbtf_collector_pause();
+
 }
 #endif
 
@@ -197,7 +219,6 @@ void init_process_thread()
            &tls->tname, sizeof(tls->tname));
     tls->tgrp.names.names_len++;
 
-    //CBTF_Protocol_AttachedToThreads tmessage;
     tls->attached_to_threads_message.threads = tls->tgrp;
 #ifndef NDEBUG
         if (tls->debug_mrnet) {
@@ -241,12 +262,19 @@ void send_attached_to_threads_message()
 	    );
         }
 #endif
-	cbtf_offline_service_stop_timer();
+	// disable collector while doing internal work
+	// Due to mpi_pcontrol we already may be stopped.
+	// No harm to issue this again
+	//cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS,
 			(xdrproc_t) xdr_CBTF_Protocol_AttachedToThreads,
 			&tls->attached_to_threads_message);
 	tls->sent_attached_to_threads = true;
-	cbtf_offline_service_start_timer();
+	// reenable collector
+	// Due to mpi_pcontrol we already may already be stopped
+	// due to the env var CBTF_START_ENABLE and need to check the 
+	// the value set by the monitor service code.
+	//cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
     }
 #endif
 }
@@ -518,7 +546,12 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 #endif
     Assert(tls != NULL);
 
+    /* All collectors start with collection enabled.  For mpi programs
+     * this flag can be changed to reflect mpi_pcontrol calls and the
+     * related mpi_pcontrol environment variables.
+     */
     tls->defer_sampling=false;
+
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
 	tls->debug_mrnet=true;

@@ -246,6 +246,20 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    cbtf_offline_service_defer_sampling(true);
 	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
+	case CBTF_Monitor_pre_dlopen_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_dlopen_event\n");
+	    }
+#endif
+	    break;
+	case CBTF_Monitor_dlclose_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_dlclose_event\n");
+	    }
+#endif
+	    break;
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
@@ -347,6 +361,20 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #endif
 	    cbtf_offline_service_defer_sampling(false);
 	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
+	case CBTF_Monitor_dlopen_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_dlopen_event\n");
+	    }
+#endif
+	    break;
+	case CBTF_Monitor_post_dlclose_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_post_dlclose_event\n");
+	    }
+#endif
 	    break;
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG

@@ -215,6 +215,7 @@ void *monitor_init_process(int *argc, char **argv, void *data)
 
     tls->pid = getpid();
     tls->cbtf_dllist_head = NULL;
+    tls->cbtf_dllist_curr = NULL;
 
     if (tls->debug) {
 	fprintf(stderr,"monitor_init_process ENTERED %d,%lu\n",
@@ -351,6 +352,7 @@ void *monitor_init_thread(int tid, void *data)
     }
 
     tls->cbtf_dllist_head = NULL;
+    tls->cbtf_dllist_curr = NULL;
 
     if (tls->debug) {
 	fprintf(stderr,"[%d,%lu] monitor_init_thread BEGIN SAMPLING\n",
@@ -436,7 +438,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
 #endif
 
     // FIXME: sampling_status is an enum.
-    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
+    if (tls == NULL || (tls && tls->sampling_status == CBTF_Monitor_Finished) ) {
 	return;
     }
 
@@ -462,7 +464,7 @@ void monitor_dlopen(const char *library, int flags, void *handle)
 	    tls->pid,tls->tid,library);
     }
 
-    tls->cbtf_dllist_curr = (cbtf_dlinfoList*)malloc(sizeof(cbtf_dlinfoList));
+    tls->cbtf_dllist_curr = (cbtf_dlinfoList*)calloc(1,sizeof(cbtf_dlinfoList));
     tls->cbtf_dllist_curr->cbtf_dlinfo_entry.load_time = CBTF_GetTime();
     tls->cbtf_dllist_curr->cbtf_dlinfo_entry.unload_time = CBTF_GetTime() + 1;
     tls->cbtf_dllist_curr->cbtf_dlinfo_entry.name = strdup(library);
@@ -491,7 +493,7 @@ monitor_pre_dlopen(const char *path, int flags)
 #endif
 
     // FIXME: sampling_status is an enum.
-    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
+    if (tls == NULL || (tls && tls->sampling_status == CBTF_Monitor_Finished) ) {
 	return;
     }
 
@@ -536,7 +538,7 @@ monitor_dlclose(void *handle)
 
 
     // FIXME: sampling_status is an enum.
-    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
+    if (tls == NULL || (tls && tls->sampling_status == CBTF_Monitor_Finished) ) {
 	return;
     }
 
@@ -600,7 +602,7 @@ monitor_post_dlclose(void *handle, int ret)
 #endif
 
     // FIXME: sampling_status is an enum.
-    if (tls == NULL || (tls && tls->sampling_status == 0) ) {
+    if (tls == NULL || (tls && tls->sampling_status == CBTF_Monitor_Finished) ) {
 	return;
     }
 

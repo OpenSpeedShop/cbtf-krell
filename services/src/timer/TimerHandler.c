@@ -114,6 +114,11 @@ static void signalHandler(int signal, siginfo_t* info, void* ptr)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
+    if(tls == NULL) {
+	tls = malloc(sizeof(TLS));
+	Assert(tls != NULL);
+	CBTF_SetTLS(TLSKey, tls);
+    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -161,20 +166,15 @@ static void signalHandler(int signal, siginfo_t* info, void* ptr)
  */
 static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 {
-    struct sigaction action;
+    struct sigaction action = {{0}};
 #ifdef HAVE_POSIX_TIMERS
-    struct itimerspec itspec;
+    struct itimerspec itspec = {{0}};
 #endif
-    struct itimerval itval;
+    struct itimerval itval = {{0}};
 
     /* Create and/or access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
-    if(tls == NULL) {
-	tls = malloc(sizeof(TLS));
-	Assert(tls != NULL);
-	CBTF_SetTLS(TLSKey, tls);
-    }
 #else
     TLS* tls = &the_tls;
 #endif
@@ -222,6 +222,8 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 		int ret = timer_create(clock, &tls->sig_event, &tls->timerid);
 		if (ret == 0) {
 		    tls->posix_timer_initialized = true;
+		} else if (ret < 0) {
+		    fprintf(stderr,"timer_create failed!\n");
 		}
 	    }
 #endif
@@ -242,7 +244,7 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 	
 	if (use_posix_timer) {
 #ifdef HAVE_POSIX_TIMERS
-	    struct itimerspec stop_spec;
+	    struct itimerspec stop_spec = {{0}};
 	    memset(&stop_spec, 0, sizeof(stop_spec));
 	    if (tls->posix_timer_initialized) {
 		int ret = timer_delete(tls->timerid);
@@ -334,7 +336,21 @@ int CBTF_GetTimerSignal()
 
 void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 {
+    /* Create and/or access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+    if(tls == NULL) {
+	tls = malloc(sizeof(TLS));
+	Assert(tls != NULL);
+	CBTF_SetTLS(TLSKey, tls);
+    }
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
+
     if(!init_timer_signal) {
+	tls->posix_timer_initialized = false;
 	CBTF_SetTimerSignal();
     }
     __CBTF_Timer(interval, handler);

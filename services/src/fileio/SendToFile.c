@@ -27,6 +27,7 @@
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Services/Path.h"
+#include "KrellInstitute/Services/TLS.h"
 
 #include <errno.h>
 #include <dlfcn.h>

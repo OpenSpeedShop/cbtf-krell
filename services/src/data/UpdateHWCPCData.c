@@ -22,6 +22,7 @@
  *
  */
 
+#include <stdint.h>
 #include "KrellInstitute/Services/Common.h"
 #include "KrellInstitute/Services/Data.h"
 

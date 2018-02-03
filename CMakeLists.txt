@@ -417,7 +417,7 @@ if (NOT "${XERCESC_CN_RUNTIME_DIR}" STREQUAL "")
         if( EXISTS ${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libxerces-c.so")
            # XERCESC_CN_RUNTIME_DIR/lib64 was recognized
            set (XERCESC_CN_RUNTIME_LIBDIR ${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node xercesc libraries.")
-        elseif ( EXISTS ${XERCESC_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}/lib" AND EXISTS "${XERCESC_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libxerces-c.so")
+        elseif ( EXISTS ${XERCESC_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${XERCESC_CN_RUNTIME_DIR}/lib" AND EXISTS "${XERCESC_CN_RUNTIME_DIR}/lib/libxerces-c.so")
            # XERCESC_CN_RUNTIME_DIR/lib was recognized
            set (XERCESC_CN_RUNTIME_LIBDIR ${XERCESC_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node xercesc libraries.")
         else()
@@ -441,7 +441,7 @@ if (NOT "${DYNINST_CN_RUNTIME_DIR}" STREQUAL "")
         if( EXISTS ${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}" AND EXISTS "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libdyninstAPI.so")
            # DYNINST_CN_RUNTIME_DIR/lib64 was recognized
            set (DYNINST_CN_RUNTIME_LIBDIR ${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX} CACHE PATH "Location of compute node boost libraries.")
-        elseif ( EXISTS ${DYNINST_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}/lib" AND EXISTS "${DYNINST_CN_RUNTIME_DIR}/lib${LIB_SUFFIX}/libdyninstAPI.so")
+        elseif ( EXISTS ${DYNINST_CN_RUNTIME_DIR}/lib AND IS_DIRECTORY "${DYNINST_CN_RUNTIME_DIR}/lib" AND EXISTS "${DYNINST_CN_RUNTIME_DIR}/lib/libdyninstAPI.so")
            # DYNINST_CN_RUNTIME_DIR/lib was recognized
            set (DYNINST_CN_RUNTIME_LIBDIR ${DYNINST_CN_RUNTIME_DIR}/lib CACHE PATH "Location of compute node boost libraries.")
         else()
@@ -457,7 +457,6 @@ endif()
 endif() # CBTF_FILTERS_RUN_ON matches native
 
 message(STATUS "BUILD_FE_USING_CN_RUNTIMES=${BUILD_FE_USING_CN_RUNTIMES}.")
-
 #
 #--------------------------------------------------------------------------------
 # Do find package calls for the dependency packages that are commonly needed for 

@@ -58,14 +58,12 @@ static void print_ids(int level)
   ompt_data_t* parallel_data;
   ompt_data_t* task_data;
   int exists_task = ompt_get_task_info(level, NULL, &task_data, &frame, &parallel_data, NULL);
-  if (frame) {
-    fprintf(stderr,"%" PRIu64 ": task level %d: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", exit_frame=%p, reenter_frame=%p\n",
-    ompt_get_thread_data()->value, level, exists_task ? parallel_data->value : 0, exists_task ? task_data->value : 0,
-    frame->exit_runtime_frame, frame->reenter_runtime_frame);
-  } else {
-    fprintf(stderr,"%" PRIu64 ": task level %d: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", frame=%p\n",
-    ompt_get_thread_data()->value, level, exists_task ? parallel_data->value : 0, exists_task ? task_data->value : 0, frame);
+  if (frame)
+  {
+    printf("%" PRIu64 ": task level %d: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", exit_frame=%p, reenter_frame=%p\n", ompt_get_thread_data()->value, level, exists_task ? parallel_data->value : 0, exists_task ? task_data->value : 0, frame->exit_frame, frame->enter_frame);
   }
+  else
+    printf("%" PRIu64 ": task level %d: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", frame=%p\n", ompt_get_thread_data()->value, level, exists_task ? parallel_data->value : 0, exists_task ? task_data->value : 0, frame);
 }
 
 // these external calls are expected in the cbtf collectors either
@@ -129,7 +127,7 @@ CBTF_ompt_callback_parallel_begin(
   parallel_data->value = ompt_get_unique_id();
 #ifndef NDEBUG
   if (cbtf_ompt_debug) {
-    fprintf(stderr,"%" PRIu64 ": ompt_event_parallel_begin: parent_task_id=%" PRIu64 ", parent_task_frame.exit=%p, parent_task_frame.reenter=%p, parallel_id=%" PRIu64 ", requested_team_size=%" PRIu32 ", codeptr_ra=%p, invoker=%d\n", ompt_get_thread_data()->value, parent_task_data->value, parent_task_frame->exit_runtime_frame, parent_task_frame->reenter_runtime_frame, parallel_data->value, requested_team_size, codeptr_ra, invoker);
+    fprintf(stderr,"%" PRIu64 ": ompt_event_parallel_begin: parent_task_id=%" PRIu64 ", parallel_id=%" PRIu64 ", requested_team_size=%" PRIu32 ", codeptr_ra=%p, invoker=%d\n", ompt_get_thread_data()->value, parent_task_data->value, parallel_data->value, requested_team_size, codeptr_ra, invoker);
 #endif
   }
 }
@@ -394,7 +392,7 @@ CBTF_ompt_callback_control_tool(
   ompt_get_task_info(0, NULL, (ompt_data_t**) NULL, &omptTaskFrame, NULL, NULL);
 #ifndef NDEBUG
   if (cbtf_ompt_debug_blame) {
-    fprintf(stderr,"%" PRIu64 ": ompt_event_control_tool: command=%" PRIu64 ", modifier=%" PRIu64 ", arg=%p, codeptr_ra=%p, current_task_frame.exit=%p, current_task_frame.reenter=%p \n", ompt_get_thread_data()->value, command, modifier, arg, codeptr_ra, omptTaskFrame->exit_runtime_frame, omptTaskFrame->reenter_runtime_frame);
+    fprintf(stderr,"%" PRIu64 ": ompt_event_control_tool: command=%" PRIu64 ", modifier=%" PRIu64 ", arg=%p, codeptr_ra=%p\n", ompt_get_thread_data()->value, command, modifier, arg, codeptr_ra);
   }
 #endif
   return 0; //success
@@ -418,7 +416,7 @@ do{                                                           \
 // NOTE:  as of openMP 50, the tool is started via ompt_start_tool.
 int ompt_initialize(
   ompt_function_lookup_t lookup,
-  ompt_fns_t* fns)
+  ompt_data_t *tool_data)
 {
 #ifndef NDEBUG
     if ( (getenv("CBTF_DEBUG_OMPT") != NULL)) {
@@ -471,7 +469,7 @@ int ompt_initialize(
   return 1; //success
 }
 
-void ompt_finalize(ompt_fns_t* fns)
+void ompt_finalize(ompt_data_t *tool_data)
 {
 #ifndef NDEBUG
   if (cbtf_ompt_debug_details) {
@@ -481,11 +479,11 @@ void ompt_finalize(ompt_fns_t* fns)
 }
 
 #if defined(INIT_AS_OMPT50_TOOL)
-ompt_fns_t* ompt_start_tool(
+ompt_start_tool_result_t* ompt_start_tool(
   unsigned int omp_version,
   const char *runtime_version)
 {
-  static ompt_fns_t ompt_fns = {&ompt_initialize,&ompt_finalize};
-  return &ompt_fns;
+  static ompt_start_tool_result_t ompt_start_tool_result = {&ompt_initialize,&ompt_finalize, 0};
+  return &ompt_start_tool_result;
 }
 #endif

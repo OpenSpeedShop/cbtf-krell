@@ -150,8 +150,9 @@ void cbtf_offline_waitforshutdown() {
 #endif
 }
 
-// non mrnet builds just refurn false here..
+// non mrnet builds just refurn true here..
 bool_t cbtf_connected_to_mrnet() {
+#if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -166,6 +167,9 @@ bool_t cbtf_connected_to_mrnet() {
 #endif
     Assert(tls != NULL);
     return tls->connected_to_mrnet;
+#else
+    return true;
+#endif
 }
 
 void cbtf_set_connected_to_mrnet()
@@ -194,6 +198,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    set_mpi_flag(true);
+	    cbtf_offline_service_defer_sampling(true);
 	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
 	case CBTF_Monitor_MPI_init_event:
@@ -218,6 +223,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_MPI_fini_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
+	    cbtf_offline_service_defer_sampling(true);
 	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
 	case CBTF_Monitor_init_process_event:
@@ -260,12 +266,31 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    break;
+	case CBTF_Monitor_pre_fork_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_fork_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(true);
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	    break;
+	case CBTF_Monitor_thread_pre_create_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_thread_pre_create\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(true);
+	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
+	    break;
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_Default_event\n");
 	    }
 #endif
+	    cbtf_offline_service_defer_sampling(true);
 	    cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 	    break;
 	default:
@@ -312,6 +337,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    if (!tls->connected_to_mrnet && ( monitor_mpi_comm_rank() >= 0 || tls->mpi_init_done)) {
+		cbtf_offline_service_defer_sampling(true);
+		cbtf_offline_service_stop_timer(CBTF_Monitor_Paused);
 #ifndef NDEBUG
 		if (getenv("CBTF_DEBUG_MRNET_MPI") != NULL) {
 	            fprintf(stderr,
@@ -333,6 +360,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 		send_attached_to_threads_message();
 #endif
 		// we really do not want to resume here IFF not start_enabled.
+	        cbtf_offline_service_defer_sampling(false);
 		cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    }
 	    break;
@@ -343,6 +371,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n");
 	    }
 #endif
+	    cbtf_offline_service_defer_sampling(false);
 	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    break;
 	case CBTF_Monitor_init_thread_event:
@@ -351,6 +380,7 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_init_thread_event\n");
 	    }
 #endif
+	    cbtf_offline_service_defer_sampling(false);
 	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    break;
 	case CBTF_Monitor_mpi_pcontrol_event:
@@ -376,12 +406,31 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	    }
 #endif
 	    break;
+	case CBTF_Monitor_post_fork_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_post_fork_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(false);
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
+	case CBTF_Monitor_thread_post_create_event:
+#ifndef NDEBUG
+	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
+	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_thread_post_create_event\n");
+	    }
+#endif
+	    cbtf_offline_service_defer_sampling(false);
+	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
+	    break;
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_Default_event\n");
 	    }
 #endif
+	    cbtf_offline_service_defer_sampling(false);
 	    cbtf_offline_service_start_timer(CBTF_Monitor_Resumed);
 	    break;
 	default:

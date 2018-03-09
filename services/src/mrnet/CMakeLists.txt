@@ -25,7 +25,6 @@ endif()
 
 set(SERVICES_MRNET_SOURCES
 	MRNet_Send.c
-	MRNet_Senders.c
     playback.h playback.c
 )
 

@@ -514,7 +514,16 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 	    CBTF_MRNet_Send_PerfData(header, xdrproc, data);
 	} else {
-	    fprintf(stderr,"[%d,%d] cbtf_collector_send called but no longer connected!!!\n",getpid(),monitor_get_thread_num());
+#ifndef NDEBUG
+	    /** There are cases where a collector (eg. mem) can
+             *  collect data from the mrnet connection code itself.
+             *  We are not interested in such data.
+             */
+	    if (tls->debug_mrnet) {
+		fprintf(stderr,"[%d,%d] cbtf_collector_send called with no mrnet connection!\n"
+		,getpid(),monitor_get_thread_num());
+	    }
+#endif
 	}
 #endif
 
@@ -550,7 +559,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
      * this flag can be changed to reflect mpi_pcontrol calls and the
      * related mpi_pcontrol environment variables.
      */
-    tls->defer_sampling=false;
+    tls->defer_sampling=true;
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
@@ -634,6 +643,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 
     /* Begin collection */
     cbtf_collector_start(&tls->header);
+    tls->defer_sampling=false;
 }
 
 

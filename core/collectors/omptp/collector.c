@@ -46,6 +46,7 @@
 #include "KrellInstitute/Services/Unwind.h"
 #include "KrellInstitute/Services/TLS.h"
 #include "collector.h"
+#include "monitor.h"
 
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "omptp";
@@ -529,39 +530,6 @@ void cbtf_collector_stop()
     CBTF_SetTLS(TLSKey, NULL);
 #endif
 }
-
-#if 0 //#if defined (CBTF_SERVICE_USE_OFFLINE)
-
-void cbtf_offline_service_resume_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling = 0;
-    tls->do_trace = true;
-}
-
-void cbtf_offline_service_defer_sampling()
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->defer_sampling = 1;
-    tls->do_trace = false;
-}
-#endif
 
 /* 
  * These differ from sampling.  For a profile of idle,barrier,wait_barrier we

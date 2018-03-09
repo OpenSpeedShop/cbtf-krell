@@ -398,6 +398,8 @@ void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
 #endif
     Assert(tls != NULL);
 
+    //if (tls->defer_sampling) return;
+
     tls->do_trace = FALSE;
 
     uint64_t stacktrace[MaxFramesPerStackTrace];

@@ -295,6 +295,12 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	    break;
 	}
 
+#ifndef NDEBUG
+	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
+		fprintf(stderr,"CBTF_GetDLInfo examine maps line: %s",buf);
+	    }
+#endif
+
 	char *permstring = strchr(buf, (int) ' ');
 	if (!(*(permstring+3) == 'x' && strchr(buf, (int) '/'))) {
 	    continue;

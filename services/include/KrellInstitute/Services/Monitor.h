@@ -62,6 +62,8 @@ typedef enum {
     CBTF_Monitor_fini_thread_event,
     CBTF_Monitor_pre_fork_event,
     CBTF_Monitor_post_fork_event,
+    CBTF_Monitor_thread_pre_create_event,
+    CBTF_Monitor_thread_post_create_event,
     CBTF_Monitor_mpi_pcontrol_event,
     CBTF_Monitor_Default_event
 } CBTF_Monitor_Event_Type;

@@ -517,6 +517,12 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->header.time_begin = CBTF_GetTime();
     tls->defer_sampling = 0;
     tls->do_trace = 1;
+#ifndef NDEBUG
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	fprintf(stderr,"[%d:%d] cbtf_collector_start\n",
+		tls->header.rank, tls->header.omp_tid);
+    }
+#endif
 }
 
 

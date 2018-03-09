@@ -305,6 +305,7 @@ void monitor_fini_thread(void *ptr)
 #endif
     Assert(tls != NULL);
 
+    cbtf_offline_stop_sampling(NULL,1);
     if (tls->debug) {
 	fprintf(stderr,"[%d,%lu] monitor_fini_thread FINISHED SAMPLING\n",
 		tls->pid,tls->tid);
@@ -316,7 +317,6 @@ void monitor_fini_thread(void *ptr)
     }
     tls->sampling_status = CBTF_Monitor_Finished;
     tls->thread_is_terminating = 1;
-    cbtf_offline_stop_sampling(NULL,1);
     send_thread_state_changed_message();
 }
 
@@ -408,17 +408,48 @@ void monitor_init_thread_support(void)
 void*
 monitor_thread_pre_create(void)
 {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	fprintf(stderr,"Entered cbtf monitor_thread_pre_create callback\n");
     }
+    /* Stop sampling prior to real thread_create. */
+        if (tls->debug) {
+	    fprintf(stderr,"[%d,%lu] monitor_thread_pre_create PAUSE SAMPLING\n",
+		    tls->pid,tls->tid);
+        }
+	tls->sampling_status = CBTF_Monitor_Paused;
+	cbtf_offline_pause_sampling(CBTF_Monitor_thread_pre_create_event);
     return (NULL);
 }
 
 void
 monitor_thread_post_create(void* data)
 {
+    /* Access our thread-local storage */
+#ifdef USE_EXPLICIT_TLS
+    TLS* tls = CBTF_GetTLS(TLSKey);
+#else
+    TLS* tls = &the_tls;
+#endif
+    Assert(tls != NULL);
     if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
 	fprintf(stderr,"Entered cbtf monitor_thread_post_create callback\n");
+    }
+    /* Resume/start sampling thread. */
+    if (cbtf_connected_to_mrnet()) {
+        if (tls->debug) {
+	    fprintf(stderr,"[%d,%lu] monitor_thread_post_create RESUME SAMPLING\n",
+		    tls->pid,tls->tid);
+        }
+	tls->CBTF_monitor_type = CBTF_Monitor_Thread;
+	tls->sampling_status = CBTF_Monitor_Resumed;
+	cbtf_offline_resume_sampling(CBTF_Monitor_thread_post_create_event);
     }
 }
 

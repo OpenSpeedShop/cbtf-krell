@@ -24,6 +24,8 @@
 #define BLUEGENE 1
 #endif
 
+#define _ISOC99_SOURCE
+
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
@@ -43,7 +45,12 @@
 #include "KrellInstitute/Services/monlibs.h"
 
 
+/* TODO: allow configuration to fallback to sscanf method. */
+#define CBTF_USE_STROULL_FOR_MAPPINGS 1
 /* hmm. maybe control this at build time? */
+/* FIXME: While we do set this here it is negated later to force
+ * using /proc/self/maps methods.
+ */
 #define CBTF_USE_DL_ITERATE 1
 
 extern void cbtf_offline_record_dso(const char* dsoname, uint64_t begin, uint64_t end, uint8_t is_dlopen);
@@ -257,6 +264,13 @@ static void lc(ElfW(Addr) base_address, const char *name, mem_region *regions,
 }
 #endif
 
+/*
+ * Get the address map of executable and dsos loaded. Default to processing
+ * /proc/self/maps. Can optionaly build to use linkmap info via defining
+ * CBTF_USE_DL_ITERATE at build time.  The CBTF_USE_DL_ITERATE method may not
+ * be safe to use within a signalhandler so care would be needed to call
+ * that mathod with collection paused.
+ */
 int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 {
 #if defined(RUNTIME_PLATFORM_BGP) || defined(RUNTIME_PLATFORM_BGQ)
@@ -271,10 +285,12 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
     }
 #else
 
+    /* Process address range and mapped filename using dl_iterate methods. */
 #if defined(CBTF_USE_DL_ITERATE) && defined(JUNK)
     monlibs_getLibraries(lc,b_time,e_time);
 #else
-    //fprintf(stderr,"ENTER CBTF_GetDLInfo: pid %d  path %s btime %ld etime %ld\n", pid, path, b_time,e_time);
+
+    /* Process /proc/self/maps for address range and mapped filename. */
     char mapfile_name[PATH_MAX];
     FILE *mapfile;
 
@@ -288,37 +304,78 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 
     while(!feof(mapfile)) {
 	char buf[PATH_MAX+100], perm[5], dev[6], mappedpath[PATH_MAX];
-	unsigned long begin, end, inode, offset;
+	unsigned long long begin, end;
 
 	/* read in one line from the /proc maps file for this pid. */
 	if(fgets(buf, sizeof(buf), mapfile) == 0) {
 	    break;
 	}
 
-#ifndef NDEBUG
-	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
-		fprintf(stderr,"CBTF_GetDLInfo examine maps line: %s",buf);
-	    }
-#endif
-
+	/* skip any entry that does not have 'x' permissions. */
 	char *permstring = strchr(buf, (int) ' ');
 	if (!(*(permstring+3) == 'x' && strchr(buf, (int) '/'))) {
 	    continue;
 	}
 
-	mappedpath[0] = '\0';
+#if 0
+	if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
+	    fprintf(stderr,"CBTF_GetDLInfo examine maps line: %s",buf);
+	}
+#endif
 
+	/* process line with 'x' permissions. */
 	/* Read in the /proc/<pid>/maps file as it is formatted. */
 	/* All fields are strings. The fields are as follows. */
-	/* address  perms offset  dev  inode  pathname */
-	/* The address field is begin-end in hex. */
-	/* We record these as uint64_t. */
-	/* perms are at least one of rwxp - we want the begin and end */
-	/* address of the text section marked as "x". */
+	/* addressrange  perms offset  dev  inode  pathname */
+	/* The addressrange field is begin-end in hex. */
+	/* We record these later as uint64_t. */
 	/* We record the mappedpath as is and ignore the rest of the fields. */
-        sscanf(buf, "%lx-%lx %s %lx %s %ld %s", &begin, &end, perm,
+	/* example maps line for the executable: */
+	/* 20000000-20003000 r-xp 00000000 e7a:390e 1 /home/foo/bar.exe */
+
+#if defined(CBTF_USE_STROULL_FOR_MAPPINGS)
+	/* process mapping with strtoull for begin and end addresses. */
+	char *end_addr, *mpath;
+	/* Find the end address from buf. buf will now contain*/
+	end_addr = strchr(buf, '-');
+	/* Find the full path to exe or dso from buf. */
+	mpath = strrchr(buf, (int) ' ');
+	/* null terminate end_addr and mpath. */
+	*end_addr = '\0';
+	end_addr++;
+	*mpath = '\0';
+	mpath++;
+
+	/* TODO: check errno on these strtoull calls if addresses
+ 	*  do not fit into a uint64_t.
+ 	*/
+	begin = strtoull(buf, NULL, 16);
+	end = strtoull(end_addr, NULL, 16);
+	sscanf(mpath, "%s", mappedpath);
+
+#ifndef NDEBUG
+	if ( (getenv("CBTF_DEBUG_DSO_DETAILS") != NULL)) {
+	    fprintf(stderr,"CBTF_GetDLInfo resolves %s with begin:%08Lx end:%08Lx\n",mappedpath,begin,end);
+	}
+#endif
+
+#else   /* sscanf method for whole maps line. */
+	char perm[5], dev[6];
+	unsigned long long offset;
+	uint64_t inode;
+
+        int sval = sscanf(buf, "%Lx-%Lx %s %Lx %s %ld %s", &begin, &end, perm,
                 &offset, dev, &inode, mappedpath);
 
+#ifndef NDEBUG
+	if ( (getenv("CBTF_DEBUG_DSO_DETAILS") != NULL)) {
+	    fprintf(stderr,"CBTF_GetDLInfo sval from sscanf:%d begin:%Lx end:%Lx\n",sval,begin,end);
+	}
+#endif
+
+#endif
+
+	/* Now we record the address range and mappedpath. */
 	/* If a dso is passed in the path argument we only want to record */
 	/* this particular dso into the openss-raw file. This happens when */
 	/* the victim application has performed a dlopen. */
@@ -327,7 +384,7 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	    (strncmp(basename(path), basename(mappedpath), strlen(basename(path))) == 0) ) {
 #ifndef NDEBUG
 	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
-		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dlopen) DLOPEN RECORD: %s [%08lx, %08lx]\n",
+		fprintf(stderr,"CBTF_GetDLInfo DLOPEN RECORD: %s [%08Lx, %08Lx]\n",
 		    mappedpath, begin, end);
 	    }
 #endif
@@ -335,18 +392,21 @@ int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time)
 	    break;
 	}
 
-	// DPM: added test for path 4-15-08
-	else if (perm[2] == 'x' && path == NULL) {
+	/* Record the address range and mappedfile for non dlopened objects. */
+	else if (path == NULL) {
 #ifndef NDEBUG
 	    if ( (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL)) {
-		fprintf(stderr,"CBTF_GetDLInfo (cbtf_offline_record_dso) LD RECORD %s [%08lx, %08lx]\n", mappedpath, begin, end);
+		fprintf(stderr,"CBTF_GetDLInfo LD RECORD %s [%08Lx, %08Lx]\n", mappedpath, begin, end);
 	    }
 #endif
 	    cbtf_offline_record_dso(mappedpath, begin, end, 0);
 	}
-    }
+    } /* end while feof mapfile */
     fclose(mapfile);
-#endif
-#endif
+
+#endif  /* ifdef CBTF_USE_DL_ITERATE */
+
+#endif  /* ifdef BGP or BGQ */
+
     return(0);
 }

@@ -147,7 +147,8 @@ void cbtf_offline_service_start_timer(CBTF_Monitor_Status current_status)
 
 #ifndef NDEBUG
 	if (tls->debug_collector) {
-        fprintf(stderr,"cbtf_offline_service_start_timer calls cbtf_collector_resume for %s:%lld:%lld:%d:%d\n",
+        fprintf(stderr,"[%d,%d] cbtf_offline_service_start_timer calls cbtf_collector_resume for %s:%lld:%lld:%d:%d\n",
+		     getpid(),monitor_get_thread_num(),
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid, tls->header.rank,
 		     tls->header.omp_tid);
@@ -176,7 +177,8 @@ void cbtf_offline_service_stop_timer(CBTF_Monitor_Status current_status)
 
 #ifndef NDEBUG
 	if (tls->debug_collector) {
-        fprintf(stderr,"cbtf_offline_service_stop_timer calls cbtf_collector_pause for %s:%lld:%lld:%d:%d\n",
+        fprintf(stderr,"[%d,%d] cbtf_offline_service_stop_timer calls cbtf_collector_pause for %s:%lld:%lld:%d:%d\n",
+		     getpid(),monitor_get_thread_num(),
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid, tls->header.rank,
 		     tls->header.omp_tid);
@@ -223,7 +225,8 @@ void init_process_thread()
 #ifndef NDEBUG
         if (tls->debug_mrnet) {
     	     fprintf(stderr,
-	   "init_process_thread [%d] INIT THREAD OR PROCESS %s:%lld:%lld:%d:%d\n",
+	   "[%d,%d] init_process_thread [%d] INIT THREAD OR PROCESS %s:%lld:%lld:%d:%d\n",
+		     getpid(),monitor_get_thread_num(),
 		     tls->tgrp.names.names_len,
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid,
@@ -254,7 +257,8 @@ void send_attached_to_threads_message()
 #ifndef NDEBUG
         if (tls->debug_mrnet) {
     	     fprintf(stderr,
-	   "SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d:%d\n",
+	   "[%d,%d] SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d:%d\n",
+		     getpid(),monitor_get_thread_num(),
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid,
 		     tls->header.rank,
@@ -455,7 +459,8 @@ void send_thread_state_changed_message()
 #ifndef NDEBUG
 	if (tls->debug_mrnet) {
             fprintf(stderr,
-	    "SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d:%d\n",
+	    "[%d,%d] SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d:%d\n",
+		     getpid(),monitor_get_thread_num(),
                      tls->header.host, (long long)tls->header.pid,
                      (long long)tls->header.posix_tid,
 		     tls->header.rank,
@@ -567,7 +572,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     } else {
 	tls->debug_mrnet=false;
     }
-    if (getenv("CBTF_DEBUG_OFFLINE_COLLECTOR") != NULL) {
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
 	tls->debug_collector=true;
     } else {
 	tls->debug_collector=false;

@@ -229,7 +229,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_process_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_init_process_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_init_process_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -237,7 +237,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_thread_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_init_thread_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_init_thread_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -246,7 +246,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_mpi_pcontrol_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -255,21 +255,21 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_pre_dlopen_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_dlopen_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_dlopen_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_dlclose_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_dlclose_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_dlclose_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_pre_fork_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_fork_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_pre_fork_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -278,7 +278,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_thread_pre_create_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_thread_pre_create\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_thread_pre_create\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -287,7 +287,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event CBTF_Monitor_Default_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event CBTF_Monitor_Default_event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(true);
@@ -296,7 +296,7 @@ void cbtf_offline_pause_sampling(CBTF_Monitor_Event_Type event)
 	default:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_pause_sampling passed event unknown event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_pause_sampling passed event unknown event\n",getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
@@ -368,7 +368,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
 	        fprintf(stderr,
-		"cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n");
+		"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_MPI_post_fini_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -377,7 +378,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_init_thread_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_init_thread_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_init_thread_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -386,7 +388,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_mpi_pcontrol_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_mpi_pcontrol_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -395,21 +398,24 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_dlopen_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_dlopen_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_dlopen_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_post_dlclose_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_post_dlclose_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_post_dlclose_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_post_fork_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_post_fork_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_post_fork_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -418,7 +424,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_thread_post_create_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_thread_post_create_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_thread_post_create_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -427,7 +434,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event CBTF_Monitor_Default_event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event CBTF_Monitor_Default_event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    cbtf_offline_service_defer_sampling(false);
@@ -436,7 +444,8 @@ void cbtf_offline_resume_sampling(CBTF_Monitor_Event_Type event)
 	default:
 #ifndef NDEBUG
 	    if (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL) {
-	        fprintf(stderr,"cbtf_offline_resume_sampling passed event unknown event\n");
+	        fprintf(stderr,"[%d,%d] cbtf_offline_resume_sampling passed event unknown event\n",
+		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
@@ -460,9 +469,10 @@ void cbtf_offline_send_dsos(TLS *tls)
 {
     /* Send the offline "dsos" blob or message */
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL) {
+    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
         fprintf(stderr,
-		"cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
+		"[%d,%d] cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
+		getpid(),monitor_get_thread_num(),
                 tls->dso_header.host, (long long)tls->dso_header.pid, 
                 (long long)tls->dso_header.posix_tid, tls->dso_header.rank,tls->dso_header.omp_tid);
     }
@@ -560,7 +570,8 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_offline_start_sampling BEGINS for %s:%ld:%ld:%d:%d\n",
+	    fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS for %s:%ld:%ld:%d:%d\n",
+		getpid(),monitor_get_thread_num(),
                 tls->dso_header.host,
                 tls->dso_header.pid,
                 tls->dso_header.posix_tid,
@@ -783,7 +794,8 @@ void cbtf_record_dsos()
     /* Write the thread's initial address space to the appropriate buffer */
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d:%d\n",
+	fprintf(stderr,"[%d,%d] cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d:%d\n",
+		getpid(),monitor_get_thread_num(),
 		local_header.host, (long long)local_header.pid,
 		(long long)local_header.posix_tid, local_header.rank, local_header.omp_tid);
     }
@@ -794,7 +806,8 @@ void cbtf_record_dsos()
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
            fprintf(stderr,
-            "cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d:%d\n",
+            "[%d,%d] cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d:%d\n",
+		getpid(),monitor_get_thread_num(),
 		   tls->data.linkedobjects.linkedobjects_len,
                    local_header.host, (long long)local_header.pid, 
                    (long long)local_header.posix_tid, local_header.rank, local_header.omp_tid);
@@ -970,7 +983,8 @@ void cbtf_offline_record_dso(const char* dsoname,
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-            fprintf(stderr,"cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
+            fprintf(stderr,"[%d,%d] cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
+		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid,
 		    tls->dso_header.rank,
@@ -1120,7 +1134,8 @@ void cbtf_offline_record_dlopen(const char* dsoname,
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
 	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-            fprintf(stderr,"cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d:%d\n",
+            fprintf(stderr,"[%d,%d] cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d:%d\n",
+		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
                     (long long)tls->dso_header.posix_tid,
 		    tls->dso_header.rank,

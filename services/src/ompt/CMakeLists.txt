@@ -40,7 +40,9 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events
+	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/perfdata
 	${PROJECT_SOURCE_DIR}/services/include
+	${PROJECT_SOURCE_DIR}/services/collector
 	${LibIomp_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 )

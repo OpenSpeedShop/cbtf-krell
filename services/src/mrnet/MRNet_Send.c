@@ -34,6 +34,7 @@
 #include "KrellInstitute/Messages/EventHeader.h"
 #include "KrellInstitute/Messages/Blob.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"
+#include "monitor.h" // monitor_get_thread_num
 
 #include <rpc/rpc.h>
 #include "mrnet_lightweight/MRNet.h"
@@ -291,7 +292,8 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
     
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	fprintf(stderr,"CBTF_MRNet_LW_sendToFrontend: sends message with tag %d\n",tag);
+	fprintf(stderr,"[%d,%d] CBTF_MRNet_LW_sendToFrontend: sends message with tag %d\n",
+		getpid(),monitor_get_thread_num(),tag);
     }
 #endif
 
@@ -328,7 +330,8 @@ void CBTF_MRNet_Send(const int tag, const xdrproc_t xdrproc, const void* data)
 
 #ifndef NDEBUG
     if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	fprintf(stderr,"CBTF_MRNet_Send: sends message tag:%d size: %d\n",tag ,dm_size);
+	fprintf(stderr,"[%d,%d] CBTF_MRNet_Send: sends message tag:%d size: %d\n",
+		getpid(),monitor_get_thread_num(),tag ,dm_size);
     }
 #endif
 

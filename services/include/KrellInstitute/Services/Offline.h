@@ -54,15 +54,15 @@ struct cbtf_dlinfoList_t {
 #define CBTF_OBJBufferSize (8*1024)
 #define CBTF_MAXLINKEDOBJECTS 512
 
-extern void cbtf_offline_start_sampling(const char* arguments);
-extern void cbtf_offline_stop_sampling(const char* arguments, const int finished);
-extern void cbtf_offline_record_dso(const char* dsoname, uint64_t begin, uint64_t end,
+void cbtf_offline_start_sampling(const char* arguments);
+void cbtf_offline_stop_sampling(const char* arguments, const bool finished);
+void cbtf_offline_record_dso(const char* dsoname, uint64_t begin, uint64_t end,
                         uint8_t is_dlopen);
-extern void cbtf_offline_defer_sampling(const int flag);
-extern void cbtf_offline_pause_sampling();
-extern void cbtf_offline_resume_sampling();
+void cbtf_offline_defer_sampling(const int flag);
+void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_Status status);
+void cbtf_offline_service_sampling_control(CBTF_Monitor_Status);
+void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event);
 
-//int CBTF_GetDLInfo(pid_t pid, char *path);
 int CBTF_GetDLInfo(pid_t pid, char *path, uint64_t b_time, uint64_t e_time);
 void CBTF_InitializeParameters (CBTF_Protocol_Offline_Parameters *info);
 

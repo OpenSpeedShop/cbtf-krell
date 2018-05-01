@@ -18,6 +18,7 @@
 
 /** @file Definition of the CBTF collector service API. */
 
+#include <stdbool.h>
 #include <rpc/rpc.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
@@ -85,3 +86,23 @@ extern void cbtf_collector_resume();
  * point should be sent.
  */
 extern void cbtf_collector_stop();
+
+
+void cbtf_record_dsos();
+void cbtf_timer_service_start_sampling(const char* arguments);
+void cbtf_timer_service_stop_sampling(const char* arguments);
+
+#if defined(CBTF_SERVICE_USE_MRNET)
+bool connect_to_mrnet();
+void send_attached_to_threads_message();
+#endif
+
+void set_mpi_flag(bool);
+void set_ompt_flag(bool);
+bool get_ompt_flag();
+void set_ompt_thread_finished(bool);
+void cbtf_collector_set_openmp_threadid(int32_t);
+void set_threaded_flag(bool);
+void set_threaded_mrnet_connection();
+void cbtf_offline_sent_data(int sent_data);
+void cbtf_set_connected_to_mrnet();

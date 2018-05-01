@@ -25,8 +25,15 @@
 #ifndef _CBTF_PCData_
 #define _CBTF_PCData_
 
+#include "KrellInstitute/Messages/DataHeader.h"
+#include "KrellInstitute/Messages/EventHeader.h"
 #include "Common.h"
 #include <stdbool.h>
+
+void CBTF_InitializeEventHeader( CBTF_EventHeader* header);
+//void CBTF_InitializeDataHeader( CBTF_DataHeader* header);
+void CBTF_InitializeDataHeader(int experiment, int collector,
+                              CBTF_DataHeader* header);
 
 /** Number of entries in the sample buffer. */
 #define CBTF_PCBufferSize (256 * CBTF_BlobSizeFactor)

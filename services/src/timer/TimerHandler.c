@@ -39,6 +39,8 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
+//extern int monitor_get_thread_num();
+
 #define CBTF_ITIMER_SIGNAL   (SIGPROF)
 #ifdef HAVE_POSIX_TIMERS
 #define CBTF_REALTIME_SIGNAL (SIGRTMIN+3)
@@ -373,6 +375,7 @@ void CBTF_BlockTimerSignal()
     sigset_t signal_set;
     sigemptyset(&signal_set);
     sigaddset(&signal_set, CBTF_GetTimerSignal());
+    // FIXME: should we use pthread_sigmask here?
     sigprocmask(SIG_BLOCK, &signal_set, NULL);
 }
 
@@ -386,5 +389,6 @@ void CBTF_UnBlockTimerSignal()
     sigset_t signal_set;
     sigemptyset(&signal_set);
     sigaddset(&signal_set, CBTF_GetTimerSignal());
+    // FIXME: should we use pthread_sigmask here?
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }

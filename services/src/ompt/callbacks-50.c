@@ -26,16 +26,18 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "KrellInstitute/Services/Assert.h"
 #include <time.h>
+#include <unistd.h>
 
 #include "omp.h"     // omp_get_thread_num
 #include "ompt.h"
+#include "KrellInstitute/Services/Assert.h"
+#include "KrellInstitute/Services/Collector.h"
 #include "KrellInstitute/Services/Ompt.h"
 #include "monitor.h" // monitor_get_thread_num
 
 /* FIXME: This exists in services/collector/collector.c.  need include. */
-extern void cbtf_collector_set_openmp_threadid(int32_t omptid);
+//extern void cbtf_collector_set_openmp_threadid(int32_t omptid);
 
 static ompt_set_callback_t ompt_set_callback;
 static ompt_get_task_info_t ompt_get_task_info;
@@ -88,11 +90,13 @@ extern void OMPT_THREAD_IDLE(bool);
 
 // local thread variables to record various details. May need a
 // container for this later...
+#ifndef NDEBUG
 __thread uint64_t barrier_btime;
 __thread uint64_t barrier_ttime;
 __thread uint64_t lock_count;
 __thread uint64_t lock_btime;
 __thread uint64_t lock_time;
+#endif
 
 // OMPT 50
 
@@ -117,7 +121,7 @@ CBTF_ompt_callback_parallel_begin(
   ompt_invoker_t invoker,
   const void *codeptr_ra)
 {
-  if(parallel_data->ptr) {
+  if(parallel_data && parallel_data->ptr) {
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
 	fprintf(stderr,"%s\n", "0: parallel_data initially not null");
@@ -127,7 +131,8 @@ CBTF_ompt_callback_parallel_begin(
   parallel_data->value = ompt_get_unique_id();
 #ifndef NDEBUG
   if (cbtf_ompt_debug) {
-    fprintf(stderr,"%" PRIu64 ": ompt_event_parallel_begin: parent_task_id=%" PRIu64 ", parallel_id=%" PRIu64 ", requested_team_size=%" PRIu32 ", codeptr_ra=%p, invoker=%d\n", ompt_get_thread_data()->value, parent_task_data->value, parallel_data->value, requested_team_size, codeptr_ra, invoker);
+	fprintf(stderr,"[%d,%d] CBTF_ompt_callback_parallel_begin parallel_id:%lu requested_team_size:%u invoker:%u codeptr_ra:%p\n"
+	,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, requested_team_size, invoker, codeptr_ra);
 #endif
   }
 }
@@ -141,7 +146,8 @@ CBTF_ompt_callback_parallel_end(
 {
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
-	fprintf(stderr,"%" PRIu64 ": ompt_event_parallel_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", invoker=%d, codeptr_ra=%p\n", ompt_get_thread_data()->value, parallel_data->value, task_data->value, invoker, codeptr_ra);
+	fprintf(stderr,"[%d,%d] CBTF_ompt_callback_parallel_end parallel_id:%lu task_id:%lu invoker:%u codeptr_ra:%p\n"
+	,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, invoker, codeptr_ra);
     }
 #endif
 }
@@ -151,16 +157,18 @@ CBTF_ompt_callback_parallel_end(
 // pass omp thread num to collector.
 void CBTF_ompt_callback_thread_begin()
 {
-    barrier_ttime = 0;
+#ifndef NDEBUG
     lock_count = 0;
     lock_btime = 0;
     lock_time = 0;
-#ifndef NDEBUG
+    barrier_ttime = 0;
     if (cbtf_ompt_debug) {
-	fprintf(stderr, "[%d,%d] CBTF_ompt_callback_thread_begin:\n",omp_get_thread_num(),monitor_get_thread_num());
+	fprintf(stderr, "[%d,%d] CBTF_ompt_callback_thread_begin: omp tid:%d\n",getpid(),monitor_get_thread_num(),omp_get_thread_num());
     }
 #endif
     cbtf_collector_set_openmp_threadid(omp_get_thread_num());
+    set_ompt_thread_finished(false);
+    set_ompt_flag(true);
 }
 
 // ompt_event_MAY_ALWAYS
@@ -169,10 +177,13 @@ void CBTF_ompt_callback_thread_end()
 {
 #ifndef NDEBUG
     if (cbtf_ompt_debug) {
-	fprintf(stderr, "[%d] CBTF_ompt_callback_thread_end: barrier time:%f, lock count:%lu lock_time:%f\n"
-	,omp_get_thread_num(), (float)barrier_ttime/1000000000, lock_count, (float)lock_time/1000000000);
+	fprintf(stderr, "[%d,%d] CBTF_ompt_callback_thread_end: barrier time:%f, lock count:%lu lock_time:%f\n"
+	,getpid(),monitor_get_thread_num(), (float)barrier_ttime/1000000000, lock_count, (float)lock_time/1000000000);
     }
 #endif
+    set_ompt_thread_finished(true);
+    cbtf_timer_service_stop_sampling(NULL);
+    set_ompt_flag(false);
 }
 
 void CBTF_ompt_callback_sync_region(
@@ -185,25 +196,19 @@ void CBTF_ompt_callback_sync_region(
   struct timespec now;
   switch(endpoint) {
     case ompt_scope_begin:
-	OMPT_THREAD_BARRIER(true);
-	// record barrier begin time.
-	Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
-	barrier_btime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
-        	(uint64_t)(now.tv_nsec);
 
-#ifndef NDEBUG
-	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_sync_region begin time:%lu\n"
-		,omp_get_thread_num(), barrier_btime);
-	}
-#endif
 	switch(kind) {
 	  case ompt_sync_region_barrier:
+		OMPT_THREAD_BARRIER(true);
+		// record barrier begin time.
+		Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
+		barrier_btime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
+        			(uint64_t)(now.tv_nsec);
 #ifndef NDEBUG
 	    if (cbtf_ompt_debug_blame) {
-		fprintf(stderr, "%" PRIu64 ": ompt_event_barrier_begin: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
-		ompt_get_thread_data()->value, parallel_data->value, task_data->value, codeptr_ra);
-		print_ids(0);
+		//print_ids(0);
+		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region barrier_begin parallel_id:%lu task_id:%lu codeptr_ra:%p\n"
+		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
 	    }
 #endif
 	  break;
@@ -227,25 +232,17 @@ void CBTF_ompt_callback_sync_region(
 	break;
 
     case ompt_scope_end:
-	OMPT_THREAD_BARRIER(false);
-	Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
-	uint64_t etime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
-			(uint64_t)(now.tv_nsec);
-	barrier_ttime += (etime - barrier_btime);
-
-#ifndef NDEBUG
-	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_sync_region end: total barrier time:%lu\n"
-		,omp_get_thread_num(),barrier_ttime);
-	}
-#endif
-
 	switch(kind) {
 	  case ompt_sync_region_barrier:
+		OMPT_THREAD_BARRIER(false);
 #ifndef NDEBUG
 	    if (cbtf_ompt_debug_blame) {
-		fprintf(stderr,"%" PRIu64 ": ompt_event_barrier_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
-		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
+		Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
+		uint64_t etime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
+			(uint64_t)(now.tv_nsec);
+		barrier_ttime += (etime - barrier_btime);
+		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region barrier_end parallel_id:%lu task_id:%lu codeptr_ra:%p\n"
+		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
 	    }
 #endif
 	  break;
@@ -281,19 +278,13 @@ void CBTF_ompt_callback_sync_region_wait(
 {
     switch(endpoint) {
     case ompt_scope_begin:
-        OMPT_THREAD_WAIT_BARRIER(true);
-#ifndef NDEBUG
-	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_sync_region_wait begin\n"
-		,omp_get_thread_num());
-	}
-#endif
 	switch(kind) { 
 	case ompt_sync_region_barrier:
+            OMPT_THREAD_WAIT_BARRIER(true);
 #ifndef NDEBUG
 	    if (cbtf_ompt_debug_blame) {
-		fprintf(stderr,"%" PRIu64 ": ompt_event_wait_barrier_begin: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
-		ompt_get_thread_data()->value, parallel_data->value, task_data->value, codeptr_ra);
+		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region_wait wait_barrier_begin parallel_id:%lu task_id:%lu codeptr_ra:%p\n"
+		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
 	    }
 #endif
 	    break;
@@ -316,19 +307,13 @@ void CBTF_ompt_callback_sync_region_wait(
 	}
 	break;
     case ompt_scope_end:
-        OMPT_THREAD_WAIT_BARRIER(false);
-#ifndef NDEBUG
-	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_sync_region_wait end\n"
-		,omp_get_thread_num());
-	}
-#endif
 	switch(kind) { 
         case ompt_sync_region_barrier:
+            OMPT_THREAD_WAIT_BARRIER(false);
 #ifndef NDEBUG
 	    if (cbtf_ompt_debug_blame) {
-		fprintf(stderr,"%" PRIu64 ": ompt_event_wait_barrier_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
-		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
+		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region_wait wait_barrier_end parallel_id:%ld task_id:%ld codeptr_ra:%p\n"
+		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
 	    }
 #endif
 	    break;
@@ -363,8 +348,7 @@ void CBTF_ompt_callback_idle(ompt_scope_endpoint_t endpoint)
 	OMPT_THREAD_IDLE(true);
 #ifndef NDEBUG
 	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_idle begin\n" ,omp_get_thread_num());
-	    fprintf(stderr,"%" PRIu64 ": ompt_event_idle_begin:\n", ompt_get_thread_data()->value);
+	    fprintf(stderr,"[%d,%d] CBTF_ompt_callback_idle begin\n" ,getpid(),monitor_get_thread_num());
 	}
 #endif
 	break;
@@ -372,14 +356,55 @@ void CBTF_ompt_callback_idle(ompt_scope_endpoint_t endpoint)
 	OMPT_THREAD_IDLE(false);
 #ifndef NDEBUG
 	if (cbtf_ompt_debug_blame) {
-	    fprintf(stderr,"[%d] CBTF_ompt_callback_idle end\n" ,omp_get_thread_num());
-	    fprintf(stderr,"%" PRIu64 ": ompt_event_idle_end:\n", ompt_get_thread_data()->value);
+	    fprintf(stderr,"[%d,%d] CBTF_ompt_callback_idle end\n" ,getpid(),monitor_get_thread_num());
 	}
 #endif
 	break;
   }
 }
 
+
+// ompt_event_MAY_ALWAYS_TRACE
+/**
+ * The OpenMP runtime system invokes this callback, after an implicit task
+ * is fully initialized but before the task executes its work.
+ * This callback executes in the context of the new implicit task.
+ * We overide the callstack's first frame with the context provided
+ * by the region this task is doing work in.
+ * Without this context, call stack is at __kmp_invoke_task_func.
+ */
+void
+CBTF_ompt_callback_implicit_task(
+    ompt_scope_endpoint_t endpoint,
+    ompt_data_t *parallel_data,
+    ompt_data_t *task_data,
+    unsigned int team_size,
+    unsigned int thread_num)
+{
+    switch(endpoint) {
+    case ompt_scope_begin:
+	if(task_data->ptr) {
+	    fprintf(stderr, "%s\n", "0: task_data initially not null");
+	}
+	task_data->value = ompt_get_unique_id();
+#ifndef NDEBUG
+	if (cbtf_ompt_debug_blame) {
+	    fprintf(stderr,"[%d,%d] ompt_event_implicit_task_begin: parallel_id:%lu task_id:%lu team_size:%u thread_num:%u\n"
+	    ,getpid(),monitor_get_thread_num(), (parallel_data)?parallel_data->value:0, task_data->value, team_size, thread_num);
+	}
+#endif
+	break;
+
+    case ompt_scope_end:
+#ifndef NDEBUG
+	if (cbtf_ompt_debug_trace) {
+	    fprintf(stderr,"[%d,%d] ompt_event_implicit_task_end: parallel_id:%lu task_id:%lu team_size:%u thread_num:%u\n"
+	    ,getpid(),monitor_get_thread_num(), (parallel_data)?parallel_data->value:0, task_data->value, team_size, thread_num);
+	}
+#endif
+	break;
+    }
+}
 
 static int
 CBTF_ompt_callback_control_tool(
@@ -456,6 +481,7 @@ int ompt_initialize(
   register_callback(ompt_callback_sync_region);
   register_callback_t(ompt_callback_sync_region_wait, ompt_callback_sync_region_t);
   register_callback(ompt_callback_control_tool);
+  register_callback(ompt_callback_implicit_task);
   register_callback(ompt_callback_parallel_begin);
   register_callback(ompt_callback_parallel_end);
   register_callback(ompt_callback_thread_begin);
@@ -473,7 +499,7 @@ void ompt_finalize(ompt_data_t *tool_data)
 {
 #ifndef NDEBUG
   if (cbtf_ompt_debug_details) {
-    fprintf(stderr,"%d: ompt_event_runtime_shutdown\n", omp_get_thread_num());
+    fprintf(stderr,"%d,%d: ompt_event_runtime_shutdown\n",getpid(),monitor_get_thread_num());
   }
 #endif
 }

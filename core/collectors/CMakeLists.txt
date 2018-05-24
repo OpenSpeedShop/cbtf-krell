@@ -56,3 +56,5 @@ if (LIBUNWIND_FOUND)
 add_subdirectory(omptp)
 endif()
 endif()
+
+add_subdirectory(overview)

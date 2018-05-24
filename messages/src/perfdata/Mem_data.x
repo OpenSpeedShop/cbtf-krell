@@ -97,3 +97,11 @@ struct CBTF_mem_exttrace_data {
     uint64_t stacktraces<>;    /**< Stack traces. */
     CBTF_memt_event events<>;  /**< Mem call events with details. */
 };
+
+/** Event structure describing a single I/O call profile time. */
+struct CBTF_overview_mem_event {
+    uint64_t time;        /**< exclusive time of this call event. */
+    uint64_t bytes;       /**< bytes read or written of this call event. */
+    CBTF_mem_type mem_type;   /**< event kind */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+};

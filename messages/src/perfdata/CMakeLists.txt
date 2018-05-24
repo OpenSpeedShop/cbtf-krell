@@ -55,6 +55,10 @@ set(CBTF_MESSAGES_PERFDATA_SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Ompt.c
     ${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h
     ${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview.c
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.c
     ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h
     ${CMAKE_CURRENT_BINARY_DIR}/Usertime.c
     ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h
@@ -80,6 +84,8 @@ set(CBTF_MESSAGES_PERFDATA_SOURCES
     Pthreads_data.x
     Ompt.x
     Ompt_data.x
+    Overview.x
+    Overview_data.x
     Usertime.x
     Usertime_data.x
     Stats.x
@@ -108,6 +114,8 @@ set(CBTF_MESSAGES_CONVERTERS_PERFDATA_SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h
     ${CMAKE_CURRENT_BINARY_DIR}/Ompt.h
     ${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview.h
+    ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
     ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h
     ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h
     ${CMAKE_CURRENT_BINARY_DIR}/Stats.h
@@ -427,6 +435,38 @@ add_custom_command(
 
 add_custom_command(
     OUTPUT
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.c
+    COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Overview.x ${CMAKE_CURRENT_BINARY_DIR}/Overview.x
+    COMMAND cmake -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/Overview.h ${CMAKE_CURRENT_BINARY_DIR}/Overview.c
+    COMMAND rpcgen -h -o
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.x
+    COMMAND rpcgen -c -o
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.c
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Overview.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Overview.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Overview.x
+)
+
+add_custom_command(
+    OUTPUT
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.c
+    COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Overview_data.x ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.x
+    COMMAND cmake -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.c
+    COMMAND rpcgen -h -o
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.x
+    COMMAND rpcgen -c -o
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.c
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.x
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Overview_data.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Overview_data.x
+)
+
+add_custom_command(
+    OUTPUT
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.h
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.c
     COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Usertime.x ${CMAKE_CURRENT_BINARY_DIR}/Usertime.x
@@ -589,28 +629,30 @@ install(TARGETS cbtf-messages-perfdata-static
 )
 
 install(FILES
-	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h 
-	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h 
-	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwc.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/IO.h 
-	${CMAKE_CURRENT_BINARY_DIR}/IO_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Mem.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Mpi.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Ompt.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Usertime.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h 
-	${CMAKE_CURRENT_BINARY_DIR}/Stats.h 
+	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h
+	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h
+	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwc.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h
+	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/IO.h
+	${CMAKE_CURRENT_BINARY_DIR}/IO_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Mem.h
+	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Mpi.h
+	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h
+	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Ompt.h
+	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview.h
+	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Usertime.h
+	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h
+	${CMAKE_CURRENT_BINARY_DIR}/Stats.h
 	DESTINATION include/KrellInstitute/Messages
 	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
@@ -635,6 +677,8 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Pthreads.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Pthreads_data.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Ompt.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Ompt_data.x DESTINATION .)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Overview.x DESTINATION .)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Overview_data.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Usertime.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Usertime_data.x DESTINATION .)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Stats.x DESTINATION .)

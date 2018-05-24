@@ -167,7 +167,7 @@ EOF
 
 use_mrnet="true"
 use_fileo="false"
-use_mpi="false"
+has_mpi="false"
 has_openmp="false"
 
 while test "x$1" != x
@@ -204,7 +204,7 @@ do
             ;;
 
         --mpi )
-            use_mpi="true";
+            has_mpi="true";
 	    shift
             ;;
 
@@ -282,7 +282,7 @@ esac
 # 3. fileio (sequential programs writing offline raw data files)
 collection_type=""
 if [ $use_mrnet == "true" ] ; then
-    if [ $use_mpi == "true" ] ; then
+    if [ $has_mpi == "true" ] ; then
 	collection_type="mrnet-mpi"
     else
 	collection_type="mrnet"
@@ -318,11 +318,29 @@ case "$collector" in
 	export preload_list=${monitor_service}:${cbtfk_plugins}/$collector-collector-monitor-${collection_type}.so:${libmonitor}:${libiomp}
     ;;
 
+    # Overview collector
+    overview)
+	iowrappers=${cbtfk_plugins}/${collector}-iowrappers.so
+	memwrappers=${cbtfk_plugins}/${collector}-memwrappers.so
+	if [ $has_mpi == "true" ] ; then
+	    mpiwrappers=${cbtfk_plugins}/${collector}-${mpitouse}-wrappers.so:${extra_mpi_libs}
+	else
+	    mpiwrappers=
+	fi
+	if [ $has_openmp == "true" ] ; then
+	    omptcallbacks=${cbtfk_plugins}/${collector}-ompt-callbacks.so:${libiomp}
+	else
+	    omptcallbacks=
+	fi
+	export preload_list=${monitor_service}:${cbtfk_plugins}/$collector-collector-monitor-${collection_type}.so:$mpiwrappers:$omptcallbacks:$iowrappers:$memwrappers:${libmonitor}
+	#echo "PRELOADING: " $preload_list
+    ;;
+
     # cuda collectors can reduce if the build links these services statically
     # like the other colelctors do above.
     cuda|cudadump|cudaio)
         if [ $use_mrnet == "true" ] ; then
-            if [ $use_mpi == "true" ] ; then
+            if [ $has_mpi == "true" ] ; then
                 export preload_list=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${libmrnet_r}:${libxplat_r}:${events_service}:${data_service}:${common_service}:${offline_service}:${base_service}:${perfdata_service}:${collector_mon_mrnet_mpi_service}:${cbtfk_plugins}/cuda-collector-monitor-mrnet-mpi.so:${libmonitor}:${libunwind}
 	        else
                 export preload_list=${monitor_service}:${papi_service}:${unwind_service}:${mrnet_service}:${libmrnet_r}:${libxplat_r}:${events_service}:${data_service}:${common_service}:${offline_service}:${base_service}:${perfdata_service}:${collector_mon_mrnet_service}:${cbtfk_plugins}/cuda-collector-monitor-mrnet.so:${libmonitor}:${libunwind}
@@ -341,4 +359,5 @@ case "$collector" in
 esac
 
 export LD_PRELOAD=$preload_list:${LD_PRELOAD}
+#echo "LD_PRELOAD: " ${LD_PRELOAD}
 exec $@

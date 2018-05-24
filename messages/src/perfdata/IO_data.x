@@ -24,10 +24,29 @@
  *
  */
 
+enum CBTF_io_event_kind {
+    Unknown = 0,
+    Read = 1,
+    Write = 2,
+    Seek = 3,
+    Open = 4,
+    Close = 5,
+    Create = 6,
+    Pipe = 7,
+    Dup = 8
+};
 
 /** Event structure describing a single I/O call profile time. */
 struct CBTF_iop_event {
     uint64_t time;   /**< time of the call. */
+    uint16_t stacktrace;  /**< Index of the stack trace. */
+};
+
+/** Event structure describing a single I/O call profile time. */
+struct CBTF_overview_iop_event {
+    uint64_t time;	  /**< exclusive time of this call event. */
+    uint64_t bytes;	  /**< bytes read or written of this call event. */
+    CBTF_io_event_kind kind;  /**< event kind */
     uint16_t stacktrace;  /**< Index of the stack trace. */
 };
 

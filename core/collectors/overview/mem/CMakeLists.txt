@@ -22,8 +22,8 @@ if (BUILD_FE_USING_CN_RUNTIMES)
 
 else ()
 
+#	mem_gotcha.c 
 set(WRAPPER_SOURCES
-	#mem_gotcha.c 
 	wrappers.c 
 )
 
@@ -31,6 +31,7 @@ add_library(overview-memwrappers MODULE
 	${WRAPPER_SOURCES}
 )
 
+#	${Gotcha_INCLUDE_DIR}
 target_include_directories(overview-memwrappers PUBLIC
 	${PROJECT_SOURCE_DIR}/messages/include
 	${PROJECT_SOURCE_DIR}/services/include
@@ -41,7 +42,6 @@ target_include_directories(overview-memwrappers PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}/../../../../messages/src/perfdata
 	${CMAKE_CURRENT_BINARY_DIR}/../../../../messages/src/events
 	${CMAKE_CURRENT_BINARY_DIR}/../../../../messages/src/base
-	${Gotcha_INCLUDE_DIR}
 )
 
 #	${Gotcha_LIBRARY_SHARED}

@@ -1,0 +1,517 @@
+#!/bin/bash
+
+################################################################################
+# silence stdout from these.
+################################################################################
+pushd () {
+    command pushd "$@" > /dev/null
+}
+
+popd () {
+    command popd "$@" > /dev/null
+}
+
+################################################################################
+# die gracefully...
+################################################################################
+die()
+{
+    echo "$0: error: $*" 1>&2
+    exit 1
+}
+
+################################################################################
+# Display Usage When Necessary. Not implemented in this script.
+################################################################################
+usage() {
+    cat << EOF
+EOF
+}
+
+# topology file support for cbtf
+topology_opt=""
+# fileio option for cbtf.  used to run collectors in old offline mode.
+cbtf_offline_opt=""
+# default to using cbtf for all experiments. By default we will use --offline
+# for pcsamp,hwcsamp, and usertime due to signal handler safety issues with
+# ltwt mrnet sends.  We can override this using --cbtf which should force
+# cbtf usage for those experiments.
+force_cbtf_flag=false
+
+################################################################################
+# Setup the offline directories
+################################################################################
+setup_offline()
+{
+	    # According to OSS documentation the published method to set and alternative
+	    # location for rawdata files (eg. for lustre) is via OPENSS_RAWDATA_DIR.
+	    # Therefore we honor that naming convention and convert as needed to
+	    # CBTF_RAWDATA_DIR for the internal implementation used in cbtf-krell code.
+	    #
+	    # NOTE: Always place rawdata files into a subdirectory named offline-cbtf
+	    # in case user choses a common location like current working directory,
+	    # home directory, or such.
+	    #
+	    if [ "x${OPENSS_RAWDATA_DIR}" == "x" ] ; then
+		test -d "/tmp/${USER}/offline-cbtf" || mkdir -p "/tmp/${USER}/offline-cbtf"
+		export OPENSS_RAWDATA_DIR="/tmp/${USER}/offline-cbtf"
+	    else
+		test -d ${OPENSS_RAWDATA_DIR}/offline-cbtf || mkdir -p ${OPENSS_RAWDATA_DIR}/offline-cbtf
+		export OPENSS_RAWDATA_DIR=${OPENSS_RAWDATA_DIR}/offline-cbtf
+	    fi
+
+	    # For safety we cd to the raw directory and only remove the sub-directories
+	    # each collector creates for the rawddata files.
+	    # For the cbtf-krell offline collectors, we likely do no need the extra level
+	    # of one directory per process/thread since we write only one file now with
+	    # the naming convention: exe_name-pid-posix_tid.openss-data
+	    #
+	    pushd ${OPENSS_RAWDATA_DIR}
+	    rm -rf ./cbtf-rawdata*
+	    popd
+
+	    # The cbtf-krell collectors internally use the CBTF_RAWDATA_DIR environment
+	    # variable. So we set that here.
+	    export CBTF_RAWDATA_DIR=${OPENSS_RAWDATA_DIR}
+}
+
+targetos=@cbtf_targetos@
+
+# debug flag... set in options loop via -d....
+debug_flag=0
+
+while test "x$1" != x
+do
+    case "$1" in
+       -h | --help)
+	    show_help=1
+            shift
+            ;;
+       -d | --debug)
+            debug_flag=1
+            shift
+            ;;
+      --topology)
+            test "x$2" != x || die "missing argument: $*"
+            topology_file=$2
+            test -f "$topology_file" || die "unable to find: $topology_file"
+	    topology_opt="--topology $topology_file"
+            shift ; shift
+            ;;
+       --offline)
+            cbtf_offline_opt="--offline"
+	    force_cbtf_flag=false
+	    setup_offline
+            shift
+            ;;
+       --cbtf)
+	    # --cbtf and --offline can not be used at same time.
+	    # last one on command line will be used.
+	    # at this time we are forcing --offline for pcsamp,hwcsamp, and
+	    # usertime since the ltwt mrnet send is not safe in a sighandler.
+            cbtf_offline_opt=""
+	    force_cbtf_flag=true
+            shift
+            ;;
+        -- )
+            shift
+            break
+            ;;
+
+        -* )
+            die "unknown option: $1"
+            ;;
+
+        * )
+            break
+            ;;
+    esac
+done
+
+if [ ! -z "$OPENSS_DEBUG_DRIVER" ] ; then
+  debug_flag=1
+fi
+
+show_help=0
+
+# strip off any paths and get the script name.
+calling_script_name=$0
+experiment_name=${calling_script_name##*/}
+# strip cbtf from experiment name to get collector name
+collector=${experiment_name:4}
+
+real_name=`basename "$0"`
+if [[ -z "$1" || $show_help == 1 ]] ; then
+   echo ""
+   echo "Usage: $real_name \"executable\" [extra_args]"
+   echo "Usage: $real_name help or --help"
+   echo ""
+   echo "Where \"executable\" is defined as the command that you normally"
+   echo "use to execute your program but placed in quotes"
+   echo "Example: $real_name \"mpirun -N 16 -n 256 ./smg2000 -n 50 50 50\" [extra_args]"
+   echo "The optional \"extra_args\" are defined as follows:"
+   echo ""
+
+   if [[ "$experiment_name" == "cbtfpcsamp" || "$experiment_name" == "cbtfusertime" ]]; then
+     echo "sampling rate - Use this sampling rate instead of the default or any environment"
+     echo "                variable settings."
+     echo "                Example: 80 for a sampling rate of 80 samples per second."
+
+   elif [[ "$experiment_name" == "cbtfhwc" || "$experiment_name" == "cbtfhwctime" ]]; then
+     echo "papi_event  - Specify the papi event."
+     echo "              Example: PAPI_FP_OPS for Floating point operations."
+     echo "              Or PAPI_L1_DCM for Level 1 data cache misses."
+     echo "threshold   - Use this threshold value for the specified papi_event "
+     echo "              instead of the default or any environment variable settings."
+     whichpapi_avail=`which papi_avail`
+     real_papivail_name=`basename "$whichpapi_avail"`
+     if test -f $whichpapi_avail
+      then
+	echo ""
+        echo "To view available hardware counter events for running with a threashold"
+        echo "run the following command on the host where your application will run:"
+	echo ""
+        echo "$real_papivail_name | grep \"Yes   No\""
+	echo ""
+        echo "For clusters typically you want to use the events on the compute nodes:"
+	echo "mpirun -np 1 $real_papivail_name | grep \"Yes   No\""
+	echo ""
+	echo "The $experiment_name experiment can also use papi native events."
+	echo "See the manpage for papi_native_avail."
+     fi
+
+   elif [ "$experiment_name" == "cbtfhwcsamp" ]; then
+     echo "papi_event(s) - Specify a papi event or up to six (6) events depending on"
+     echo "                number of physical counters available on your platform. If an"
+     echo "                event is derived from multiple events then the total event"
+     echo "                count is reduced by the number of events needed to derive the event."
+     echo "                Example: PAPI_FP_OPS,PAPI_L1_DCM for Floating point operations"
+     echo "                and Level 1 data cache misses."
+     echo "sampling rate - Use this sampling rate instead of the default or any environment"
+     echo "                variable settings."
+     echo "                Example: 80 for a sampling rate of 80 samples per second."
+     whichpapi_avail=`which papi_avail`
+     real_papivail_name=`basename "$whichpapi_avail"`
+     if test -f $whichpapi_avail
+      then
+	echo ""
+        echo "To view available hardware counter events for running with a threshold"
+        echo "run the following command on the host where your application will run:"
+	echo ""
+        echo "$real_papivail_name | grep \"Yes\""
+	echo ""
+        echo "For clusters typically you want to use the events on the compute nodes:"
+	echo "mpirun -np 1 $real_papivail_name | grep \"Yes\""
+	echo ""
+	echo "The cbtfhwcsamp experiment can also use papi native events."
+	echo "See the manpage for papi_native_avail."
+        echo "The papi_event_chooser command can assist in selecting events that can be counted"
+        echo "together in a set. See the manpage for papi_event_chooser."
+     fi
+
+   elif [[ "$experiment_name" == "cbtfio" || "$experiment_name" == "cbtfiot" || "$experiment_name" == "cbtfiop" ]]; then
+     echo "I/O functions to trace - Specify the list of I/O functions to be traced"
+     echo "                         when running the io,iop, or iot experiments."
+     echo "Example: read,write,dup"
+
+   elif [[ "$experiment_name" == "cbtfmpi" || "$experiment_name" == "cbtfmpit" || "$experiment_name" == "cbtfmpip" ]]; then
+     echo "MPI functions to trace - Specify the list of MPI functions to be traced"
+     echo "                         when running the mpi, mpit or mpiotf experiments."
+     echo "Example: MPI_Send,MPI_Isend,MPI_Finalize"
+
+   elif [[ "$experiment_name" == "cbtfmem" ]]; then
+     echo "Memory functions to trace - Specify the list of memory functions to be traced"
+     echo "                            when running the mem experiment."
+     echo "Example: malloc,free"
+   fi
+   echo ""
+   exit
+fi
+
+#set -x
+
+
+is_tracing_experiment=false
+is_sampling_experiment=false
+is_hwc_experiment=false
+
+case $collector in
+    io*|mpi*|mem) is_tracing_experiment=true;;
+    hwc*) is_hwc_experiment=true;;
+    *) is_sampling_experiment=true;;
+esac
+
+# test two experiment parameters else one else everthing defaults
+# to collector default or environment variables. If arg 2 or 3
+# are specified the values will override environment variables.
+has_string=false
+has_num=false
+rate_threshold_value=0
+string_value=""
+if [ ! -z "$3" ] ; then
+  case $2 in
+    ''|*[!0-9]*) string_value=$2 ; has_string=true ;;
+    *) rate_threshold_value=$2 ; has_num=true;;
+  esac
+  case $3 in
+    ''|*[!0-9]*) string_value=$3 ; has_string=true;;
+    *) rate_threshold_value=$3 ; has_num=true;;
+  esac
+elif [ ! -z "$2" ] ; then
+  case $2 in
+    ''|*[!0-9]*) string_value=$2 ; has_string=true;;
+    *) rate_threshold_value=$2 ; has_num=true;;
+  esac
+fi
+
+################################################################################
+# Run collection
+################################################################################
+
+
+if [ $debug_flag == 1 ] ; then
+  echo "[$experiment_name debug]: experiment_name=$experiment_name"
+  echo "[$experiment_name debug]: string_value=$string_value"
+fi
+
+
+
+# ------------------------------------------------------------------------------------
+# -- PCSAMP EXPERIMENT SPECIFIC CODE -------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+case "$experiment_name" in
+  cbtfpcsamp)
+
+  # no need to set anything for the defaults.
+  if [ $rate_threshold_value == 0 ] ; then
+	echo "[$experiment_name]: $collector experiment using the default sampling rate."
+  else
+	echo "[$experiment_name]: $collector experiment user specified sampling rate is $rate_threshold_value"
+	export CBTF_PCSAMP_RATE=$rate_threshold_value
+  fi
+
+  # default to offline unless --cbtf was used on commandline.
+  if [ $force_cbtf_flag == false ] ; then
+    cbtf_offline_opt="--offline"
+    setup_offline
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- USERTIME EXPERIMENT SPECIFIC CODE -----------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfusertime)
+  # no need to set anything for the defaults.
+  if [ $rate_threshold_value == 0 ] ; then
+	echo "[$experiment_name]: $collector experiment using the default sampling rate: \"$default_rate\"."
+  else
+	echo "[$experiment_name]: $collector experiment user specified sampling rate is $rate_threshold_value"
+	export CBTF_USERTIME_RATE=$rate_threshold_value
+  fi
+
+  # default to offline unless --cbtf was used on commandline.
+  if [ $force_cbtf_flag == false ] ; then
+    cbtf_offline_opt="--offline"
+    setup_offline
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- HWC EXPERIMENT SPECIFIC CODE ----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfhwc)
+
+  # check for user specified threshold.  set default otherwise.
+  # In reality, the threshold default is computed on the node where
+  # the exeriment is run. So for the default cases we should
+  # NOT use the hwc_default_threshold defined in this script.
+
+  if [ $rate_threshold_value == 0 ] ; then
+    echo "[$experiment_name]: $collector using default collector computed default."
+  else
+    echo "[$experiment_name]: $collector using user specified threshold: $rate_threshold_value"
+    export CBTF_HWC_THRESHOLD=$rate_threshold_value
+  fi 
+
+  # echo event choices to user.
+  if [ "$string_value" != "" ] ; then
+    echo "[$experiment_name]: $collector using user specified papi event: \"$string_value\"."
+    export CBTF_HWC_EVENT=$string_value
+  else
+    echo "[$experiment_name]: $collector using default papi event"
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- HWCSAMP EXPERIMENT SPECIFIC CODE ------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfhwcsamp)
+
+  if [ $rate_threshold_value == 0 ] ; then
+    echo "[$experiment_name]: $collector using default collector sample rate default."
+  else
+    echo "[$experiment_name]: $collector using user specified sample rate: $rate_threshold_value"
+    export CBTF_HWCSAMP_RATE=$rate_threshold_value
+  fi 
+
+  # echo event choices to user.
+  if [ "$string_value" != "" ] ; then
+    echo "[$experiment_name]: $collector using user specified papi events: \"$string_value\"."
+    export CBTF_HWCSAMP_EVENTS=$string_value
+  else
+    echo "[$experiment_name]: $collector using default papi events"
+  fi
+
+  # default to offline unless --cbtf was used on commandline.
+  if [ $force_cbtf_flag == false ] ; then
+    cbtf_offline_opt="--offline"
+    setup_offline
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- HWCTIME EXPERIMENT SPECIFIC CODE ------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfhwctime)
+  if [ $rate_threshold_value == 0 ] ; then
+    echo "[$experiment_name]: $collector using default collector computed default."
+  else
+    echo "[$experiment_name]: $collector using user specified threshold: $rate_threshold_value"
+    export CBTF_HWCTIME_THRESHOLD=$rate_threshold_value
+  fi 
+
+  # echo event choices to user.
+  if [ "$string_value" != "" ] ; then
+    echo "[$experiment_name]: $collector using user specified papi event: \"$string_value\"."
+    export CBTF_HWCTIME_EVENT=$string_value
+  else
+    echo "[$experiment_name]: $collector using default papi event"
+  fi
+
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- IO EXPERIMENT SPECIFIC CODE -----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfio)
+
+  if [ "$string_value" != "" ] ; then
+    export CBTF_IO_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- IOT EXPERIMENT SPECIFIC CODE ----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfiot)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_IOT_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- IOP EXPERIMENT SPECIFIC CODE ----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfiop)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_IOP_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- MEM EXPERIMENT SPECIFIC CODE ----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfmem)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_MEM_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- MPI EXPERIMENT SPECIFIC CODE ----------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfmpi)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_MPI_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- MPIP EXPERIMENT SPECIFIC CODE ---------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfmpip)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_MPIP_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- MPIT EXPERIMENT SPECIFIC CODE ---------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfmpit)
+  if [ "$string_value" != "" ] ; then
+    export CBTF_MPIT_TRACED=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+  ;;
+
+# ------------------------------------------------------------------------------------
+# -- SUMMARY EXPERIMENT SPECIFIC CODE ---------------------------------------------------
+# ------------------------------------------------------------------------------------
+
+  cbtfsummary)
+  collector=overview
+  if [ "$string_value" != "" ] ; then
+    export CBTF_SUMMARY_HWC_EVENTS=$string_value
+    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+  else
+    echo "[$experiment_name]: $collector using default experiment trace function list."
+  fi
+
+esac
+
+# exit here for testing purposes...
+
+export CBTF_SHOW_METRIC_EVENTS=1
+if [ $invalid_experiment ] ; then
+    echo "[collectionTool]: in valid experiment expression"
+else
+    if [ "$targetos" == "cray" -o "$targetos" == "cray-xk" -o "$targetos" == "cray-xe" ] ; then
+       collectionTool $topology_opt $cbtf_offline_opt --arch cray --program "$1" --collector $collector
+    else
+       collectionTool $topology_opt $cbtf_offline_opt --program "$1" --collector $collector
+    fi
+fi

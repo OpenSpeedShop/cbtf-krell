@@ -700,25 +700,38 @@ static void SetCSVFile(TLS* tls, const char* unique_id,
     char* cbtf_csvdata_dir = NULL;
     char* user_name = NULL;
     char dir_path[PATH_MAX] = {0};
+    char cwd[PATH_MAX];
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+	sprintf(cwd, "%s", "/tmp");
+    }
+    
 
     cbtf_csvdata_dir = getenv("CBTF_CSVDATA_DIR");
     user_name = getenv("USER");
+    char *exename = basename(executable_path);
+
+    // TODO: add jobid from any resource manager found.
+    if (cbtf_csvdata_dir != NULL) {
+	sprintf(dir_path, "%s", cbtf_csvdata_dir);
+    } else if (strcmp(cwd,"/tmp") == 0) {
+	sprintf(dir_path, "%s/%s/%s-csvdata",
+	    cwd, (user_name != NULL) ? user_name : "/unknownuser",exename);
+    } else {
+	sprintf(dir_path, "%s/%s-csvdata",
+	    cwd,exename);
+    }
 
     if (tls->data_header.rank < 0) {
-	sprintf(dir_path, "%s/%s/cbtf-csvdata/%s-%lu",
-            (cbtf_csvdata_dir != NULL) ? cbtf_csvdata_dir : "/tmp",
-            (user_name != NULL) ? user_name : "/unknownuser",
-             tls->data_header.host,tls->data_header.pid);
+	sprintf(dir_path, "%s/%s-%lu",
+	    dir_path, tls->data_header.host,tls->data_header.pid);
     } else {
-	sprintf(dir_path, "%s/%s/cbtf-csvdata/%s-%u",
-            (cbtf_csvdata_dir != NULL) ? cbtf_csvdata_dir : "/tmp",
-            (user_name != NULL) ? user_name : "unknownuser",
-             tls->data_header.host,tls->data_header.rank);
+	sprintf(dir_path, "%s/%s-%u",
+	    dir_path, tls->data_header.host,tls->data_header.rank);
     }
 
     {
 	sprintf(tls->csv_path,"");
-	char *exename = basename(executable_path);
 	if(tls->data_header.posix_tid == 0) {
             if (tls->data_header.rank < 0) {
 		sprintf(tls->csv_path, "%s/%s-%lu", dir_path, exename, tls->data_header.pid);
@@ -764,7 +777,6 @@ static void SetCSVFile(TLS* tls, const char* unique_id,
         int save_errno = 0;
         int try_count = 0;
         while (status != 0 ) {
-   	   //status = mkdir(dir_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
    	   status = mkpath(dir_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
            save_errno = errno;
            try_count = try_count + 1;
@@ -790,11 +802,17 @@ static void SetCSVFile(TLS* tls, const char* unique_id,
  */
 void TLS_print_data(TLS* tls)
 {
+    bool print_to_stdout = getenv("CBTF_SHOW_CSVDATA") ? true : false;
     /* Get our executable path */
     if (executable_path == NULL) {
         executable_path = strdup(CBTF_GetExecutablePath());
     }
     char *exename = basename(executable_path);
+
+    /* header is created before mpi rank is known so fill it
+     * in here to make sure it is accurate
+     */
+    tls->data_header.rank = monitor_mpi_comm_rank();
 
     SetCSVFile(tls, cbtf_collector_unique_id, "csv");
 
@@ -814,14 +832,12 @@ void TLS_print_data(TLS* tls)
     fprintf(csvfileptr,"%s\n",provenance_csv_header);
     fprintf(csvfileptr,"%s\n",provenance_csv_values);
 
-#if !defined(NDEBUG)
-    if (IsDebugEnabled) {
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    if (print_to_stdout) {
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, provenance_csv_header);
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, provenance_csv_values);
     }
-#endif
 
 
     // Rusage.
@@ -838,14 +854,12 @@ void TLS_print_data(TLS* tls)
     fprintf(csvfileptr,"%s\n",rusage_csv_header);
     fprintf(csvfileptr,"%s\n",rusage_csv_values);
 
-#if !defined(NDEBUG)
-    if (IsDebugEnabled) {
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    if (print_to_stdout) {
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, rusage_csv_header);
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, rusage_csv_values);
     }
-#endif
 
     // PAPI_dmem.
     char papi_dmem_csv_header[80] = {0};
@@ -857,14 +871,12 @@ void TLS_print_data(TLS* tls)
     fprintf(csvfileptr,"%s\n",papi_dmem_csv_header);
     fprintf(csvfileptr,"%s\n",papi_dmem_csv_values);
 
-#if !defined(NDEBUG)
-    if (IsDebugEnabled) {
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    if (print_to_stdout) {
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, papi_dmem_csv_header);
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, papi_dmem_csv_values);
     }
-#endif
 
     // POSIX IO
     if (tls->total_posixio_time > 0) {
@@ -881,14 +893,12 @@ void TLS_print_data(TLS* tls)
 	fprintf(csvfileptr,"%s\n",posixio_csv_header);
 	fprintf(csvfileptr,"%s\n",posixio_csv_values);
 
-#if !defined(NDEBUG)
-	if (IsDebugEnabled) {
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	if (print_to_stdout) {
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, posixio_csv_header);
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, posixio_csv_values);
 	}
-#endif
     }
 
     // MEM
@@ -903,16 +913,14 @@ void TLS_print_data(TLS* tls)
 	fprintf(csvfileptr,"%s\n",mem_alloc_csv_header);
 	fprintf(csvfileptr,"%s\n",mem_alloc_csv_values);
 
-#if !defined(NDEBUG)
-	if (IsDebugEnabled) {
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	if (print_to_stdout) {
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid,
 	mem_alloc_csv_header);
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid,
 	mem_alloc_csv_values);
 	}
-#endif
     }
 
     if (tls->mem_data.total_free_calls > 0) {
@@ -925,14 +933,12 @@ void TLS_print_data(TLS* tls)
 	fprintf(csvfileptr,"%s\n",mem_free_csv_header);
 	fprintf(csvfileptr,"%s\n",mem_free_csv_values);
 
-#if !defined(NDEBUG)
-	if (IsDebugEnabled) {
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	if (print_to_stdout) {
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, mem_free_csv_header);
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, mem_free_csv_values);
 	}
-#endif
 
     }
 
@@ -947,14 +953,12 @@ void TLS_print_data(TLS* tls)
 	fprintf(csvfileptr,"%s\n",mpi_csv_header);
 	fprintf(csvfileptr,"%s\n",mpi_csv_values);
 
-#if !defined(NDEBUG)
-	if (IsDebugEnabled) {
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	if (print_to_stdout) {
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, mpi_csv_header);
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, mpi_csv_values);
 	}
-#endif
     }
 
     // PAPI
@@ -983,14 +987,12 @@ void TLS_print_data(TLS* tls)
     fprintf(csvfileptr,"%s\n",papi_csv_header);
     fprintf(csvfileptr,"%s\n",papi_csv_values);
 
-#if !defined(NDEBUG)
-    if (IsDebugEnabled) {
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    if (print_to_stdout) {
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, papi_csv_header);
-    fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+    fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, papi_csv_values);
     }
-#endif
 
     // OMPT
     if (tls->itask_ttime > 0) {
@@ -1007,14 +1009,12 @@ void TLS_print_data(TLS* tls)
 	fprintf(csvfileptr,"%s\n",ompt_csv_header);
 	fprintf(csvfileptr,"%s\n",ompt_csv_values);
 
-#if !defined(NDEBUG)
-        if (IsDebugEnabled) {
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+        if (print_to_stdout) {
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, ompt_csv_header);
-	fprintf(stderr,"[OVERVIEW %ld,%d] %s\n",
+	fprintf(stdout,"[%ld,%d] %s\n",
 	tls->data_header.pid, tls->data_header.omp_tid, ompt_csv_values);
 	}
-#endif
     }
 
     /* Close the file */

@@ -197,6 +197,7 @@ set(cbtfdefaultmpi ${DEFAULT_MPI_IMPL})
 # Set these for usage in cbtfrun
 set(machine_dependent_libdir lib${SUFFIX})
 set(alt_machine_dependent_libdir lib)
+set(cbtf_targetos ${RUNTIME_PLATFORM})
 
 # Set these MPI directories for usage in cbtfrun
 set(mpichdir ${MPICH_DIR})
@@ -214,12 +215,45 @@ configure_file(cbtfrun.in cbtfrun @ONLY)
 configure_file(cbtflink.in cbtflink @ONLY)
 configure_file(cbtf_mrnet_commnode.in cbtf_mrnet_commnode @ONLY)
 configure_file(cbtf_libcbtf_mrnet_backend.in cbtf_libcbtf_mrnet_backend @ONLY)
+configure_file(cbtfdriver.in cbtfdriver @ONLY)
 
 install(PROGRAMS
 	${CMAKE_CURRENT_BINARY_DIR}/cbtfrun
 	${CMAKE_CURRENT_BINARY_DIR}/cbtflink
+	${CMAKE_CURRENT_BINARY_DIR}/cbtfdriver
 	DESTINATION
 	${CMAKE_INSTALL_PREFIX}/bin)
+
+if(CMAKE_HOST_UNIX)
+        # create driver links
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfpcsamp
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfusertime
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfhwc
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfhwcsamp
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfhwctime
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfio
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfiot
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfiop
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfmpi
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfmpit
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfmpip
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfomptp
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+        install(CODE " EXECUTE_PROCESS(COMMAND ln -sf cbtfdriver cbtfsummary
+            WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin) ")
+
+endif()
 
 install(PROGRAMS
 	${CMAKE_CURRENT_BINARY_DIR}/cbtf_mrnet_commnode

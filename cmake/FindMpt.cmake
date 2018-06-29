@@ -29,12 +29,14 @@ find_path(Mpt_INCLUDE_DIR
     HINTS $ENV{MPT_DIR}
     HINTS ${MPT_DIR}
     PATH_SUFFIXES include 
+    NO_DEFAULT_PATH
     )
 
 find_library(Mpt_LIBRARY_SHARED NAMES mpi
     HINTS $ENV{MPT_DIR}
     HINTS ${MPT_DIR}
     PATH_SUFFIXES lib lib64
+    NO_DEFAULT_PATH
     )
 
 find_package_handle_standard_args(

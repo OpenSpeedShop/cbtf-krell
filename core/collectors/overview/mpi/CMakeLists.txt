@@ -33,18 +33,42 @@ set(COMMON_INCLUDE_DIRS
 	${LibMonitor_INCLUDE_DIRS}
 )
 
+# BUILD MVAPICH2 wrapper libs
+
+if (HAVE_MVAPICH2)
+    set(MPI_C_COMPILER ${MVAPICH2_DIR}/bin/mpicc)
+    add_wrapped_file(mvapich2-wrappers.c wrappers.w -f)
+
+    set(OVERVIEW_MPIWRAPPER_SOURCES mvapich2-wrappers.c)
+    add_library(overview-mvapich2-wrappers MODULE
+        ${OVERVIEW_MPIWRAPPER_SOURCES})
+    target_include_directories(overview-mvapich2-wrappers PUBLIC
+        ${Mvapich2_INCLUDE_DIRS}
+        ${COMMON_INCLUDE_DIRS}
+    )
+    target_link_libraries(overview-mvapich2-wrappers ${Mvapich2_SHARED_LIBRARIES} rt ${CMAKE_DL_LIBS})
+    set_target_properties(overview-mvapich2-wrappers PROPERTIES PREFIX "")
+    set_target_properties(overview-mvapich2-wrappers PROPERTIES
+        COMPILE_DEFINITIONS "${Mvapich2_DEFINES}")
+
+    install(TARGETS overview-mvapich2-wrappers
+        LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
+    )
+endif()
+
 # BUILD OPENMPI wrapper libs
 if (HAVE_OPENMPI)
-    set(MPI_C_INCLUDE_PATH ${OpenMPI_INCLUDE_DIRS})
     set(MPI_C_COMPILER ${OPENMPI_DIR}/bin/mpicc)
-    set(MPI_C_LIBRARIES ${OpenMPI_SHARED_LIBRARIES})
     add_wrapped_file(openmpi-wrappers.c wrappers.w -f)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES openmpi-wrappers.c)
-    include_directories(${MPI_C_INCLUDE_PATH} ${COMMON_INCLUDE_DIRS})
     add_library(overview-openmpi-wrappers MODULE
         ${OVERVIEW_MPIWRAPPER_SOURCES})
-    target_link_libraries(overview-openmpi-wrappers ${MPI_C_LIBRARIES} rt ${CMAKE_DL_LIBS})
+    target_include_directories(overview-openmpi-wrappers PUBLIC
+        ${OpenMPI_INCLUDE_DIRS}
+        ${COMMON_INCLUDE_DIRS}
+    )
+    target_link_libraries(overview-openmpi-wrappers ${OpenMPI_SHARED_LIBRARIES} rt ${CMAKE_DL_LIBS})
     set_target_properties(overview-openmpi-wrappers PROPERTIES PREFIX "")
     set_target_properties(overview-openmpi-wrappers PROPERTIES
         COMPILE_DEFINITIONS "${OpenMPI_DEFINES}")

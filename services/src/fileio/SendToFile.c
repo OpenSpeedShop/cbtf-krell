@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 
 // record the executable path once here.
@@ -139,7 +140,9 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
     }
 
 
-    if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
+    bool IsFileioDebugEndabled = false;
+    IsFileioDebugEndabled = (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL);
+    if ( IsFileioDebugEndabled ) {
 	fprintf(stderr,"CBTF_SetSendToFile ready for %s\n",tls->path);
     }
 
@@ -156,7 +159,7 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
     if (stat(dir_path, &st) == 0 && S_ISDIR (st.st_mode)) {
 
         /* No need to make the directory.  It already exists. */
-	if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
+	if ( IsFileioDebugEndabled) {
             fprintf(stderr,"CBTF_SetSendToFile pathname %s exists and is a directory\n",
 		dir_path);
         }
@@ -178,7 +181,7 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
            save_errno = errno;
            try_count = try_count + 1;
         }
-	if ( (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL)) {
+	if ( IsFileioDebugEndabled) {
             fprintf(stderr,"CBTF_SetSendToFile mkdir dir_path:%s status=%d errno:%d try_count:%d\n",
 		dir_path, status, save_errno, try_count);
         }

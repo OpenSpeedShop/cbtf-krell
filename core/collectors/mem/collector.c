@@ -54,12 +54,14 @@
 #undef USE_EXPLICIT_TLS
 #endif
 
+extern bool cbtf_connected_to_mrnet();
+extern bool cbtf_mpi_init_done();
+
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "mem";
 #if defined(CBTF_SERVICE_USE_FILEIO)
 const char* const data_suffix = "cbtf-data";
 #endif
-
 
 /** Number of overhead frames in each stack frame to be skipped. */
 #if defined(CBTF_SERVICE_USE_OFFLINE)
@@ -113,12 +115,16 @@ typedef struct {
     char CBTF_mem_traced[PATH_MAX];
 #endif
     
-    /** Nesting depth within the IO function wrappers. */
+    /** Nesting depth within the mem wrappers. */
     unsigned nesting_depth;
     bool_t do_trace;
     bool_t defer_sampling;
     int event_count;
 } TLS;
+
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#endif
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -243,15 +249,15 @@ static void send_samples(TLS *tls)
     tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "[%d:%d] mem send_samples:\n", tls->header.rank, tls->header.omp_tid);
-	    fprintf(stderr, "[%d:%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) events_len(%d)\n",
-		tls->header.rank, tls->header.omp_tid,
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%ld:%d] mem send_samples:\n",tls->header.pid, tls->header.omp_tid);
+	fprintf(stderr, "[%ld:%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) events_len(%d)\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
 		tls->data.events.events_len);
-	}
+    }
 #endif
 
     cbtf_collector_send(&(tls->header), (xdrproc_t)xdr_CBTF_mem_exttrace_data, &(tls->data));
@@ -475,6 +481,7 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->defer_sampling = 1;
     tls->do_trace = 0;
     tls->event_count = 0;
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...
@@ -510,17 +517,56 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     initialize_data(tls);
 
-    /* Initialize the IO function wrapper nesting depth */
+    /* Initialize the mem function wrapper nesting depth */
     tls->nesting_depth = 0;
  
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    tls->defer_sampling = 0;
-    tls->do_trace = 1;
+
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"[%d:%d] cbtf_collector_start\n",
-		tls->header.rank, tls->header.omp_tid);
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld:%d] cbtf_collector_start ENTERED.\n",
+		tls->header.pid, tls->header.omp_tid);
+    }
+#endif
+
+#if !defined(CBTF_SERVICE_USE_FILEIO)
+    // in mpi programs we wish to defer tracing until after the
+    // mpi init process is finished.
+    if (cbtf_connected_to_mrnet()) {
+	tls->defer_sampling = 0;
+	tls->do_trace = 1;
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start mem tracing active.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    } else {
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start mem tracing not enabled due to no mrnet connection.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    }
+#else
+    if (cbtf_mpi_init_done()) {
+	tls->defer_sampling = 0;
+	tls->do_trace = 1;
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start mem tracing active.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    } else {
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start mem tracing not enabled due to in mpi startup.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
     }
 #endif
 }
@@ -610,9 +656,9 @@ void cbtf_collector_stop()
     }
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"[%d:%d] cbtf_collector_stop events:%d\n",
-		tls->header.rank, tls->header.omp_tid,
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld:%d] cbtf_collector_stop events:%d\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->event_count);
     }
 #endif

@@ -67,17 +67,21 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier, thread_barrier;
-    bool debug_collector_ompt;
-    uint32_t ompTid;
 #endif
-
-    /* debug flags */
-    bool debug_collector;
 
     bool defer_sampling;
     int EventSet;
 
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+static bool IsCollectorDetailsDebugEnabled = false;
+#if defined (HAVE_OMPT)
+static bool IsOMPTDebugEnabled = false;
+#endif
+#endif
 
 static int hwcsamp_papi_init_done = 0;
 static long_long evalues[6] = { 0, 0, 0, 0, 0, 0 };
@@ -261,9 +265,10 @@ fprintf(stderr,"send_samples: size of eventssize = %d\n",eventssize);
 #endif
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
-	    fprintf(stderr, "hwcsamp send_samples:\n");
-	    fprintf(stderr, "time_range(%lu,%lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
+    if (IsCollectorDebugEnabled) {
+	    fprintf(stderr, "[%ld,%d] hwcsamp send_samples:\n",tls->header.pid, tls->header.omp_tid);
+	    fprintf(stderr, "[%ld,%d] time_range(%lu,%lu) addr range[%#lx, %#lx] pc_len(%d) count_len(%d)\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.pc.pc_len,
@@ -351,11 +356,11 @@ static void hwcsampTimerHandler(const ucontext_t* context)
     memset(evalues,0,sizeof(evalues));
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR_DETAILS") != NULL) {
+    if (IsCollectorDetailsDebugEnabled) {
       int i;
       for (i = 0; i < 6; i++) {
         if (tls->buffer.hwccounts[tls->buffer.length-1][i] > 0) {
-            fprintf(stderr,"%#lx HWC sampTimerHandler %d count %d is %ld\n",pc,tls->buffer.length-1,i, tls->buffer.hwccounts[tls->buffer.length-1][i]);
+            fprintf(stderr,"[%ld,%d] %lx HWC sampTimerHandler %d count %d is %ld\n",tls->header.pid, tls->header.omp_tid,pc,tls->buffer.length-1,i, tls->buffer.hwccounts[tls->buffer.length-1][i]);
         }
       }
     }
@@ -401,18 +406,12 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     tls->defer_sampling=false;
 
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector = true;
-    } else {
-	tls->debug_collector = false;
-    }
-
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsCollectorDetailsDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_DETAILS") != NULL);
 #if defined (HAVE_OMPT)
-    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
-	tls->debug_collector_ompt = true;
-    } else {
-	tls->debug_collector_ompt = false;
-    }
+    IsOMPTDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL);
+#endif
 #endif
 
     /* Decode the passed function arguments */
@@ -457,14 +456,14 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
 
 #ifndef NDEBUG
-	if (tls->debug_collector) {
-	    fprintf(stderr,"[%d,%d]ENTER cbtf_collector_start\n",tls->header.pid,tls->header.omp_tid);
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] ENTER cbtf_collector_start\n",tls->header.pid,tls->header.omp_tid);
 	}
 #endif
     if(hwcsamp_papi_init_done == 0) {
 #ifndef NDEBUG
-	if (tls->debug_collector) {
-	    fprintf(stderr,"[%d,%d] cbtf_collector_start: initialize papi\n",tls->header.pid,tls->header.omp_tid);
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: initialize papi\n",tls->header.pid,tls->header.omp_tid);
 	}
 #endif
 	CBTF_init_papi();
@@ -482,7 +481,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     int rval = PAPI_OK;
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
        fprintf(stderr, "PAPI Version: %d.%d.%d.%d\n", PAPI_VERSION_MAJOR( PAPI_VERSION ),
                         PAPI_VERSION_MINOR( PAPI_VERSION ),
                         PAPI_VERSION_REVISION( PAPI_VERSION ),

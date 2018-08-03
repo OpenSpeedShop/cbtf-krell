@@ -48,6 +48,10 @@
 #include "IOTraceableFunctions.h"
 #include "monitor.h"
 
+// FIXME: What include are these defined in?
+extern bool cbtf_connected_to_mrnet();
+extern bool cbtf_mpi_init_done();
+
 /** String uniquely identifying this collector. */
 #if defined(PROFILE)
 const char* const cbtf_collector_unique_id = "iop";
@@ -153,9 +157,14 @@ typedef struct {
     
     /** Nesting depth within the IO function wrappers. */
     unsigned nesting_depth;
-    bool_t do_trace;
-    bool_t defer_sampling;
+    bool do_trace;
+    bool defer_sampling;
 } TLS;
+
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#endif
+
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -182,7 +191,7 @@ static __thread TLS the_tls;
 
 #endif
 
-void defer_trace(int defer_tracing) {
+void defer_trace(bool defer_tracing) {
     /* Access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
     TLS* tls = CBTF_GetTLS(TLSKey);
@@ -307,9 +316,10 @@ static void send_samples(TLS *tls)
     tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "io send_samples:\n");
-	    fprintf(stderr, "time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d)\n",
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr, "[%ld,%d] io send_samples:\n",tls->header.pid, tls->header.omp_tid);
+	    fprintf(stderr, "[%ld,%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d)\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len
@@ -411,7 +421,7 @@ void io_record_event(const CBTF_io_event* event, uint64_t function)
 #endif
     Assert(tls != NULL);
 
-    tls->do_trace = FALSE;
+    tls->do_trace = false;
 
     uint64_t stacktrace[MaxFramesPerStackTrace];
     unsigned stacktrace_size = 0;
@@ -574,7 +584,7 @@ fprintf(stderr,"PathBufferSize is full, call send_samples\n");
 	tls->buffer.count[stackindex] = tls->buffer.count[stackindex] + 1;
 	tls->buffer.time[stackindex] += event->time;
 	// reset do_trace to true.
-	tls->do_trace = TRUE;
+	tls->do_trace = true;
 	return;
     }
 
@@ -708,7 +718,7 @@ fprintf(stderr,"Event Buffer is full, call send_samples\n");
     }
 #endif
 
-    tls->do_trace = TRUE;
+    tls->do_trace = true;
 }
 
 
@@ -737,19 +747,14 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
 #endif
     Assert(tls != NULL);
 
-    tls->defer_sampling=FALSE;
+    tls->defer_sampling=true;
+    tls->do_trace=false;
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...
     CBTF_io_start_sampling_args args;
     memset(&args, 0, sizeof(args));
     
-#if 0
-    CBTF_DecodeParameters(arguments,
-			  (xdrproc_t)xdr_CBTF_io_start_sampling_args,
-			   &args);
-#endif
-
 #if defined(CBTF_SERVICE_USE_OFFLINE)
 
     /* If CBTF_IO_TRACED is set to a valid list of io functions, trace only
@@ -773,12 +778,58 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     initialize_data(tls);
 
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld,%d] ENTERED cbtf_collector_start.\n",tls->header.pid, tls->header.omp_tid);
+    }
+#endif
+
     /* Initialize the IO function wrapper nesting depth */
     tls->nesting_depth = 0;
  
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
-    tls->do_trace = TRUE;
+
+#if !defined(CBTF_SERVICE_USE_FILEIO)
+    // in mpi programs we wish to defer tracing until after the
+    // mpi init process is finished.
+    if (cbtf_connected_to_mrnet()) {
+	tls->defer_sampling = false;
+	tls->do_trace = true;
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start IO tracing active.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    } else {
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start IO tracing not enabled due to no mrnet connection.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    }
+#else
+    if (cbtf_mpi_init_done()) {
+	tls->defer_sampling = false;
+	tls->do_trace = true;
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start IO tracing active.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    } else {
+#ifndef NDEBUG
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld:%d] cbtf_collector_start IO tracing not enabled due to in mpi startup.\n",
+		tls->header.pid, tls->header.omp_tid);
+	}
+#endif
+    }
+#endif
 }
 
 
@@ -796,8 +847,8 @@ void cbtf_collector_pause()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=TRUE;
-    tls->do_trace = FALSE;
+    tls->defer_sampling = true;
+    tls->do_trace = false;
 }
 
 
@@ -816,8 +867,8 @@ void cbtf_collector_resume()
     if (tls == NULL)
 	return;
 
-    tls->defer_sampling=FALSE;
-    tls->do_trace = TRUE;
+    tls->defer_sampling = false;
+    tls->do_trace = true;
 }
 
 
@@ -896,10 +947,10 @@ bool_t io_do_trace(const char* traced_func)
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
 
-    if (tls->do_trace == FALSE) {
+    if (tls->do_trace == false) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
-	return FALSE;
+	return false;
     }
 
     /* See if this function has been selected for tracing */
@@ -925,17 +976,17 @@ bool_t io_do_trace(const char* traced_func)
     if (tls->nesting_depth > 1)
 	--tls->nesting_depth;
 
-    return FALSE;
+    return false;
 #else
     /* Always return true for dynamic instrumentors since these collectors
      * can be passed a list of traced functions for use with executeInPlaceOf.
      */
 
-    if (tls->do_trace == FALSE) {
+    if (tls->do_trace == false) {
 	if (tls->nesting_depth > 1)
 	    --tls->nesting_depth;
-	return FALSE;
+	return false;
     }
-    return TRUE;
+    return true;
 #endif
 }

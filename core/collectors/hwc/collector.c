@@ -66,17 +66,20 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier, thread_barrier;
-    bool debug_collector_ompt;
-    uint32_t ompTid;
 #endif
-
-    /* debug flags */
-    bool debug_collector;
 
     bool defer_sampling;
     int EventSet;
 
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#if defined (HAVE_OMPT)
+static bool IsOMPTDebugEnabled = false;
+#endif
+#endif
 
 static int hwc_papi_init_done = 0;
 
@@ -233,9 +236,10 @@ static void send_samples (TLS* tls)
     tls->data.count.count_len = tls->buffer.length;
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
-        fprintf(stderr,"HWC send_samples DATA:\n");
-        fprintf(stderr,"time_end(%#lu) addr range [%#lx, %#lx] pc_len(%d)\n",
+    if (IsCollectorDebugEnabled) {
+        fprintf(stderr,"[%ld,%d] HWC send_samples DATA:\n",tls->header.pid,tls->header.omp_tid);
+        fprintf(stderr,"[%ld,%d] time_end(%lu) addr range [%lx, %lx] pc_len(%d)\n",
+	    tls->header.pid,tls->header.omp_tid,
             tls->header.time_end,tls->header.addr_begin,
 	    tls->header.addr_end,tls->data.pc.pc_len);
     }
@@ -361,18 +365,11 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     tls->defer_sampling=false;
 
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector = true;
-    } else {
-	tls->debug_collector = false;
-    }
-
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 #if defined (HAVE_OMPT)
-    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
-	tls->debug_collector_ompt = true;
-    } else {
-	tls->debug_collector_ompt = false;
-    }
+    IsOMPTDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL);
+#endif
 #endif
 
     /* Decode the passed function arguments */

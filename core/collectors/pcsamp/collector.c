@@ -49,6 +49,12 @@
 #include "KrellInstitute/Services/TLS.h"
 #include "monitor.h" /* monitor_get_thread_num and friends */
 
+// FIXME: What include are these defined in?
+#if defined(CBTF_SERVICE_USE_MRNET)
+extern bool cbtf_connected_to_mrnet();
+#endif
+extern bool cbtf_mpi_init_done();
+
 /** String uniquely identifying this collector. */
 const char* const cbtf_collector_unique_id = "pcsamp";
 #if defined(CBTF_SERVICE_USE_FILEIO)
@@ -66,15 +72,20 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier, thread_barrier;
-    bool debug_collector_ompt;
-    uint32_t ompTid;
 #endif
 
-    /* debug flags */
-    bool debug_collector;
 
     bool defer_sampling;
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#if defined (HAVE_OMPT)
+static bool IsOMPTDebugEnabled = false;
+#endif
+#endif
+
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -230,8 +241,8 @@ static void send_samples (TLS* tls)
     tls->data.count.count_len = tls->buffer.length;
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
-        fprintf(stderr,"[%ld:%d] send_samples: time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%u)\n",
+    if (IsCollectorDebugEnabled) {
+        fprintf(stderr,"[%ld,%d] send_samples: time_range[%lu, %lu) addr range [%lx, %lx] pc_len(%u)\n",
 	    tls->header.pid, tls->header.omp_tid,
             (uint64_t)tls->header.time_begin, (uint64_t)tls->header.time_end,
             tls->header.addr_begin, tls->header.addr_end,
@@ -353,18 +364,11 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     tls->defer_sampling=false;
 
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector = true;
-    } else {
-	tls->debug_collector = false;
-    }
-
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 #if defined (HAVE_OMPT)
-    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
-	tls->debug_collector_ompt = true;
-    } else {
-	tls->debug_collector_ompt = false;
-    }
+    IsOMPTDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL);
+#endif
 #endif
 
     /* handle arguments */
@@ -398,6 +402,17 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* these are ompt specific.*/
     /* initialize the flags and counts for idle,wait_barrier.  */
     tls->thread_idle =  tls->thread_wait_barrier = tls->thread_barrier = false;
+#endif
+
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
+        fprintf(stderr,"[%ld,%d] collector_start timer starting. defer_sampling:%d cbtf_mpi_init_done:%d\n",
+	    tls->header.pid, tls->header.omp_tid,tls->defer_sampling,cbtf_mpi_init_done());
+#if defined(CBTF_SERVICE_USE_MRNET)
+        fprintf(stderr,"[%ld,%d] collector_start connected_to_mrnet:%d\n",
+	    tls->header.pid, tls->header.omp_tid,cbtf_connected_to_mrnet());
+#endif
+    }
 #endif
 
     /* Begin sampling */
@@ -485,6 +500,18 @@ void cbtf_collector_stop()
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
+
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
+#if defined(CBTF_SERVICE_USE_FILEIO)
+	fprintf(stderr,"[%ld,%d] collector_stop  buffer.length:%d\n",
+	    tls->header.pid, tls->header.omp_tid,tls->buffer.length);
+#else
+	fprintf(stderr,"[%ld,%d] collector_stop  buffer.length:%d connected_to_mrnet:%d\n",
+	    tls->header.pid, tls->header.omp_tid,tls->buffer.length,cbtf_connected_to_mrnet());
+#endif
+    }
+#endif
 
     /* Stop sampling */
     CBTF_Timer(0, NULL);

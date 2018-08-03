@@ -30,6 +30,11 @@
 #include "config.h"
 #endif
 
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/Mpi.h"
 #include "KrellInstitute/Messages/Mpi_data.h"
@@ -151,6 +156,12 @@ typedef struct {
     bool_t do_trace;
     bool_t defer_sampling;
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+static bool IsCollectorDetailDebugEnabled = false;
+#endif
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -294,9 +305,10 @@ static void send_samples(TLS *tls)
     tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "mpi send_samples:\n");
-	    fprintf(stderr, "time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%u) events_len(%u)\n",
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr, "[%ld,%d] mpi send_samples:\n",tls->header.pid, tls->header.omp_tid);
+	    fprintf(stderr, "[%ld,%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%u) events_len(%u)\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 #if defined(PROFILE)
@@ -408,11 +420,11 @@ void mpi_record_event(const CBTF_mpi_event* event, uint64_t function)
     unsigned pathindex = 0;
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR_DETAILED") != NULL) {
+	if (IsCollectorDetailDebugEnabled) {
 #if defined(EXTENDEDTRACE)
-fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpit_event),sizeof(stacktrace),tls->nesting_depth);
+fprintf(stderr,"[%ld,%d] ENTERED mpi_record_event, sizeof event=%ld, sizeof stacktrace=%ld, NESTING=%d\n",tls->header.pid, tls->header.omp_tid,sizeof(CBTF_mpit_event),sizeof(stacktrace),tls->nesting_depth);
 #else
-fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d, NESTING=%d\n",sizeof(CBTF_mpi_event),sizeof(stacktrace),tls->nesting_depth);
+fprintf(stderr,"[%ld,%d] ENTERED mpi_record_event, sizeof event=%ld, sizeof stacktrace=%ld, NESTING=%d\n",tls->header.pid, tls->header.omp_tid,sizeof(CBTF_mpi_event),sizeof(stacktrace),tls->nesting_depth);
 #endif
 	}
 #endif
@@ -429,8 +441,8 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
      */
     if(tls->nesting_depth > 0) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"mpi_record_event RETURNS EARLY DUE TO NESTING\n");
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] mpi_record_event RETURNS EARLY DUE TO NESTING\n",tls->header.pid, tls->header.omp_tid);
 	}
 #endif
 	return;
@@ -449,8 +461,8 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
 				    &stacktrace_size, stacktrace);
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR_DETAILED") != NULL) {
-	    fprintf(stderr,"mpi_record_event gets stacktrace of size:%d\n",stacktrace_size);
+	if (IsCollectorDetailDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] mpi_record_event gets stacktrace of size:%d\n",tls->header.pid, tls->header.omp_tid,stacktrace_size);
 	}
 #endif
 
@@ -507,8 +519,8 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
     if ( buflen > StackTraceBufferSize) {
 	/* send the current sample buffer. (will init a new buffer) */
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"StackTraceBufferSize SAMPLE BUFFER FULL. send samples\n");
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] StackTraceBufferSize SAMPLE BUFFER FULL. send samples\n",tls->header.pid, tls->header.omp_tid);
 	}
 #endif
 	send_samples(tls);
@@ -588,8 +600,8 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
 	if((tls->data.stacktraces.stacktraces_len + stacktrace_size + 1) >=
 	   StackTraceBufferSize) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"StackTraceBufferSize FULL. send samples\n");
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] StackTraceBufferSize FULL. send samples\n",tls->header.pid, tls->header.omp_tid);
 	}
 #endif
 	    send_samples(tls);
@@ -632,8 +644,8 @@ fprintf(stderr,"ENTERED mpi_record_event, sizeof event=%d, sizeof stacktrace=%d,
     /* Send events if the tracing buffer is now filled with events */
     if(tls->data.events.events_len == EventBufferSize) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"EventBufferSize FULL. send samples\n");
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] EventBufferSize FULL. send samples\n",tls->header.pid, tls->header.omp_tid);
 	}
 #endif
 	send_samples(tls);
@@ -668,12 +680,6 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-
-#ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"ENTERED cbtf_collector_start for %d\n", getpid());
-    }
-#endif
 
     tls->defer_sampling=FALSE;
 
@@ -711,6 +717,22 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     initialize_data(tls);
 
+    /* We can not assign mpi rank in the header at this point as it may not
+     * be set yet. assign an integer tid value.  omp_tid is used regardless of
+     * whether the application is using openmp threads.
+     * libmonitor uses the same numbering scheme as openmp.
+     */
+    tls->header.omp_tid = monitor_get_thread_num();
+
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsCollectorDetailDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_DETAIL") != NULL);
+
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld,%d] ENTERED cbtf_collector_start.\n",tls->header.pid, tls->header.omp_tid);
+    }
+#endif
+
     /* Initialize the MPI function wrapper nesting depth */
     tls->nesting_depth = 0;
  
@@ -735,8 +757,8 @@ void cbtf_collector_pause()
 	return;
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"ENTERED cbtf_collector_pause for %d\n", getpid());
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld,%d] ENTERED cbtf_collector_pause.\n",tls->header.pid, tls->header.omp_tid);
     }
 #endif
     tls->defer_sampling=TRUE;
@@ -760,8 +782,8 @@ void cbtf_collector_resume()
 	return;
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"ENTERED cbtf_collector_resume for %d\n", getpid());
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld,%d] ENTERED cbtf_collector_resume.\n",tls->header.pid, tls->header.omp_tid);
     }
 #endif
     tls->defer_sampling=FALSE;
@@ -801,8 +823,8 @@ void cbtf_collector_stop()
     Assert(tls != NULL);
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr,"ENTERED cbtf_collector_stop for %d\n", getpid());
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr,"[%ld,%d] ENTERED cbtf_collector_stop.\n",tls->header.pid, tls->header.omp_tid);
     }
 #endif
 
@@ -814,8 +836,8 @@ void cbtf_collector_stop()
     /* Are there any unsent samples? */
 #if defined(PROFILE)
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_collector_stop count_len:%d stacktraces_len%d\n",tls->data.count.count_len, tls->data.stacktraces.stacktraces_len);
+    if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] cbtf_collector_stop count_len:%d stacktraces_len%d\n",tls->header.pid, tls->header.omp_tid,tls->data.count.count_len, tls->data.stacktraces.stacktraces_len);
     }
 #endif
     if(tls->data.count.count_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {
@@ -823,8 +845,8 @@ void cbtf_collector_stop()
     }
 #else
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr,"cbtf_collector_stop events_len:%d stacktraces_len%d\n",tls->data.events.events_len, tls->data.stacktraces.stacktraces_len);
+    if (IsCollectorDebugEnabled) {
+	    fprintf(stderr,"[%ld,%d] cbtf_collector_stop events_len:%d stacktraces_len%d\n",tls->header.pid, tls->header.omp_tid,tls->data.events.events_len, tls->data.stacktraces.stacktraces_len);
     }
 #endif
     if(tls->data.events.events_len > 0 || tls->data.stacktraces.stacktraces_len > 0) {

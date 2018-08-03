@@ -93,6 +93,10 @@ typedef struct {
 
 } TLS;
 
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#endif
+
 #if defined(USE_EXPLICIT_TLS)
 
 /**
@@ -217,8 +221,9 @@ static void send_samples(TLS *tls)
     tls->header.rank = monitor_mpi_comm_rank();
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "[%d] omptp send_samples: time_range(%#lu,%#lu) addr range[%#lx, %#lx] stacktraces_len(%d) events_len(%d)\n",
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr, "[%ld,%d] omptp send_samples: time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%u) events_len(%u)\n",
+		tls->header.pid,
 		tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
@@ -250,7 +255,15 @@ void omptp_start_event(CBTF_omptp_event* event, uint64_t function, uint64_t* sta
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    //Assert(tls != NULL);
+    if (tls == NULL) {
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%d,%d] omptp_start_event retuns NO TLS\n",getpid(),monitor_get_thread_num());
+    }
+#endif
+	return;
+    }
 
     int saved_do_trace = tls->do_trace;
     tls->do_trace = false;
@@ -297,7 +310,21 @@ void omptp_record_event(const CBTF_omptp_event* event, uint64_t* stacktrace, uns
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    //Assert(tls != NULL);
+    if (tls == NULL) {
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%d,%d] omptp_record_event retuns NO TLS\n",getpid(),monitor_get_thread_num());
+    }
+#endif
+	return;
+    }
+
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%d,%d] omptp_record_event stacktrace_size:%d\n",getpid(),monitor_get_thread_num(),stacktrace_size);
+    }
+#endif
 
     int saved_do_trace = tls->do_trace;
     tls->do_trace = false;
@@ -422,19 +449,20 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     /* Initialize the actual data blob */
     initialize_data(tls);
 
-    /* Initialize the IO function wrapper nesting depth */
+    /* Initialize the callstack nesting depth */
     tls->nesting_depth = 0;
  
     /* Begin sampling */
     tls->header.time_begin = CBTF_GetTime();
     tls->defer_sampling = 0;
     tls->do_trace = true;
-    CBTF_ompt_set_collector_active(true);
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr, "[%d] cbtf_collector_start\n",monitor_get_thread_num());
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%d,%d] cbtf_collector_start SET ACTIVE\n",getpid(),monitor_get_thread_num());
     }
 #endif
+    CBTF_ompt_set_collector_active(true);
 }
 
 
@@ -492,7 +520,7 @@ void destroy_explicit_tls() {
 /**
  * Stop tracing.
  *
- * Stops Mem event tracing for the thread executing this function.
+ * Stops ompt event tracing for the thread executing this function.
  * Sends any events remaining in the buffer.
  *
  * @param arguments    Encoded (unused) function arguments.
@@ -507,14 +535,15 @@ void cbtf_collector_stop()
 #endif
 
     Assert(tls != NULL);
-    CBTF_ompt_set_collector_active(false);
 
     tls->header.time_end = CBTF_GetTime();
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	fprintf(stderr, "[%d] cbtf_collector_stop\n",monitor_get_thread_num());
+    if (IsCollectorDebugEnabled) {
+	fprintf(stderr, "[%d,%d] cbtf_collector_stop SET NOT ACTIVE count:%u stacktraces:%u\n",
+	getpid(),monitor_get_thread_num(),tls->data.count.count_len,tls->data.stacktraces.stacktraces_len);
     }
 #endif
+    CBTF_ompt_set_collector_active(false);
 
     /* Stop sampling */
     defer_trace(0);

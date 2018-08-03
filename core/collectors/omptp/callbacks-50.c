@@ -98,12 +98,15 @@ static void print_ids(int level)
     printf("%" PRIu64 ": task level %d: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", frame=%p\n", ompt_get_thread_data()->value, level, exists_task ? parallel_data->value : 0, exists_task ? task_data->value : 0, frame);
 }
 
-static int cbtf_ompt_debug = 0;
-static int cbtf_ompt_debug_details = 0;
-static int cbtf_ompt_debug_blame = 0;
-static int cbtf_ompt_debug_trace = 0;
-static int cbtf_ompt_debug_wait = 0;
-static int cbtf_ompt_debug_lock = 0;
+/* debug flags */
+#ifndef NDEBUG
+static bool cbtf_ompt_debug = false;
+static bool cbtf_ompt_debug_details = false;
+static bool cbtf_ompt_debug_blame = false;
+static bool cbtf_ompt_debug_trace = false;
+static bool cbtf_ompt_debug_wait = false;
+static bool cbtf_ompt_debug_lock = false;
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -214,8 +217,8 @@ void CBTF_ompt_set_collector_active(bool flag)
     tls->collector_active=flag;
     tls->collector_etime=CBTF_GetTime();
 #ifndef NDEBUG
-    //if (cbtf_ompt_debug) {
-    if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
+    //if ( (getenv("CBTF_DEBUG_COLLECTOR") != NULL)) {
+    if (cbtf_ompt_debug) {
 	fprintf(stderr, "[%d,%d] CBTF_ompt_set_collector_active flag:%d\n",getpid(),monitor_get_thread_num(),flag);
     }
 #endif
@@ -484,8 +487,6 @@ CBTF_ompt_callback_sync_region(
 		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_barrier_begin parallelID:%lu taskID:%lu context:%lx\n"
 		,getpid(),monitor_get_thread_num(), (parallel_data)?parallel_data->value:0, task_data->value, current_region_context);
 	    }
-#endif
-#ifndef NDEBUG
 	    if (cbtf_ompt_debug_details) {
 		fprintf(stderr,"%" PRIu64 ": ompt_event_barrier_begin: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
 		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
@@ -542,8 +543,6 @@ CBTF_ompt_callback_sync_region(
 		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_barrier_end: parallelID:%lu taskID:%lu context:%lx barrier_time:%f\n"
 		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, current_region_context, (float)t/1000000000);
 	    }
-#endif
-#ifndef NDEBUG
 	    if (cbtf_ompt_debug_details) {
 		fprintf(stderr,"%" PRIu64 ": ompt_event_barrier_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
 		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
@@ -609,8 +608,6 @@ void CBTF_ompt_callback_sync_region_wait(
 		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_wait_barrier_begin parallelID:%lu taskID:%lu context:%lx\n",
 		getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value,current_region_context);
 	    }
-#endif
-#ifndef NDEBUG
 	    if (cbtf_ompt_debug_details) {
 		fprintf(stderr,"%" PRIu64 ": ompt_event_wait_barrier_begin: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
 		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
@@ -664,8 +661,6 @@ void CBTF_ompt_callback_sync_region_wait(
 		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_wait_barrier_end: parallelID:%lu taskID:%lu context:%lx wbarrier_time:%f\n",
 		getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value,current_region_context,(float)t/1000000000);
 	    }
-#endif
-#ifndef NDEBUG
 	    if (cbtf_ompt_debug_details) {
 		fprintf(stderr,"%" PRIu64 ": ompt_event_wait_barrier_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", codeptr_ra=%p\n",
 		ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
@@ -907,31 +902,13 @@ int ompt_initialize(
     Assert(tls != NULL);
 
 #ifndef NDEBUG
-    if ( (getenv("CBTF_DEBUG_OMPT") != NULL)) {
-	cbtf_ompt_debug = 1;
-    }
-
-    if ( (getenv("CBTF_DEBUG_OMPT_BLAME") != NULL)) {
-	cbtf_ompt_debug_blame = 1;
-    }
-
-    if ( (getenv("CBTF_DEBUG_OMPT_TRACE") != NULL)) {
-	cbtf_ompt_debug_trace = 1;
-    }
-
-    if ( (getenv("CBTF_DEBUG_OMPT_WAIT") != NULL)) {
-	cbtf_ompt_debug_wait = 1;
-    }
-
-    if ( (getenv("CBTF_DEBUG_OMPT_LOCK") != NULL)) {
-	cbtf_ompt_debug_lock = 1;
-    }
-
-    if ( (getenv("CBTF_DEBUG_OMPT_DETAILS") != NULL)) {
-	cbtf_ompt_debug_details = 1;
-    }
-
-    if (cbtf_ompt_debug_details == 1) {
+    cbtf_ompt_debug = (getenv("CBTF_DEBUG_OMPT") != NULL);
+    cbtf_ompt_debug_blame = (getenv("CBTF_DEBUG_OMPT_BLAME") != NULL);
+    cbtf_ompt_debug_trace = (getenv("CBTF_DEBUG_OMPT_TRACE") != NULL);
+    cbtf_ompt_debug_wait = (getenv("CBTF_DEBUG_OMPT_WAIT") != NULL);
+    cbtf_ompt_debug_lock = (getenv("CBTF_DEBUG_OMPT_LOCK") != NULL);
+    cbtf_ompt_debug_details = (getenv("CBTF_DEBUG_OMPT_DETAILS") != NULL);
+    if (cbtf_ompt_debug_details) {
 	fprintf(stderr, "CBTF OMPT Init: Registering callbacks\n");
     }
 #endif

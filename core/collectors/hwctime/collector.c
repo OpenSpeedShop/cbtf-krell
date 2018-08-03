@@ -102,12 +102,7 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier, thread_barrier;
-    bool debug_collector_ompt;
-    uint32_t ompTid;
 #endif
-
-    /* debug flags */
-    bool debug_collector;
 
     bool defer_sampling;
     int EventSet;
@@ -120,6 +115,14 @@ typedef struct {
 #endif
 
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#if defined (HAVE_OMPT)
+static bool IsOMPTDebugEnabled = false;
+#endif
+#endif
 
 static int hwctime_papi_init_done = 0;
 
@@ -331,7 +334,7 @@ static void send_samples (TLS* tls)
 #endif
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	if (IsCollectorDebugEnabled) {
 	    fprintf(stderr, "[%ld,%d] hwctime send_samples: time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) count_len(%d)\n",
 		tls->header.pid,tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
@@ -347,8 +350,10 @@ static void send_samples (TLS* tls)
     initialize_data(tls);
 }
 
+#if 0
 static int total = 0;
 static int stacktotal = 0;
+#endif
 
 /**
  * PAPI event handler.
@@ -572,18 +577,11 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 #endif
     Assert(tls != NULL);
 
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector = true;
-    } else {
-	tls->debug_collector = false;
-    }
-
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 #if defined (HAVE_OMPT)
-    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
-	tls->debug_collector_ompt = true;
-    } else {
-	tls->debug_collector_ompt = false;
-    }
+    IsOMPTDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL);
+#endif
 #endif
 
     /* Decode the passed function arguments */
@@ -650,13 +648,15 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     CBTF_Create_Eventset(&tls->EventSet);
     CBTF_AddEvent(tls->EventSet, papi_event_code);
 
-    if (tls->debug_collector && monitor_get_thread_num() == 0) {
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled && monitor_get_thread_num() == 0) {
 	if (PAPI_get_multiplex(tls->EventSet) == TRUE) {
 	    fprintf(stderr,"cbtf_collector_start PAPI is Multiplexing\n");
 	} else {
 	    fprintf(stderr,"cbtf_collector_start PAPI is NOT Multiplexing\n");
 	}
     }
+#endif
 
     CBTF_Overflow(tls->EventSet, papi_event_code,
 		    hwctime_papithreshold, hwctimePAPIHandler);
@@ -768,13 +768,16 @@ void cbtf_collector_stop()
 	send_samples(tls);
     }
 
+#ifndef NDEBUG
 #if defined(CBTF_HANDLE_UNWIND_SEGV)
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
 	if (tls->unwind_segvcount > 0) {
-            fprintf(stderr,"hwctime unwinder sample count:%d SIGSEGV count:%d\n",
+            fprintf(stderr,"[%ld,%d} hwctime unwinder sample count:%d SIGSEGV count:%d\n",
+		tls->header.pid,tls->header.omp_tid,
 		tls->sample_count, tls->unwind_segvcount);
 	}
     }
+#endif
 #endif
 
     /* Destroy our thread-local storage */

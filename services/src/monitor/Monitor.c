@@ -67,20 +67,21 @@
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
-    int debug;
     bool in_mpi_pre_init;
     int mpi_pcontrol, start_enabled;
     CBTF_Monitor_Status sampling_status;
     int process_is_terminating;
     int thread_is_terminating;
     bool  collector_started;
-    pthread_t tid;
-    pid_t pid;
     CBTF_Monitor_Type CBTF_monitor_type;
 
     // FIXME: MOVE THIS to collector services.
     cbtf_dlinfoList *cbtf_dllist_curr, *cbtf_dllist_head;
 } TLS;
+
+/* debug support */
+static bool IsMonitorDebugEnabled = false;
+static pid_t thePid;
 
 /* This global controls defering of an monitor callbacks while
  * in mpi startup.  In particular we do not monitor any threads
@@ -131,15 +132,22 @@ void monitor_fini_process(int how, void *data)
     }
 
     if (tls->sampling_status == CBTF_Monitor_Finished) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_fini_process ALREADY FINISHED\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_fini_process ALREADY FINISHED\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_fini_process FINISHED SAMPLING\n",
-		tls->pid,tls->tid);
+    if (tls->sampling_status == CBTF_Monitor_Not_Started) {
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_fini_process SAMPLING NOT STARTED\n",thePid,monitor_get_thread_num());
+	}
+	return;
+    }
+
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_fini_process FINISHED SAMPLING\n",
+		thePid,monitor_get_thread_num());
     }
 
     static int f = 0;
@@ -157,9 +165,9 @@ void monitor_fini_process(int how, void *data)
 	cbtf_offline_stop_sampling(NULL, true);
     }
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_fini_process process_is_terminating %d\n",
-		tls->pid,tls->tid,tls->process_is_terminating);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_fini_process process_is_terminating %d\n",
+		thePid,monitor_get_thread_num(),tls->process_is_terminating);
     }
 
     // The following call handles mrnet specific activity.
@@ -178,41 +186,41 @@ void *monitor_init_process(int *argc, char **argv, void *data)
 #endif
     Assert(tls != NULL);
 
+#if 0
     if (monitor_is_threaded()) {
-	tls->tid = monitor_get_thread_num();
+	monitor_get_thread_num() = monitor_get_thread_num();
     } else {
-	tls->tid = 0;
+	monitor_get_thread_num() = 0;
     }
+#endif
 
-    if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
-	tls->debug=1;
-    } else {
-	tls->debug=0;
-    }
+    IsMonitorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 
     short debug_mpi_pcontrol=0;
     if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
 	debug_mpi_pcontrol=1;
     }
 
-    tls->pid = getpid();
+    thePid = getpid();
     tls->cbtf_dllist_head = NULL;
     tls->cbtf_dllist_curr = NULL;
     tls->collector_started = false;
+    tls->in_mpi_pre_init = false;
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_init_process ENTERED\n",
-		tls->pid,tls->tid);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_init_process ENTERED\n",
+		thePid,monitor_get_thread_num());
     }
 
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_process returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_process returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
+	tls->sampling_status = CBTF_Monitor_Not_Started;
+	cbtf_offline_sampling_status(CBTF_Monitor_init_process_event,CBTF_Monitor_Not_Started);
 	return NULL;
     }
 
-    tls->in_mpi_pre_init = false;
     tls->CBTF_monitor_type = CBTF_Monitor_Proc;
 
     tls->mpi_pcontrol = 0, tls->start_enabled = 0;
@@ -232,20 +240,20 @@ void *monitor_init_process(int *argc, char **argv, void *data)
     cbtf_offline_notify_event(CBTF_Monitor_init_process_event);
     if ( tls->mpi_pcontrol && !tls->start_enabled) {
 	if (debug_mpi_pcontrol) {
-            fprintf(stderr,"[%d,%lu] monitor_init_process CBTF_START_ENABLED NOT SET. Defer sampling at start-up time.\n",
-		tls->pid,tls->tid);
+            fprintf(stderr,"[%d,%d] monitor_init_process CBTF_START_ENABLED NOT SET. Defer sampling at start-up time.\n",
+		thePid,monitor_get_thread_num());
 	}
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_init_process_event,CBTF_Monitor_Paused);
     } else if ( tls->mpi_pcontrol && tls->start_enabled) {
 	if (debug_mpi_pcontrol) {
-            fprintf(stderr,"[%d,%lu] monitor_init_process CBTF_START_ENABLED SET. START SAMPLING\n",
-                tls->pid,tls->tid);
+            fprintf(stderr,"[%d,%d] monitor_init_process CBTF_START_ENABLED SET. START SAMPLING\n",
+                thePid,monitor_get_thread_num());
 	}
     } else {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_process START SAMPLING\n",
-		tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_process START SAMPLING\n",
+		thePid,monitor_get_thread_num());
 	}
     }
     return (data);
@@ -291,16 +299,16 @@ void monitor_fini_thread(void *ptr)
     Assert(tls != NULL);
 
     if (!tls->collector_started) {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_fini_thread collector never started.\n",
-		tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_fini_thread collector never started.\n",
+		thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_fini_thread STOP SAMPLING\n",
-		tls->pid,tls->tid);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_fini_thread STOP SAMPLING\n",
+		thePid,monitor_get_thread_num());
     }
     cbtf_offline_stop_sampling(NULL,true);
 
@@ -322,19 +330,14 @@ void *monitor_init_thread(int tid, void *data)
 #endif
     Assert(tls != NULL);
 
-    tls->pid = getpid();
+    thePid = getpid();
+#if 0
     if (monitor_is_threaded()) {
-	tls->tid = monitor_get_thread_num();
+	monitor_get_thread_num() = monitor_get_thread_num();
     } else {
-	tls->tid = 0;
+	monitor_get_thread_num() = 0;
     }
-
-    if ( (getenv("CBTF_DEBUG_MONITOR_SERVICE") != NULL)) {
-	tls->debug=1;
-	fprintf(stderr,"[%d,%lu] monitor_init_thread ENTERED\n",tls->pid,tls->tid);
-    } else {
-	tls->debug=0;
-    }
+#endif
 
     short debug_mpi_pcontrol=0;
     if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {
@@ -345,9 +348,9 @@ void *monitor_init_thread(int tid, void *data)
     tls->cbtf_dllist_head = NULL;
     tls->cbtf_dllist_curr = NULL;
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_init_thread BEGIN SAMPLING\n",
-		tls->pid,tls->tid);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_init_thread BEGIN SAMPLING\n",
+		thePid,monitor_get_thread_num());
     }
 
     tls->in_mpi_pre_init = false;
@@ -365,13 +368,15 @@ void *monitor_init_thread(int tid, void *data)
      * collector disabled, we issue a cbtf_offline_sampling_status paused call.
      */
 
+#if 0
     if (CBTF_in_mpi_startup) {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_thread IN MPI STARTUP - DEFER SAMPLING\n",
-                tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_thread IN MPI STARTUP - DEFER SAMPLING\n",
+                thePid,monitor_get_thread_num());
 	}
 	return (data);
     }
+#endif
 
     tls->collector_started = true;
     tls->sampling_status = CBTF_Monitor_Started;
@@ -379,20 +384,20 @@ void *monitor_init_thread(int tid, void *data)
     cbtf_offline_notify_event(CBTF_Monitor_init_thread_event);
     if ( tls->mpi_pcontrol && !tls->start_enabled) {
 	if (debug_mpi_pcontrol) {
-            fprintf(stderr,"[%d,%lu] monitor_init_thread CBTF_START_ENABLED NOT SET. Defer sampling at start-up time.\n",
-		tls->pid,tls->tid);
+            fprintf(stderr,"[%d,%d] monitor_init_thread CBTF_START_ENABLED NOT SET. Defer sampling at start-up time.\n",
+		thePid,monitor_get_thread_num());
 	}
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_init_thread_event,CBTF_Monitor_Paused);
     } else if ( tls->mpi_pcontrol && tls->start_enabled) {
 	if (debug_mpi_pcontrol) {
-            fprintf(stderr,"[%d,%lu] monitor_init_thread CBTF_START_ENABLED SET. START SAMPLING\n",
-                tls->pid,tls->tid);
+            fprintf(stderr,"[%d,%d] monitor_init_thread CBTF_START_ENABLED SET. START SAMPLING\n",
+                thePid,monitor_get_thread_num());
 	}
     } else {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_thread START SAMPLING\n",
-		tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_thread START SAMPLING\n",
+		thePid,monitor_get_thread_num());
 	}
     }
 
@@ -424,16 +429,16 @@ monitor_thread_pre_create(void)
     cbtf_offline_notify_event(CBTF_Monitor_thread_pre_create_event);
     /* Stop sampling prior to real thread_create. */
     if (tls->sampling_status != CBTF_Monitor_Paused) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_thread_pre_create PAUSE SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_thread_pre_create PAUSE SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_thread_pre_create_event,CBTF_Monitor_Paused);
     } else if (tls->sampling_status == CBTF_Monitor_Paused) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_thread_pre_create ALREADY PAUSED\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_thread_pre_create ALREADY PAUSED\n",
+		    thePid,monitor_get_thread_num());
         }
     }
     return (NULL);
@@ -449,22 +454,22 @@ monitor_thread_post_create(void* data)
     TLS* tls = &the_tls;
 #endif
     Assert(tls != NULL);
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] Entered cbtf monitor_thread_post_create callback sampling_status:%d\n",
-		tls->pid,tls->tid,tls->sampling_status);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] Entered cbtf monitor_thread_post_create callback sampling_status:%d\n",
+		thePid,monitor_get_thread_num(),tls->sampling_status);
     }
 
     if (tls->sampling_status != CBTF_Monitor_Resumed) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_thread_post_create RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_thread_post_create RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
 	cbtf_offline_sampling_status(CBTF_Monitor_thread_post_create_event,CBTF_Monitor_Resumed);
     } else if (tls->sampling_status == CBTF_Monitor_Paused) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_thread_pre_create ALREADY RESUMED\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_thread_pre_create ALREADY RESUMED\n",
+		    thePid,monitor_get_thread_num());
         }
     }
 }
@@ -491,15 +496,15 @@ void monitor_dlopen(const char *library, int flags, void *handle)
     }
 
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_dlopen returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_dlopen returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
     if (library == NULL) {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_dlopen ignores null library name\n",tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_dlopen ignores null library name\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
@@ -507,9 +512,9 @@ void monitor_dlopen(const char *library, int flags, void *handle)
     /* TODO:
      * if CBTF_GetDLInfo does not handle errors do so here.
      */
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_dlopen called with %s\n",
-	    tls->pid,tls->tid,library);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_dlopen called with %s\n",
+	    thePid,monitor_get_thread_num(),library);
     }
 
     tls->cbtf_dllist_curr = (cbtf_dlinfoList*)calloc(1,sizeof(cbtf_dlinfoList));
@@ -521,9 +526,9 @@ void monitor_dlopen(const char *library, int flags, void *handle)
     tls->cbtf_dllist_head = tls->cbtf_dllist_curr;
 
     if ((tls->sampling_status == CBTF_Monitor_Paused) && !tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_dlopen RESUME SAMPLING\n",
-		tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_dlopen RESUME SAMPLING\n",
+		thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
 	cbtf_offline_sampling_status(CBTF_Monitor_dlopen_event,CBTF_Monitor_Resumed);
@@ -546,28 +551,28 @@ monitor_pre_dlopen(const char *path, int flags)
     }
 
     if (tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_pre_dlopen returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_pre_dlopen returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
     if (path == NULL) {
-	if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_pre_dlopen ignores null path\n",tls->pid,tls->tid);
+	if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_pre_dlopen ignores null path\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_pre_dlopen %s\n",tls->pid,tls->tid,path);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_pre_dlopen %s\n",thePid,monitor_get_thread_num(),path);
     }
 
     if ((tls->sampling_status == CBTF_Monitor_Started ||
 	 tls->sampling_status == CBTF_Monitor_Resumed) && !tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_pre_dlopen PAUSE SAMPLING\n",
-		tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_pre_dlopen PAUSE SAMPLING\n",
+		thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_pre_dlopen_event,CBTF_Monitor_Paused);
@@ -591,8 +596,8 @@ monitor_dlclose(void *handle)
     }
 
     if (tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_dlclose returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_dlclose returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
@@ -601,9 +606,9 @@ monitor_dlclose(void *handle)
 	if (tls->cbtf_dllist_curr->cbtf_dlinfo_entry.handle == handle) {
 	   tls->cbtf_dllist_curr->cbtf_dlinfo_entry.unload_time = CBTF_GetTime();
 
-            if (tls->debug) {
+            if (IsMonitorDebugEnabled) {
 	        fprintf(stderr,"FOUND %p %s\n",handle, tls->cbtf_dllist_curr->cbtf_dlinfo_entry.name);
-	        fprintf(stderr,"loaded at %lu, unloaded at %lu\n",
+	        fprintf(stderr,"loaded at %ld, unloaded at %ld\n",
 		               tls->cbtf_dllist_curr->cbtf_dlinfo_entry.load_time,
 		               tls->cbtf_dllist_curr->cbtf_dlinfo_entry.unload_time);
 	    }
@@ -629,9 +634,9 @@ monitor_dlclose(void *handle)
     if (!tls->thread_is_terminating || !tls->process_is_terminating) {
 	if ((tls->sampling_status == CBTF_Monitor_Started ||
 	     tls->sampling_status == CBTF_Monitor_Resumed) && !tls->in_mpi_pre_init) {
-            if (tls->debug) {
-	        fprintf(stderr,"[%d,%lu] monitor_dlclose PAUSE SAMPLING\n",
-		    tls->pid,tls->tid);
+            if (IsMonitorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] monitor_dlclose PAUSE SAMPLING\n",
+		    thePid,monitor_get_thread_num());
             }
 	    tls->sampling_status = CBTF_Monitor_Paused;
 	    cbtf_offline_sampling_status(CBTF_Monitor_dlclose_event,CBTF_Monitor_Paused);
@@ -655,17 +660,17 @@ monitor_post_dlclose(void *handle, int ret)
     }
 
     if (tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_post_dlclose returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_post_dlclose returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
 
     if (!tls->thread_is_terminating || !tls->process_is_terminating) {
 	if (tls->sampling_status == CBTF_Monitor_Paused && !tls->in_mpi_pre_init) {
-            if (tls->debug) {
-	        fprintf(stderr,"[%d,%lu] monitor_post_dlclose RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+            if (IsMonitorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] monitor_post_dlclose RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
             }
 	    tls->sampling_status = CBTF_Monitor_Resumed;
 	    cbtf_offline_sampling_status(CBTF_Monitor_post_dlclose_event,CBTF_Monitor_Resumed);
@@ -702,8 +707,8 @@ void * monitor_pre_fork(void)
 
 
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_pre_fork returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_pre_fork returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return (NULL);
     }
@@ -711,9 +716,9 @@ void * monitor_pre_fork(void)
     /* Stop sampling prior to real fork. */
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Started) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_pre_fork PAUSE SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_pre_fork PAUSE SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_pre_fork_event,CBTF_Monitor_Paused);
@@ -732,8 +737,8 @@ void monitor_post_fork(pid_t child, void *data)
     Assert(tls != NULL);
 
     if (CBTF_in_mpi_startup || tls->in_mpi_pre_init) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_post_fork returns early due to in mpi init\n",tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_post_fork returns early due to in mpi init\n",thePid,monitor_get_thread_num());
 	}
 	return;
     }
@@ -741,9 +746,9 @@ void monitor_post_fork(pid_t child, void *data)
     /* Resume/start sampling forked process. */
     if (tls->sampling_status == CBTF_Monitor_Paused ||
 	tls->sampling_status == CBTF_Monitor_Finished) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_post_fork RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_post_fork RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->CBTF_monitor_type = CBTF_Monitor_Proc;
 	tls->sampling_status = CBTF_Monitor_Resumed;
@@ -772,16 +777,16 @@ void monitor_mpi_pre_init(void)
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_pre_init_event);
     if (tls->sampling_status == CBTF_Monitor_Started) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_mpi_pre_init PAUSE SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_mpi_pre_init PAUSE SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_MPI_pre_init_event,CBTF_Monitor_Paused);
     } else {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_mpi_pre_init IS PAUSED\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_mpi_pre_init IS PAUSED\n",
+		    thePid,monitor_get_thread_num());
         }
     }
 }
@@ -800,20 +805,20 @@ monitor_init_mpi(int *argc, char ***argv)
     bool resume_sampling = false;
     if (tls->sampling_status == CBTF_Monitor_Paused) {
 	if (tls->mpi_pcontrol && tls->start_enabled) {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_init_mpi SAMPLING pcontrol start enabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_init_mpi SAMPLING pcontrol start enabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	    resume_sampling = true;
 	} else if(tls->mpi_pcontrol && !tls->start_enabled) {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_init_mpi SAMPLING pcontrol start disabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_init_mpi SAMPLING pcontrol start disabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	} else {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_init_mpi SAMPLING enabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_init_mpi SAMPLING enabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	    resume_sampling = true;
 	}
@@ -821,17 +826,16 @@ monitor_init_mpi(int *argc, char ***argv)
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_init_event);
     if (resume_sampling) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_mpi RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_mpi RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
-	//tls->CBTF_monitor_type = CBTF_Monitor_Proc;
 	cbtf_offline_sampling_status(CBTF_Monitor_MPI_init_event,CBTF_Monitor_Resumed);
     } else {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_init_mpi is SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_init_mpi is SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	// this is the case where start collection was disabled util at
 	// the first (if any) mpi_pcontrol(1) is encountered.
@@ -862,17 +866,17 @@ void monitor_fini_mpi(void)
 #endif
     Assert(tls != NULL);
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_fini_mpi CALLED\n",
-		tls->pid,tls->tid);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_fini_mpi CALLED\n",
+		thePid,monitor_get_thread_num());
     }
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_fini_event);
     if (tls->sampling_status == CBTF_Monitor_Started ||
 	tls->sampling_status == CBTF_Monitor_Resumed) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_fini_mpi PAUSE SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_fini_mpi PAUSE SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Paused;
 	cbtf_offline_sampling_status(CBTF_Monitor_MPI_fini_event,CBTF_Monitor_Paused);
@@ -889,16 +893,17 @@ void monitor_mpi_post_fini(void)
 #endif
     Assert(tls != NULL);
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_mpi_post_fini CALLED\n",
-		tls->pid,tls->tid);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_mpi_post_fini CALLED\n",
+		thePid,monitor_get_thread_num());
     }
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_post_fini_event);
+    // FIXME: remove always true if block?
     if (1 || tls->sampling_status == CBTF_Monitor_Paused) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_mpi_post_fini RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_mpi_post_fini RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	tls->sampling_status = CBTF_Monitor_Resumed;
 	cbtf_offline_sampling_status(CBTF_Monitor_MPI_post_fini_event,CBTF_Monitor_Resumed);
@@ -934,7 +939,7 @@ void monitor_mpi_post_comm_rank(void)
 
 #ifndef NDEBUG
     char* statusstr = "UNKNOWNSTATUS";
-    if (tls->debug) {
+    if (IsMonitorDebugEnabled) {
         switch(tls->sampling_status) {
             case CBTF_Monitor_Resumed:
                 statusstr = "RESUME";
@@ -957,9 +962,9 @@ void monitor_mpi_post_comm_rank(void)
 
 
 #ifndef NDEBUG
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_mpi_post_comm_rank sampling_status:%s\n",
-		tls->pid,tls->tid,statusstr);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_mpi_post_comm_rank sampling_status:%s\n",
+		thePid,monitor_get_thread_num(),statusstr);
     }
 #endif
 
@@ -967,27 +972,29 @@ void monitor_mpi_post_comm_rank(void)
     // that is where mrnet connection is made.  Therefore that
     // resume should not resume if we are not start enabled.
     bool resume_sampling = false;
+
+    // FIXME: commented out if test remove?
     //if (tls->sampling_status == CBTF_Monitor_Paused) {
 	if (tls->mpi_pcontrol && tls->start_enabled) {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_mpi_post_comm_rank SAMPLING pcontrol start enabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_mpi_post_comm_rank SAMPLING pcontrol start enabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	    resume_sampling = true;
 	    tls->sampling_status = CBTF_Monitor_Resumed;
 	} else if(tls->mpi_pcontrol && !tls->start_enabled) {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_mpi_post_comm_rank SAMPLING pcontrol start disabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_mpi_post_comm_rank SAMPLING pcontrol start disabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	    // FORCE THIS HERE FOR NOW.
 	    resume_sampling = true;
 	    // tell collector service that start was deferred
 	    //cbtf_offline_service_start_deferred();
 	} else {
-	    if (tls->debug) {
-		fprintf(stderr,"[%d,%lu] monitor_mpi_post_comm_rank SAMPLING enabled rank:%d\n",
-		    tls->pid,tls->tid, monitor_mpi_comm_rank());
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"[%d,%d] monitor_mpi_post_comm_rank SAMPLING enabled rank:%d\n",
+		    thePid,monitor_get_thread_num(), monitor_mpi_comm_rank());
 	    }
 	    resume_sampling = true;
 	    tls->sampling_status = CBTF_Monitor_Resumed;
@@ -995,9 +1002,9 @@ void monitor_mpi_post_comm_rank(void)
     //}
 
     if (resume_sampling) {
-        if (tls->debug) {
-	    fprintf(stderr,"[%d,%lu] monitor_mpi_post_comm_rank RESUME SAMPLING\n",
-		    tls->pid,tls->tid);
+        if (IsMonitorDebugEnabled) {
+	    fprintf(stderr,"[%d,%d] monitor_mpi_post_comm_rank RESUME SAMPLING\n",
+		    thePid,monitor_get_thread_num());
         }
 	//tls->sampling_status = CBTF_Monitor_Resumed;
 	cbtf_offline_sampling_status(CBTF_Monitor_MPI_post_comm_rank_event,CBTF_Monitor_Resumed);
@@ -1024,8 +1031,8 @@ void monitor_mpi_pcontrol(int level)
 
   if ( tls->mpi_pcontrol ) {
 
-    if (tls->debug) {
-	fprintf(stderr,"[%d,%lu] monitor_mpi_pcontrol CALLED level:%d\n", tls->pid,tls->tid,level);
+    if (IsMonitorDebugEnabled) {
+	fprintf(stderr,"[%d,%d] monitor_mpi_pcontrol CALLED level:%d\n", thePid,monitor_get_thread_num(),level);
     }
 
 
@@ -1036,8 +1043,8 @@ void monitor_mpi_pcontrol(int level)
 	   tls->sampling_status = CBTF_Monitor_Paused;
 	   cbtf_offline_sampling_status(CBTF_Monitor_mpi_pcontrol_event,CBTF_Monitor_Paused);
 
-           if (tls->debug) {
-	       fprintf(stderr,"monitor_mpi_pcontrol level 0 collector started, PAUSE SAMPLING %d,%lu\n", tls->pid,tls->tid);
+           if (IsMonitorDebugEnabled) {
+	       fprintf(stderr,"monitor_mpi_pcontrol level 0 collector started, PAUSE SAMPLING %d,%d\n", thePid,monitor_get_thread_num());
            }
 	}
     } else if (level == 1) {
@@ -1053,15 +1060,15 @@ void monitor_mpi_pcontrol(int level)
 
 	} else if (tls->sampling_status == CBTF_Monitor_Paused && !tls->in_mpi_pre_init) {
 
-	    if (tls->debug) {
-		fprintf(stderr,"monitor_mpi_pcontrol level 1 collector started RESUME SAMPLING %d,%lu\n", tls->pid,tls->tid);
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"monitor_mpi_pcontrol level 1 collector started RESUME SAMPLING %d,%d\n", thePid,monitor_get_thread_num());
 	    }
 	    tls->sampling_status = CBTF_Monitor_Resumed;
 	    cbtf_offline_sampling_status(CBTF_Monitor_mpi_pcontrol_event,CBTF_Monitor_Resumed);
 
 	} else  if (tls->sampling_status == CBTF_Monitor_Resumed && !tls->in_mpi_pre_init) {
-	    if (tls->debug) {
-		fprintf(stderr,"monitor_mpi_pcontrol level 1 collector ALREADY RESUMED %d,%lu\n", tls->pid,tls->tid);
+	    if (IsMonitorDebugEnabled) {
+		fprintf(stderr,"monitor_mpi_pcontrol level 1 collector ALREADY RESUMED %d,%d\n", thePid,monitor_get_thread_num());
 	    }
 	}
     } else {
@@ -1069,8 +1076,8 @@ void monitor_mpi_pcontrol(int level)
     }
   } else {
       /* early return - do not honor mpi_pcontrol */
-      if (tls->debug) {
-  	fprintf(stderr,"monitor_mpi_pcontrol ENABLE_MPI_PCONTROL **NOT** SET IGNORING MPI_PCONTROL CALL %d,%lu\n", tls->pid,tls->tid);
+      if (IsMonitorDebugEnabled) {
+  	fprintf(stderr,"monitor_mpi_pcontrol ENABLE_MPI_PCONTROL **NOT** SET IGNORING MPI_PCONTROL CALL %d,%d\n", thePid,monitor_get_thread_num());
       }
       return;
   }

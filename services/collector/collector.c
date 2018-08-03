@@ -1,7 +1,7 @@
 /*******************************************************************************
 ** Copyright (c) 2005 Silicon Graphics, Inc. All Rights Reserved.
 ** Copyright (c) 2007,2008 William Hachfeld. All Rights Reserved.
-** Copyright (c) 2007-2011 Krell Institute.  All Rights Reserved.
+** Copyright (c) 2007-2018 Krell Institute.  All Rights Reserved.
 ** Copyright (c) 2012 Argo Navis Technologies. All Rights Reserved.
 **
 ** This library is free software; you can redistribute it and/or modify it under
@@ -98,6 +98,17 @@ static struct {
 } NumThreads = { 0, PTHREAD_MUTEX_INITIALIZER };
 #endif
 
+/**
+ * Only the master thread sets the connection that is shared by
+ * any and all threads of a process. This is now global.
+ */
+bool connected_to_mrnet;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+static bool IsMRNetDebugEnabled = false;
+#endif
 
 /** Type defining the items stored in thread-local storage. */
 typedef struct {
@@ -112,13 +123,9 @@ typedef struct {
 
     // marker if ANY collector is connected to mrnet.
     // this applies to the non mrnet builds.
-    bool connected_to_mrnet;
 
-    bool defer_sampling;
     bool ompt_thread_finished;
     bool has_ompt;
-    bool is_mpi_job;
-    bool is_threaded_job;
 
 #if defined(CBTF_SERVICE_USE_MRNET)
 
@@ -150,11 +157,6 @@ typedef struct {
     struct {
 	CBTF_Protocol_LinkedObject objs[CBTF_MAXLINKEDOBJECTS];
     } buffer;
-#endif
-
-#ifndef NDEBUG
-    bool debug_mrnet;
-    bool debug_collector;
 #endif
 
 } TLS;
@@ -213,7 +215,7 @@ void cbtf_offline_service_sampling_control(CBTF_Monitor_Status current_status)
 	return;
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
 	//char* statusstr = current_status == CBTF_Monitor_Resumed ? "RESUME" : "PAUSE";
         fprintf(stderr,"[%d,%d] cbtf_offline_service_sampling_control passed_status:%s previous_status:%s\n",
 		     getpid(),monitor_get_thread_num(),
@@ -222,10 +224,8 @@ void cbtf_offline_service_sampling_control(CBTF_Monitor_Status current_status)
 #endif
 
     if (current_status == CBTF_Monitor_Resumed && tls->sampling_status != CBTF_Monitor_Resumed) {
-        tls->defer_sampling=false;
 	cbtf_collector_resume();
     } else if (current_status == CBTF_Monitor_Paused && tls->sampling_status != CBTF_Monitor_Paused) {
-        tls->defer_sampling=true;
 	cbtf_collector_pause();
     } else {
     }
@@ -264,7 +264,7 @@ void init_process_thread()
 
     tls->attached_to_threads_message.threads = tls->tgrp;
 #ifndef NDEBUG
-        if (tls->debug_mrnet) {
+        if (IsMRNetDebugEnabled) {
 	    fprintf(stderr,
 	    "[%d,%d] init_process_thread [%d] INIT THREAD OR PROCESS %s:%lld:%lld:%d:%d\n",
 		     getpid(),monitor_get_thread_num(),
@@ -293,10 +293,10 @@ void send_attached_to_threads_message()
     if (tls == NULL)
 	return;
 
-    if (tls->connected_to_mrnet && ! tls->sent_attached_to_threads) {
+    if (connected_to_mrnet && ! tls->sent_attached_to_threads) {
 	init_process_thread();
 #ifndef NDEBUG
-        if (tls->debug_mrnet) {
+        if (IsMRNetDebugEnabled) {
     	     fprintf(stderr,
 	   "[%d,%d] SEND CBTF_PROTOCOL_TAG_ATTACHED_TO_THREADS, for %s:%lld:%lld:%d:%d\n",
 		     getpid(),monitor_get_thread_num(),
@@ -324,26 +324,11 @@ void send_attached_to_threads_message()
 #endif
 }
 
-
-/** set_threaded_mrnet_connection only valid with mrnet based collection. */
-void set_threaded_mrnet_connection()
-{
-#if defined(CBTF_SERVICE_USE_MRNET)
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->connected_to_mrnet = true;
-#endif
-}
-
-
-/** connect_to_mrnet only valid with mrnet based collection. */
+/** connect_to_mrnet only valid with mrnet based collection.
+ *  Since the master thread is the only connection to mrnet and
+ *  and subsequent threads share that connection we use a global
+ *  to maintain connection status.
+ */
 bool connect_to_mrnet()
 {
 #if defined(CBTF_SERVICE_USE_MRNET)
@@ -358,9 +343,9 @@ bool connect_to_mrnet()
 	return false;
     }
 
-    if (tls->connected_to_mrnet) {
+    if (connected_to_mrnet) {
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
         fprintf(stderr,"[%d,%d] ALREADY connected  connect_to_mrnet\n",getpid(),monitor_get_thread_num());
     }
 #endif
@@ -368,19 +353,21 @@ bool connect_to_mrnet()
     }
 
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
 	 fprintf(stderr,"[%d,%d] connect_to_mrnet() calling CBTF_MRNet_LW_connect for rank %d\n",
 	getpid(),monitor_get_thread_num(),monitor_mpi_comm_rank());
     }
 #endif
 
+    // FIXME: CBTF_MRNet_LW_connect really should return a bool connect status
+    // and connected_to_mrnet should be set based on that.
     CBTF_MRNet_LW_connect( monitor_mpi_comm_rank() );
     tls->header.rank = monitor_mpi_comm_rank();
     tls->header.omp_tid = monitor_get_thread_num();
-    tls->connected_to_mrnet = true;
+    connected_to_mrnet = true;
 
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
 	 fprintf(stderr,
         "connect_to_mrnet reports connection successful for %s:%ld:%ld:%d:%d\n",
              tls->header.host, tls->header.pid,tls->header.posix_tid,tls->header.rank,tls->header.omp_tid);
@@ -475,35 +462,6 @@ void set_ompt_thread_finished(bool flag)
     tls->ompt_thread_finished = flag;
 }
 
-void set_mpi_flag(bool flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->is_mpi_job = flag;
-}
-
-void set_threaded_flag(bool flag)
-{
-    /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    if (tls == NULL)
-	return;
-
-    tls->is_threaded_job = flag;
-}
-
-
 // noop for non mrnet collection.
 /** send_thread_state_changed_message only valid with mrnet based collection. */
 void send_thread_state_changed_message()
@@ -527,9 +485,9 @@ void send_thread_state_changed_message()
     //CBTF_Protocol_ThreadsStateChanged message;
     tls->thread_state_changed_message.threads = tls->tgrp;
     tls->thread_state_changed_message.state = Terminated; 
-    if (tls->connected_to_mrnet) {
+    if (connected_to_mrnet) {
 #ifndef NDEBUG
-	if (tls->debug_mrnet) {
+	if (IsMRNetDebugEnabled) {
             fprintf(stderr,
 	    "[%d,%d] SEND CBTF_PROTOCOL_TAG_THREADS_STATE_CHANGED for %s:%lld:%lld:%d:%d\n",
 		     getpid(),monitor_get_thread_num(),
@@ -560,7 +518,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
     Assert(tls != NULL);
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
         fprintf(stderr,"[%d,%d] cbtf_collector_send DATA for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
                 tls->header.host, (long long)tls->header.pid,
@@ -583,7 +541,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 
 /** Data send support for ltwt mrnet mode of collection. */
 #if defined(CBTF_SERVICE_USE_MRNET)
-	if (tls->connected_to_mrnet) {
+	if (connected_to_mrnet) {
 	    if (!tls->sent_attached_to_threads) {
 	        send_attached_to_threads_message();
 	        tls->sent_attached_to_threads = true;
@@ -596,7 +554,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
              *  collect data from the mrnet connection code itself.
              *  We are not interested in such data.
              */
-	    if (tls->debug_mrnet) {
+	    if (IsMRNetDebugEnabled) {
 		fprintf(stderr,"[%d,%d] cbtf_collector_send called with no mrnet connection!\n"
 		,getpid(),monitor_get_thread_num());
 	    }
@@ -605,7 +563,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 #endif
 
 #if defined(CBTF_SERVICE_USE_OFFLINE)
-    //cbtf_offline_sent_data(1);
+    cbtf_offline_sent_data(1);
 #endif
 }
 
@@ -636,20 +594,11 @@ void cbtf_timer_service_start_sampling(const char* arguments)
      * this flag can be changed to reflect mpi_pcontrol calls and the
      * related mpi_pcontrol environment variables.
      */
-    tls->defer_sampling=true;
     tls->sampling_status=CBTF_Monitor_Not_Started;
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
-	tls->debug_mrnet=true;
-    } else {
-	tls->debug_mrnet=false;
-    }
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector=true;
-    } else {
-	tls->debug_collector=false;
-    }
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsMRNetDebugEnabled = (getenv("CBTF_DEBUG_LW_MRNET") != NULL);
 #endif
 
     /* 
@@ -677,7 +626,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     PTHREAD_CHECK(pthread_mutex_lock(&NumThreads.mutex));
     NumThreads.value++;
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_timer_service_start_sampling NumThreads:%d\n",getpid(),monitor_get_thread_num(),NumThreads.value);
     }
 #endif
@@ -699,19 +648,32 @@ void cbtf_timer_service_start_sampling(const char* arguments)
            &tls->tname, sizeof(tls->tname));
     tls->tgrp.names.names_len++;
 
-    tls->connected_to_mrnet = false;
     tls->sent_attached_to_threads = false;
 
 #if !defined (CBTF_SERVICE_USE_MRNET_MPI)
-    // Non-mpi applications connect here in cbtf mode.
+    // Non-mpi sequential applications connect here in cbtf mode.
+    // Only the master thread makes mrnet connection.
+    if (NumThreads.value == 1) {
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
-	fprintf(stderr,"[%d,%d] cbtf_timer_service_start_sampling calls connect_to_mrnet for NON MPI program\n",getpid(),monitor_get_thread_num());
-    }
+	if (IsMRNetDebugEnabled) {
+	    fprintf(stderr,
+		"[%d,%d] cbtf_timer_service_start_sampling calls connect_to_mrnet for sequential program\n",
+		getpid(),monitor_get_thread_num());
+	}
 #endif
-    tls->connected_to_mrnet = connect_to_mrnet();
-    if (tls->connected_to_mrnet) {
-	cbtf_set_connected_to_mrnet(); /* inform monitor callbacks */
+        connected_to_mrnet = false;
+	connected_to_mrnet = connect_to_mrnet();
+    }
+
+    if (connected_to_mrnet) {
+#ifndef NDEBUG
+	if (IsMRNetDebugEnabled) {
+	    fprintf(stderr,
+		"[%d,%d] cbtf_timer_service_start_sampling sequential program connected_to_mrnet:%d\n",
+		getpid(),monitor_get_thread_num(),connected_to_mrnet);
+	}
+#endif
+	cbtf_set_connected_to_mrnet(true); /* inform monitor callbacks */
 	if (!tls->sent_attached_to_threads) {
 	    send_attached_to_threads_message();
 	    tls->sent_attached_to_threads = true;
@@ -735,14 +697,13 @@ void cbtf_timer_service_start_sampling(const char* arguments)
 #endif
 
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_timer_service_start_sampling calls cbtf_collector_start.\n",getpid(),monitor_get_thread_num());
     }
 #endif
     /* Begin collection */
     tls->sampling_status = CBTF_Monitor_Started;
     cbtf_collector_start(&tls->header);
-    tls->defer_sampling=false;
 }
 
 
@@ -770,7 +731,7 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 
     if (tls->has_ompt && !tls->ompt_thread_finished) {
 #ifndef NDEBUG
-	if (tls->debug_mrnet) {
+	if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_timer_service_stop_sampling returns ACTIVE OMP THREAD. has_ompt:%d ompt_thread_finished:%d\n"
 		,getpid(),monitor_get_thread_num(),tls->has_ompt,tls->ompt_thread_finished);
 	}
@@ -778,7 +739,7 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 	return;
     } else {
 #ifndef NDEBUG
-	if (tls->debug_mrnet) {
+	if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_timer_service_stop_sampling calls cbtf_collector_stop. has_ompt:%d ompt_thread_finished:%d\n"
 		,getpid(),monitor_get_thread_num(),tls->has_ompt,tls->ompt_thread_finished);
 	}
@@ -793,14 +754,19 @@ void cbtf_timer_service_stop_sampling(const char* arguments)
 #if defined(CBTF_SERVICE_USE_FILEIO)
     cbtf_offline_finish();
 #else
+
+    if (tls->sent_attached_to_threads) {
+    // FIXME: Only record these if we sent data!
     cbtf_record_dsos();
+    // FIXME: Only send this if we sent data and sent attached message!
     // send thread_state message ONLY after recording dsos
     send_thread_state_changed_message();
+    }
 
     PTHREAD_CHECK(pthread_mutex_lock(&NumThreads.mutex));
     NumThreads.value--;
 #ifndef NDEBUG
-    if (tls->debug_mrnet) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_timer_service_stop_sampling NumThreads:%d\n",getpid(),monitor_get_thread_num(),NumThreads.value);
     }
 #endif
@@ -848,7 +814,7 @@ void cbtf_offline_send_dsos(TLS *tls)
 {
     /* Send the offline "dsos" blob or message */
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
         fprintf(stderr,
 		"[%d,%d] cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
@@ -865,13 +831,13 @@ void cbtf_offline_send_dsos(TLS *tls)
 
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
     tls->data.thread = tls->tname;
-    if (tls->connected_to_mrnet) {
+    if (connected_to_mrnet) {
         CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP,
                   (xdrproc_t) xdr_CBTF_Protocol_LinkedObjectGroup,&(tls->data));
     }
 #elif defined(CBTF_SERVICE_USE_MRNET)
     tls->data.thread = tls->tname;
-    if (tls->connected_to_mrnet) {
+    if (connected_to_mrnet) {
         CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LINKED_OBJECT_GROUP,
                   (xdrproc_t) xdr_CBTF_Protocol_LinkedObjectGroup,&(tls->data));
     }
@@ -903,7 +869,7 @@ void cbtf_record_dsos()
 #endif
 
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
         fprintf(stderr, "[%d,%d] cbtf_record_dsos entered.\n",getpid(),monitor_get_thread_num());
     }
 #endif
@@ -916,7 +882,7 @@ void cbtf_record_dsos()
 
     /* Write the thread's initial address space to the appropriate buffer */
 #ifndef NDEBUG
-    if (tls->debug_collector) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
 		local_header.host, (long long)local_header.pid,
@@ -927,7 +893,7 @@ void cbtf_record_dsos()
 
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
-	if (tls->debug_collector) {
+	if (IsCollectorDebugEnabled) {
            fprintf(stderr,
             "[%d,%d] cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
@@ -1088,7 +1054,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
-    if (tls->connected_to_mrnet) {
+    if (connected_to_mrnet) {
         CBTF_MRNet_Send( CBTF_PROTOCOL_TAG_LOADED_LINKED_OBJECT,
                   (xdrproc_t) xdr_CBTF_Protocol_LoadedLinkedObject, &message);
     }
@@ -1105,7 +1071,7 @@ void cbtf_offline_record_dso(const char* dsoname,
 
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
-	if (tls->debug_collector) {
+	if (IsCollectorDebugEnabled) {
             fprintf(stderr,"[%d,%d] cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
 		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
@@ -1256,7 +1222,7 @@ void cbtf_offline_record_dlopen(const char* dsoname,
 
     if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
 #ifndef NDEBUG
-	if (tls->debug_collector) {
+	if (IsCollectorDebugEnabled) {
             fprintf(stderr,"[%d,%d] cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d:%d\n",
 		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 

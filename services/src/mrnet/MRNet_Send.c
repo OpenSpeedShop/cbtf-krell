@@ -55,12 +55,16 @@ static int mrnet_connected = 0;
 static pthread_mutex_t mrnet_connected_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t mrnet_connected_cond = PTHREAD_COND_INITIALIZER;
 
+#ifndef NDEBUG
+static bool IsMRNetDebugEnabled = false;
+#endif
 
 
 static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, char* pport, char* prank)
 {
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    IsMRNetDebugEnabled = (getenv("CBTF_DEBUG_LW_MRNET") != NULL);
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"ENTER CBTF_MRNet_getParentInfo with rank %d\n",rank);
     }
 #endif
@@ -93,7 +97,7 @@ static int CBTF_MRNet_getParentInfo(const char* file, int rank, char* phost, cha
                 fclose(cfile);;
 
 #ifndef NDEBUG
-		if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+		if (IsMRNetDebugEnabled) {
                     fprintf(stderr,"EXIT CBTF_MRNet_getParentInfo with rank %d, phost %s, pport %s, prank %s\n",
                         rank,phost,pport,prank);
 		}
@@ -158,7 +162,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     myHostname[63] = '\0';
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr, "CBTF_MRNet_LW_connect: myRank %s, mRank %d, host %s\n",myRank,mRank,myHostname);
     }
 #endif
@@ -178,7 +182,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     BE_argv[5] = myRank;
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"CBTF_MRNet_LW_connect: argv 0=%s, 1=%s, 2=%lu, 3=%lu, 4=%s, 5=%lu\n",
         BE_argv[0], BE_argv[1], strtoul( BE_argv[2], NULL, 10 ),
         strtoul( BE_argv[3], NULL, 10 ), BE_argv[4], strtoul( BE_argv[5], NULL, 10 ));
@@ -198,7 +202,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
     int tag;
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
         fprintf(stderr, "CBTF_MRNet_LW_connect:  TRYING TO ESTABLISH CBTF_MRNet_stream\n");
     }
 #endif
@@ -212,7 +216,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 
     stream_id = CBTF_MRNet_stream->id;
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
         fprintf(stderr,
 	"CBTF_MRNet_LW_connect: got tag %d, stream id %d, sync_filter_id %d, us_filter_id %d, ds_filter_id %d\n",
 	tag, CBTF_MRNet_stream->id,CBTF_MRNet_stream->sync_filter_id,
@@ -231,7 +235,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 	Stream_t* stream = Network_get_Stream(CBTF_MRNet_netPtr,stream_id);
 	int readytag = 0;
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	if (IsMRNetDebugEnabled) {
 	    fprintf(stderr, "BE: waiting for specify filter tag from FE\n");
 	}
 #endif
@@ -245,7 +249,7 @@ int CBTF_MRNet_LW_connect (const int con_rank)
 	    }
 	} while ( readytag != KRELL_INSTITUTE_CBTF_IMPL_NETWORK_READY /*107*/ );
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+	if (IsMRNetDebugEnabled) {
 	    fprintf(stderr, "BE: GOT TAG for filter tag %d from FE\n",readytag);
 	}
 #endif
@@ -291,7 +295,7 @@ void CBTF_MRNet_LW_sendToFrontend(const int tag, const int size, void *data)
 #endif
     
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] CBTF_MRNet_LW_sendToFrontend: sends message with tag %d\n",
 		getpid(),monitor_get_thread_num(),tag);
     }
@@ -329,7 +333,7 @@ void CBTF_MRNet_Send(const int tag, const xdrproc_t xdrproc, const void* data)
     }
 
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+    if (IsMRNetDebugEnabled) {
 	fprintf(stderr,"[%d,%d] CBTF_MRNet_Send: sends message tag:%d size: %d\n",
 		getpid(),monitor_get_thread_num(),tag ,dm_size);
     }

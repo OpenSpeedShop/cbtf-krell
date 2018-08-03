@@ -68,15 +68,16 @@ typedef struct {
 
     // marker if ANY collector is connected to mrnet.
     // this applies to the non mrnet builds.
-    bool connected_to_mrnet;
-
-#ifndef NDEBUG
-    bool debug;
-#endif
 
 } TLS;
 
 static bool mpi_init_done;
+static bool connected_to_mrnet;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#endif
 
 #ifdef USE_EXPLICIT_TLS
 
@@ -100,37 +101,27 @@ static __thread TLS the_tls;
 bool cbtf_connected_to_mrnet() {
 #if defined(CBTF_SERVICE_USE_MRNET)
     /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-    if (tls == NULL) {
-	tls = malloc(sizeof(TLS));
-	Assert(tls != NULL);
-	CBTF_SetTLS(TLSKey, tls);
-	tls->connected_to_mrnet = false;
-    }
-#else
-    TLS* tls = &the_tls;
-#endif
-    Assert(tls != NULL);
-    return tls->connected_to_mrnet;
+    return connected_to_mrnet;
 #else
     return true;
 #endif
 }
 
-void cbtf_set_connected_to_mrnet()
-{
+// non mrnet builds just refurn true here..
+bool cbtf_mpi_init_done() {
     /* Access our thread-local storage */
-#ifdef USE_EXPLICIT_TLS
-    TLS* tls = CBTF_GetTLS(TLSKey);
-#else
-    TLS* tls = &the_tls;
-#endif
-    Assert(tls != NULL);
-    tls->connected_to_mrnet = true;
+    return mpi_init_done;
+}
+
+void cbtf_set_connected_to_mrnet( bool flag)
+{
+    connected_to_mrnet = flag;
 }
 
 
+/**
+ * This is visable to offline (fileio) and cbtf based collection.
+ */
 void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_Status status)
 {
     /* Access our thread-local storage */
@@ -139,11 +130,12 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 #else
     TLS* tls = &the_tls;
 #endif
-    Assert(tls != NULL);
+    //Assert(tls != NULL);
+
 
 #ifndef NDEBUG
     char* statusstr = "UNKNOWNSTATUS";
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	switch(status) {
 	    case CBTF_Monitor_Resumed:
 		statusstr = "RESUME";
@@ -164,24 +156,33 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
     }
 #endif
 
+    if (tls == NULL) {
+#ifndef NDEBUG
+        if (IsCollectorDebugEnabled) {
+	   fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status NO TLS passed status:%s\n",
+			getpid(),monitor_get_thread_num(),statusstr);
+	}
+#endif
+	return;
+    }
+
     switch( event ) {
 	case CBTF_Monitor_MPI_pre_init_event:
-	    set_mpi_flag(true);
+#ifndef NDEBUG
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_pre_init_event status:%s\n",
+			getpid(),monitor_get_thread_num(),statusstr);
+	    }
+#endif
 	    if (status == CBTF_Monitor_Paused && tls->started) {
 		cbtf_offline_service_sampling_control(CBTF_Monitor_Paused);
 	    } else if (status == CBTF_Monitor_Resumed && tls->started) {
 		cbtf_offline_service_sampling_control(CBTF_Monitor_Resumed);
 	    }
-#ifndef NDEBUG
-	    if (tls->debug) {
-	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_pre_init_event status:%s\n",
-			getpid(),monitor_get_thread_num(),statusstr);
-	    }
-#endif
 	    break;
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_init_event status:%s\n",
 			getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -195,25 +196,23 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	case CBTF_Monitor_MPI_post_comm_rank_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,
 		"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_post_comm_rank_event status:%s tls->started:%d\n"
 		,getpid(),monitor_get_thread_num(),statusstr,tls->started);
 	    }
 #endif
-	    //if (status == CBTF_Monitor_Resumed &&
-	    if ( !tls->connected_to_mrnet && ( monitor_mpi_comm_rank() >= 0 || mpi_init_done)) {
+	    if ( !cbtf_connected_to_mrnet() && ( monitor_mpi_comm_rank() >= 0 || mpi_init_done)) {
 	        if (tls->started) {
 		cbtf_offline_service_sampling_control(CBTF_Monitor_Paused);
 		}
 #ifndef NDEBUG
-		if (getenv("CBTF_DEBUG_LW_MRNET") != NULL) {
+		if (IsCollectorDebugEnabled) {
 	            fprintf(stderr,
 		    "[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_post_comm_rank_event calls connect_to_mrnet\n",
 		    getpid(),monitor_get_thread_num());
 		}
 #endif
-		tls->connected_to_mrnet = true;
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
 	        bool connect_success = connect_to_mrnet();
 		// The sending of attached threads was previously
@@ -226,9 +225,10 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 		// of dsos for which no sample or callstack addresses
 		// are found.
 		if (connect_success) {
+		    cbtf_set_connected_to_mrnet(true);
 		    send_attached_to_threads_message();
 		} else {
-		    tls->connected_to_mrnet = false;
+		    cbtf_set_connected_to_mrnet(false);
 		}
 #endif
 		// FIXME: verify pcontrol...
@@ -240,7 +240,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	case CBTF_Monitor_MPI_fini_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_fini_event status:%s\n",
 			getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -253,7 +253,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	case CBTF_Monitor_MPI_post_fini_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr, "[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_MPI_post_fini_event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -266,7 +266,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	case CBTF_Monitor_init_thread_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_init_thread_event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -279,7 +279,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	case CBTF_Monitor_mpi_pcontrol_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_mpi_pcontrol_event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -290,25 +290,41 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 		cbtf_offline_service_sampling_control(CBTF_Monitor_Resumed);
 	    }
 	    break;
+	case CBTF_Monitor_pre_dlopen_event:
+#ifndef NDEBUG
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_pre_dlopen_event NOOP status:%s\n",
+		getpid(),monitor_get_thread_num(),statusstr);
+	    }
+#endif
+	    break;
 	case CBTF_Monitor_dlopen_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
-	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_dlopen_event status:%s\n",
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_dlopen_event NOOP status:%s\n",
+		getpid(),monitor_get_thread_num(),statusstr);
+	    }
+#endif
+	    break;
+	case CBTF_Monitor_dlclose_event:
+#ifndef NDEBUG
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_dlclose_event NOOP status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_post_dlclose_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
-	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_post_dlclose_event status:%s\n",
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_post_dlclose_event NOOP status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
 #endif
 	    break;
 	case CBTF_Monitor_post_fork_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_post_fork_event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -326,7 +342,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 //
 	case CBTF_Monitor_Default_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status CBTF_Monitor_Default_event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -339,7 +355,7 @@ void cbtf_offline_sampling_status(CBTF_Monitor_Event_Type event, CBTF_Monitor_St
 	    break;
 	default:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_sampling_status passed unknown event status:%s\n",
 		getpid(),monitor_get_thread_num(),statusstr);
 	    }
@@ -385,16 +401,9 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 #endif
     Assert(tls != NULL);
 #ifndef NDEBUG
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	//fprintf(stderr,"[%d,%d] ENTER cbtf_offline_start_sampling\n",
-	//	getpid(),monitor_get_thread_num());
-	tls->debug = true;
-    } else {
-	tls->debug = false;
-    }
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 #endif
 
-    tls->connected_to_mrnet = false;
     mpi_init_done = false;
 
     /* Start sampling */
@@ -408,7 +417,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
  * is made.
  */
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS mrnet collection for sequential program\n",
 		getpid(),monitor_get_thread_num());
     }
@@ -417,7 +426,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 /* MPI cbtf mrnet collection */
 #elif defined(CBTF_SERVICE_USE_MRNET) && defined(CBTF_SERVICE_USE_MRNET_MPI)
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS mrnet collection for MPI program\n",
 		getpid(),monitor_get_thread_num());
     }
@@ -425,7 +434,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 /* OFFLINE collection */
 #else
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling BEGINS fileio collection.\n",
 		getpid(),monitor_get_thread_num());
     }
@@ -433,7 +442,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 #endif
 
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_start_sampling calls cbtf_timer_service_start_sampling\n",
 		getpid(),monitor_get_thread_num());
     }
@@ -464,7 +473,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const bool finished)
 
     if (!tls) {
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
+	if (IsCollectorDebugEnabled) {
 	    fprintf(stderr,"[%d,%d] warn: cbtf_offline_stop_sampling has no TLS\n",
 		getpid(),monitor_get_thread_num());
 	}
@@ -474,7 +483,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const bool finished)
 
     if (!tls->started) {
 #ifndef NDEBUG
-	if (tls->debug) {
+	if (IsCollectorDebugEnabled) {
 	    fprintf(stderr,"[%d,%d] cbtf_offline_stop_sampling was not started. finished:%d\n",
 		getpid(),monitor_get_thread_num(),finished);
 	}
@@ -484,7 +493,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const bool finished)
 
     // fall though to stop sampling...
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_stop_sampling was started. finished:%d\n",
 		getpid(),monitor_get_thread_num(),finished);
     }
@@ -495,7 +504,7 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const bool finished)
 
     // FIXME. is this finished flag needed anymore?
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_offline_stop_sampling finished:%d\n",
                 getpid(), monitor_get_thread_num(), finished);
     }
@@ -504,6 +513,9 @@ void cbtf_offline_stop_sampling(const char* in_arguments, const bool finished)
     tls->finished = finished;
 }
 
+/**
+ * This is visable to offline (fileio) and cbtf based collection.
+ */
 void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 {
     /* Access our thread-local storage */
@@ -514,35 +526,50 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #endif
     Assert(tls != NULL);
     switch( event ) {
+#if 0
 	case CBTF_Monitor_MPI_pre_init_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
-	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event passed event CBTF_Monitor_MPI_pre_init_event calls set_mpi_flag(true)\n",
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event passed event CBTF_Monitor_MPI_pre_init_event\n",
 		getpid(),monitor_get_thread_num());
 	    }
 #endif
-	    set_mpi_flag(true);
+	    // used to set an mpi flag.
 	    break;
+#endif
+	case CBTF_Monitor_init_process_event:
+#ifndef NDEBUG
+	    if (IsCollectorDebugEnabled) {
+	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event passed event CBTF_Monitor_init_process_event\n",
+		getpid(),monitor_get_thread_num());
+	    }
+#endif
+#if defined(CBTF_SERVICE_USE_MRNET_MPI)
+	    // We can not connect in the MPI case until after the mpi program
+	    // has call mpi_comm_rank.
+	    cbtf_set_connected_to_mrnet(false);
+#endif
+	    break;
+
 	case CBTF_Monitor_init_thread_event:
 	    // threads share process wide mrnet connection.
-	    set_threaded_flag(true);
 #if defined(CBTF_SERVICE_USE_MRNET) || defined(CBTF_SERVICE_USE_MRNET_MPI)
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_init_thread_event mrnet.\n",
 			getpid(),monitor_get_thread_num());
 	    }
 #endif
-	    tls->connected_to_mrnet = true;
-	    set_threaded_mrnet_connection();
-	    // We are potentially called early in an mpi program and
-	    // there is only an mrnet connection AFTER the mpi rank is
-	    // set.  Therefore the send of thread attached needs to
-	    // really check that a connection exists.
-	    send_attached_to_threads_message();
+	    if (cbtf_connected_to_mrnet()) {
+		// We are potentially called early in an mpi program and
+		// there is only an mrnet connection AFTER the mpi rank is
+		// set in the master thread.  Therefore the send of thread attached needs to
+		// really check that a connection exists.
+		send_attached_to_threads_message();
+	    }
 #else
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_init_thread_event non mrnet.\n",
 			getpid(),monitor_get_thread_num());
 	    }
@@ -551,24 +578,23 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	    break;
 	case CBTF_Monitor_mpi_pcontrol_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_mpi_pcontrol_event.\n",
 		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    /* We must connect to mrnet if we are using mrnet collection */
 	    if (!cbtf_connected_to_mrnet()) {
-		if (tls->debug) {
+		if (IsCollectorDebugEnabled) {
 		    fprintf(stderr,
 			"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_mpi_pcontrol_event. level 1 collector not started, connect...\n",
 			getpid(),monitor_get_thread_num());
 		}
-		cbtf_set_connected_to_mrnet();
 		// Moved here from monitor services since it is not
 		// mrnet aware. monitor services is never built for
 		// fileio,mrnet,mrnet-mpi. Just one service for all.
 #if defined(CBTF_SERVICE_USE_MRNET_MPI)
-                connect_to_mrnet();
+	        bool connect_success = connect_to_mrnet();
                 // The sending of attached threads was previously
                 // defered until mpi job was terminating. For large
                 // mpi jobs it is more efficient to send this message
@@ -578,13 +604,19 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
                 // the job has terminated since that list will be pruned
                 // of dsos for which no sample or callstack addresses
                 // are found.
-                send_attached_to_threads_message();
+		if (connect_success) {
+		    cbtf_set_connected_to_mrnet(true);
+		    send_attached_to_threads_message();
+		} else {
+		    cbtf_set_connected_to_mrnet(false);
+		}
 #endif
 	    }
 	    break;
+#if 0
 	case CBTF_Monitor_fini_process_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_fini_process_event. NOOP\n",
 		getpid(),monitor_get_thread_num());
 	    }
@@ -592,15 +624,16 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 	    break;
 	case CBTF_Monitor_fini_thread_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_fini_thread_event. NOOP\n",
 		getpid(),monitor_get_thread_num());
 	    }
 #endif
 	    break;
+#endif
 	case CBTF_Monitor_MPI_init_event:
 #ifndef NDEBUG
-	    if (tls->debug) {
+	    if (IsCollectorDebugEnabled) {
 	        fprintf(stderr,"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_MPI_init_event sets mpi_init_done true.\n",
 		getpid(),monitor_get_thread_num());
 	    }
@@ -627,7 +660,7 @@ void cbtf_offline_finish()
     Assert(tls != NULL);
 
 #ifndef NDEBUG
-    if (tls->debug) {
+    if (IsCollectorDebugEnabled) {
         fprintf(stderr, "[%d,%d] cbtf_offline_finish entered. started:%d\n",
 		getpid(),monitor_get_thread_num(),tls->started);
     }

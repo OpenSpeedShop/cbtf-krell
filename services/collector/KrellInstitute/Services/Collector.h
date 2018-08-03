@@ -97,12 +97,9 @@ bool connect_to_mrnet();
 void send_attached_to_threads_message();
 #endif
 
-void set_mpi_flag(bool);
 void set_ompt_flag(bool);
 bool get_ompt_flag();
 void set_ompt_thread_finished(bool);
 void cbtf_collector_set_openmp_threadid(int32_t);
-void set_threaded_flag(bool);
-void set_threaded_mrnet_connection();
 void cbtf_offline_sent_data(int sent_data);
-void cbtf_set_connected_to_mrnet();
+void cbtf_set_connected_to_mrnet(bool);

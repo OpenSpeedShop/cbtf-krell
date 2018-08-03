@@ -98,12 +98,9 @@ typedef struct {
 #if defined (HAVE_OMPT)
     /* these are ompt specific. */
     bool thread_idle, thread_wait_barrier, thread_barrier;
-    bool debug_collector_ompt;
-    uint32_t ompTid;
 #endif
 
     /* debug flags */
-    bool debug_collector;
     bool defer_sampling;
 
 #if defined(CBTF_HANDLE_UNWIND_SEGV)
@@ -114,6 +111,14 @@ typedef struct {
 #endif
 
 } TLS;
+
+/* debug flags */
+#ifndef NDEBUG
+static bool IsCollectorDebugEnabled = false;
+#if defined (HAVE_OMPT)
+static bool IsOMPTDebugEnabled = false;
+#endif
+#endif
 
 #if defined(USE_EXPLICIT_TLS)
 
@@ -323,9 +328,10 @@ static void send_samples(TLS *tls)
 #endif
 
 #ifndef NDEBUG
-	if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	    fprintf(stderr, "usertime send_samples:\n");
-	    fprintf(stderr, "time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) count_len(%d)\n",
+	if (IsCollectorDebugEnabled) {
+	    fprintf(stderr, "[%ld:%d] usertime send_samples:\n",tls->header.pid, tls->header.omp_tid);
+	    fprintf(stderr, "[%ld:%d] time_range(%lu,%lu) addr range[%lx, %lx] stacktraces_len(%d) count_len(%d)\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->header.time_begin,tls->header.time_end,
 		tls->header.addr_begin,tls->header.addr_end,
 		tls->data.stacktraces.stacktraces_len,
@@ -561,19 +567,13 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     tls->defer_sampling=false;
 
-    if (getenv("CBTF_DEBUG_COLLECTOR") != NULL) {
-	tls->debug_collector = true;
-    } else {
-	tls->debug_collector = false;
-    }
-
+#ifndef NDEBUG
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 #if defined (HAVE_OMPT)
-    if (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL) {
-	tls->debug_collector_ompt = true;
-    } else {
-	tls->debug_collector_ompt = false;
-    }
+    IsOMPTDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_OMPT") != NULL);
 #endif
+#endif
+
 
 /* testing this for performance improvements - dpm 8-17-2017 */
 #if 0
@@ -722,12 +722,15 @@ void cbtf_collector_stop()
     }
 
 #if defined(CBTF_HANDLE_UNWIND_SEGV)
-    if (tls->debug_collector) {
+#ifndef NDEBUG
+    if (IsCollectorDebugEnabled) {
 	if (tls->unwind_segvcount > 0) {
-            fprintf(stderr,"usertime unwinder sample count:%d SIGSEGV count:%d\n",
+            fprintf(stderr,"[%ld:%d] usertime unwinder sample count:%d SIGSEGV count:%d\n",
+		tls->header.pid, tls->header.omp_tid,
 		tls->sample_count, tls->unwind_segvcount);
 	}
     }
+#endif
 #endif
 
     /* Destroy our thread-local storage */

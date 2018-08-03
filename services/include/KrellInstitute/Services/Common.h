@@ -34,6 +34,7 @@
 #include <inttypes.h>
 #endif
 #include <rpc/rpc.h>
+#include <stdbool.h>
 
 #include <ucontext.h>
 

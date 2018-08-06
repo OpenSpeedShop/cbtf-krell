@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2018 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -97,6 +97,14 @@ endif(DL_LIBRARIES)
 #ENDMACRO (CHECK_LIBRARY_EXISTS_CONCAT)
 
 #cmake -DVARNAME:STRING=value
+
+# Set the cbtf_hardware_platform which is used in finding mpi implementation install directories
+# Note: this is also in the openspeedshop repository but is named oss_hardware_platform there.
+# This is mainly needed to find mpich libraries on some mpich installations
+execute_process(COMMAND uname -i
+        OUTPUT_VARIABLE local_arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(cbtf_hardware_platform "${local_arch}")
+message(STATUS "cbtf_hardware_platform: " ${cbtf_hardware_platform} )
 
 set(TLS_MODEL "implicit" CACHE STRING "cbtf-krell tls model: [implicit,explicit]")
 #

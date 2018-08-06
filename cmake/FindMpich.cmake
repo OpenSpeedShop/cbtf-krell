@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2018 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -23,14 +23,23 @@ INCLUDE (CheckFunctionExists)
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 
-#MESSAGE( STATUS "/usr/include/mpich-${oss_hardware_platform}: " ${oss_hardware_platform} )
+MESSAGE( STATUS "/usr/include/mpich-${cbtf_hardware_platform}: " ${cbtf_hardware_platform} )
 
 find_path(Mpich_INCLUDE_DIR
     NAMES mpi.h
     HINTS $ENV{MPICH_DIR}
     HINTS ${MPICH_DIR}
     PATHS /usr /usr/local
-    PATH_SUFFIXES include include/mpich-${oss_hardware_platform} include/mpich include64 
+    PATH_SUFFIXES include include/mpich-${cbtf_hardware_platform} include/mpich include64 
+    NO_DEFAULT_PATH
+    )
+
+find_path(Mpich_BIN_DIR
+    NAMES mpicc
+    HINTS $ENV{MPICH_DIR}
+    HINTS ${MPICH_DIR}
+    PATHS /usr /usr/local /usr/lib64/mpich /usr/lib/mpich
+    PATH_SUFFIXES bin bin/mpich-${cbtf_hardware_platform} bin64 
     NO_DEFAULT_PATH
     )
 
@@ -57,14 +66,15 @@ GET_FILENAME_COMPONENT(Mpich_DIR ${Mpich_INCLUDE_DIR} PATH )
 #message(STATUS "Mpich Mpich_SHARED_LIBRARIES: " ${Mpich_SHARED_LIBRARIES})
 #message(STATUS "Mpich Mpich_INCLUDE_DIR: " ${Mpich_INCLUDE_DIR})
 #message(STATUS "Mpich Mpich_LIB_DIR: " ${Mpich_LIB_DIR})
+#message(STATUS "Mpich Mpich_BIN_DIR: " ${Mpich_BIN_DIR})
 message(STATUS "Mpich found: " ${MPICH_FOUND})
 message(STATUS "Mpich location: " ${Mpich_LIB_DIR})
 
 set(Mpich_DEFINES "HAVE_MPICH=${MPICH_FOUND}")
 
-
 mark_as_advanced(
             Mpich_LIBRARY_SHARED 
             Mpich_INCLUDE_DIR
             Mpich_LIB_DIR
+            Mpich_BIN_DIR
             )

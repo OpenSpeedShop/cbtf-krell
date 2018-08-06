@@ -78,4 +78,27 @@ if (HAVE_OPENMPI)
     )
 endif()
 
+
+# BUILD MPT wrapper libs
+if (HAVE_MPT)
+    set(MPI_C_COMPILER ${MPT_DIR}/bin/mpicc)
+    add_wrapped_file(mpt-wrappers.c wrappers.w -f)
+
+    set(OVERVIEW_MPIWRAPPER_SOURCES mpt-wrappers.c)
+    add_library(overview-mpt-wrappers MODULE
+        ${OVERVIEW_MPIWRAPPER_SOURCES})
+    target_include_directories(overview-mpt-wrappers PUBLIC
+        ${Mpt_INCLUDE_DIRS}
+        ${COMMON_INCLUDE_DIRS}
+    )
+    target_link_libraries(overview-mpt-wrappers ${Mpt_SHARED_LIBRARIES} rt ${CMAKE_DL_LIBS})
+    set_target_properties(overview-mpt-wrappers PROPERTIES PREFIX "")
+    set_target_properties(overview-mpt-wrappers PROPERTIES
+        COMPILE_DEFINITIONS "${Mpt_DEFINES}")
+
+    install(TARGETS overview-mpt-wrappers
+        LIBRARY DESTINATION lib${LIB_SUFFIX}/KrellInstitute/Collectors
+    )
+endif()
+
 # TODO: build other mpi implmentation wrapper libs

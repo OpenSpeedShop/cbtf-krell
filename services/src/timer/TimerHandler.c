@@ -39,6 +39,7 @@
 #include "KrellInstitute/Services/Timer.h"
 #include "KrellInstitute/Services/TLS.h"
 
+// for debug
 //extern int monitor_get_thread_num();
 
 #define CBTF_ITIMER_SIGNAL   (SIGPROF)
@@ -224,6 +225,7 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 		int ret = timer_create(clock, &tls->sig_event, &tls->timerid);
 		if (ret == 0) {
 		    tls->posix_timer_initialized = true;
+		    //fprintf(stderr,"[%d,%d] timer_create succeeded!\n",getpid(),monitor_get_thread_num());
 		} else if (ret < 0) {
 		    fprintf(stderr,"timer_create failed!\n");
 		}
@@ -246,10 +248,19 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 	
 	if (use_posix_timer) {
 #ifdef HAVE_POSIX_TIMERS
+	    int ret;
 	    struct itimerspec stop_spec = {{0}};
 	    memset(&stop_spec, 0, sizeof(stop_spec));
-	    if (tls->posix_timer_initialized) {
-		int ret = timer_delete(tls->timerid);
+	    timer_t t = tls->timerid;
+	    if (t) {
+		ret = timer_settime(t, 0, &stop_spec, NULL);
+		if (ret < 0) {
+		    fprintf(stderr,"timer_settime failed!\n");
+		}
+	    }
+	    if (tls->posix_timer_initialized && tls->timerid) {
+		ret = timer_delete(tls->timerid);
+		tls->timerid = NULL;
 		if (ret < 0) {
 		    fprintf(stderr,"timer_delete failed!\n");
 		}
@@ -351,10 +362,33 @@ void CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 #endif
     Assert(tls != NULL);
 
+
     if(!init_timer_signal) {
-	tls->posix_timer_initialized = false;
 	CBTF_SetTimerSignal();
     }
+#ifdef HAVE_POSIX_TIMERS
+    /* The whole timer API was predicated on itmer and sigprof
+     * which was process wide timer shared by threads.  With posix timers
+     * we have an extra step of initializing the thread specific timers.
+     * But the long standing API used by CBTF_Timer was to simply
+     * use interval 0 and handler NULL to imply removal of a timer.
+     * Initialize posix_timer_initialized to false when CBTF_Timer is called
+     * with a non-zero interval and a non-NULL handler.
+     * The assumption being that all users of this API are starting a new
+     * timer when called with a non-zero interval and a non-NULL handler.
+     * Therefore the need to reinit posix_timer_initialized to false to statisfy
+     * the previous API usage. This assumes that a caller has called this function
+     * with an interval of 0 and a NULL handler to force deleting any
+     * previous timer.
+     */
+#if 0
+    fprintf(stderr,"[%d,%d] CBTF_Timer enterd interval:%ld posix_timer_initialized:%d handler:%p\n",
+	getpid(),monitor_get_thread_num(),interval,tls->posix_timer_initialized, handler);
+#endif
+    if (interval > 0 && handler != NULL) {
+	tls->posix_timer_initialized = false;
+    }
+#endif
     __CBTF_Timer(interval, handler);
 }
 
@@ -375,8 +409,16 @@ void CBTF_BlockTimerSignal()
     sigset_t signal_set;
     sigemptyset(&signal_set);
     sigaddset(&signal_set, CBTF_GetTimerSignal());
-    // FIXME: should we use pthread_sigmask here?
+    // use pthread_sigmask for posix timers.
+#ifdef HAVE_POSIX_TIMERS
+    if (use_posix_timer) {
+	pthread_sigmask(SIG_BLOCK, &signal_set, NULL);
+    } else {
+	sigprocmask(SIG_BLOCK, &signal_set, NULL);
+    }
+#else
     sigprocmask(SIG_BLOCK, &signal_set, NULL);
+#endif
 }
 
 /* BLOCK profiling signals.
@@ -389,6 +431,14 @@ void CBTF_UnBlockTimerSignal()
     sigset_t signal_set;
     sigemptyset(&signal_set);
     sigaddset(&signal_set, CBTF_GetTimerSignal());
-    // FIXME: should we use pthread_sigmask here?
+    // use pthread_sigmask for posix timers.
+#ifdef HAVE_POSIX_TIMERS
+    if (use_posix_timer) {
+	pthread_sigmask(SIG_UNBLOCK, &signal_set, NULL);
+    } else {
+	sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+    }
+#else
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+#endif
 }

@@ -692,3 +692,10 @@ if(ENABLE_CBTF_MRNET_PLAYBACK)
         add_subdirectory(utils/cbtf-mrnet-playback-mpi)
     endif()
 endif()
+
+# install man directory files
+install(DIRECTORY man
+    DESTINATION share
+    FILES_MATCHING
+    PATTERN "*.1"
+    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)

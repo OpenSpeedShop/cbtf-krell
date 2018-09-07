@@ -1,0 +1,124 @@
+.\" Process this file with
+.\" groff -man -Tascii cbtfsummary.1
+.\"
+.TH CBTFSUMMARY 1 "AUGUST 2018" Linux "User Manuals"
+.SH NAME
+cbtfsummary \- CBTF Summary experiment script
+.SH SYNOPSIS
+.nf
+.IP "cbtfsummary simple_executable"
+.IP "cbtfsummary ""executable args"""
+.IP "cbtfsummary ""multi_executable"""
+.fi
+
+.SH TYPICAL USAGE FORM
+.nf
+
+cbtfsummary "multi_executable"
+
+For example:
+
+setenv CBTF_CSVDATA_DIR /opt/data/csvdata
+cbtfsummary "/opt/openmpi/bin/mpirun -np 4 /u/user/mpi_prog" 
+
+.fi
+.SH DESCRIPTION
+.B cbtfsummary
+
+cbtfsummary is a convenience command script that invokes the 
+CBTF application level performance tool to gather a number of
+performance information metrics about the application being 
+monitored and reports that information back to the user in 
+order to give a high-level overview or summary of the 
+performance bottlenecks in the user application.
+
+cbtfsummary creates comma separated list (csv) files, per 
+thread of execution, containing application level performance 
+information for MPI, OpenMP, I/O, Memory usage, kokkos, and 
+hardware performance counters.  cbtfsummary is intended to 
+provide a low overhead overview of application performance
+across multiple performance metric types.
+
+.SH OPTIONS
+
+.IP "simple_executable"
+This option specifies the simple executable to be run. By 
+simple executable we mean a one word command with no arguments.
+No quotes around the executable name are needed when the command
+is a single word command with no arguments.
+
+.IP " ""executable args"" "
+This option specifies an executable with arguments to be run. In
+this case the executable can be a one word command or a multiple word
+(multiple tokens) command, such as a mpi command specification. 
+For example:
+
+        "simple_executable -n 40 40 40"
+
+or
+
+        "/opt/mpi/mpirun -np 64 ./executable_name" 
+
+cbtfsummary requires quotes around the executable and arguments when 
+the executable command is not simple.
+
+.IP " ""multi_executable [args]"" "
+This option specifies a multiple word executable with or without
+arguments to be run. In this case the executable is multiple word 
+command or a multiple word command, such as a mpi command 
+specification. For example: 
+
+        "/opt/mpi/mpirun -np 64 ./executable_name" 
+
+cbtfsummary requires quotes around the executable and arguments when 
+the executable command is not simple.
+
+.SH FILES
+.IP None at this time
+
+.SH ENVIRONMENT
+.IP CBTF_CSVDATA_DIR
+This variable points to the directory to where cbtfsummary 
+writes the csv files.
+
+.SH DIAGNOSTICS
+The diagnostics section is TBD:
+
+.SH QUICK START EXAMPLE
+
+The "summary" experiment gives a low overhead overview 
+of where application bottlenecks are.  Analyzing the output from 
+this experiment can be used to choose an Open|SpeedShop 
+experiment to further focus in on the application bottleneck(s).
+.nf
+
+cbtfsummary "/opt/openmpi/bin/mpiexec -np 64 /home/user/mpi_prog"
+.fi
+
+.SH BUGS
+TBD
+
+.SH AUTHOR
+Open|SpeedShop Team <oss-questions@openspeedshop.org>
+
+.SH "SEE ALSO"
+.BR openss (1),
+.BR ossusertime (1),
+.BR osshwc (1),
+.BR osshwcsamp (1),
+.BR osshwctime (1),
+.BR ossio (1),
+.BR ossiop (1),
+.BR ossiot (1),
+.BR ossmem (1),
+.BR ossmpi (1),
+.BR ossmpip (1),
+.BR ossmpit (1),
+.BR ossmpiotf (1),
+.BR ossomptp (1)
+.BR osspthreads (1)
+.BR osscuda (1)
+.BR osscompare (1)
+.BR OpenSpeedShop (3)
+.BR OpenSpeedShop_offline (3)
+.BR OpenSpeedShop_cbtf (3)

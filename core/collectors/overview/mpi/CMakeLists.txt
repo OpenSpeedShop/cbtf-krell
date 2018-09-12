@@ -121,7 +121,7 @@ endif()
 
 # BUILD MPICH wrapper libs
 
-if (HAVE_MPICH)
+if (HAVE_MPICH AND EXISTS(${Mpich_BIN_DIR}/mpicc))
     # Here we use Mpich_BIN_DIR instead of MPICH_DIR/bin/mpicc 
     # because mpich is installed in various different ways
     # where mpicc is not always in the simple/standard install

@@ -470,72 +470,69 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->data_header.omp_tid = monitor_get_thread_num();
     tls->data_header.id = strdup(cbtf_collector_unique_id);
 
-    if(papi_init_done == 0) {
-#if 0
-#ifndef NDEBUG
-	if (IsDebugEnabled) {
-	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: initialize papi\n",
-	    tls->data_header.pid,tls->data_header.omp_tid);
-	}
-#endif
-#endif
-	CBTF_init_papi();
-	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz; // hw_info->mhz is deprecated.
-#if 0
-#ifndef NDEBUG
-	if (IsDebugEnabled) {
-           fprintf(stderr, "PAPI Version: %d.%d.%d.%d\n", PAPI_VERSION_MAJOR( PAPI_VERSION ),
-                        PAPI_VERSION_MINOR( PAPI_VERSION ),
-                        PAPI_VERSION_REVISION( PAPI_VERSION ),
-                        PAPI_VERSION_INCREMENT( PAPI_VERSION ) );
-	   fprintf(stderr,"CPU MODEL %s\n",hw_info->model_string);
-           fprintf(stderr,"System has %d hardware counters.\n", PAPI_num_counters());
-	}
-#endif
-#endif
-	papi_init_done = 1;
-    } else {
-	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz;  // hw_info->mhz is deprecated.
-    }
 
-
-    /* PAPI SETUP */
-    tls->EventSet = PAPI_NULL;
-    PAPI_CHECK(PAPI_create_eventset(&tls->EventSet));
-
-
-/* In Component PAPI, EventSets must be assigned a component index
- * before you can fiddle with their internals. 0 is always the cpu component */
-#if (PAPI_VERSION_MAJOR(PAPI_VERSION)>=4)
-    PAPI_CHECK(PAPI_assign_eventset_component(tls->EventSet,0));
-#endif
-
-    // TODO: Allow user so set multiplexing, choose events and provide
-    // usable defaults for CPU types with reasonable events for whether
-    // we are sampling (no multiplexing) or not.
-    //
-    /* NOTE: if multiplex is turned on, papi internaly uses a SIGPROF handler.
+    /* TODO: Allow user so set multiplexing, choose events and provide
+     * usable defaults for CPU types with reasonable events for whether
+     * we are sampling (no multiplexing) or not.
+     *
+     * NOTE: if multiplex is turned on, papi internaly uses a SIGPROF handler.
      * Since we are sampling potentially with SIGPROF or now SIGRTMIN and we
      * prefer to limit our events to 6, we do not need multiplexing.
      */
     if (getenv("OVERVIEW_HWC_MULTIPLEX") != NULL) {
     }
 
+    /* PAPI SETUP */
+    int rval = PAPI_library_init(PAPI_VER_CURRENT);
+    if (rval != PAPI_VER_CURRENT) {
+	/* should set flag here and simply disable papi
+	 * the rest of this collection.
+	 */
+	fprintf(stderr,"ERROR initializing PAPI.\n");
+    }
+
+    PAPI_CHECK(PAPI_thread_init(( unsigned long ( * )( void ) ) ( pthread_self )));
+
+    /* if multiplexing, must init before creating eventset.  */  
 #if !defined(RUNTIME_PLATFORM_BGP) 
-	PAPI_CHECK(PAPI_set_multiplex(tls->EventSet));
+    PAPI_CHECK(PAPI_multiplex_init());
 #endif
 
-	/* Create a master prioritized list of desired PAPI events and
-	 * cycle them one at a time and add them if they exist upto the MAX
-	 * number of multiplexed counters we will allow
-	 */ 
+    tls->EventSet = PAPI_NULL;
+    PAPI_CHECK(PAPI_create_eventset(&tls->EventSet));
+
+    /* In Component PAPI, EventSets must be assigned a component index
+     * before you can fiddle with their internals. 0 is always the cpu component
+     */
+#if (PAPI_VERSION_MAJOR(PAPI_VERSION)>=4)
+    PAPI_CHECK(PAPI_assign_eventset_component(tls->EventSet,0));
+#endif
+
+    /* now set multiplexing for eventset. */  
+#if !defined(RUNTIME_PLATFORM_BGP) 
+    PAPI_CHECK(PAPI_set_multiplex(tls->EventSet));
+#endif
+
+    /* legacy code. likely unused. */
+    if(papi_init_done == 0) {
+	hw_info = PAPI_get_hardware_info();
+	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz; // hw_info->mhz is deprecated.
+	papi_init_done = 1;
+    } else {
+	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz;  // hw_info->mhz is deprecated.
+    }
+
+
+
+    /* Create a master prioritized list of desired PAPI events and
+     * cycle them one at a time and add them if they exist upto the MAX
+     * number of multiplexed counters we will allow
+     */ 
 
     // TODO: Move environment override here and handle.
-	papi_event = master_papi_events;
+    papi_event = master_papi_events;
 
-    /* call PAPI directly rather than
-     * call any service helper functions due to inconsitent
-     * behaviour seen on various lab systems
+    /* call PAPI directly (no papi service code).
      * NOTE: we now simply add events until we reach the max papi event
      * count or run out of counters in the papi_event list.
      */
@@ -550,7 +547,12 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 		break;
 	    }
 
+
 	    if (PAPI_event_name_to_code(tf_token,&eventcode) != PAPI_OK){
+		continue;
+	    }
+
+	    if (PAPI_query_event (eventcode) != PAPI_OK) {
 		continue;
 	    }
 
@@ -577,6 +579,12 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     TLS_ompt_set_collector_active(true);
 #endif
 
+    tls->idle_ttime = 0;
+    tls->defer_sampling=false;
+    do_trace=true;
+    tls->data_header.time_begin = CBTF_GetTime();
+    tls->collector_start_time = tls->data_header.time_begin;
+
     // TODO: eventually the user can choose to run a timer and
     // that affects the papi events multiplexing choice. So we
     // will need to add lojic to handle these choices.
@@ -594,16 +602,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
      */
     //CBTF_Timer(tls->hwc_samp_data.interval, TimerHandler);
 
-    tls->idle_ttime = 0;
-    tls->defer_sampling=false;
-    do_trace=true;
-    tls->data_header.time_begin = CBTF_GetTime();
-    tls->collector_start_time = tls->data_header.time_begin;
 
-    // TODO: eventually we should support the GOTCHA api for
-    // handling wrappers (mem,io,mpi,etc).
-    // gotcha
-    //init_mem_wrappers();
 #ifndef NDEBUG
     if (IsDebugEnabled) {
 	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: STARTED\n",tls->data_header.pid,tls->data_header.omp_tid);

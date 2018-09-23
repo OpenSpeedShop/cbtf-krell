@@ -162,6 +162,9 @@ typedef struct {
 
     /** Flag indicating if data collection is paused. */
     bool paused;
+
+    /** Flag indicating if data collection was ever started. */
+    bool started;
     
     /**
      * Performance data header to be applied to this thread's performance data.

@@ -579,7 +579,7 @@ int main(int argc, char** argv)
     std::string realname;
     boost::split(strs, prg.stem().string(), boost::is_any_of("\t "));
     realname = strs[0];
-    std::cerr << "realname:" << realname << std::endl;
+    //std::cerr << "realname:" << realname << std::endl;
 
     // TODO: currently all of this csv directory work is intended for
     // the overview/summary experiment.  Maybe make it a command line
@@ -608,30 +608,32 @@ int main(int argc, char** argv)
     bool finished = false;
     std::string aprunLlist = "";
 
-    if (numBE == 0) {
+    if (numBE == 0 && !use_offline_mode) {
 	std::cout << desc << std::endl;
 	return 1;
     }
 
-    // start with a fresh connections file.
-    // FIXME: this likely would remove any connections file passed
-    // on the command line. Should we allow that any more...
-    bool connections_exists = boost::filesystem::exists(connections);
-    if (connections_exists) {
-	boost::filesystem::remove(connections);
-    }
-
-    // TODO: pass numBE to CBTFTopology and record as the number
-    // of application processes.
     CBTFTopology cbtftopology;
-    if (topology.empty()) {
-	if (arch == "cray") {
-	    cbtftopology.autoCreateTopology(BE_CRAY_ATTACH,numBE);
-	} else {
-	    cbtftopology.autoCreateTopology(BE_ATTACH,numBE);
+    if (!use_offline_mode) {
+	// start with a fresh connections file.
+	// FIXME: this likely would remove any connections file passed
+	// on the command line. Should we allow that any more...
+	bool connections_exists = boost::filesystem::exists(connections);
+	if (connections_exists) {
+	    boost::filesystem::remove(connections);
 	}
-	topology = cbtftopology.getTopologyFileName();
-	std::cerr << "Generated topology file: " << topology << std::endl;
+
+	// TODO: pass numBE to CBTFTopology and record as the number
+	// of application processes.
+	if (topology.empty()) {
+	    if (arch == "cray") {
+		cbtftopology.autoCreateTopology(BE_CRAY_ATTACH,numBE);
+	    } else {
+		cbtftopology.autoCreateTopology(BE_ATTACH,numBE);
+	    }
+	    topology = cbtftopology.getTopologyFileName();
+	    std::cerr << "Generated topology file: " << topology << std::endl;
+	}
     }
 
     FEThread fethread;

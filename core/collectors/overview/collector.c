@@ -66,6 +66,8 @@ const char* const master_papi_events = "PAPI_TOT_CYC,PAPI_TOT_INS,PAPI_LD_INS,PA
 /** Flag indicating if debugging is enabled. */
 bool IsDebugEnabled = FALSE;
 
+extern bool CBTF_in_mpi_startup;
+
 // due to malloc issues in the services explicit TLS code,
 // this critical flag should not use explicit tls.
 static __thread int do_trace;
@@ -110,13 +112,13 @@ static int papi_init_done = 0;
             const char* description = PAPI_strerror(RETVAL);         \
             if (description != NULL)                                 \
             {                                                        \
-                fprintf(stderr, "[Overview %d:%d] %s(): %s = %d (%s)\n", \
+                fprintf(stderr, "[%d:%d] %s(): %s = %d (%s)\n", \
                         getpid(), monitor_get_thread_num(),          \
                         __func__, #x, RETVAL, description);          \
             }                                                        \
             else                                                     \
             {                                                        \
-                fprintf(stderr, "[Overview %d:%d] %s(): %s = %d\n",      \
+                fprintf(stderr, "[%d:%d] %s(): %s = %d\n",      \
                         getpid(), monitor_get_thread_num(),          \
                         __func__, #x, RETVAL);                       \
             }                                                        \
@@ -262,7 +264,7 @@ void send_samples (TLS* tls)
 
 #ifndef NDEBUG
     if (IsDebugEnabled) {
-	    fprintf(stderr, "[Overview %ld,%d] send_samples: time:%f time_range(%lu,%lu) addr range[%lx,%lx] pc_len(%d) count_len(%d)\n",
+	    fprintf(stderr, "[%ld,%d] send_samples: time:%f time_range(%lu,%lu) addr range[%lx,%lx] pc_len(%d) count_len(%d)\n",
 	 	tls->data_header.pid,tls->data_header.omp_tid,
 		(float)(tls->data_header.time_end - tls->data_header.time_begin)/1000000000,
 		tls->data_header.time_begin,tls->data_header.time_end,
@@ -390,6 +392,12 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     TLS* tls = TLS_get();
     tls->defer_sampling=true;
 
+    if (CBTF_in_mpi_startup) {
+	tls->started=false;
+	return;
+    }
+    tls->started=true;
+
     /* Copy the header into our thread-local storage for future use */
     memcpy(&tls->data_header, header, sizeof(CBTF_DataHeader));
 
@@ -404,14 +412,16 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
         /* Should debugging be enabled? */
         IsDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 
+#if 0
 #if !defined(NDEBUG)
         if (IsDebugEnabled)
         {
-            printf("[Overview %d,%d] cbtf_collector_start(): "
+            printf("[%d,%d] cbtf_collector_start(): "
                    "ThreadCount.value = %d --> %d\n",
                    getpid(), monitor_get_thread_num(),
                    ThreadCount.value, ThreadCount.value + 1);
         }
+#endif
 #endif
 	/* Decode the passed function arguments */
 	CBTF_overview_start_sampling_args args;
@@ -442,11 +452,13 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* Initialize our performance data header and blob */
     TLS_initialize_data(tls);
 
+#if 0
 #ifndef NDEBUG
     if (IsDebugEnabled) {
-	fprintf(stderr,"[Overview %ld,%d] cbtf_collector_start: initialize TLS data\n",
+	fprintf(stderr,"[%ld,%d] cbtf_collector_start: initialize TLS data\n",
 	tls->data_header.pid,tls->data_header.omp_tid);
     }
+#endif
 #endif
 
 
@@ -459,14 +471,17 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     tls->data_header.id = strdup(cbtf_collector_unique_id);
 
     if(papi_init_done == 0) {
+#if 0
 #ifndef NDEBUG
 	if (IsDebugEnabled) {
-	    fprintf(stderr,"[Overview %ld,%d] cbtf_collector_start: initialize papi\n",
+	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: initialize papi\n",
 	    tls->data_header.pid,tls->data_header.omp_tid);
 	}
 #endif
+#endif
 	CBTF_init_papi();
 	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz; // hw_info->mhz is deprecated.
+#if 0
 #ifndef NDEBUG
 	if (IsDebugEnabled) {
            fprintf(stderr, "PAPI Version: %d.%d.%d.%d\n", PAPI_VERSION_MAJOR( PAPI_VERSION ),
@@ -476,6 +491,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	   fprintf(stderr,"CPU MODEL %s\n",hw_info->model_string);
            fprintf(stderr,"System has %d hardware counters.\n", PAPI_num_counters());
 	}
+#endif
 #endif
 	papi_init_done = 1;
     } else {
@@ -590,7 +606,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     //init_mem_wrappers();
 #ifndef NDEBUG
     if (IsDebugEnabled) {
-	    fprintf(stderr,"[Overview %ld,%d] cbtf_collector_start: STARTED\n",tls->data_header.pid,tls->data_header.omp_tid);
+	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: STARTED\n",tls->data_header.pid,tls->data_header.omp_tid);
     }
 #endif
 }
@@ -684,6 +700,10 @@ void cbtf_collector_stop()
 	return;
     }
 
+    if (!tls->started) {
+	return;
+    }
+
     tls->defer_sampling=true;
     do_trace=false;
     tls->data_header.time_end = CBTF_GetTime();
@@ -691,7 +711,7 @@ void cbtf_collector_stop()
 
 #ifndef NDEBUG
     if (IsDebugEnabled) {
-	fprintf(stderr,"[Overview %ld,%d] cbtf_collector_stop: STOPPED\n",tls->data_header.pid,tls->data_header.omp_tid);
+	fprintf(stderr,"[%ld,%d] cbtf_collector_stop: STOPPED\n",tls->data_header.pid,tls->data_header.omp_tid);
     }
 #endif
 

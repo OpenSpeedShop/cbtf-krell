@@ -496,9 +496,14 @@ case "$experiment_name" in
   collector=overview
   if [ "$string_value" != "" ] ; then
     export CBTF_SUMMARY_HWC_EVENTS=$string_value
-    echo "[$experiment_name]: $collector using user specified trace function list: \"$string_value\"."
+    echo "[$experiment_name]: summary collector using user specified counters: \"$string_value\"."
   else
-    echo "[$experiment_name]: $collector using default experiment trace function list."
+    echo "[$experiment_name]: summary collector using defaults."
+  fi
+  # default to offline unless --cbtf was used on commandline.
+  if [ $force_cbtf_flag == false ] ; then
+    cbtf_offline_opt="--offline"
+    setup_offline
   fi
 
 esac

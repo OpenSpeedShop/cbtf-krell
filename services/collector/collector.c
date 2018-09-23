@@ -107,6 +107,7 @@ bool connected_to_mrnet;
 /* debug flags */
 #ifndef NDEBUG
 static bool IsCollectorDebugEnabled = false;
+static bool IsCollectorDebugDsosEnabled = false;
 static bool IsMRNetDebugEnabled = false;
 #endif
 
@@ -216,7 +217,6 @@ void cbtf_offline_service_sampling_control(CBTF_Monitor_Status current_status)
 
 #ifndef NDEBUG
     if (IsCollectorDebugEnabled) {
-	//char* statusstr = current_status == CBTF_Monitor_Resumed ? "RESUME" : "PAUSE";
         fprintf(stderr,"[%d,%d] cbtf_offline_service_sampling_control passed_status:%s previous_status:%s\n",
 		     getpid(),monitor_get_thread_num(),
 		     statusTostring(current_status),statusTostring(tls->sampling_status));
@@ -595,9 +595,11 @@ void cbtf_timer_service_start_sampling(const char* arguments)
      * related mpi_pcontrol environment variables.
      */
     tls->sampling_status=CBTF_Monitor_Not_Started;
+    tls->time_started=CBTF_GetTime();
 
 #ifndef NDEBUG
     IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsCollectorDebugDsosEnabled = (getenv("CBTF_DEBUG_COLLECTOR_DSOS") != NULL);
     IsMRNetDebugEnabled = (getenv("CBTF_DEBUG_LW_MRNET") != NULL);
 #endif
 
@@ -869,7 +871,7 @@ void cbtf_record_dsos()
 #endif
 
 #ifndef NDEBUG
-    if (IsCollectorDebugEnabled) {
+    if (IsCollectorDebugDsosEnabled) {
         fprintf(stderr, "[%d,%d] cbtf_record_dsos entered.\n",getpid(),monitor_get_thread_num());
     }
 #endif
@@ -882,7 +884,7 @@ void cbtf_record_dsos()
 
     /* Write the thread's initial address space to the appropriate buffer */
 #ifndef NDEBUG
-    if (IsCollectorDebugEnabled) {
+    if (IsCollectorDebugDsosEnabled) {
 	fprintf(stderr,"[%d,%d] cbtf_record_dsos calls GETDLINFO for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
 		local_header.host, (long long)local_header.pid,
@@ -893,7 +895,7 @@ void cbtf_record_dsos()
 
     if(tls->data.linkedobjects.linkedobjects_len > 0) {
 #ifndef NDEBUG
-	if (IsCollectorDebugEnabled) {
+	if (IsCollectorDebugDsosEnabled) {
            fprintf(stderr,
             "[%d,%d] cbtf_record_dsos HAS %d OBJS for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
@@ -936,7 +938,6 @@ void cbtf_offline_record_dso(const char* dsoname,
 	//cbtf_offline_pause_sampling(CBTF_Monitor_Default_event);
     }
 
-    //fprintf(stderr,"cbtf_offline_record_dso called for %s, is_dlopen = %d\n",dsoname, is_dlopen);
 
     /* Initialize the offline "dso" blob's header */
     CBTF_EventHeader local_header;
@@ -953,8 +954,6 @@ void cbtf_offline_record_dso(const char* dsoname,
     } else {
 	objects.time_begin = tls->time_started;
     }
-    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
-    
 
     /* Initialize the offline "dso" blob */
     objects.objname = strdup(dsoname);
@@ -966,6 +965,15 @@ void cbtf_offline_record_dso(const char* dsoname,
     } else {
 	objects.is_executable = true;
     }
+
+    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
+
+#ifndef NDEBUG
+    if (IsCollectorDebugDsosEnabled) {
+	fprintf(stderr,"cbtf_offline_record_dso fileio: dso:%s is_dlopen:%d time_begin:%ld time_end:%ld addr_begin:%lx addr_end:%lx is_exe:%d\n",
+	dsoname, is_dlopen, objects.time_begin,objects.time_end,objects.addr_begin,objects.addr_end,objects.is_executable);
+    }
+#endif
 
 #else
     /* Initialize the "dso" message */
@@ -979,7 +987,6 @@ void cbtf_offline_record_dso(const char* dsoname,
     } else {
 	objects.time_begin = tls->time_started;
     }
-    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
 
     CBTF_Protocol_FileName dsoFilename;
     dsoFilename.path = strdup(dsoname);
@@ -993,6 +1000,16 @@ void cbtf_offline_record_dso(const char* dsoname,
     } else {
 	objects.is_executable = true;
     }
+
+    objects.time_end = is_dlopen ? -1ULL : CBTF_GetTime();
+
+#ifndef NDEBUG
+    if (IsCollectorDebugDsosEnabled) {
+	fprintf(stderr,"cbtf_offline_record_dso cbtf: dso:%s is_dlopen:%d time_begin:%ld time_end:%ld addr_begin:%lx addr_end:%lx is_exe:%d\n",
+	dsoname, is_dlopen,objects.time_begin,objects.time_end,objects.range.begin,objects.range.end,objects.is_executable);
+    }
+#endif
+
 #endif
 
 #if defined(CBTF_SERVICE_USE_MRNET)

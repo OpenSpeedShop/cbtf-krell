@@ -694,8 +694,14 @@ void cbtf_timer_service_start_sampling(const char* arguments)
  * so the header info for mpi rank is incorrect in this header.
  * For FILEIO this must happen here since it uses async unsafe calls
  * like malloc.
+ *
+ * For the summary/overview collector we are not creating openss data
+ * files. That may be added in the future as a an option. For now
+ * we will defer setting up the openss-data file.
  */
-    CBTF_SetSendToFile(&(tls->header), cbtf_collector_unique_id, "openss-data");
+    if (strcmp(cbtf_collector_unique_id,"overview")) {
+	CBTF_SetSendToFile(&(tls->header), cbtf_collector_unique_id, "openss-data");
+    }
 #endif
 
 #ifndef NDEBUG
@@ -869,6 +875,14 @@ void cbtf_record_dsos()
 	//return;
     }
 #endif
+
+ /* For the summary/overview collector we are not creating openss data
+  * files. That may be added in the future as a an option. For now
+  * we will defer recording dso info to the openss-data file.
+  */
+    if (!strcmp(cbtf_collector_unique_id,"overview")) {
+	return;
+    }
 
 #ifndef NDEBUG
     if (IsCollectorDebugDsosEnabled) {

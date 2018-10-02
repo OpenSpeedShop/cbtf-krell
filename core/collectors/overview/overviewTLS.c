@@ -843,7 +843,7 @@ void TLS_print_data(TLS* tls)
     // Rusage.
     char rusage_csv_header[48] = {0};
     char rusage_csv_values[128] = {0};
-    strcat(rusage_csv_header,"maxrss_bytes,utime_seconds,stime_seconds");
+    strcat(rusage_csv_header,"maxrss_kB,utime_seconds,stime_seconds");
     overview_rusage_t ov_rusage = get_usage();
     sprintf(rusage_csv_values, "%ld,%lu.%06u,%lu.%06u",
 	ov_rusage.ru_maxrss,
@@ -864,7 +864,7 @@ void TLS_print_data(TLS* tls)
     // PAPI_dmem.
     char papi_dmem_csv_header[80] = {0};
     char papi_dmem_csv_values[128] = {0};
-    strcat(papi_dmem_csv_header,"dmem_size,dmem_resident,dmem_high_water_mark,dmem_shared,dmem_heap");
+    strcat(papi_dmem_csv_header,"dmem_size_kB,dmem_resident_kB,dmem_high_water_mark_kB,dmem_shared_kB,dmem_heap_kB");
     overview_papi_dmem_t ov_dmem = get_papi_dmem_info();
     sprintf(papi_dmem_csv_values, "%lld,%lld,%lld,%lld,%lld",
 	ov_dmem.size, ov_dmem.resident, ov_dmem.high_water_mark, ov_dmem.shared, ov_dmem.heap);
@@ -882,7 +882,7 @@ void TLS_print_data(TLS* tls)
     if (tls->total_posixio_time > 0) {
 	char posixio_csv_header[64] = {0};
 	char posixio_csv_values[64] = {0};
-	strcat(posixio_csv_header,"io_total_time,read_time,write_time,read_bytes,write_bytes");
+	strcat(posixio_csv_header,"io_total_time_seconds,read_time_seconds,write_time_seconds,read_bytes,write_bytes");
 	sprintf(posixio_csv_values, "%f,%f,%f,%ld,%ld",
 	    (tls->total_posixio_time > 0)?(float)tls->total_posixio_time/1000000000:0,
 	    (tls->total_posixio_read_time > 0)?(float)tls->total_posixio_read_time/1000000000:0,
@@ -905,7 +905,7 @@ void TLS_print_data(TLS* tls)
     if (tls->mem_data.total_allocation_calls > 0) {
 	char mem_alloc_csv_header[64] = {0};
 	char mem_alloc_csv_values[64] = {0};
-	strcat(mem_alloc_csv_header,"allocation_time,allocation_calls,allocation_bytes");
+	strcat(mem_alloc_csv_header,"allocation_time_seconds,allocation_calls,allocation_bytes");
 	sprintf(mem_alloc_csv_values, "%f,%ld,%ld",
 		(tls->mem_data.total_allocation_time > 0)?(float)tls->mem_data.total_allocation_time/1000000000:0,
 		(tls->mem_data.total_allocation_calls > 0)?tls->mem_data.total_allocation_calls:0,
@@ -926,7 +926,7 @@ void TLS_print_data(TLS* tls)
     if (tls->mem_data.total_free_calls > 0) {
 	char mem_free_csv_header[64] = {0};
 	char mem_free_csv_values[64] = {0};
-	strcat(mem_free_csv_header,"free_time,free_calls");
+	strcat(mem_free_csv_header,"free_time_seconds,free_calls");
 	sprintf(mem_free_csv_values, "%f,%ld",
 		(tls->mem_data.total_free_time > 0)?(float)tls->mem_data.total_free_time/1000000000:0,
 		(tls->mem_data.total_free_calls > 0)?tls->mem_data.total_free_calls:0);
@@ -946,7 +946,7 @@ void TLS_print_data(TLS* tls)
     if (tls->total_mpi_time > 0) {
 	char mpi_csv_header[64] = {0};
 	char mpi_csv_values[64] = {0};
-	strcat(mpi_csv_header,"total_mpi_time");
+	strcat(mpi_csv_header,"total_mpi_time_seconds");
 	sprintf(mpi_csv_values, "%f",
 	    (tls->total_mpi_time > 0)?(float)tls->total_mpi_time/1000000000:0);
 
@@ -998,7 +998,7 @@ void TLS_print_data(TLS* tls)
     if (tls->itask_ttime > 0) {
 	char ompt_csv_header[128] = {0};
 	char ompt_csv_values[128] = {0};
-	strcat(ompt_csv_header,"implicit_task_time,serial_time,barrier_time,wait_barrier_time,idle_time");
+	strcat(ompt_csv_header,"implicit_task_time_seconds,serial_time_seconds,barrier_time_seconds,wait_barrier_time_seconds,idle_time_seconds");
 	sprintf(ompt_csv_values, "%f,%f,%f,%f,%f",
             (float)tls->itask_ttime/1000000000,
             (float)tls->serial_ttime/1000000000,

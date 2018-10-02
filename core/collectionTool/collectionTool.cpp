@@ -473,14 +473,16 @@ int main(int argc, char** argv)
 
     unsigned int numBE;
     std::string topology, arch, connections, collector, program, mpiexecutable,
-		cbtfrunpath, seqexecutable;
+		cbtfrunpath, cbtfbindir, seqexecutable;
 
 #if defined(CBTF_CN_RUNTIME_DIR)
     cbtfrunpath = CBTF_CN_RUNTIME_DIR + "/bin/cbtfrun";
+    cbtfbindir = CBTF_CN_RUNTIME_DIR + "/bin";
 #else
     // assumes that cbtfrun is in PATH.
     // could use CMAKE_INSTALL_PREFIX/bin/cbtfrun if only building via cmake.
     cbtfrunpath = "cbtfrun";
+    cbtfbindir = "";
 #endif
 
     // create a default for topology file.
@@ -565,40 +567,37 @@ int main(int argc, char** argv)
     // determine if this executable has openMP.
     exe_has_openmp = isOpenMPExe(theExecutable);
 
-// CSVDIR
-    if (collector == "overview")
-    {
+    // CSVDIR creation for summary/overview collection.
+    std::string csvdirname;
+    if (collector == "overview") {
 
-    boost::filesystem::path prg(theExecutable.c_str());
-    if (prg.empty()) {
-        prg += program;
-    }
+	boost::filesystem::path prg(theExecutable.c_str());
+	if (prg.empty()) {
+	    prg += program;
+	}
 
-    // find just the real application name.
-    std::vector<std::string> strs;
-    std::string realname;
-    boost::split(strs, prg.stem().string(), boost::is_any_of("\t "));
-    realname = strs[0];
-    //std::cerr << "realname:" << realname << std::endl;
+	// find just the real application name.
+	std::vector<std::string> strs;
+	std::string realname;
+	boost::split(strs, prg.stem().string(), boost::is_any_of("\t "));
+	realname = strs[0];
 
-    // TODO: currently all of this csv directory work is intended for
-    // the overview/summary experiment.  Maybe make it a command line
-    // option as well.
-    // create a csv directory based on application name and collector.
-    std::string csvdirprefix(realname);
-    csvdirprefix += "-";
-    csvdirprefix += collector;
-    // create a csvdir that does not conflict with an existing directory
-    // using the naming scheme for the csvdata directory.
-    std::string csvdirname = createCSVdir(csvdirprefix);
-    //std::cerr << "csvdirname:" << csvdirname << std::endl;
+	// TODO: currently all of this csv directory work is intended for
+	// the overview/summary experiment.  Maybe make it a command line
+	// option as well.
+	// create a csv directory based on application name and collector.
+	std::string csvdirprefix(realname);
+	csvdirprefix += "-";
+	csvdirprefix += collector;
 
-    // now set the environment up for the collectors that may use
-    // this.
-    setenv("CBTF_CSVDATA_DIR", csvdirname.c_str(), true);
+	// create a csvdir that does not conflict with an existing directory
+	// using the naming scheme for the csvdata directory.
+	csvdirname = createCSVdir(csvdirprefix);
+
+	// now set the environment up for the collectors that may use this.
+	setenv("CBTF_CSVDATA_DIR", csvdirname.c_str(), true);
 
     }
-// CSVDIR
 
     if (vm.count("help")) {
 	std::cout << desc << std::endl;
@@ -760,6 +759,22 @@ int main(int argc, char** argv)
     }
 
     if (use_offline_mode) {
+    }
+
+    // If summary/overview created csv files, call the tool that
+    // creates a final report here.
+    if (collector == "overview") {
+	boost::filesystem::path csvs(csvdirname.c_str());
+	if (!csvs.empty()) {
+	    std::cout << std::endl << "Processing csv files in " << csvdirname << std::endl;
+	    std::string cmdtorun;
+	    if (!cbtfbindir.empty()) {
+		cmdtorun.append(cbtfbindir + "/");
+	    }
+	    cmdtorun.append("cbtfprocesscsv");
+	    cmdtorun.append(" " + csvdirname);
+	    ::system(cmdtorun.c_str());
+	}
     }
 
 #ifndef NDEBUG

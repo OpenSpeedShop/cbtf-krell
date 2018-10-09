@@ -5,6 +5,7 @@
 from __future__ import print_function
 import ast
 import csv
+import copy
 import glob
 import os
 import re
@@ -114,21 +115,6 @@ def process_csv_file(filename):
     return record_data
 
 
-#
-# helper to determine if a key in one dictionary is not present
-# in the other. This is essentially for debug at this time.
-#
-def cmpD(d1,d2):
-    for k1, k2 in zip(d1,d2):
-	if not k1 in d2:
-	    print (str(k1) + " from d1 " + str(d1))
-	    print ("not in d2 " + str(d2))
-	    d2 = d1
-	if not k2 in d1:
-	    print (str(k2) + " from d2 " + str(d2))
-	    print ("not in d1 " + str(d1))
-	    d1 = d2
-
 # create a master csv file of all csv files in the csv directory
 # passed on the commandline to this tool.
 def createMasterCsv():
@@ -177,57 +163,69 @@ def createReport():
 	    count = count+1
 	    if not max_data:
 		# copy initial data dict from first file.
-		max_data = min_data = sum_data = data
+		max_data = copy.deepcopy(data)
+		min_data = copy.deepcopy(data)
+		sum_data = copy.deepcopy(data)
 		continue
+
 	    # there may be cases where a thread has gathered data
 	    # that may not be found in other threads. These tables
 	    # represent activity across all items in a particular
 	    # thread across all ranks.
 	    for key, value in data.iteritems():
 		if not key in max_data:
-		    #print "did not find " + key + " in max_data"
 		    max_data[key] = value
 		    min_data[key] = value
 		    sum_data[key] = value
 
-	    max_data = { key:max(value,max_data[key]) if key in max_data else 0 for key, value in data.iteritems() }
-	    min_data = { key:min(value,min_data[key]) if key in min_data else 0 for key, value in data.iteritems() }
-	    for item,sitem, in zip(data.items(),sum_data.items()):
-		for records,srecords in zip(item[1],sitem[1]):
-		    dicts = [records,srecords]
-		    sum_data[sitem[0]] = [{k: sum(d[k] if k in dicts[1] and type(d[k]) in (int,float) else 0 for d in dicts) for k in dicts[0]}]
+	    # handle sum of incoming values. later used to compute average
+	    # values based on rank and/or thread counts.
+	    for i,isum, in zip(data.iteritems(),sum_data.iteritems()):
+		for r,rsum in zip(i[1],isum[1]):
+		    dicts = [r,rsum]
+		    sum_data[isum[0]] = [{k: sum(d[k]
+			if k in dicts[1]
+			and type(d[k]) in (int,float) else 0 for d in dicts)
+			for k in dicts[0]}]
 
-    # TODO: add a jobid to output. 
-    # TODO: need to improve these headers regarding threads and ranks.
-    # For an mpi job with no sub threads, thread 0 in N ranks.
-    # For an mpi job with sub threads, thread n in N ranks.
-    # For a sequential job with no sub threads, thread 0 in 1 process.
-    # For a sequential job with sub threads, thread n in 1 process.
-    teestdout=TeeStdoutToFile(reportfile, 'w')
-    if thread_cnt > 0 :
-	print ("Metrics for thread " + str(t) + " in " + str(count) + " ranks")
-    else:
-	print ("Metrics for " + str(count) + " ranks")
+	    # handle max and min recording of incoming values.  
+	    for i,imin,imax, in zip(data.iteritems(),min_data.iteritems(),max_data.iteritems()):
+		for r,rmin,rmax in zip(i[1],imin[1],imax[1]):
+		    for ir in r.iteritems():
+			rmax.update({ ir[0]: max(r.get(ir[0]), rmax.get(ir[0])) })
+			rmin.update({ ir[0]: min(r.get(ir[0]), rmin.get(ir[0])) })
 
-    print("{0:<30} {1:<20} {2:<20} {3:<20}".format('metric name', 'max', 'min', 'avg'))
-    for mx,mn,sm, in zip(sorted(max_data.iteritems()),sorted(min_data.iteritems()),sorted(sum_data.iteritems())):
-	for rmx,rmn,rsm, in zip(mx[1],mn[1],sm[1]):
+	# TODO: add a jobid to output. 
+	# TODO: need to improve these headers regarding threads and ranks.
+	# For an mpi job with no sub threads, thread 0 in N ranks.
+	# For an mpi job with sub threads, thread n in N ranks.
+	# For a sequential job with no sub threads, thread 0 in 1 process.
+	# For a sequential job with sub threads, thread n in 1 process.
+	teestdout=TeeStdoutToFile(reportfile, 'w')
+	if thread_cnt > 0 :
+	    print ("Metrics for thread " + str(t) + " in " + str(count) + " ranks")
+	else:
+	    print ("Metrics for " + str(count) + " ranks")
+
+	print("{0:<30} {1:<20} {2:<20} {3:<20}".format('metric name', 'max', 'min', 'avg'))
+	for mx,mn,sm, in zip(sorted(max_data.iteritems()),sorted(min_data.iteritems()),sorted(sum_data.iteritems())):
 	    # Python dictionary hashing can create cases where dictionaries that
 	    # have matching keys can have differing indicies in the dictionary.
 	    # We simple use the keys found in max to lookup their values in the
 	    # min and sum dictionaries to keep the values aligned across dictionaries.
-	    for imx in rmx.iteritems():
-		# ignore these entries for min,max,avg.
-		if imx[0] in ('host','pid','rank','tid','posix_tid','executable'):
-		    continue
-		minval = rmn.get(imx[0])
-		sumval = rsm.get(imx[0])
-		if type(imx[1]) == float:
-	            print("{0:<30} {1:<20.6f} {2:<20.6f} {3:<20.6f}".format(imx[0],imx[1],minval,sumval/count))
-		else:
-	            print("{0:<30} {1:<20} {2:<20} {3:<20}".format(imx[0],imx[1],minval,sumval/count))
-    print
-    teestdout.close()
+	    for rmx,rmn,rsm, in zip(mx[1],mn[1],sm[1]):
+		for imx in rmx.iteritems():
+		    # ignore these entries for min,max,avg.
+		    if imx[0] in ('host','pid','rank','tid','posix_tid','executable'):
+			continue
+		    minval = rmn.get(imx[0])
+		    sumval = rsm.get(imx[0])
+		    if type(imx[1]) == float:
+			print("{0:<30} {1:<20.6f} {2:<20.6f} {3:<20.6f}".format(imx[0],imx[1],minval,sumval/count))
+		    else:
+			print("{0:<30} {1:<20} {2:<20} {3:<20}".format(imx[0],imx[1],minval,sumval/count))
+	print
+	teestdout.close()
 
 #
 # global name of csv directory to process.

@@ -74,11 +74,15 @@ def process_csv_file(filename):
 	for row in reader:
 	    if not toggle:
 		header = tuple(x.strip() for x in row)
+		# categorize the incoming data.  This is dependent
+		# on the format of the incoming csv. In particular we
+		# are sensitive to the fields used here to create the
+		# categories being maintained in the csv schema.
 		for s in header:
-		    if 'total_time_seconds' in s:
+		    if 'executable' in s:
 			category = "SUMMARY"
 			break
-		    if 'maxrss_bytes' in s:
+		    if 'utime_seconds' in s:
 			category = "RUSAGE"
 			break
 		    if 'dmem_high_water_mark' in s:
@@ -87,7 +91,7 @@ def process_csv_file(filename):
 		    elif 'io_total_time' in s:
 			category = "IO"
 			break
-		    elif 'mpi_time' in s:
+		    elif 'total_mpi_time' in s:
 			category = "MPI"
 			break
 		    elif 'idle_time' in s:
@@ -103,6 +107,7 @@ def process_csv_file(filename):
 			category = "PAPI"
 			break
 		    else:
+			# unknown data. Should always check this.
 			category = "DATA" + str(cat_num)
 		table = []
 		cat_num = cat_num+1
@@ -161,6 +166,8 @@ def createReport():
 	for f in thread_files:
 	    data = process_csv_file(f)
 	    count = count+1
+	    #print ("FILE:" + str(f) + " count:" + str(count))
+	    #print ("DATA:" + str(data))
 	    if not max_data:
 		# copy initial data dict from first file.
 		max_data = copy.deepcopy(data)
@@ -182,11 +189,13 @@ def createReport():
 	    # values based on rank and/or thread counts.
 	    for i,isum, in zip(data.iteritems(),sum_data.iteritems()):
 		for r,rsum in zip(i[1],isum[1]):
-		    dicts = [r,rsum]
-		    sum_data[isum[0]] = [{k: sum(d[k]
-			if k in dicts[1]
-			and type(d[k]) in (int,float) else 0 for d in dicts)
-			for k in dicts[0]}]
+		    for irsum in rsum.iteritems():
+			# iterate on the current entries in sum_data.
+			# if the incoming csv does not have this item
+			# then we skip updating the sum.
+			val = r.get(irsum[0])
+			if val != None:
+			    rsum.update({ irsum[0]: r.get(irsum[0]) + rsum.get(irsum[0]) })
 
 	    # handle max and min recording of incoming values.  
 	    for i,imin,imax, in zip(data.iteritems(),min_data.iteritems(),max_data.iteritems()):
@@ -208,7 +217,7 @@ def createReport():
 	    print ("Metrics for " + str(count) + " ranks")
 
 	print("{0:<30} {1:<20} {2:<20} {3:<20}".format('metric name', 'max', 'min', 'avg'))
-	for mx,mn,sm, in zip(sorted(max_data.iteritems()),sorted(min_data.iteritems()),sorted(sum_data.iteritems())):
+	for mx,mn,sm, in zip(max_data.iteritems(),min_data.iteritems(),sum_data.iteritems()):
 	    # Python dictionary hashing can create cases where dictionaries that
 	    # have matching keys can have differing indicies in the dictionary.
 	    # We simple use the keys found in max to lookup their values in the
@@ -219,7 +228,20 @@ def createReport():
 		    if imx[0] in ('host','pid','rank','tid','posix_tid','executable'):
 			continue
 		    minval = rmn.get(imx[0])
+		    maxval = rmx.get(imx[0])
 		    sumval = rsm.get(imx[0])
+
+		    # ignore values of None.  This will be the case when and
+		    # incoming csv file does not have a key for one of the
+		    # categories of data (eg. IO or MPI etc).
+		    if minval == None or sumval == None or maxval == None:
+			#print ("Ignoring None value:" + str(imx[0]) + " max: " + str(maxval) + " min:" + str(minval) + " sum:" + str(sumval))
+			continue
+
+		    # do not print fields where there are no values
+		    # greater than zero.
+		    if minval == 0 and sumval == 0 and maxval == 0:
+			continue
 		    if type(imx[1]) == float:
 			print("{0:<30} {1:<20.6f} {2:<20.6f} {3:<20.6f}".format(imx[0],imx[1],minval,sumval/count))
 		    else:

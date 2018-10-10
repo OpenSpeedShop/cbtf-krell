@@ -156,6 +156,8 @@ def createMasterCsv():
 # In all cases, thread 0 is the master process thread.
 #
 def createReport():
+
+    teestdout=TeeStdoutToFile(reportfile, 'w')
     for t in thread_list:
 	max_data = None
 	min_data = None
@@ -210,7 +212,6 @@ def createReport():
 	# For an mpi job with sub threads, thread n in N ranks.
 	# For a sequential job with no sub threads, thread 0 in 1 process.
 	# For a sequential job with sub threads, thread n in 1 process.
-	teestdout=TeeStdoutToFile(reportfile, 'w')
 	if thread_cnt > 0 :
 	    print ("Metrics for thread " + str(t) + " in " + str(count) + " ranks")
 	else:
@@ -247,7 +248,7 @@ def createReport():
 		    else:
 			print("{0:<30} {1:<20} {2:<20} {3:<20}".format(imx[0],imx[1],minval,sumval/count))
 	print
-	teestdout.close()
+    teestdout.close()
 
 #
 # global name of csv directory to process.

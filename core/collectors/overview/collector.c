@@ -60,7 +60,7 @@ const char* const cbtf_collector_unique_id = "overview";
 
 // reference for hsw,snb.
 const char* const mem_bandwidth_events = "MEM_LOAD_UOPS_RETIRED:L3_MISS,MEM_UOPS_RETIRED:ALL_STORES";
-// master
+// master papi event list.
 const char* const master_papi_events = "PAPI_TOT_CYC,PAPI_TOT_INS,PAPI_LD_INS,PAPI_VEC_DP,PAPI_DP_OPS,PAPI_FDV_OPS,PAPI_FP_INS,PAPI_FP_OPS,PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM,PAPI_TLB_IM,PAPI_REF_CYC,PAPI_REF_NS,PAPI_FUL_CCY,PAPI_RES_STL";
 
 /** Flag indicating if debugging is enabled. */
@@ -429,9 +429,15 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	args.sampling_rate = samp_rate;
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
+	/* Create a master prioritized list of desired PAPI events.
+	 * Cycle thru them one at a time and add them if they exist.
+	 * Upto the max number of multiplexed counters we allow.
+	 */ 
 	char* event_param = getenv("OVERVIEW_HWC_EVENTS");
 	if (event_param != NULL) {
             papi_event=event_param;
+	} else {
+	    papi_event = master_papi_events;
 	}
 
 	const char* sampling_rate = getenv("OVERVIEW_SAMP_RATE");
@@ -523,14 +529,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     }
 
 
-
-    /* Create a master prioritized list of desired PAPI events and
-     * cycle them one at a time and add them if they exist upto the MAX
-     * number of multiplexed counters we will allow
-     */ 
-
-    // TODO: Move environment override here and handle.
-    papi_event = master_papi_events;
 
     /* call PAPI directly (no papi service code).
      * NOTE: we now simply add events until we reach the max papi event

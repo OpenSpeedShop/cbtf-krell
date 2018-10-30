@@ -75,7 +75,12 @@ endif()
 
 # BUILD OPENMPI wrapper libs
 if (HAVE_OPENMPI)
-    set(MPI_C_COMPILER ${OPENMPI_DIR}/bin/mpicc)
+    if (EXISTS ${OpenMPI_BIN_DIR}/mpicc )
+       set(MPI_C_COMPILER ${OpenMPI_BIN_DIR}/mpicc)
+    else()
+       set(MPI_C_COMPILER ${OPENMPI_DIR}/bin/mpicc)
+    endif()
+
     add_wrapped_file(openmpi-wrappers.c wrappers.w -f)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES openmpi-wrappers.c)

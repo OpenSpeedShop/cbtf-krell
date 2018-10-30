@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2018 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -23,20 +23,28 @@ INCLUDE (CheckFunctionExists)
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 
-
 find_path(OpenMPI_INCLUDE_DIR
     NAMES mpi.h
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
-    PATHS /usr /usr/local
-    PATH_SUFFIXES include include/openmpi
+    PATHS /usr /usr/local 
+    PATH_SUFFIXES include include/openmpi include/openmpi-ppc64le include/openmpi-x86_64
+    NO_DEFAULT_PATH
+    )
+
+find_path(OpenMPI_BIN_DIR
+    NAMES mpicc
+    HINTS $ENV{OPENMPI_DIR}
+    HINTS ${OPENMPI_DIR}
+    PATHS /usr /usr/local /usr/lib64/openmpi
+    PATH_SUFFIXES bin 
     NO_DEFAULT_PATH
     )
 
 find_library(OpenMPI_LIBRARY_SHARED NAMES mpi mpi_ibm
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
-    PATHS /usr /usr/local
+    PATHS /usr /usr/local /usr/lib64/openmpi
     PATH_SUFFIXES lib lib64
     NO_DEFAULT_PATH
     )
@@ -56,6 +64,7 @@ GET_FILENAME_COMPONENT(OpenMPI_DIR ${OpenMPI_INCLUDE_DIR} PATH )
 #message(STATUS "OpenMPI OpenMPI_SHARED_LIBRARIES: " ${OpenMPI_SHARED_LIBRARIES})
 #message(STATUS "OpenMPI OpenMPI_INCLUDE_DIR: " ${OpenMPI_INCLUDE_DIR})
 #message(STATUS "OpenMPI OpenMPI_LIB_DIR: " ${OpenMPI_LIB_DIR})
+#message(STATUS "OpenMPI OpenMPI_BIN_DIR: " ${OpenMPI_BIN_DIR})
 message(STATUS "OpenMPI found: " ${OPENMPI_FOUND})
 message(STATUS "OpenMPI location: " ${OpenMPI_LIB_DIR})
 
@@ -66,4 +75,5 @@ mark_as_advanced(
             OpenMPI_LIBRARY_SHARED 
             OpenMPI_INCLUDE_DIR
             OpenMPI_LIB_DIR
+            OpenMPI_BIN_DIR
             )

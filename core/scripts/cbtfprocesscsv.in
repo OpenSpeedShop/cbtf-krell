@@ -85,13 +85,13 @@ def process_csv_file(filename):
 		    if 'utime_seconds' in s:
 			category = "RUSAGE"
 			break
-		    if 'dmem_high_water_mark' in s:
+		    if 'dmem_high_water_mark_kB' in s:
 			category = "DMEM"
 			break
 		    elif 'io_total_time' in s:
 			category = "IO"
 			break
-		    elif 'total_mpi_time' in s:
+		    elif 'total_mpi_time_seconds' in s:
 			category = "MPI"
 			break
 		    elif 'idle_time' in s:
@@ -184,13 +184,18 @@ def createReport():
 	    for key, value in data.iteritems():
 		if not key in max_data:
 		    max_data[key] = value
+		if not key in min_data:
 		    min_data[key] = value
+		if not key in sum_data:
 		    sum_data[key] = value
 
 	    # handle sum of incoming values. later used to compute average
 	    # values based on rank and/or thread counts.
 	    for i,isum, in zip(data.iteritems(),sum_data.iteritems()):
-		for r,rsum in zip(i[1],isum[1]):
+		# use incoming data to index subitem data for sum  by item lookup.
+		sumitem = sum_data.get(i[0])
+		dataitem = data.get(i[0])
+		for r,rsum in zip(dataitem,sumitem):
 		    for irsum in rsum.iteritems():
 			# iterate on the current entries in sum_data.
 			# if the incoming csv does not have this item
@@ -201,7 +206,11 @@ def createReport():
 
 	    # handle max and min recording of incoming values.  
 	    for i,imin,imax, in zip(data.iteritems(),min_data.iteritems(),max_data.iteritems()):
-		for r,rmin,rmax in zip(i[1],imin[1],imax[1]):
+		# use incoming data to index sub data for max and min  by item lookup.
+		maxitem = max_data.get(i[0])
+		minitem = min_data.get(i[0])
+		dataitem = data.get(i[0])
+		for r,rmin,rmax in zip(dataitem,minitem,maxitem):
 		    for ir in r.iteritems():
 			rmax.update({ ir[0]: max(r.get(ir[0]), rmax.get(ir[0])) })
 			rmin.update({ ir[0]: min(r.get(ir[0]), rmin.get(ir[0])) })

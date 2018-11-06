@@ -872,15 +872,7 @@ void monitor_fini_mpi(void)
     }
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_fini_event);
-    if (tls->sampling_status == CBTF_Monitor_Started ||
-	tls->sampling_status == CBTF_Monitor_Resumed) {
-        if (IsMonitorDebugEnabled) {
-	    fprintf(stderr,"[%d,%d] monitor_fini_mpi PAUSE SAMPLING\n",
-		    thePid,monitor_get_thread_num());
-        }
-	tls->sampling_status = CBTF_Monitor_Paused;
-	cbtf_offline_sampling_status(CBTF_Monitor_MPI_fini_event,CBTF_Monitor_Paused);
-    }
+    /* No special pause resume here. */
 }
 
 void monitor_mpi_post_fini(void)
@@ -899,15 +891,7 @@ void monitor_mpi_post_fini(void)
     }
 
     cbtf_offline_notify_event(CBTF_Monitor_MPI_post_fini_event);
-    // FIXME: remove always true if block?
-    if (1 || tls->sampling_status == CBTF_Monitor_Paused) {
-        if (IsMonitorDebugEnabled) {
-	    fprintf(stderr,"[%d,%d] monitor_mpi_post_fini RESUME SAMPLING\n",
-		    thePid,monitor_get_thread_num());
-        }
-	tls->sampling_status = CBTF_Monitor_Resumed;
-	cbtf_offline_sampling_status(CBTF_Monitor_MPI_post_fini_event,CBTF_Monitor_Resumed);
-    }
+    /* No special pause resume here. */
 }
 
 

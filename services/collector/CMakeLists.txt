@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -31,6 +31,7 @@ add_library(cbtf-services-collector-monitor-fileio SHARED
 )
 
 target_include_directories(cbtf-services-collector-monitor-fileio PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}
@@ -66,6 +67,7 @@ add_library(cbtf-services-collector-monitor-fileio-static STATIC
 )
 
 target_include_directories(cbtf-services-collector-monitor-fileio-static PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}
@@ -102,6 +104,7 @@ add_library(cbtf-services-collector-monitor-mrnet SHARED
 )
 
 target_include_directories(cbtf-services-collector-monitor-mrnet PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}
@@ -139,6 +142,7 @@ add_library(cbtf-services-collector-monitor-mrnet-static STATIC
 )
 
 target_include_directories(cbtf-services-collector-monitor-mrnet-static PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}
@@ -175,6 +179,7 @@ add_library(cbtf-services-collector-monitor-mrnet-mpi SHARED
 )
 
 target_include_directories(cbtf-services-collector-monitor-mrnet-mpi PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}
@@ -212,6 +217,7 @@ add_library(cbtf-services-collector-monitor-mrnet-mpi-static STATIC
 )
 
 target_include_directories(cbtf-services-collector-monitor-mrnet-mpi-static PUBLIC
+	${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
 	${LibMonitor_INCLUDE_DIRS}

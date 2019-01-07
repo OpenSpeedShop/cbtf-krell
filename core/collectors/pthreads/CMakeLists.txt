@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -75,6 +75,7 @@ add_library(pthreads-collector-monitor-fileio MODULE
 )
 
 target_include_directories(pthreads-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -171,6 +172,7 @@ add_library(pthreads-collector-monitor-mrnet MODULE
 )
 
 target_include_directories(pthreads-collector-monitor-mrnet PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -270,6 +272,7 @@ add_library(pthreads-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(pthreads-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/messages/include

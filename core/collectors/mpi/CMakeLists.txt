@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -145,6 +145,7 @@ add_library(mpi-openmpi-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-openmpi-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -215,6 +216,7 @@ add_library(mpit-openmpi-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-openmpi-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -285,6 +287,7 @@ add_library(mpip-openmpi-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-openmpi-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -357,6 +360,7 @@ add_library(mpi-openmpi-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-openmpi-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -434,6 +438,7 @@ add_library(mpip-openmpi-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-openmpi-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -508,6 +513,7 @@ add_library(mpit-openmpi-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-openmpi-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
@@ -588,6 +594,7 @@ add_library(mpi-mpich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-mpich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -656,6 +663,7 @@ add_library(mpit-mpich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-mpich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -724,6 +732,7 @@ add_library(mpip-mpich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-mpich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -794,6 +803,7 @@ add_library(mpi-mpich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-mpich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -868,6 +878,7 @@ add_library(mpip-mpich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-mpich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -942,6 +953,7 @@ add_library(mpit-mpich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-mpich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
@@ -1027,6 +1039,7 @@ add_library(mpi-mpich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-mpich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1096,6 +1109,7 @@ add_library(mpit-mpich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-mpich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1164,6 +1178,7 @@ add_library(mpip-mpich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-mpich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1234,6 +1249,7 @@ add_library(mpi-mpich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-mpich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1308,6 +1324,7 @@ add_library(mpip-mpich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-mpich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1382,6 +1399,7 @@ add_library(mpit-mpich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-mpich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpich2_INCLUDE_DIRS}
@@ -1467,6 +1485,7 @@ add_library(mpi-mvapich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-mvapich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1536,6 +1555,7 @@ add_library(mpit-mvapich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-mvapich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1604,6 +1624,7 @@ add_library(mpip-mvapich-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-mvapich-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1674,6 +1695,7 @@ add_library(mpi-mvapich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-mvapich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1748,6 +1770,7 @@ add_library(mpip-mvapich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-mvapich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1822,6 +1845,7 @@ add_library(mpit-mvapich-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-mvapich-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich_INCLUDE_DIRS}
@@ -1907,6 +1931,7 @@ add_library(mpi-mvapich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-mvapich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -1976,6 +2001,7 @@ add_library(mpit-mvapich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-mvapich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -2044,6 +2070,7 @@ add_library(mpip-mvapich2-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-mvapich2-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -2114,6 +2141,7 @@ add_library(mpi-mvapich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-mvapich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -2188,6 +2216,7 @@ add_library(mpip-mvapich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-mvapich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -2262,6 +2291,7 @@ add_library(mpit-mvapich2-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-mvapich2-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
@@ -2347,6 +2377,7 @@ add_library(mpi-mpt-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpi-mpt-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
@@ -2416,6 +2447,7 @@ add_library(mpit-mpt-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpit-mpt-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
@@ -2484,6 +2516,7 @@ add_library(mpip-mpt-collector-monitor-fileio MODULE
 )
 
 target_include_directories(mpip-mpt-collector-monitor-fileio PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
@@ -2554,6 +2587,7 @@ add_library(mpi-mpt-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpi-mpt-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
@@ -2628,6 +2662,7 @@ add_library(mpip-mpt-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpip-mpt-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
@@ -2702,6 +2737,7 @@ add_library(mpit-mpt-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(mpit-mpt-collector-monitor-mrnet-mpi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}

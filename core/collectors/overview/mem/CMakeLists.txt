@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -33,6 +33,7 @@ add_library(overview-memwrappers MODULE
 
 #	${Gotcha_INCLUDE_DIR}
 target_include_directories(overview-memwrappers PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/messages/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/services/collector

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -57,6 +57,7 @@ set(CBTF_MESSAGES_CONVERTERS_BASE_SOURCES
 # FIXME. This like was due to missing .h files in converters sources.
 #add_custom_target(runaddressh ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h)
 
+INCLUDE_DIRECTORIES(SYSTEM ${Libtirpc_INCLUDE_DIRS})
 
 add_custom_command(
     OUTPUT

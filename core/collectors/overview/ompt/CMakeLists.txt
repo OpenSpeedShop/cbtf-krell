@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2016-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -39,6 +39,7 @@ add_library(overview-ompt-callbacks MODULE
 )
 
 target_include_directories(overview-ompt-callbacks PUBLIC 
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibIomp_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/messages/include

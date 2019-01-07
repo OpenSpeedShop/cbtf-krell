@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2018 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -490,6 +490,9 @@ find_package(Sqlite3)
 find_package(LTDL)
 find_package(SymtabAPI)
 find_package(DyninstAPI)
+find_package(Libtirpc)
+message(STATUS "Libtirpc_FOUND: " ${Libtirpc_FOUND} )
+message(STATUS "Libtirpc_INCLUDE_DIRS:" ${Libtirpc_INCLUDE_DIRS})
 
 if (DYNINSTAPI_FOUND)
   set(HAVE_DYNINST "true")

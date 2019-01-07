@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2018 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -61,6 +61,7 @@ if (HAVE_MVAPICH2)
     add_library(overview-mvapich2-wrappers MODULE
 	${OVERVIEW_MPIWRAPPER_SOURCES})
     target_include_directories(overview-mvapich2-wrappers PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${Mvapich2_INCLUDE_DIRS}
 	${COMMON_INCLUDE_DIRS}
     )
@@ -88,6 +89,7 @@ if (HAVE_OPENMPI)
     add_library(overview-openmpi-wrappers MODULE
 	${OVERVIEW_MPIWRAPPER_SOURCES})
     target_include_directories(overview-openmpi-wrappers PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${OpenMPI_INCLUDE_DIRS}
 	${COMMON_INCLUDE_DIRS}
     )
@@ -111,6 +113,7 @@ if (HAVE_MPT)
     add_library(overview-mpt-wrappers MODULE
 	${OVERVIEW_MPIWRAPPER_SOURCES})
     target_include_directories(overview-mpt-wrappers PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${Mpt_INCLUDE_DIRS}
 	${COMMON_INCLUDE_DIRS}
     )
@@ -139,6 +142,7 @@ if (HAVE_MPICH AND EXISTS(${Mpich_BIN_DIR}/mpicc))
     add_library(overview-mpich-wrappers MODULE
 	${OVERVIEW_MPIWRAPPER_SOURCES})
     target_include_directories(overview-mpich-wrappers PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${Mpich_INCLUDE_DIRS}
 	${COMMON_INCLUDE_DIRS}
     )

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2015 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -37,6 +37,7 @@ add_library(cbtf-services-ompt SHARED
 endif()
 
 include_directories(
+	${Libtirpc_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_BINARY_DIR}/../../../messages/src/events

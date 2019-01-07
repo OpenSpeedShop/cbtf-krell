@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2015-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2015-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -28,6 +28,8 @@ set(CBTF_MESSAGES_CONVERTERS_THREAD_SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/ThreadControl.h
     Converters.cpp
 )
+
+INCLUDE_DIRECTORIES(SYSTEM ${Libtirpc_INCLUDE_DIRS})
 
 add_custom_command(
     OUTPUT

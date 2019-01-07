@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -56,6 +56,7 @@ add_library(cbtf-core SHARED
 )
 
 target_include_directories(cbtf-core PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -95,6 +96,7 @@ add_library(cbtf-core-static STATIC
 )
 
 target_include_directories(cbtf-core-static PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -134,6 +136,7 @@ add_library(cbtf-core-bfd SHARED
 )
 
 target_include_directories(cbtf-core-bfd PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -170,6 +173,7 @@ add_library(cbtf-core-bfd-static STATIC
 )
 
 target_include_directories(cbtf-core-bfd-static PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -208,6 +212,7 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
     )
 
     target_include_directories(cbtf-core-symtabapi PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -247,6 +252,7 @@ if (NOT RUNTIME_PLATFORM EQUAL "mic")
     )
 
     target_include_directories(cbtf-core-symtabapi-static PUBLIC
+        ${Libtirpc_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/core/include
 	${PROJECT_SOURCE_DIR}/services/include
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -296,6 +302,7 @@ if (NOT RUNTIME_ONLY)
 
     if (HAVE_CRAYALPS MATCHES "true")
         target_include_directories(cbtf-core-mrnet PUBLIC
+            ${Libtirpc_INCLUDE_DIRS}
     	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
@@ -310,6 +317,7 @@ if (NOT RUNTIME_ONLY)
         )
     else()
         target_include_directories(cbtf-core-mrnet PUBLIC
+            ${Libtirpc_INCLUDE_DIRS}
 	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
@@ -352,6 +360,7 @@ if (NOT RUNTIME_ONLY)
 
     if (HAVE_CRAYALPS MATCHES "true")
         target_include_directories(cbtf-core-mrnet-static PUBLIC
+            ${Libtirpc_INCLUDE_DIRS}
     	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include
@@ -366,6 +375,7 @@ if (NOT RUNTIME_ONLY)
         )
     else()
         target_include_directories(cbtf-core-mrnet-static PUBLIC
+            ${Libtirpc_INCLUDE_DIRS}
 	    ${PROJECT_SOURCE_DIR}/core/include
 	    ${PROJECT_SOURCE_DIR}/services/include
 	    ${PROJECT_SOURCE_DIR}/messages/include

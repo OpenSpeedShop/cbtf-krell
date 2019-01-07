@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2014-2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2014-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -94,6 +94,8 @@ install(TARGETS cbtf-services-monitor-static
 )
 
 # Create Monitor.c.o and install as cbtf_monitor.o into Collector directory
+
+INCLUDE_DIRECTORIES(SYSTEM ${Libtirpc_INCLUDE_DIRS})
 
 add_custom_command(
     POST_BUILD

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2016 Krell Institute. All Rights Reserved.
+# Copyright (c) 2016-2019 Krell Institute. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -85,6 +85,7 @@ add_library(omptp-collector-monitor-fileio MODULE
 )
 
 target_include_directories(omptp-collector-monitor-fileio PUBLIC 
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${LibIomp_INCLUDE_DIRS}
@@ -185,6 +186,7 @@ add_library(omptp-collector-monitor-mrnet MODULE
 )
 
 target_include_directories(omptp-collector-monitor-mrnet PUBLIC 
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${LibIomp_INCLUDE_DIRS}
@@ -287,6 +289,7 @@ add_library(omptp-collector-monitor-mrnet-mpi MODULE
 )
 
 target_include_directories(omptp-collector-monitor-mrnet-mpi PUBLIC 
+        ${Libtirpc_INCLUDE_DIRS}
 	${LibMonitor_INCLUDE_DIRS}
 	${LibUnwind_INCLUDE_DIRS}
 	${LibIomp_INCLUDE_DIRS}

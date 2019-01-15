@@ -280,7 +280,7 @@ void send_samples (TLS* tls)
     TLS_initialize_data(tls);
 }
 
-
+#if defined(BUILD_TIMER_HANDLER)
 /**
  * Timer event handler.
  *
@@ -364,6 +364,7 @@ static void TimerHandler(const ucontext_t* context)
 #endif
 #endif
 }
+#endif
 
 /* NOOP */
 void collector_record_addr(char* name, uint64_t addr)
@@ -528,23 +529,18 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz;  // hw_info->mhz is deprecated.
     }
 
-
-
     /* call PAPI directly (no papi service code).
      * NOTE: we now simply add events until we reach the max papi event
      * count or run out of counters in the papi_event list.
      */
     int eventcode = 0;
     if (papi_event != NULL) {
-	char *tfptr, *saveptr, *tf_token;
-	tfptr = strdup(papi_event);
-	int i;
-	for (i = 1;  ; i++, tfptr = NULL) {
-	    tf_token = strtok_r(tfptr, ",", &saveptr);
-	    if (tf_token == NULL) {
-		break;
-	    }
+	char *tfptr, *saveptr = NULL, *tf_token;
 
+	tfptr = strdup(papi_event);
+	for (tf_token = strtok_r(tfptr, ",", &saveptr);
+	    tf_token != NULL;
+	    tf_token = strtok_r(NULL, ",", &saveptr) ) {
 
 	    if (PAPI_event_name_to_code(tf_token,&eventcode) != PAPI_OK){
 		continue;
@@ -558,10 +554,9 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 		continue;
 	    } else {
 	    }
-
-	    if (tfptr) free(tfptr);
 	}
-	
+	if (tfptr) free(tfptr);
+
     } else {
 	/* safe defaults for all platforms */
 	PAPI_event_name_to_code("PAPI_TOT_CYC",&eventcode);
@@ -598,7 +593,9 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
      * If we are multiplexing PAPI counters we cannot run our timer
      * due to papi internals for multiplexing.
      */
+#if defined(BUILD_TIMER_HANDLER)
     //CBTF_Timer(tls->hwc_samp_data.interval, TimerHandler);
+#endif
 
 
 #ifndef NDEBUG
@@ -639,7 +636,9 @@ void cbtf_collector_pause()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
+#if defined(BUILD_TIMER_HANDLER)
     CBTF_BlockTimerSignal();
+#endif
     tls->defer_sampling=true;
     do_trace=false; // mem wrappers
     if (papi_init_done) {
@@ -676,8 +675,10 @@ void cbtf_collector_resume()
     // real time signals (SIGRTMIN or SIGRTMIN+N) as well and
     // likely default to the posix based timer.
     // fixes issues seen with omnipath based mpi connects.
+#if defined(BUILD_TIMER_HANDLER)
     CBTF_UnBlockTimerSignal();
-    tls->defer_sampling=false;
+#endif
+    tls->defer_sampling=true;
     if (papi_init_done) {
 	PAPI_start(tls->EventSet);
     }
@@ -733,7 +734,9 @@ void cbtf_collector_stop()
     /* If not multiplexing counters and sampling is enabled - Stop sampling */
     // TODO: Need to check if multiplexing counters is enabled here and
     // if user wishes to sample.
+#if defined(BUILD_TIMER_HANDLER)
     //CBTF_Timer(0, NULL);
+#endif
 
 
     // the debug dump.

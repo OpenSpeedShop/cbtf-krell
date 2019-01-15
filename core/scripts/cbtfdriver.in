@@ -496,6 +496,7 @@ case "$experiment_name" in
   collector=overview
   if [ "$string_value" != "" ] ; then
     export CBTF_SUMMARY_HWC_EVENTS=$string_value
+    export OVERVIEW_HWC_EVENTS=$string_value
     echo "[$experiment_name]: summary collector using user specified counters: \"$string_value\"."
   else
     echo "[$experiment_name]: summary collector using defaults."

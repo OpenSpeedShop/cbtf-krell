@@ -156,7 +156,7 @@ static void initialize_data(TLS* tls)
     Assert(tls != NULL);
 
     tls->header.time_begin = CBTF_GetTime();
-    tls->header.time_end = 0;
+    tls->header.time_end = 0;/* this better be set > time_begin at some point*/
     tls->header.addr_begin = ~0;
     tls->header.addr_end = 0;
     
@@ -525,19 +525,21 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     int eventcode = 0;
     rval = PAPI_OK;
     if (hwcsamp_papi_event != NULL) {
-	char *tfptr, *saveptr, *tf_token;
+	char *tfptr, *saveptr=NULL, *tf_token;
 	tfptr = strdup(hwcsamp_papi_event);
-	int i;
-	for (i = 1;  ; i++, tfptr = NULL) {
-	    tf_token = strtok_r(tfptr, ",", &saveptr);
-	    if (tf_token == NULL) {
-		break;
-	    }
+	for (tf_token = strtok_r(tfptr, ",", &saveptr);
+	     tf_token != NULL;
+	     tf_token = strtok_r(NULL, ",", &saveptr) ) {
+
 	    PAPI_event_name_to_code(tf_token,&eventcode);
 	    rval = PAPI_add_event(tls->EventSet,eventcode);
 
-	    if (tfptr) free(tfptr);
+	    if (rval != PAPI_OK)  {
+		CBTF_PAPIerror(rval,"CBTF_Create_Eventset PAPI_event_name_to_code");
+	    }
 	}
+
+	if (tfptr) free(tfptr);
 	
     } else {
 	PAPI_event_name_to_code("PAPI_TOT_CYC",&eventcode);

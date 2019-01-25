@@ -63,6 +63,8 @@ const char* const mem_bandwidth_events = "MEM_LOAD_UOPS_RETIRED:L3_MISS,MEM_UOPS
 // master papi event list.
 const char* const master_papi_events = "PAPI_TOT_CYC,PAPI_TOT_INS,PAPI_LD_INS,PAPI_VEC_DP,PAPI_DP_OPS,PAPI_FDV_OPS,PAPI_FP_INS,PAPI_FP_OPS,PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM,PAPI_TLB_IM,PAPI_REF_CYC,PAPI_REF_NS,PAPI_FUL_CCY,PAPI_RES_STL";
 
+char* papi_event = "";
+
 /** Flag indicating if debugging is enabled. */
 bool IsDebugEnabled = FALSE;
 
@@ -402,35 +404,25 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* Copy the header into our thread-local storage for future use */
     memcpy(&tls->data_header, header, sizeof(CBTF_DataHeader));
 
-    /* Atomically increment the active thread count */
-    PTHREAD_CHECK(pthread_mutex_lock(&ThreadCount.mutex));
-
     /* default sample rate if selected. */
     int samp_rate = 100;
-    char* papi_event = "";
+
+    /* Atomically increment the active thread count */
+    PTHREAD_CHECK(pthread_mutex_lock(&ThreadCount.mutex));
 
     if (ThreadCount.value == 0) {
         /* Should debugging be enabled? */
         IsDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
 
-#if 0
-#if !defined(NDEBUG)
-        if (IsDebugEnabled)
-        {
-            printf("[%d,%d] cbtf_collector_start(): "
-                   "ThreadCount.value = %d --> %d\n",
-                   getpid(), monitor_get_thread_num(),
-                   ThreadCount.value, ThreadCount.value + 1);
-        }
-#endif
-#endif
 	/* Decode the passed function arguments */
 	CBTF_overview_start_sampling_args args;
 	memset(&args, 0, sizeof(args));
 	args.sampling_rate = samp_rate;
 
 #if defined (CBTF_SERVICE_USE_OFFLINE)
-	/* Create a master prioritized list of desired PAPI events.
+	/* Use a master prioritized list of desired PAPI events or
+	 * get user specified event list. Thread 0 sets the list
+	 * for all threads.
 	 * Cycle thru them one at a time and add them if they exist.
 	 * Upto the max number of multiplexed counters we allow.
 	 */ 
@@ -440,7 +432,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	} else {
 	    papi_event = master_papi_events;
 	}
-
 	const char* sampling_rate = getenv("OVERVIEW_SAMP_RATE");
 	if (sampling_rate != NULL) {
             samp_rate=atoi(sampling_rate);
@@ -458,16 +449,6 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
     /* Initialize our performance data header and blob */
     TLS_initialize_data(tls);
-
-#if 0
-#ifndef NDEBUG
-    if (IsDebugEnabled) {
-	fprintf(stderr,"[%ld,%d] cbtf_collector_start: initialize TLS data\n",
-	tls->data_header.pid,tls->data_header.omp_tid);
-    }
-#endif
-#endif
-
 
     /* We can not assign mpi rank in the header at this point as it may not
      * be set yet. assign an integer tid value.  omp_tid is used regardless of
@@ -565,6 +546,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	PAPI_CHECK(PAPI_add_event(tls->EventSet,eventcode));
     }
 
+
 #if defined (HAVE_OMPT)
     /* these are ompt specific.*/
     /* initialize the flags and counts for idle,wait_barrier.  */
@@ -600,7 +582,8 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
 #ifndef NDEBUG
     if (IsDebugEnabled) {
-	    fprintf(stderr,"[%ld,%d] cbtf_collector_start: STARTED\n",tls->data_header.pid,tls->data_header.omp_tid);
+	fprintf(stderr,"[%ld,%d] cbtf_collector_start: STARTED with %d papi events\n",
+	tls->data_header.pid,tls->data_header.omp_tid, PAPI_num_events(tls->EventSet));
     }
 #endif
 }
@@ -678,7 +661,6 @@ void cbtf_collector_resume()
 #if defined(BUILD_TIMER_HANDLER)
     CBTF_UnBlockTimerSignal();
 #endif
-    tls->defer_sampling=true;
     if (papi_init_done) {
 	PAPI_start(tls->EventSet);
     }
@@ -721,7 +703,11 @@ void cbtf_collector_stop()
     // 12 papi counters.
     //
     if (tls->EventSet == PAPI_NULL) {
-	/*fprintf(stderr,"collector_stop RETURNS - NO EVENTSET!\n");*/
+#ifndef NDEBUG
+	if (IsDebugEnabled) {
+	    fprintf(stderr,"collector_stop RETURNS - NO EVENTSET!\n");
+	}
+#endif
 	/* we are called before eny events are set in papi. just return */
         return;
     }

@@ -47,7 +47,7 @@ find_library(Mpich_LIBRARY_SHARED NAMES mpich mpi
     HINTS $ENV{MPICH_DIR}
     HINTS ${MPICH_DIR}
     PATHS /usr /usr/local /usr/lib64/mpich /usr/lib/mpich
-    PATH_SUFFIXES lib lib64 lib/shared lib64/shared
+    PATH_SUFFIXES lib lib64 lib/shared lib64/shared lib/release lib64/release
     NO_DEFAULT_PATH
     )
 

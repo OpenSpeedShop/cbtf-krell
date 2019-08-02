@@ -77,7 +77,7 @@ endif()
 
 # BUILD OPENMPI wrapper libs
 if (HAVE_OPENMPI)
-    if (EXISTS ${OpenMPI_BIN_DIR}/mpicc )
+    if (EXISTS "${OpenMPI_BIN_DIR}/mpicc" )
        set(MPI_C_COMPILER ${OpenMPI_BIN_DIR}/mpicc)
     else()
        set(MPI_C_COMPILER ${OPENMPI_DIR}/bin/mpicc)
@@ -130,7 +130,7 @@ endif()
 
 # BUILD MPICH wrapper libs
 
-if (HAVE_MPICH AND EXISTS(${Mpich_BIN_DIR}/mpicc))
+if (HAVE_MPICH AND EXISTS "${Mpich_BIN_DIR}/mpicc")
     # Here we use Mpich_BIN_DIR instead of MPICH_DIR/bin/mpicc 
     # because mpich is installed in various different ways
     # where mpicc is not always in the simple/standard install

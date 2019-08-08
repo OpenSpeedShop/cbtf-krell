@@ -494,6 +494,7 @@ void TLS_record_mpi_event(const CBTF_mpip_event* event, uint64_t addr)
     /* Access our thread-local storage */
     TLS* tls = TLS_get();
 
+    if (!tls) return;
     tls->total_mpi_time += event->time;
     /** record stacktrace */
 }

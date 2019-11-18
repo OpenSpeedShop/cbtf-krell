@@ -863,7 +863,7 @@ void TLS_print_data(TLS* tls)
     }
 
     // PAPI_dmem.
-    char papi_dmem_csv_header[80] = {0};
+    char papi_dmem_csv_header[96] = {0};
     char papi_dmem_csv_values[128] = {0};
     strcat(papi_dmem_csv_header,"dmem_size_kB,dmem_resident_kB,dmem_high_water_mark_kB,dmem_shared_kB,dmem_heap_kB");
     overview_papi_dmem_t ov_dmem = get_papi_dmem_info();
@@ -881,7 +881,7 @@ void TLS_print_data(TLS* tls)
 
     // POSIX IO
     if (tls->total_posixio_time > 0) {
-	char posixio_csv_header[64] = {0};
+	char posixio_csv_header[96] = {0};
 	char posixio_csv_values[64] = {0};
 	strcat(posixio_csv_header,"io_total_time_seconds,read_time_seconds,write_time_seconds,read_bytes,write_bytes");
 	sprintf(posixio_csv_values, "%f,%f,%f,%ld,%ld",

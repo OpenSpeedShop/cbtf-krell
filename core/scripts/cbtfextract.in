@@ -1,0 +1,197 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import argparse
+import glob
+import csv 
+import re
+import ast
+import sys
+
+sys.path.insert(0,'@cbtfpythonmodules@')
+import cbtfcsvtool
+import cbtfpapi
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Examine cbtf CSV report data')
+    parser.add_argument('location', help='location of the csv report file')
+    parser.add_argument('--io', action='store_true', help='io details')
+    parser.add_argument('--memory', action='store_true', help='memory details')
+    parser.add_argument('--papi', action='store_true', help='papi details')
+    parser.add_argument('--summary', action='store_true', help='summary details including timing, etc')
+    parser.add_argument('--rusage', action='store_true', help='rusage details')
+    parser.add_argument('--mpi', action='store_true', help='mpi details')
+    parser.add_argument('--ompt', action='store_true', help='omp details')
+    return parser.parse_args()
+
+
+class Data_record:
+    """Record for storing test results
+
+    Attributes:
+        summary: A dictionary containing summary details such as app name
+        total_threads: A total count of number of threads
+        thread_data: Dictionary containing all test results
+        thread_list: A list of strings containing the thread numbers
+        ranks: A string containing the rank count
+    """        
+
+    def __init__(self, location):
+        self.summary = {}
+        self.total_threads = 1
+        self.thread_data = {}
+        self.thread_list = []
+        self.ranks = '1'
+        self.parse_csv_report(location)
+
+
+    def parse_str(self, s):
+        """Converts string into an int or float, if possible"""
+        try:
+        # maybe convert int to long here?
+            return ast.literal_eval(str(s))
+        except:
+            return s
+
+ 
+    def parse_csv_report(self, report_location):
+        """Parses the csv test result"""
+        with file(report_location, 'r') as fin:
+            csv_reader = csv.reader(fin)
+            prev = None
+            thread = '0'
+            section = None
+
+            for row in csv_reader:
+                 # skip empty rows
+                 if len(row) == 0:
+                     continue
+
+                 # check if summary data has been assigned yet
+                 # This data is always in the first two rows
+                 if not self.summary:
+                     if not prev:
+                         prev = row
+                     else:
+                         self.summary = dict(zip(prev, row))
+   
+                 # check for thread/rank header. There are two possible formats
+                 elif len(row) == 1:
+                     if 'Metrics for thread' in row[0]:
+                         regex = re.compile('thread (.*) in (.*) ranks')
+                         result = regex.search(row[0])
+                         self.total_threads = result.group(2) 
+                         thread = result.group(1)
+                         self.thread_list.append(thread)
+                     else:
+                         regex = re.compile('Metrics for (.*) ranks')
+                         result = regex.search(row[0])
+                         self.ranks = result.group(1)
+                         self.thread_list.append('0')
+                         # thread defaults to 1 in this case
+                     self.thread_data[thread] = {} 
+
+                 # check for section headers
+                 elif row[0].startswith(('RUSAGE', 'DMEM', 'IO', 'MPI', 
+                                         'OMPT', 'MEMALLOC', 'MEMFREE', 
+                                         'PAPI', 'DATA', 'SUMMARY')) and \
+                      'metric_name' in row[0]:
+                     # Remove '_metric_name' from section title 
+                     section = row[0][:-(len('_metric_name'))]
+                     # Inititalize section
+                     self.thread_data[thread][section] = {} 
+
+                 # All the remaining rows hold data
+                 else:
+                     self.thread_data[thread][section][row[0]] = [self.parse_str(x) for x in row[1:]]
+ 
+
+def is_int(num):
+    return isinstance(num, int)
+
+
+def print_results(title, results):
+    """Prints results as formatted ints or floats
+
+    Args:
+        title: A string containing the title of the metric
+        results: A list of ints or floats containing the min, max, and avg data
+    """
+
+    if is_int(results[0]) or is_int(results[1]) or is_int(results[2]):
+        print("{0:<30} {1:<20} {2:<20} {3:<20}".format(title, results[0],
+              results[1], results[2]))
+    else:
+        print("{0:<30} {1:<20.6f} {2:<20.6f} {3:<20.6f}".format(title, 
+              results[0], results[1], results[2]))
+
+
+def mpi_percent(thread_record):
+    """Calculates the percentage of mpi time of the total time"""
+    total_time = thread_record['SUMMARY']['total_time_seconds']
+    mpi_time = thread_record['MPI']['total_mpi_time_seconds']
+    values = [x[0]/x[1] for x in zip(mpi_time, total_time)]
+    print_results('mpi_percent', values) 
+
+
+def io_percent(thread_record):
+    """Calculates the percentage of io time to the total time"""
+    total_time = thread_record['SUMMARY']['total_time_seconds']
+    io_time = thread_record['IO']['io_total_time']
+    values = [x[0]/x[1] for x in zip(io_time, total_time)]
+    print_results('io_percent', values)
+
+ 
+##### Script starts here #####
+args = parse_args()
+csv_record = Data_record(args.location)
+
+# Always print summary details
+for key, value in csv_record.summary.items():
+    print(key, value)
+
+# If there is only one thread, print the header
+if len(csv_record.thread_data) == 1:
+    print ("Metrics for " + csv_record.ranks + " ranks")
+
+print("{0:<30} {1:<20} {2:<20} {3:<20}".format('metric name', 'max', 'min', 'avg'))
+
+for t in csv_record.thread_list:
+    thread_record = csv_record.thread_data[t]
+
+    def print_record(section):
+        if section in thread_record:
+            for key, value in thread_record[section].items():
+                print_results(key, [value[0], value[1], value[3]]) 
+
+    if len(csv_record.thread_data) > 1:
+        print("Metrics for thread " + t + " in " + str(len(csv_record.thread_list)) + " ranks")
+    if args.summary:
+        if 'SUMMARY' in thread_record:
+            print_record('SUMMARY')
+
+    if args.memory:
+        print_record('DMEM')
+        print_record('MEMALLOC')
+        print_record('MEMFREE')
+
+    if args.papi:
+        if 'PAPI' in thread_record:
+            print_record('PAPI')
+            calculated_papi = cbtfpapi.processCalculations(thread_record['PAPI'])
+            for papi in calculated_papi:
+                print_results(papi[0], papi[1]) 
+
+    if args.rusage:
+        print_record('RUSAGE')
+ 
+    if args.io:
+        print_record('IO')
+        io_percent(thread_record)
+
+    if args.mpi:
+        print_record('MPI')
+        mpi_percent(thread_record)
+
+    if args.ompt:
+        print_record('OMPT')

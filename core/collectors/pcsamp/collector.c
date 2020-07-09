@@ -158,7 +158,7 @@ static void initialize_data(TLS* tls)
 
     tls->header.time_begin = CBTF_GetTime();
     tls->header.time_end = 0;
-    tls->header.addr_begin = ~0;
+    tls->header.addr_begin = ~0UL;
     tls->header.addr_end = 0;
     
     /* Initialize the actual data blob */
@@ -170,7 +170,7 @@ static void initialize_data(TLS* tls)
     tls->data.count.count_len = 0;
 
     /* Re-initialize the sampling buffer */
-    tls->buffer.addr_begin = ~0;
+    tls->buffer.addr_begin = ~0UL;
     tls->buffer.addr_end = 0;
     tls->buffer.length = 0;
     memset(tls->buffer.hash_table, 0, sizeof(tls->buffer.hash_table));
@@ -378,6 +378,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
     /* Access the environment-specified arguments */
     const char* sampling_rate = getenv("CBTF_PCSAMP_RATE");
     args.sampling_rate = (sampling_rate != NULL) ? atoi(sampling_rate) : 100;
+    args.collector = header->collector;
 
     /* Initialize the actual data blob */
     memcpy(&tls->header, header, sizeof(CBTF_DataHeader));

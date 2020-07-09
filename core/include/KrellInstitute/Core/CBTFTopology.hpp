@@ -209,14 +209,14 @@ class CBTFTopology {
 		gethostname(lhostname, MAXHOSTNAMELEN);
 		std::string tname(lhostname);
 		std::string delim(".");
-		size_t current;
-		size_t next = -1;
+		size_t current = 0;
+		size_t next = 0;
 		std::string nodename;
 		do
 		{
-		    current = next + 1;
 		    next = tname.find_first_of( delim, current );
 		    nodename = tname.substr( current, next - current );
+		    current = next + 1;
 		    // Only want first name from something like localhost.localdomain.
 		    //
 		    if (!nodename.empty())

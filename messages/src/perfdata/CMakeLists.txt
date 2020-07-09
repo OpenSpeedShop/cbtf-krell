@@ -137,7 +137,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.c
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/DataHeader.h
@@ -153,7 +153,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.c
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp.h
@@ -169,7 +169,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/PCSamp_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/PCSamp_data.h
@@ -185,7 +185,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc.h
@@ -201,7 +201,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwc_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwc_data.h
@@ -217,7 +217,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp.h
@@ -233,7 +233,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwcsamp_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwcsamp_data.h
@@ -249,7 +249,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime.h
@@ -265,7 +265,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Hwctime_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Hwctime_data.h
@@ -281,7 +281,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/IO.h
 	${CMAKE_CURRENT_BINARY_DIR}/IO.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/IO.c
 	${CMAKE_CURRENT_BINARY_DIR}/IO.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO.h
@@ -297,7 +297,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/IO_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/IO_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/IO_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/IO_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/IO_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/IO_data.h
@@ -313,7 +313,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mem.h
 	${CMAKE_CURRENT_BINARY_DIR}/Mem.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mem.c
 	${CMAKE_CURRENT_BINARY_DIR}/Mem.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem.h
@@ -329,7 +329,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Mem_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mem_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mem_data.h
@@ -345,7 +345,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi.h
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi.c
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi.h
@@ -361,7 +361,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Mpi_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Mpi_data.h
@@ -377,7 +377,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.c
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads.h
@@ -393,7 +393,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Pthreads_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Pthreads_data.h
@@ -409,7 +409,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt.h
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt.c
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Ompt.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Ompt.h
@@ -426,7 +426,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Ompt_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Ompt_data.h
@@ -442,7 +442,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Overview.h
 	${CMAKE_CURRENT_BINARY_DIR}/Overview.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Overview.c
 	${CMAKE_CURRENT_BINARY_DIR}/Overview.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Overview.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Overview.h
@@ -458,7 +458,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Overview_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Overview_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Overview_data.h
@@ -474,7 +474,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.h
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.c
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime.h
@@ -490,7 +490,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.c
 	${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Usertime_data.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Usertime_data.h
@@ -506,7 +506,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Stats.h
 	${CMAKE_CURRENT_BINARY_DIR}/Stats.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Stats.c
 	${CMAKE_CURRENT_BINARY_DIR}/Stats.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Stats.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Stats.h

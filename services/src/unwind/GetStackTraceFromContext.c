@@ -283,11 +283,11 @@ void CBTF_GetStackTrace( bool_t skip_signal_frames,
 			   uint64_t* stacktrace)
 {
     uint64_t framebuf[max_frames];
-    *stacktrace_size = unw_backtrace((void**)framebuf,max_frames);
+    *stacktrace_size = (unsigned)unw_backtrace((void**)framebuf,(int)max_frames);
     if (skip_frames == 0 && skip_signal_frames)
 	skip_frames = UNWIND_SKIP_FRAMES;
 
-    int i;
+    unsigned i;
     for (i = skip_frames; i < *stacktrace_size; i++) {
 	stacktrace[i-skip_frames] = framebuf[i];
     }

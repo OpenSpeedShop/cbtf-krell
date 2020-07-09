@@ -39,6 +39,8 @@ if(NOT HAS_CXX11_AUTO)
   message(STATUS "No support for C++11 found.")
 else()
   message(STATUS "C++11 support found, required flags are: ${CXX11_COMPILER_FLAGS}")
+  add_definitions(-Wno-sign-conversion)
+  set(CMAKE_CXX_FLAGS ${CXX11_COMPILER_FLAGS})
 endif()
 
 include(CheckIncludeFile)

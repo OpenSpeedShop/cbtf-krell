@@ -50,7 +50,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h
 	${CMAKE_CURRENT_BINARY_DIR}/EventHeader.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/EventHeader.c
 	${CMAKE_CURRENT_BINARY_DIR}/EventHeader.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/EventHeader.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/EventHeader.h
@@ -70,7 +70,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.c
 	${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/OfflineEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/OfflineEvents.h
@@ -84,7 +84,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.h
 	${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.c
 	${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/LinkedObjectEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/LinkedObjectEvents.h
@@ -98,7 +98,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.h
 	${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.c
 	${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/ThreadEvents.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/ThreadEvents.h

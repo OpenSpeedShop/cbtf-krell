@@ -120,7 +120,7 @@ typedef struct {
 
     uint64_t time_started;
     int  dsoname_len;
-    int  sent_data;
+    bool  sent_data; // fileio only?
 
     // marker if ANY collector is connected to mrnet.
     // this applies to the non mrnet builds.
@@ -537,6 +537,7 @@ void cbtf_collector_send(const CBTF_DataHeader* header,
 /** Data send support for --offline (fileio) mode of collection. */
 #if defined(CBTF_SERVICE_USE_FILEIO)
     CBTF_Data_Send(header, xdrproc, data);
+    tls->sent_data = true;
 #endif
 
 /** Data send support for ltwt mrnet mode of collection. */
@@ -702,6 +703,7 @@ void cbtf_timer_service_start_sampling(const char* arguments)
     if (strcmp(cbtf_collector_unique_id,"overview")) {
 	CBTF_SetSendToFile(&(tls->header), cbtf_collector_unique_id, "openss-data");
     }
+    tls->sent_data = false;
 #endif
 
 #ifndef NDEBUG
@@ -822,7 +824,7 @@ void cbtf_offline_send_dsos(TLS *tls)
 {
     /* Send the offline "dsos" blob or message */
 #ifndef NDEBUG
-    if (IsCollectorDebugEnabled) {
+    if (IsCollectorDebugDsosEnabled) {
         fprintf(stderr,
 		"[%d,%d] cbtf_offline_send_dsos SENDS DSOS for %s:%lld:%lld:%d:%d\n",
 		getpid(),monitor_get_thread_num(),
@@ -872,7 +874,7 @@ void cbtf_record_dsos()
      * there is no need to find dsos
      */
     if (!tls->sent_data) {
-	//return;
+	return;
     }
 #endif
 
@@ -1097,12 +1099,12 @@ void cbtf_offline_record_dso(const char* dsoname,
 #endif
 
     int dsoname_len = strlen(dsoname);
-    int newsize = (tls->data.linkedobjects.linkedobjects_len * sizeof(objects))
+    int newsize = (int)(tls->data.linkedobjects.linkedobjects_len * sizeof(objects))
 		  + (tls->dsoname_len + dsoname_len);
 
-    if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
+    if(newsize > (int)(CBTF_MAXLINKEDOBJECTS * sizeof(objects)) ) {
 #ifndef NDEBUG
-	if (IsCollectorDebugEnabled) {
+	if (IsCollectorDebugDsosEnabled) {
             fprintf(stderr,"[%d,%d] cbtf_offline_record_dso SENDS OBJS for %s:%lld:%lld:%d:%d\n",
 		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 
@@ -1248,12 +1250,12 @@ void cbtf_offline_record_dlopen(const char* dsoname,
 #endif
 
     int dsoname_len = strlen(dsoname);
-    int newsize = (tls->data.linkedobjects.linkedobjects_len * sizeof(objects))
+    int newsize = (int)(tls->data.linkedobjects.linkedobjects_len * sizeof(objects))
 		  + (tls->dsoname_len + dsoname_len);
 
-    if(newsize > CBTF_MAXLINKEDOBJECTS * sizeof(objects)) {
+    if(newsize > (int)(CBTF_MAXLINKEDOBJECTS * sizeof(objects)) ) {
 #ifndef NDEBUG
-	if (IsCollectorDebugEnabled) {
+	if (IsCollectorDebugDsosEnabled) {
             fprintf(stderr,"[%d,%d] cbtf_offline_record_dlopen SENDS OBJS for %s:%lld:%lld:%d:%d\n",
 		    getpid(),monitor_get_thread_num(),
                     tls->dso_header.host, (long long)tls->dso_header.pid, 

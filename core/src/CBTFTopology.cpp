@@ -378,6 +378,7 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 {
     char numString[BUFSIZE];
     unsigned int num1 = 0, num2, startPos, endPos, i, j;
+    //int j;
     bool isRange = false;
     bool leadingZero = false;
     std::string baseNodeName, nodes, list;
@@ -457,7 +458,10 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
                     if (numString[0] == '0') {
                        leadingZero = true;
                     }
-                    num2 = atoi(numString);
+		    char *endptr;
+		    int base = 10;
+                    //num2 = (unsigned int)atoi(numString);
+                    num2 = strtoul(numString,&endptr,base);
                     // There is no std::abs for unsigned int on Intel. Static cast num2 to a long long first. 
                     // The unsigned bit should be 32-bit and long long 64-bit. The latter is always big enough 
                     // to hold the former. So you won't loose anything by doing long long calculations. 
@@ -466,7 +470,7 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 		    int tLength = floor(log10(abs(static_cast<long long>(num2))))+1;
                     for (j = num1; j <= num2; j++) {
 			if (getIsCray()) {
-                            dm_nodelist.push_back(formatCrayNid(baseNodeName,j));
+                            dm_nodelist.push_back(formatCrayNid(baseNodeName,(int)j));
 			} else {
 			    std::ostringstream ostr;
                             ostr << baseNodeName;
@@ -486,7 +490,10 @@ void CBTFTopology::setNodeList(const std::string& nodeList)
 			}
                     }
                 } else {
-                    num1 = atoi(numString);
+                    //num1 = atoi(numString);
+		    char *endptr;
+		    int base = 10;
+                    num1 = strtoul(numString,&endptr,base);
                     if (i < strlen(nodeRange)) {
                         if (nodeRange[i] == '-') {
                             isRange = true;
@@ -546,8 +553,8 @@ void CBTFTopology::processNodeFile(const std::string& nodeFile)
 
 	dm_job_tasks = total_cpus;
 	if (nodenames.size() > 0) {
-	    dm_num_nodes = nodenames.size();
-	    dm_num_app_nodes = nodenames.size();
+	    dm_num_nodes = (unsigned int)nodenames.size();
+	    dm_num_app_nodes = (unsigned int)nodenames.size();
 	}
 
 	std::set<std::string>::const_iterator nodesiter;
@@ -573,8 +580,8 @@ void CBTFTopology::processNodeFile(const std::string& nodeFile)
 	         nodesiter != nodenames.end(); nodesiter++) {
                   std::string mynodename = *nodesiter;
                   std::string delim(".");
-                  size_t current;
-                  size_t next = -1;
+                  size_t current = 0;
+                  size_t next = 0;
                   std::string nodename;
                   /* Loop through node names and only use the hostname */
                   /* On some platforms the PBS supplied node names are host.dns.domain */
@@ -584,10 +591,11 @@ void CBTFTopology::processNodeFile(const std::string& nodeFile)
                   /* successful topology creation.  */
                   do
                   {
-                    current = next + 1;
+                    //current = next + 1;
                     next = mynodename.find_first_of( delim, current );
                       nodename = mynodename.substr( current, next - current );
                      // Only want first name from something like localhost.localdomain.
+                    current = next + 1;
                     if (!nodename.empty())
                         break;
                   } while (next != std::string::npos);

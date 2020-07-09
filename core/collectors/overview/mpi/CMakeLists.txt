@@ -37,7 +37,7 @@
 
 set(WRAP ${CMAKE_CURRENT_SOURCE_DIR}/wrap.py)
 include(${PROJECT_SOURCE_DIR}/core/collectors/overview/mpi/WrapConfig.cmake)
-add_definitions(-DPIC)
+add_definitions(-DPIC -fPIC)
 
 set(COMMON_INCLUDE_DIRS
 	${PROJECT_SOURCE_DIR}/messages/include
@@ -55,7 +55,7 @@ set(COMMON_INCLUDE_DIRS
 
 if (HAVE_MVAPICH2)
     set(MPI_C_COMPILER ${MVAPICH2_DIR}/bin/mpicc)
-    add_wrapped_file(mvapich2-wrappers.c wrappers.w)
+    add_wrapped_file(mvapich2-wrappers.c wrappers.w -f -g)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES mvapich2-wrappers.c)
     add_library(overview-mvapich2-wrappers MODULE
@@ -83,7 +83,7 @@ if (HAVE_OPENMPI)
        set(MPI_C_COMPILER ${OPENMPI_DIR}/bin/mpicc)
     endif()
 
-    add_wrapped_file(openmpi-wrappers.c wrappers.w)
+    add_wrapped_file(openmpi-wrappers.c wrappers.w -f -g)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES openmpi-wrappers.c)
     add_library(overview-openmpi-wrappers MODULE
@@ -107,7 +107,7 @@ endif()
 # BUILD MPT wrapper libs
 if (HAVE_MPT)
     set(MPI_C_COMPILER ${MPT_DIR}/bin/mpicc)
-    add_wrapped_file(mpt-wrappers.c wrappers.w)
+    add_wrapped_file(mpt-wrappers.c wrappers.w -f -g)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES mpt-wrappers.c)
     add_library(overview-mpt-wrappers MODULE
@@ -136,7 +136,7 @@ if (HAVE_MPICH AND EXISTS "${Mpich_BIN_DIR}/mpicc")
     # where mpicc is not always in the simple/standard install
     # paths that over mpi implementations are.
     set(MPI_C_COMPILER ${Mpich_BIN_DIR}/mpicc)
-    add_wrapped_file(mpich-wrappers.c wrappers.w)
+    add_wrapped_file(mpich-wrappers.c wrappers.w -f -g)
 
     set(OVERVIEW_MPIWRAPPER_SOURCES mpich-wrappers.c)
     add_library(overview-mpich-wrappers MODULE

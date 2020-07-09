@@ -38,6 +38,6 @@ struct CBTF_pcsamp_start_sampling_args {
 
     unsigned sampling_rate;  /**< Sampling rate in samples/second. */
     
-    int collector;   /**< Identifier of collector gathering data. */
+    int32_t collector;   /**< Identifier of collector gathering data. */
     
 };

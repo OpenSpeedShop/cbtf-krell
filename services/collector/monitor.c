@@ -401,7 +401,7 @@ void cbtf_offline_start_sampling(const char* in_arguments)
 #endif
     Assert(tls != NULL);
 #ifndef NDEBUG
-    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_MONITOR") != NULL);
 #endif
 
     mpi_init_done = false;

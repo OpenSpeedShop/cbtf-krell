@@ -58,8 +58,8 @@ namespace KrellInstitute { namespace Core {
 
 	/** Default constructor. */
 	Extent() :
-	    dm_range(),
-	    dm_interval()
+	    dm_interval(),
+	    dm_range()
 	{
 	}
 

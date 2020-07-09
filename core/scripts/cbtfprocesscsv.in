@@ -1,139 +1,17 @@
 #!/usr/bin/env python
 
-# must be at begining of file. support for python 2.6 and later
+# must be at beginning of file. support for python 2.6 and later
 # where print statements syntax is a function. eg. print(). 
 from __future__ import print_function
-import ast
-import csv
-import copy
-import glob
 import os
-import re
 import sys
-import shutil
+import socket
+import datetime
+
+sys.path.insert(0,'@cbtfpythonmodules@')
+import cbtfcsvtool
 
 
-# Class obtained from the web to emulate tee for stdout.
-# This class simply prints stdout to a file.  Used
-# to create a text file of this screen output of this tool.
-#
-# usage:
-#
-# teestdout=TeeStdoutToFile('report', 'w')
-# print 'a line of the report.'
-# print 'another line of the report.
-# teestdout.close()
-#
-class TeeStdoutToFile(object):
-     def __init__(self, name, mode):
-         self.file = open(name, mode)
-         self.stdout = sys.stdout
-         sys.stdout = self
-     def close(self):
-         if self.stdout is not None:
-             sys.stdout = self.stdout
-             self.stdout = None
-         if self.file is not None:
-             self.file.close()
-             self.file = None
-     def write(self, data):
-         self.file.write(data)
-         self.stdout.write(data)
-     def flush(self):
-         self.file.flush()
-         self.stdout.flush()
-     def __del__(self):
-         self.close()
-
-# helper to convert string values found in summary csv files
-# int or float values needed for the min,max,avg metrics and
-# any other metric computations.
-def parse_str(s):
-   try:
-	# maybe convert int to long here?
-	return ast.literal_eval(str(s))
-   except:
-	return s
-
-
-# the current csv schema does not print categories.  It simply prints
-# header line followed by one line of values. There may be multiple
-# pairs of header,value in the csv file. Therefore the first line
-# and every other line is a header.
-def process_csv_file(filename):
-    category = ""
-    cat_num = 0
-    header = None
-    toggle = None
-    record_data = {}
-    table = []
-    def make_record():
-	return [dict(zip(header, x)) for x in table]
-    with open(filename, 'rU') as csv_data:
-	reader = csv.reader(csv_data)
-	for row in reader:
-	    if not toggle:
-		header = tuple(x.strip() for x in row)
-		# categorize the incoming data.  This is dependent
-		# on the format of the incoming csv. In particular we
-		# are sensitive to the fields used here to create the
-		# categories being maintained in the csv schema.
-		for s in header:
-		    if 'executable' in s:
-			category = "SUMMARY"
-			break
-		    if 'utime_seconds' in s:
-			category = "RUSAGE"
-			break
-		    if 'dmem_high_water_mark_kB' in s:
-			category = "DMEM"
-			break
-		    elif 'io_total_time' in s:
-			category = "IO"
-			break
-		    elif 'total_mpi_time_seconds' in s:
-			category = "MPI"
-			break
-		    elif 'idle_time' in s:
-			category = "OMPT"
-			break
-		    elif 'allocation_calls' in s:
-			category = "MEMALLOC"
-			break
-		    elif 'free_calls' in s:
-			category = "MEMFREE"
-			break
-		    elif 'PAPI' in s:
-			category = "PAPI"
-			break
-		    else:
-			# unknown data. Should always check this.
-			category = "DATA" + str(cat_num)
-		table = []
-		cat_num = cat_num+1
-		toggle = True
-	    else:
-		table.append([parse_str(x.strip()) for x in row])
-		toggle = None
-	    if not toggle:
-		record_data[category] = make_record()
-    return record_data
-
-
-# create a master csv file of all csv files in the csv directory
-# passed on the commandline to this tool.
-def createMasterCsv():
-    masterfile = data_dirname + "-all.csv"
-    with open(masterfile, 'wb') as outfile:
-	for filename in glob.glob(data_dirname + '/*/*.csv'):
-	    if filename == masterfile:
-		# don't want to copy the output into the output
-		continue
-	    with open(filename, 'rb') as readfile:
-		shutil.copyfileobj(readfile, outfile)
-
-
-# 
 # Since we support hybrid, we need to aggrgegate per thread in a process.
 # mpi programs typically only report mpi time in the main thread (0).
 # OpenMPI (and possibly other mpi implementations) launch a helper thread
@@ -156,159 +34,83 @@ def createMasterCsv():
 # In all cases, thread 0 is the master process thread.
 #
 def createReport():
-
-    teestdout=TeeStdoutToFile(reportfile, 'w')
-    for t in thread_list:
-	max_data = None
-	min_data = None
-	sum_data = None
-	count = 0
-	search_pattern = '/*/*-' + str(t) + '.csv'
-	thread_files = glob.glob(data_dirname + search_pattern)
-	for f in thread_files:
-	    data = process_csv_file(f)
-	    count = count+1
-	    #print ("FILE:" + str(f) + " count:" + str(count))
-	    #print ("DATA:" + str(data))
-	    if not max_data:
-		# copy initial data dict from first file.
-		max_data = copy.deepcopy(data)
-		min_data = copy.deepcopy(data)
-		sum_data = copy.deepcopy(data)
-		continue
-
-	    # there may be cases where a thread has gathered data
-	    # that may not be found in other threads. These tables
-	    # represent activity across all items in a particular
-	    # thread across all ranks.
-	    for key, value in data.iteritems():
-		if not key in max_data:
-		    max_data[key] = value
-		if not key in min_data:
-		    min_data[key] = value
-		if not key in sum_data:
-		    sum_data[key] = value
-
-	    # handle sum of incoming values. later used to compute average
-	    # values based on rank and/or thread counts.
-	    for i,isum, in zip(data.iteritems(),sum_data.iteritems()):
-		# use incoming data to index subitem data for sum  by item lookup.
-		sumitem = sum_data.get(i[0])
-		dataitem = data.get(i[0])
-		for r,rsum in zip(dataitem,sumitem):
-		    for irsum in rsum.iteritems():
-			# iterate on the current entries in sum_data.
-			# if the incoming csv does not have this item
-			# then we skip updating the sum.
-			val = r.get(irsum[0])
-			if val != None:
-			    rsum.update({ irsum[0]: r.get(irsum[0]) + rsum.get(irsum[0]) })
-
-	    # handle max and min recording of incoming values.  
-	    for i,imin,imax, in zip(data.iteritems(),min_data.iteritems(),max_data.iteritems()):
-		# use incoming data to index sub data for max and min  by item lookup.
-		maxitem = max_data.get(i[0])
-		minitem = min_data.get(i[0])
-		dataitem = data.get(i[0])
-		for r,rmin,rmax in zip(dataitem,minitem,maxitem):
-		    for ir in r.iteritems():
-			rmax.update({ ir[0]: max(r.get(ir[0]), rmax.get(ir[0])) })
-			rmin.update({ ir[0]: min(r.get(ir[0]), rmin.get(ir[0])) })
-
-	# TODO: add a jobid to output. 
+    with open(reportfile, 'w') as fout:
+        exe_name = csv_record.thread_data[0][0]['SUMMARY'][0]['executable']
+        summary_header = "App_name,Hostname"
+        summary_data = exe_name + ',' + socket.gethostname() 
+        slurm_job_name = os.environ.get('SLURM_JOB_NAME')
+        if slurm_job_name:
+            summary_header += ",Slurm_job_name,Slurm_job_id"
+            summary_data += ',' + slurm_job_name + ',' + \
+                            os.environ['SLURM_JOB_ID']
+        summary_header += ',Total_job_time'
+        total_time = float(csv_record.calculate_max_time())
+        summary_data += ',' + str(datetime.timedelta(seconds=total_time))
+        fout.write(summary_header + '\n')
+        fout.write(summary_data + '\n\n')
 	# TODO: need to improve these headers regarding threads and ranks.
 	# For an mpi job with no sub threads, thread 0 in N ranks.
 	# For an mpi job with sub threads, thread n in N ranks.
 	# For a sequential job with no sub threads, thread 0 in 1 process.
 	# For a sequential job with sub threads, thread n in 1 process.
-	if thread_cnt > 0 :
-	    print ("Metrics for thread " + str(t) + " in " + str(count) + " ranks")
-	else:
-	    print ("Metrics for " + str(count) + " ranks")
 
-	print("{0:<30} {1:<20} {2:<20} {3:<20}".format('metric name', 'max', 'min', 'avg'))
-	for mx,mn,sm, in zip(max_data.iteritems(),min_data.iteritems(),sum_data.iteritems()):
-	    # Python dictionary hashing can create cases where dictionaries that
-	    # have matching keys can have differing indicies in the dictionary.
-	    # We simple use the keys found in max to lookup their values in the
-	    # min and sum dictionaries to keep the values aligned across dictionaries.
-	    for rmx,rmn,rsm, in zip(mx[1],mn[1],sm[1]):
-		for imx in rmx.iteritems():
-		    # ignore these entries for min,max,avg.
-		    if imx[0] in ('host','pid','rank','tid','posix_tid','executable'):
-			continue
-		    minval = rmn.get(imx[0])
-		    maxval = rmx.get(imx[0])
-		    sumval = rsm.get(imx[0])
+        for t in csv_record.thread_list:
+            max_data = csv_record.thread_data[t][0]
+            min_data = csv_record.thread_data[t][1]
+            sum_data = csv_record.thread_data[t][2]
+            count = csv_record.thread_data[t][3]
+    
+            def extract_data(section, key):
+                 return [max_data[section][0][key], 
+                         min_data[section][0][key], 
+                         sum_data[section][0][key]/count]
+    
+            if csv_record.thread_cnt > 0:
+                fout.write("Metrics for thread " + str(t) + " in " + str(count) + " ranks\n\n")
+            else:
+                fout.write("Metrics for " + str(count) + " ranks\n\n")
+    
 
-		    # ignore values of None.  This will be the case when and
-		    # incoming csv file does not have a key for one of the
-		    # categories of data (eg. IO or MPI etc).
-		    if minval == None or sumval == None or maxval == None:
-			#print ("Ignoring None value:" + str(imx[0]) + " max: " + str(maxval) + " min:" + str(minval) + " sum:" + str(sumval))
-			continue
+            for mx,mn,sm, in zip(max_data.iteritems(),
+                                 min_data.iteritems(),
+                                 sum_data.iteritems()):
+                fout.write(mx[0] + '_metric_name,max,min,sum,avg\n')
+     # Python dictionary hashing can create cases where dictionaries that
+     # have matching keys can have differing indicies in the dictionary.
+     # We simple use the keys found in max to lookup their values in the
+     # min and sum dictionaries to keep the values aligned across dictionaries.
+                for rmx,rmn,rsm, in zip(mx[1],mn[1],sm[1]):
+                    for imx in rmx.iteritems():
+                    # ignore these entries for min,max,avg.
+                        if imx[0] in ('host','pid','rank','tid','posix_tid',
+                                      'executable'):
+                            continue
+                        minval = rmn.get(imx[0])
+                        maxval = rmx.get(imx[0])
+                        sumval = rsm.get(imx[0])
 
-		    # do not print fields where there are no values
-		    # greater than zero.
-		    if minval == 0 and sumval == 0 and maxval == 0:
-			continue
-		    if type(imx[1]) == float:
-			print("{0:<30} {1:<20.6f} {2:<20.6f} {3:<20.6f}".format(imx[0],imx[1],minval,sumval/count))
-		    else:
-			print("{0:<30} {1:<20} {2:<20} {3:<20}".format(imx[0],imx[1],minval,sumval/count))
-	print
-    teestdout.close()
+                       # ignore values of None.  This will be the case when and
+                       # incoming csv file does not have a key for one of the
+                       # categories of data (eg. IO or MPI etc).
+                        if minval == None or sumval == None or maxval == None:
+                            continue
 
-#
-# global name of csv directory to process.
-#
-data_dirname = sys.argv[1]
-
-# Some glob example patterns.  glob.iglob uses iterators.
-# All csv dirs. 1 per rank/process:
-#    all_csv_dirs = glob.glob(data_dirname + '/*')
-# All csv files:
-#    all_csv_files = glob.glob(data_dirname + '/*/*.csv')
-# Thread 0 (main thread) csv files:
-#    main_thread_files = glob.glob(data_dirname + '/*/*-0.csv')
-# Thread specific csv files (search on simple tid int value):
-#    search_pattern = '/*/*-' + str(thread_id) + '.csv'
-#    tid_files = glob.glob(data_dirname + search_pattern)
-
-#
-# Compute a thread_list used to generate metrics per thread
-#
-csv_dirs = glob.glob(data_dirname + '/*')
-csv_dir_cnt = len(csv_dirs)
-csv_file_cnt = len(glob.glob(data_dirname + '/*/*.csv'))
-thread_cnt = 0
-thread_file_cnt = -1
-file_cnt = 0
-thread_list = []
-while True :
-   s = '/*/*-' + str(thread_cnt) + '.csv'
-   files = glob.glob(data_dirname + s) 
-   thread_file_cnt = len(files)
-   if thread_file_cnt > 0:
-	file_cnt += thread_file_cnt
-	thread_list.append(thread_cnt)
-   if file_cnt == csv_file_cnt:
-      break
-   thread_cnt = thread_cnt+1
+                        # do not print fields where there are no values
+                        # greater than zero.
+                        if minval == 0 and sumval == 0 and maxval == 0:
+                            continue
+                        fout.write(','.join([imx[0], str(imx[1]), str(minval), 
+                                   str(sumval), str(sumval/count)]) + '\n')
+                fout.write('\n')
 
 
 #
-# Compute a rank or pid list. Currently unused.
+# global object to hold process csv data
 #
-rank_pid_list = []
-for d in csv_dirs:
-   rank_pid_list.append(d.rsplit('-', 1)[-1])
+csv_record = cbtfcsvtool.CSV_Record(sys.argv[1])
 
-
-# this file captures the tool stdout report into a
-# text based report file.
-reportfile = data_dirname + "-report.txt"
-
+# Name of the csv file to create
+reportfile = csv_record.data_dirname + "-report.txt"
 
 #
 # main function to compute aggregated data report.
@@ -316,10 +118,3 @@ reportfile = data_dirname + "-report.txt"
 # printed to stdout.
 #
 createReport()
-
-#
-# create a concatenated csv file of all csv files generated by
-# the summary collector.  This file is not processed further by this tool
-# and is intended for users interested in the raw per thread data.
-#
-createMasterCsv()

@@ -29,6 +29,7 @@
 #include "KrellInstitute/Services/Send.h"
 
 #include <alloca.h>
+#include <unistd.h>
 
 /* External declaration (defined by the instrumentor) */
 int cbtf_send(const unsigned, const void*);
@@ -74,6 +75,12 @@ void CBTF_Data_Send(const CBTF_DataHeader* header,
 
     /* Encode the performance data header to this stream */
     Assert(xdr_CBTF_DataHeader(&xdrs, (void*)header) == TRUE);
+
+    fprintf(stderr,"[%d,%d] CBTF_Data_Send DATA for %s:%lu:%lu:%d:%d\n",
+                getpid(),monitor_get_thread_num(),
+                header->host, (uint64_t)header->pid,
+                (uint64_t)header->posix_tid, header->rank,
+                header->omp_tid);
 
     /* Encode the data structure to this stream */
     Assert((*xdrproc)(&xdrs, (void*)data) == TRUE);

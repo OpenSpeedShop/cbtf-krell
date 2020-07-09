@@ -194,7 +194,7 @@ void *monitor_init_process(int *argc, char **argv, void *data)
     }
 #endif
 
-    IsMonitorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+    IsMonitorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR_MONITOR") != NULL);
 
     short debug_mpi_pcontrol=0;
     if ( (getenv("CBTF_DEBUG_MPI_PCONTROL") != NULL)) {

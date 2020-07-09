@@ -139,7 +139,7 @@ static uint64_t current_region_context = NULL;
 
 static struct {
     CBTF_omptp_region values[MAX_REGIONS];
-} Regions = { { 0 } };
+} Regions = {{0}};
 
 int CBTF_omptp_region_add(uint64_t parallelID, uint64_t *stacktrace, unsigned stacktrace_size)
 {

@@ -143,7 +143,7 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
     bool IsFileioDebugEndabled = false;
     IsFileioDebugEndabled = (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL);
     if ( IsFileioDebugEndabled ) {
-	fprintf(stderr,"CBTF_SetSendToFile ready for %s\n",tls->path);
+	fprintf(stderr,"__CBTF_SetSendToFile ready for %s\n",tls->path);
     }
 
     /* Insure the directory path to contain the file exists */
@@ -160,7 +160,7 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
 
         /* No need to make the directory.  It already exists. */
 	if ( IsFileioDebugEndabled) {
-            fprintf(stderr,"CBTF_SetSendToFile pathname %s exists and is a directory\n",
+            fprintf(stderr,"__CBTF_SetSendToFile pathname %s exists and is a directory\n",
 		dir_path);
         }
        
@@ -182,7 +182,7 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
            try_count = try_count + 1;
         }
 	if ( IsFileioDebugEndabled) {
-            fprintf(stderr,"CBTF_SetSendToFile mkdir dir_path:%s status=%d errno:%d try_count:%d\n",
+            fprintf(stderr,"__CBTF_SetSendToFile mkdir dir_path:%s status=%d errno:%d try_count:%d\n",
 		dir_path, status, save_errno, try_count);
         }
     } 
@@ -190,17 +190,20 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
 #endif
 
 
+#if 1
     /* Insure the file itself exists */
     fd = open(tls->path, O_CREAT | O_APPEND,
 	      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
     if(fd >= 0)
 	close(fd);
+#endif
 }
 
 
 void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
 			const char* suffix)
 {
+fprintf(stderr,"CBTF_EventSetSendToFile!\n");
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }
@@ -208,6 +211,7 @@ void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
 void CBTF_SetSendToFile(CBTF_DataHeader* header, const char* unique_id,
 			const char* suffix)
 {
+fprintf(stderr,"CBTF_SetSendToFile DATA!\n");
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }
@@ -254,8 +258,16 @@ int CBTF_SendToFile(const unsigned size, const void* data)
     /* Close the XDR stream */
     xdr_destroy(&xdrs);
 
+#if 0
+    /* Insure the file itself exists */
+    fd = open(tls->path, O_CREAT | O_APPEND,
+	      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    if(fd >= 0)
+	close(fd);
+#endif
     /* Open the file for writing */
     Assert((fd = open(tls->path, O_WRONLY | O_APPEND)) >= 0);
+    //Assert((fd = open(tls->path, O_CREAT | O_APPEND)) >= 0);
 
     /* Write the size of the data to be sent */
     Assert(write(fd, buffer, encoded_size) == encoded_size);

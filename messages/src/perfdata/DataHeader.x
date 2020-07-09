@@ -53,7 +53,7 @@ struct CBTF_DataHeader
 
     char host[HOST_NAME_MAX];  /**< Identifier of gathered data's host. */
     int64_t pid;               /**< Identifier of gathered data's process. */
-    int64_t posix_tid;         /**< Identifier of gathered data's thread. */
+    uint64_t posix_tid;        /**< Identifier of gathered data's thread. */
     int32_t rank;
     int32_t omp_tid;
         

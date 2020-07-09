@@ -457,7 +457,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 
 #ifndef NDEBUG
 	if (IsCollectorDebugEnabled) {
-	    fprintf(stderr,"[%ld,%d] ENTER cbtf_collector_start\n",tls->header.pid,tls->header.omp_tid);
+	    fprintf(stderr,"[%ld,%d] ENTER cbtf_collector_start posix_tid:%lu\n",tls->header.pid,tls->header.omp_tid,tls->header.posix_tid);
 	}
 #endif
     if(hwcsamp_papi_init_done == 0) {

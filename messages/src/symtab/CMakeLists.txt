@@ -38,7 +38,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/Symbol.h
 	${CMAKE_CURRENT_BINARY_DIR}/Symbol.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
 	${CMAKE_CURRENT_BINARY_DIR}/Symbol.c
 	${CMAKE_CURRENT_BINARY_DIR}/Symbol.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Symbol.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Symbol.h

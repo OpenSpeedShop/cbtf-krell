@@ -90,8 +90,8 @@ CBTF_bst_remove_node(CBTF_bst_node *node, uint64_t ID)
 		node = node->r;
 	    else if(node->r == NULL)
 		node = node->l;
-		free(temp); /* temp no longer needed */ 
-	    }
+	    free(temp); /* temp no longer needed */ 
+	}
     }
     return node;
 }

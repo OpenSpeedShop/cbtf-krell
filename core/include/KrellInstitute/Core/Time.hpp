@@ -136,7 +136,7 @@ namespace KrellInstitute { namespace Core {
 	friend std::ostream& operator<<(std::ostream& stream,
 					const Time& object)
 	{
-	    time_t calendar_time = object.dm_value / 1000000000;
+	    time_t calendar_time = (time_t) (object.dm_value / 1000000000);
 	    struct tm broken_down_time;
 	    Assert(localtime_r(&calendar_time, &broken_down_time) != NULL);
 	    char buffer[32];

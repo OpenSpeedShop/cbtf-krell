@@ -211,20 +211,32 @@ set(openmpidir ${OPENMPI_DIR})
 # Set libiompdir OpenMP directory for usage in cbtfrun
 set(libiompdir ${LibIomp_DIR})
 
+set(cbtfpythonmodules ${CMAKE_INSTALL_LIBDIR})
+
 configure_file(cbtfrun.in cbtfrun @ONLY)
 configure_file(cbtflink.in cbtflink @ONLY)
 configure_file(cbtf_mrnet_commnode.in cbtf_mrnet_commnode @ONLY)
 configure_file(cbtf_libcbtf_mrnet_backend.in cbtf_libcbtf_mrnet_backend @ONLY)
 configure_file(cbtfdriver.in cbtfdriver @ONLY)
 configure_file(cbtfprocesscsv.in cbtfprocesscsv @ONLY)
+configure_file(cbtfcsvtool.py cbtfcsvtool.py @ONLY)
+configure_file(cbtfpapi.py cbtfpapi.py @ONLY)
+configure_file(cbtfextract.in cbtfextract @ONLY)
 
 install(PROGRAMS
 	${CMAKE_CURRENT_BINARY_DIR}/cbtfrun
 	${CMAKE_CURRENT_BINARY_DIR}/cbtflink
 	${CMAKE_CURRENT_BINARY_DIR}/cbtfdriver
 	${CMAKE_CURRENT_BINARY_DIR}/cbtfprocesscsv
+	${CMAKE_CURRENT_BINARY_DIR}/cbtfextract
 	DESTINATION
 	${CMAKE_INSTALL_PREFIX}/bin)
+
+install(PROGRAMS
+	${CMAKE_CURRENT_BINARY_DIR}/cbtfcsvtool.py
+	${CMAKE_CURRENT_BINARY_DIR}/cbtfpapi.py
+	DESTINATION
+	${CMAKE_INSTALL_LIBDIR})
 
 if(CMAKE_HOST_UNIX)
         # create driver links

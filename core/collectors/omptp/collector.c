@@ -31,6 +31,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "KrellInstitute/Messages/DataHeader.h"
 #include "KrellInstitute/Messages/ToolMessageTags.h"

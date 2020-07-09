@@ -169,11 +169,17 @@ static void signalHandler(int signal, siginfo_t* info, void* ptr)
  */
 static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler)
 {
-    struct sigaction action = {{0}};
+    //struct sigaction action = {{0}};
+    struct sigaction action;
+    memset (&action, 0, sizeof action);
 #ifdef HAVE_POSIX_TIMERS
-    struct itimerspec itspec = {{0}};
+    //struct itimerspec itspec = {{0}};
+    struct itimerspec itspec;
+    memset (&itspec, 0, sizeof itspec);
 #endif
-    struct itimerval itval = {{0}};
+    //struct itimerval itval = {{0}};
+    struct itimerval itval;
+    memset (&itval, 0, sizeof itval);
 
     /* Create and/or access our thread-local storage */
 #ifdef USE_EXPLICIT_TLS
@@ -249,7 +255,7 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 	if (use_posix_timer) {
 #ifdef HAVE_POSIX_TIMERS
 	    int ret;
-	    struct itimerspec stop_spec = {{0}};
+	    struct itimerspec stop_spec;
 	    memset(&stop_spec, 0, sizeof(stop_spec));
 	    timer_t t = tls->timerid;
 	    if (t) {
@@ -295,9 +301,9 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 	if (use_posix_timer) {
 #ifdef HAVE_POSIX_TIMERS
 	    tls->timer_handler = handler;
-	    itspec.it_interval.tv_sec = interval / (uint64_t)(1000000000);
+	    itspec.it_interval.tv_sec = (time_t)(interval / (uint64_t)(1000000000));
 	    itspec.it_interval.tv_nsec =
-	    (1000 * (interval % (uint64_t)(1000000000))) / (uint64_t)(1000);
+	    (long int)((1000 * (interval % (uint64_t)(1000000000))) / (uint64_t)(1000));
 	    itspec.it_value.tv_sec = itspec.it_interval.tv_sec;
 	    itspec.it_value.tv_nsec = itspec.it_interval.tv_nsec;
 	    int rval = timer_settime(tls->timerid, 0, &itspec, NULL);
@@ -306,9 +312,9 @@ static void __CBTF_Timer(uint64_t interval, const CBTF_TimerEventHandler handler
 	    }
 #endif
 	} else {
-	    itval.it_interval.tv_sec = interval / (uint64_t)(1000000000);
+	    itval.it_interval.tv_sec = (time_t)(interval / (uint64_t)(1000000000));
 	    itval.it_interval.tv_usec =
-	    (interval % (uint64_t)(1000000000)) / (uint64_t)(1000);
+	    (long int)((interval % (uint64_t)(1000000000)) / (uint64_t)(1000));
 	    itval.it_value.tv_sec = itval.it_interval.tv_sec;
 	    itval.it_value.tv_usec = itval.it_interval.tv_usec;
 	    Assert(setitimer(ITIMER_PROF, &itval, NULL) == 0);

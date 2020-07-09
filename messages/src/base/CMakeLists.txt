@@ -66,7 +66,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/Address.h
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/Address.c
         ${CMAKE_CURRENT_BINARY_DIR}/Address.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Address.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Address.h
@@ -82,7 +82,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.h
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.c
         ${CMAKE_CURRENT_BINARY_DIR}/Blob.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Blob.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Blob.h
@@ -97,7 +97,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/Error.h
         ${CMAKE_CURRENT_BINARY_DIR}/Error.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/Error.c
         ${CMAKE_CURRENT_BINARY_DIR}/Error.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Error.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Error.h
@@ -112,7 +112,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/File.h
         ${CMAKE_CURRENT_BINARY_DIR}/File.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/File.c
         ${CMAKE_CURRENT_BINARY_DIR}/File.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/File.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/File.h
@@ -127,7 +127,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.c
         ${CMAKE_CURRENT_BINARY_DIR}/StdIO.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/StdIO.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/StdIO.h
@@ -142,7 +142,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/Time.h
         ${CMAKE_CURRENT_BINARY_DIR}/Time.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/Time.c
         ${CMAKE_CURRENT_BINARY_DIR}/Time.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Time.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Time.h
@@ -157,7 +157,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.h
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.x
-    COMMAND rpcgen -c -o
+    COMMAND rpcgen -c -i 0 -M -o
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.c
         ${CMAKE_CURRENT_BINARY_DIR}/Thread.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/Thread.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/Thread.h

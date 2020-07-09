@@ -56,7 +56,7 @@ extern const char* const cbtf_collector_unique_id;
  *                  addr_begin, and addr_end fields will be zero initialized
  *                  and must be provided by the collector before sending data.
  */
-extern void cbtf_collector_start(const CBTF_DataHeader const* header);
+extern void cbtf_collector_start(const CBTF_DataHeader *header);
 
 
 

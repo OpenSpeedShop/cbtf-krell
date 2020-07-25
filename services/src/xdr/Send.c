@@ -76,11 +76,14 @@ void CBTF_Data_Send(const CBTF_DataHeader* header,
     /* Encode the performance data header to this stream */
     Assert(xdr_CBTF_DataHeader(&xdrs, (void*)header) == TRUE);
 
+#if 0
+    // This is very dangerous for signalhandler related experiments.
     fprintf(stderr,"[%d,%d] CBTF_Data_Send DATA for %s:%lu:%lu:%d:%d\n",
                 getpid(),monitor_get_thread_num(),
                 header->host, (uint64_t)header->pid,
                 (uint64_t)header->posix_tid, header->rank,
                 header->omp_tid);
+#endif
 
     /* Encode the data structure to this stream */
     Assert((*xdrproc)(&xdrs, (void*)data) == TRUE);

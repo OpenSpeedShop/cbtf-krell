@@ -203,7 +203,6 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
 void CBTF_EventSetSendToFile(CBTF_EventHeader* header, const char* unique_id,
 			const char* suffix)
 {
-fprintf(stderr,"CBTF_EventSetSendToFile!\n");
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }
@@ -211,7 +210,6 @@ fprintf(stderr,"CBTF_EventSetSendToFile!\n");
 void CBTF_SetSendToFile(CBTF_DataHeader* header, const char* unique_id,
 			const char* suffix)
 {
-fprintf(stderr,"CBTF_SetSendToFile DATA!\n");
    __CBTF_SetSendToFile(header->host, header->pid, header->posix_tid,
 			unique_id,suffix);
 }

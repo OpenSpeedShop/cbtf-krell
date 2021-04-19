@@ -202,14 +202,14 @@ void CBTF_ompt_callback_sync_region(
 		OMPT_THREAD_BARRIER(true);
 		// record barrier begin time.
 		Assert(clock_gettime(CLOCK_REALTIME, &now) == 0);
+#ifndef NDEBUG
 		barrier_btime = ((uint64_t)(now.tv_sec) * (uint64_t)(1000000000)) +
         			(uint64_t)(now.tv_nsec);
-#ifndef NDEBUG
-	    if (cbtf_ompt_debug_blame) {
-		//print_ids(0);
-		fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region barrier_begin parallel_id:%lu task_id:%lu codeptr_ra:%p\n"
-		,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
-	    }
+		if (cbtf_ompt_debug_blame) {
+		    //print_ids(0);
+		    fprintf(stderr,"[%d,%d] CBTF_ompt_callback_sync_region barrier_begin parallel_id:%lu task_id:%lu codeptr_ra:%p\n"
+		    ,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, task_data->value, codeptr_ra);
+		}
 #endif
 	  break;
 	  case ompt_sync_region_taskwait:

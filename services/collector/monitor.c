@@ -585,11 +585,13 @@ void cbtf_offline_notify_event(CBTF_Monitor_Event_Type event)
 #endif
 	    /* We must connect to mrnet if we are using mrnet collection */
 	    if (!cbtf_connected_to_mrnet()) {
+#ifndef NDEBUG
 		if (IsCollectorDebugEnabled) {
 		    fprintf(stderr,
 			"[%d,%d] cbtf_offline_notify_event CBTF_Monitor_mpi_pcontrol_event. level 1 collector not started, connect...\n",
 			getpid(),monitor_get_thread_num());
 		}
+#endif
 		// Moved here from monitor services since it is not
 		// mrnet aware. monitor services is never built for
 		// fileio,mrnet,mrnet-mpi. Just one service for all.

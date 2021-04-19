@@ -133,8 +133,8 @@ CBTF_ompt_callback_parallel_begin(
   if (cbtf_ompt_debug) {
 	fprintf(stderr,"[%d,%d] CBTF_ompt_callback_parallel_begin parallel_id:%lu requested_team_size:%u invoker:%u codeptr_ra:%p\n"
 	,getpid(),monitor_get_thread_num(),(parallel_data)?parallel_data->value:0, requested_team_size, invoker, codeptr_ra);
-#endif
   }
+#endif
 }
 
 static void

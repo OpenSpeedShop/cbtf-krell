@@ -481,7 +481,9 @@ void cbtf_collector_start(const CBTF_DataHeader* const header)
     tls->defer_sampling = 1;
     tls->do_trace = 0;
     tls->event_count = 0;
+#ifndef NDEBUG
     IsCollectorDebugEnabled = (getenv("CBTF_DEBUG_COLLECTOR") != NULL);
+#endif
 
     /* Decode the passed function arguments */
     // Need to handle the arguments...

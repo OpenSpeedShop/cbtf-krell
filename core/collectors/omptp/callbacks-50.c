@@ -753,6 +753,8 @@ CBTF_ompt_callback_implicit_task(
 	    fprintf(stderr,"%" PRIu64 ": ompt_event_implicit_task_end: parallel_id=%" PRIu64 ", task_id=%" PRIu64 ", team_size=%" PRIu32 ", thread_num=%" PRIu32 "\n",
 	    ompt_get_thread_data()->value, (parallel_data)?parallel_data->value:0, task_data->value, team_size, thread_num);
 	}
+#else
+    ; /* when no NDEBUG compiler errors out the next line saying can not have a declaration after a label. Suggests semicolon to quiet the error */
 #endif
 	uint64_t etime = CBTF_GetTime();
 	uint64_t t = etime - tls->itask_btime;
@@ -806,6 +808,8 @@ void CBTF_ompt_callback_idle(ompt_scope_endpoint_t endpoint)
 	fprintf(stderr,"[%d,%d] CBTF_ompt_callback_idle ompt_scope_end context:%lx \n",
 	    getpid(),monitor_get_thread_num(), current_region_context);
     }
+#else
+    ; /* when no NDEBUG compiler errors out the next line saying can not have a declaration after a label. Suggests semicolon to quiet the error */
 #endif
     uint64_t t;
     if (tls->collector_active) {

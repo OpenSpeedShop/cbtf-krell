@@ -17,7 +17,8 @@
 ################################################################################
 
 include(CheckIncludeFile)
-find_package(GOTCHA)
+#find_package(GOTCHA)
+find_package(Gotcha)
 
 # FIXME:  dpm comments about changes in this area
 # Step wise refinement. I really think refactoring the build is going 

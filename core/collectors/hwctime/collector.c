@@ -252,7 +252,7 @@ static void initialize_data(TLS* tls)
     Assert(tls != NULL);
 
     tls->header.time_begin = CBTF_GetTime();
-    tls->header.time_end = 0;
+    tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = ~0;
     tls->header.addr_end = 0;
     
@@ -321,11 +321,9 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
  * This function can be called from within the sigprof handler and therefore
  * must be signal safe.  no strdup and friends.
  */
-static void send_samples (TLS* tls)
+static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
-
-    tls->header.time_end = CBTF_GetTime();
 
     /* the mpi rank is not available until applications has called mpi_init.*/
     /* safe to call here. */
@@ -383,7 +381,6 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
         return;
     }
  
-
     unsigned int framecount = 0;
     int stackindex = 0;
     uint64_t framebuf[CBTF_USERTIME_MAXFRAMES];
@@ -472,7 +469,7 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
 
     bool_t stack_already_exists = FALSE;
 
-    int i, j;
+    unsigned int i, j;
     /* search individual stacks via count/indexing array */
     for (i = 0; i < tls->data.count.count_len ; i++ )
     {
@@ -513,6 +510,7 @@ hwctimePAPIHandler(int EventSet, void *address, long_long overflow_vector, void*
     int buflen = tls->data.stacktraces.stacktraces_len + framecount;
     if ( buflen > CBTF_USERTIME_BUFFERSIZE) {
 	/* send the current sample buffer. (will init a new buffer) */
+        tls->header.time_end = CBTF_GetTime();
 	send_samples(tls);
     }
 

@@ -244,7 +244,7 @@ void CBTF_GetStackTraceFromContext(const ucontext_t* signal_context,
 	     * clone, start_thread, monitor_begin_thread to each callstack.
 	     */
 
-	    if (monitor_in_main_start_func_wide((void *)pc) ||
+	    if (/*monitor_in_main_start_func_wide((void *)pc) ||*/
 		monitor_in_start_func_wide((void *)pc)) {
 		; //noop
 	    } else {

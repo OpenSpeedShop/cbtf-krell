@@ -289,14 +289,14 @@ if(DEFINED MRNet_LW_INCLUDE_DIR)
         ${MRNet_LW_VERSION_MAJOR}.${MRNet_LW_VERSION_MINOR}.${MRNet_LW_VERSION_PATCH}
         )
   
-    #message(STATUS "LWMRNet version: " ${MRNet_LW_VERSION_STRING})
+    #message(STATUS "MRNet version: " ${MRNet_LW_VERSION_STRING})
     #message(STATUS "MRNet_FIND_VERSION version: " ${MRNet_FIND_VERSION})
     #message(STATUS "MRNet_LW_VERSION_STRING version: " ${MRNet_LW_VERSION_STRING})
 
     if(DEFINED MRNet_FIND_VERSION)
         if(${MRNet_LW_VERSION_STRING} VERSION_LESS ${MRNet_FIND_VERSION})
 
-            set(LWMRNET_FOUND FALSE)
+            set(MRNET_FOUND FALSE)
 
             if(DEFINED MRNet_LW_FIND_REQUIRED)
                 message(FATAL_ERROR
@@ -316,7 +316,7 @@ if(DEFINED MRNet_LW_INCLUDE_DIR)
     if(MRNet_LW_VERSION_STRING VERSION_LESS "4.0.0")
 
         # There was no lightweight support in these versions
-        set(LWMRNET_FOUND FALSE)
+        set(MRNET_FOUND FALSE)
 
     else()
       
@@ -329,7 +329,7 @@ if(DEFINED MRNet_LW_INCLUDE_DIR)
         GET_FILENAME_COMPONENT(MRNet_LW_DIR ${MRNet_LW_INCLUDE_DIR} PATH )
 
         find_package_handle_standard_args(
-            LWMRNet DEFAULT_MSG
+            MRNet DEFAULT_MSG
             MRNet_MRNET_LW_SHARED_LIBRARY MRNet_XPLAT_LW_SHARED_LIBRARY
             MRNet_MRNET_LW_STATIC_LIBRARY MRNet_XPLAT_LW_STATIC_LIBRARY
             MRNet_MRNET_LWR_SHARED_LIBRARY MRNet_XPLAT_LWR_SHARED_LIBRARY
@@ -346,7 +346,7 @@ if(DEFINED MRNet_LW_INCLUDE_DIR)
             )
 
         if(NOT MRNet_LW_MRNET_CONFIG_INCLUDE_DIR)
-            set(LWMRNET_FOUND FALSE)
+            set(MRNET_FOUND FALSE)
             message(STATUS
                 "Could NOT find the lightweight MRNet " ${MRNet_LW_VERSION_STRING}
                 " mrnet configuration header file"
@@ -363,14 +363,14 @@ if(DEFINED MRNet_LW_INCLUDE_DIR)
             )
 
         if(NOT MRNet_LW_XPLAT_CONFIG_INCLUDE_DIR)
-            set(LWMRNET_FOUND FALSE)
+            set(MRNET_FOUND FALSE)
             message(STATUS
                 "Could NOT find the lightweight MRNet " ${MRNet_LW_VERSION_STRING}
                 " xplat configuration header files"
                 )
         endif()
 
-        message(STATUS "LWMRNet found: " ${LWMRNET_FOUND})
+        message(STATUS "MRNet found: " ${MRNET_FOUND})
 
         set(MRNet_LW_INCLUDE_DIRS 
             ${MRNet_LW_INCLUDE_DIR} 

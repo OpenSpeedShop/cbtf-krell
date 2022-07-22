@@ -1365,8 +1365,8 @@ int PerfData::memMetrics(const Blob &blob, MemMetrics& metrics) {
 	}
     }
 
-    return bsize;
-
     xdr_free(reinterpret_cast<xdrproc_t>(xdr_CBTF_mem_exttrace_data),
                  reinterpret_cast<char*>(&data));
+
+    return bsize;
 }

@@ -460,6 +460,7 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	    fprintf(stderr,"[%ld,%d] ENTER cbtf_collector_start posix_tid:%lu\n",tls->header.pid,tls->header.omp_tid,tls->header.posix_tid);
 	}
 #endif
+    PAPI_hw_info_t *cbtf_hw_info;
     if(hwcsamp_papi_init_done == 0) {
 #ifndef NDEBUG
 	if (IsCollectorDebugEnabled) {
@@ -468,10 +469,11 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 #endif
 	CBTF_init_papi();
 	tls->EventSet = PAPI_NULL;
-	tls->data.clock_mhz = (float) hw_info->mhz;
+	//cbtf_hw_info = PAPI_get_hardware_info();
+	//tls->data.clock_mhz = (float) cbtf_hw_info->mhz;
 	hwcsamp_papi_init_done = 1;
     } else {
-	tls->data.clock_mhz = (float) hw_info->mhz;
+	//tls->data.clock_mhz = (float) cbtf_hw_info->mhz;
     }
 
 

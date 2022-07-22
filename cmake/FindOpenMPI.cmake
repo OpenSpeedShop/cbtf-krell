@@ -27,26 +27,20 @@ find_path(OpenMPI_INCLUDE_DIR
     NAMES mpi.h
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
-    PATHS /usr /usr/local 
     PATH_SUFFIXES include include/openmpi include/openmpi3-ppc64le include/openmpi-ppc64le include/openmpi-x86_64
-    NO_DEFAULT_PATH
     )
 
 find_path(OpenMPI_BIN_DIR
     NAMES mpicc
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
-    PATHS /usr /usr/local /usr/lib64/openmpi /usr/lib64/openmpi3
     PATH_SUFFIXES bin 
-    NO_DEFAULT_PATH
     )
 
 find_library(OpenMPI_LIBRARY_SHARED NAMES mpi mpi_ibm
     HINTS $ENV{OPENMPI_DIR}
     HINTS ${OPENMPI_DIR}
-    PATHS /usr /usr/local /usr/lib64/openmpi /usr/lib64/openmpi3
     PATH_SUFFIXES lib lib64
-    NO_DEFAULT_PATH
     )
 
 find_package_handle_standard_args(

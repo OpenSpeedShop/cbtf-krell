@@ -137,7 +137,7 @@ add_custom_command(
     COMMAND rpcgen -h -o
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
-    COMMAND rpcgen -c -i 0 -M -o
+    COMMAND rpcgen -c -o
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.c
 	${CMAKE_CURRENT_BINARY_DIR}/DataHeader.x
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/DataHeader.h ${CMAKE_CURRENT_BINARY_DIR}/KrellInstitute/Messages/DataHeader.h

@@ -246,7 +246,7 @@ static void initialize_data(TLS* tls)
     Assert(tls != NULL);
 
     tls->header.time_begin = CBTF_GetTime();
-    tls->header.time_end = 0;
+    tls->header.time_end = CBTF_GetTime();
     tls->header.addr_begin = ~0;
     tls->header.addr_end = 0;
     
@@ -318,8 +318,6 @@ inline void update_header_with_address(TLS* tls, uint64_t addr)
 static void send_samples(TLS *tls)
 {
     Assert(tls != NULL);
-
-    tls->header.time_end = CBTF_GetTime();
 
     /* the mpi rank is not available until applications has called mpi_init.*/
     /* safe to call here. */
@@ -459,7 +457,7 @@ static void serviceTimerHandler(const ucontext_t* context)
 
     bool_t stack_already_exists = FALSE;
 
-    int i, j;
+    unsigned int i, j;
     /* search individual stacks via count/indexing array */
     for (i = 0; i < tls->data.count.count_len ; i++ )
     {
@@ -500,6 +498,7 @@ static void serviceTimerHandler(const ucontext_t* context)
     int buflen = tls->data.stacktraces.stacktraces_len + framecount;
     if ( buflen > CBTF_USERTIME_BUFFERSIZE) {
 	/* send the current sample buffer. (will init a new buffer) */
+        tls->header.time_end = CBTF_GetTime();
 	send_samples(tls);
     }
 

@@ -477,6 +477,8 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 	 * the rest of this collection.
 	 */
 	fprintf(stderr,"ERROR initializing PAPI.\n");
+    } else {
+	papi_init_done = 1;
     }
 
     PAPI_CHECK(PAPI_thread_init(( unsigned long ( * )( void ) ) ( pthread_self )));
@@ -502,12 +504,13 @@ void cbtf_collector_start(const CBTF_DataHeader* header)
 #endif
 
     /* legacy code. likely unused. */
+    PAPI_hw_info_t *cbtf_hw_info;
     if(papi_init_done == 0) {
-	hw_info = PAPI_get_hardware_info();
-	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz; // hw_info->mhz is deprecated.
+	cbtf_hw_info = PAPI_get_hardware_info() ;
+	tls->hwc_samp_data.clock_mhz = (float) cbtf_hw_info->mhz; // cbtf_hw_info->mhz is deprecated.
 	papi_init_done = 1;
     } else {
-	tls->hwc_samp_data.clock_mhz = (float) hw_info->mhz;  // hw_info->mhz is deprecated.
+	tls->hwc_samp_data.clock_mhz = (float) cbtf_hw_info->mhz;  // cbtf_hw_info->mhz is deprecated.
     }
 
     /* call PAPI directly (no papi service code).

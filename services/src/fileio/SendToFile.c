@@ -111,6 +111,9 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
     char dir_path[PATH_MAX];
     int fd;
 
+    bool IsFileioDebugEndabled = false;
+    IsFileioDebugEndabled = (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL);
+
     /* Get our executable path */
     if (executable_path == NULL) {
 	executable_path = strdup(CBTF_GetExecutablePath());
@@ -126,6 +129,10 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
      */
 
     cbtf_rawdata_dir = getenv("CBTF_RAWDATA_DIR");
+    if ( IsFileioDebugEndabled ) {
+	fprintf(stderr,"__CBTF_SetSendToFile using cbtf_rawdata_dir %s\n",cbtf_rawdata_dir);
+    }
+
     sprintf(dir_path, "%s/cbtf-rawdata-%s-%lu",
 	    (cbtf_rawdata_dir != NULL) ? cbtf_rawdata_dir : "/tmp",
 	     host,pid);
@@ -140,8 +147,6 @@ static void __CBTF_SetSendToFile(const char* host, uint64_t pid, uint64_t posix_
     }
 
 
-    bool IsFileioDebugEndabled = false;
-    IsFileioDebugEndabled = (getenv("CBTF_DEBUG_FILEIO_SERVICE") != NULL);
     if ( IsFileioDebugEndabled ) {
 	fprintf(stderr,"__CBTF_SetSendToFile ready for %s\n",tls->path);
     }

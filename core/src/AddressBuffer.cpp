@@ -97,7 +97,7 @@ bool AddressBuffer::updateAddressCounts(uint64_t pc, uint64_t count)
     } else {
 	addresscounts.insert(lb, AddressCounts::value_type(thePC, count));
     }
-
+    return true;
 }
 
 bool AddressBuffer::updateAddressCounts(AddressBuffer& buf)
@@ -113,6 +113,7 @@ bool AddressBuffer::updateAddressCounts(AddressBuffer& buf)
 	addresscounts.insert(lb, AddressCounts::value_type(aci->first, aci->second));
     }
   }
+  return true;
 }
 
 bool AddressBuffer::updateAddressCounts(AddressCounts& addrcounts)
@@ -128,4 +129,5 @@ bool AddressBuffer::updateAddressCounts(AddressCounts& addrcounts)
 	addresscounts.insert(lb, AddressCounts::value_type(aci->first, aci->second));
     }
   }
+  return true;
 }

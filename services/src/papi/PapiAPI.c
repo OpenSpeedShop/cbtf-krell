@@ -78,11 +78,13 @@ void CBTF_init_papi()
 	return;
     }
 
-    hw_info = PAPI_get_hardware_info() ;
-    if (hw_info == NULL) {
+#if 0
+    cbtf_hw_info = PAPI_get_hardware_info() ;
+    if (cbtf_hw_info == NULL) {
 	fprintf(stderr, "PAPI_get_hardware_info failed\n") ;
 	fprintf(stderr, "At line %d in file %s\n", __LINE__, __FILE__) ;
     }
+#endif
 
 #if defined(BUILD_TARGETED)
 #if defined(HAVE_TARGET_POSIX_THREADS)
@@ -168,22 +170,22 @@ long_long **allocate_test_space(int num_tests, int num_events)
 void print_hw_info()
 {
 
-  hw_info = PAPI_get_hardware_info() ;
-  if (hw_info == NULL) {
+  PAPI_hw_info_t *cbtf_hw_info = PAPI_get_hardware_info();
+  if (cbtf_hw_info == NULL) {
     fprintf(stderr, "PAPI_get_hardware_info failed\n") ;
     fprintf(stderr, "At line %d in file %s\n", __LINE__, __FILE__) ;
   }
 
   printf("PAPI hardware information\n") ;
-  printf("  # of CPUs in SMP node: %d\n", hw_info->ncpu) ;
-  printf("  # of SMP nodes:        %d\n", hw_info->nnodes) ;
-  printf("  Total CPUs in system:  %d\n", hw_info->totalcpus) ;
-  printf("  Vendor:                %d\n", hw_info->vendor) ;
-  printf("  Vendor string:         %s\n", hw_info->vendor_string) ;
-  printf("  CPU model:             %d\n", hw_info->model) ;
-  printf("  CPU model string:      %s\n", hw_info->model_string) ;
-  printf("  Revision of CPU:       %9.4f\n", hw_info->revision) ;
-  printf("  Cycle time MHz:        %9.4f\n", hw_info->mhz) ;
+  printf("  # of CPUs in SMP node: %d\n", cbtf_hw_info->ncpu) ;
+  printf("  # of SMP nodes:        %d\n", cbtf_hw_info->nnodes) ;
+  printf("  Total CPUs in system:  %d\n", cbtf_hw_info->totalcpus) ;
+  printf("  Vendor:                %d\n", cbtf_hw_info->vendor) ;
+  printf("  Vendor string:         %s\n", cbtf_hw_info->vendor_string) ;
+  printf("  CPU model:             %d\n", cbtf_hw_info->model) ;
+  printf("  CPU model string:      %s\n", cbtf_hw_info->model_string) ;
+  printf("  Revision of CPU:       %9.4f\n", cbtf_hw_info->revision) ;
+  printf("  Cycle time MHz:        %9.4f\n", cbtf_hw_info->mhz) ;
 }
 
 /**

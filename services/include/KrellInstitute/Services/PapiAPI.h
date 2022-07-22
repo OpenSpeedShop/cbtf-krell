@@ -42,7 +42,9 @@
 extern "C" {
 #endif
 
-const PAPI_hw_info_t *hw_info ;       /* PAPI hardware information */
+#if 0
+const PAPI_hw_info_t *cbtf_hw_info ;       /* PAPI hardware information */
+#endif
 
 //static int papithreshold = THRESHOLD;
 #ifdef USE_ALLOC_VALUES
